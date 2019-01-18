@@ -579,14 +579,15 @@ function ValidateFields(jobstatus)
 				 order_id:'<?=$html->tagValue("Order/id")?>'},
 				function(data){
 					var res = data.trim();
-					console.log(res);
-				//	if (data.indexOf('OK') > 0)
-					if (res == 'OK')
+					if (data.indexOf('OK') > 0) {
 						//alert('submitFormNEW');
 						document.forms['editBookingform'].submit();
-					else
-						console.log("ayayay");
+					}						
+						
+					else{
 						alert(res);
+					}
+						
 				});
 			} else {
 				//alert('submitForm');
