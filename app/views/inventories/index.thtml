@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>ACESYS</title>
+    <link rel="stylesheet" href="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/slick.grid.css">
+    <link rel="stylesheet" href="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/controls/slick.pager.css">
+    <link rel="stylesheet" href="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/css/smoothness/jquery-ui-1.8.16.custom.css">
+    <link rel="stylesheet" href="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/examples/examples.css">
+    <link rel="stylesheet" href="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/controls/slick.columnpicker.css">
+    <link rel="stylesheet" href="<?php echo ROOT_URL; ?>/app/webroot/css/iv.css">
+    <script src="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/lib/firebugx.js"></script>
+    <script src="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/lib/jquery-1.7.min.js"></script>
+    <script src="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/lib/jquery-ui-1.8.16.custom.min.js"></script>
+    <script src="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/lib/jquery.event.drag-2.2.js"></script>
+    <script src="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/slick.core.js"></script>
+    <script src="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/slick.formatters.js"></script>
+    <script src="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/slick.editors.js"></script>
+    <script src="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/plugins/slick.rowselectionmodel.js"></script>
+    <script src="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/slick.grid.js"></script>
+    <script src="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/slick.dataview.js"></script>
+    <script src="<?php echo ROOT_URL; ?>/app/webroot/slickgrid/controls/slick.columnpicker.js"></script>
+    <style>
+    </style>
+</head>
+<body>
+<div id="filter-panel">
+    <div>
+      <span class="first">Item Name:</span>
+      <input type="text" id="nameSearch">
+    </div>
+    <div>
+      <span class="first">Part Number:</span>
+      <input type="text" id="partSearch">
+      <span>Location:</span>
+      <select id="location-box">
+          <option value="*" selected="selected">All Locations</option>
+
+          <?php foreach ($items as $location => $item): ?>
+
+          <option value="<?php echo $location; ?>"><?php echo $location; ?></option>
+
+          <?php endforeach; ?>
+
+      </select>
+    </div>
+</div>
+<div style="position:relative">
+  <div style="width:90%;">
+    <div class="grid-header" style="width:100%">
+      <label>Item Locations</label>
+    </div>
+    <div id="myGrid" style="width:100%;height:500px;"></div>
+  </div>
+</div>
+
+<script>
+
+  function CurrencyFormatter(row, cell, value, columnDef, dataContext) {
+      if (value === null || value === "" || !(value > 0)) {
+          return Number();
+      } else {
+          return Number(value).toFixed(2);
+      }
+  }
+
+
+
+  function MoveItemFormatter(row, cell, value, columnDef, dataContext) {
+    return '<button>Move Item</button>';
+  }
+
+  function NumberFormatter(row, cell, value, columnDef, dataContext) {
+    return value.replace(/\D/g,'');
+  }
+
+  var dataView;
+  var grid;
+  var data = [];
+  var columns = [
+
+  {id: "id", name: "#", field: "id", behavior: "select", cssClass: "cell-selection", width: 40, cannotTriggerInsert: true, resizable: false, selectable: false, formatter: NumberFormatter },
+  {id: "name", name: "Name", field: "name", width: 220, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true},
+  {id: "model", name: "Part#/Model", field: "model", width: 220, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true},
+  {id: "location", name: "Location", field: "location", width: 220, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true},
+
+  {id: "price", name: "Quoted Price", field: "price", width: 90, minWidth: 90, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true, formatter: CurrencyFormatter},
+  {id: "quantity", name: "Quantity", field: "quantity", width: 90, minWidth: 90, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true},
+  {id: "move", name: "", field: "move", width: 90, minWidth: 90, cssClass: "cell-title", editor: null, validator: null, sortable: false, formatter: MoveItemFormatter}
+
+  ];
+
+  var options = {
+    editable: false,
+    enableAddRow: false,
+    enableCellNavigation: false,
+    asyncEditorLoading: true,
+    forceFitColumns: true,
+    topPanelHeight: 25
+  };
+
+  var sortcol = "name";
+  var sortdir = 1;
+  var searchString = "";
+
+  function requiredFieldValidator(value) {
+    if (value == null || value == undefined || !value.length) {
+      return {valid: false, msg: "This is a required field"};
+    }
+    else {
+      return {valid: true, msg: null};
+    }
+  }
+
+  function myFilter(item, args) {
+
+    var location = $('#location-box').val();
+    if (location != "*") {
+      if (location.localeCompare(item['location']) != 0) {
+        return false;
+      }
+    }
+
+    var searchString = $('#nameSearch').val();
+    if (searchString != "" && item["name"].indexOf(searchString) == -1) {
+      return false;
+    }
+    var searchString = $('#partSearch').val();
+    if (searchString != "" && item["model"].indexOf(searchString) == -1) {
+      return false;
+    }
+
+    return true;
+  }
+
+function stringComparer(a, b) {
+  var x = a[sortcol], y = b[sortcol];
+  return (x == y ? 0 : (x > y ? 1 : -1));
+}
+function floatComparer (a ,b) {
+    var x = Number(a[sortcol]);
+    var y = Number(b[sortcol]);
+    x = (x)? x : 0;
+    y = (y)? y : 0;
+    return (x == y ? 0 : (x > y ? 1 : -1));
+};
+
+function toggleFilterRow() {
+  grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
+}
+
+
+$(".grid-header .ui-icon")
+        .addClass("ui-state-default ui-corner-all")
+        .mouseover(function (e) {
+          $(e.target).addClass("ui-state-hover")
+        })
+        .mouseout(function (e) {
+          $(e.target).removeClass("ui-state-hover")
+        });
+
+
+$(function() {
+
+     var data = [
+
+        <?php foreach ( $items as $location => $onHand ): ?>
+
+        <?php foreach ( $onHand as $item ): ?>
+
+        {
+            id: '<?php echo $item['item_id']; ?>',
+            name: '<?php echo $item['item_name']; ?>',
+            model: '<?php echo $item['item_name']; ?>',
+            price: '<?php echo $item['quote_price']; ?>',
+            location: '<?php echo $location; ?>',
+            quantity: '<?php echo $item['quantity']; ?>'
+        },
+
+        <?php endforeach; ?>
+
+        <?php endforeach; ?>
+
+    ];
+
+    dataView = new Slick.Data.DataView({ inlineFilters: true });
+    grid = new Slick.Grid("#myGrid", dataView, columns, options);
+    grid.setSelectionModel(new Slick.RowSelectionModel());
+
+    var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
+
+
+  // move the filter panel defined in a hidden div into grid top panel
+  $("#inlineFilterPanel")
+      .appendTo(grid.getTopPanel())
+      .show();
+
+  grid.onCellChange.subscribe(function (e, args) {
+    dataView.updateItem(args.item.id, args.item);
+  });
+
+  grid.onKeyDown.subscribe(function (e) {
+    // select all rows on ctrl-a
+    if (e.which != 65 || !e.ctrlKey) {
+      return false;
+    }
+
+    var rows = [];
+    for (var i = 0; i < dataView.getLength(); i++) {
+      rows.push(i);
+    }
+
+    grid.setSelectedRows(rows);
+    e.preventDefault();
+  });
+
+    grid.onSort.subscribe(function (e, args) {
+        sortdir = args.sortAsc ? 1 : -1;
+        sortcol = args.sortCol.field;
+
+        if ($.browser.msie && $.browser.version <= 8) {
+          // using temporary Object.prototype.toString override
+          // more limited and does lexicographic sort only by default, but can be much faster
+          dataView.fastSort(sortcol, args.sortAsc);
+        }
+        else {
+            // use numeric sort of % and lexicographic for everything else
+            if (sortcol == "purchasePrice" || sortcol == "sellPrice") {
+                dataView.sort(floatComparer, args.sortAsc);
+            }
+            else {
+                dataView.sort(stringComparer, args.sortAsc);
+            }
+
+        }
+    });
+
+  // wire up model events to drive the grid
+  dataView.onRowCountChanged.subscribe(function (e, args) {
+    grid.updateRowCount();
+    grid.render();
+  });
+
+  dataView.onRowsChanged.subscribe(function (e, args) {
+    grid.invalidateRows(args.rows);
+    grid.render();
+  });
+
+  dataView.onPagingInfoChanged.subscribe(function (e, pagingInfo) {
+    var isLastPage = pagingInfo.pageNum == pagingInfo.totalPages - 1;
+    var enableAddRow = isLastPage || pagingInfo.pageSize == 0;
+    var options = grid.getOptions();
+
+    if (options.enableAddRow != enableAddRow) {
+      grid.setOptions({enableAddRow: enableAddRow});
+    }
+  });
+
+  grid.onClick.subscribe(function(e, args) {
+    // Move item.
+    if (args.cell == grid.getColumnIndex('move')) {
+      var item = dataView.getItem(args.row);
+      document.location.href = 'editDoc?type=2&rurl=index%3F&item_id=' + item['id'].replace(/\D/g,'');
+    }
+  });
+
+  var h_runfilters = null;
+
+  // wire up the search textbox to apply the filter to the model
+  $("#nameSearch,#partSearch").keyup(function (e) {
+    Slick.GlobalEditorLock.cancelCurrentEdit();
+
+    // clear on Esc
+    if (e.which == 27) {
+      this.value = "";
+    }
+
+    searchString = this.value;
+    updateFilter();
+  });
+
+  $("#location-box").change(function (e) {
+    Slick.GlobalEditorLock.cancelCurrentEdit();
+    updateFilter();
+  });
+
+
+  function updateFilter() {
+    dataView.setFilterArgs({
+      searchString: searchString
+    });
+    dataView.refresh();
+  }
+
+  $("#btnSelectRows").click(function () {
+    if (!Slick.GlobalEditorLock.commitCurrentEdit()) {
+      return;
+    }
+
+    var rows = [];
+    for (var i = 0; i < 10 && i < dataView.getLength(); i++) {
+      rows.push(i);
+    }
+
+    grid.setSelectedRows(rows);
+  });
+
+
+  // initialize the model after all the events have been hooked up
+  dataView.beginUpdate();
+  dataView.setItems(data);
+  dataView.setFilterArgs({
+    searchString: searchString
+  });
+  dataView.setFilter(myFilter);
+  dataView.endUpdate();
+
+  // if you don't want the items that are not visible (due to being filtered out
+  // or being on a different page) to stay selected, pass 'false' to the second arg
+  dataView.syncGridSelection(grid, true);
+
+  $("#gridContainer").resizable();
+})
+
+</script>
+</body>
+</html>

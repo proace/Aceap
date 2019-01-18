@@ -1,0 +1,35 @@
+<?php echo $html->formTag('/orders/followup',null,array("name"=>"viewform")); ?>
+<? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
+<input type="hidden" name="order_id" value="<?=$order_id?>">
+<input type="hidden" name="action" value="save">
+<table>
+<tr>
+	<td class="sectionTitle">Follow-up: Do you have to come back?</td>
+</tr>
+<tr>
+	<td >Do you have to come back to that customer to do additional installation or service work?<br><br></td>
+</tr>
+<tr>
+	<td>
+	(<input type="radio" name="dosave" value="0" checked onclick="document.getElementById('aa').style.display='none';">)&nbsp;No<br>
+	(<input type="radio" name="dosave" value="1" onclick="document.getElementById('aa').style.display='block';">)&nbsp;Yes<br>
+	</td>
+</tr>
+<tr>
+	<td>
+	<div id="aa" style="display:none;">
+	<br>
+	<table>
+	<tr><td>Date:&nbsp;&nbsp;<input type="text" name="date"  style="width:100px" readonly="1">&nbsp;&nbsp;<a href="#" onclick="showCalendar('date','viewform')">set</a></td></tr>
+	<tr><td>Note:&nbsp;&nbsp;<textarea name="note" rows="3" cols="30"></textarea></td></tr>
+	</table>
+	</div>
+	</td>
+</tr>
+<tr>
+	<td><br>
+	<input type="button" value="<< Back" class="buttons" onclick="javascript:history.go(-1)">&nbsp;&nbsp;
+	<?=$html->submit('Confirm',array("class"=>"buttons"))?>&nbsp;&nbsp;
+	</td>
+</tr>
+</table>

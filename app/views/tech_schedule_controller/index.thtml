@@ -1,0 +1,95 @@
+<script language="JavaScript" type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+
+<style>
+.results1{
+	float: left;
+	background: #CCCCCC;
+}
+.results1 th{
+	background: #666666;
+	border-left: 0px solid #FFFFFF;
+	border-top: 0px solid #FFFFFF;
+	font-weight: bold;
+	font-size:10px;
+	font-family:Verdana;
+	color: #FFFFFF;
+}
+.results1 td.cell0{
+	background:  #FFFFFF;
+	height: 30px;
+}
+</style>
+
+<script language="JavaScript">
+function setTech(route_id, day, tech_num, el){
+	$.get("<?=BASE_URL;?>/tech_schedule/setTech",
+		{tech_id:el.value, day:day, tech_num:tech_num, route_id:route_id},
+		function(data){document.forms['viewform'].submit();});
+}
+</script>
+
+<form method="GET" name="viewform">
+
+<table border="0" cellspacing="10" cellpadding="0" ><!-- align=left -->
+	<tr>
+		<td class="sectionTitle" colspan="3">Techs Schedule</td>
+	</tr>	
+</table>
+	
+</form>
+
+<table id="restable" class="results1" cellpadding="3" cellspacing="1">
+<tr>
+	<th style='width:130px;'>Route</th>
+	<th style='width:50px;'>Truck #</th>
+	<th style='width:80px;'>Monday</th>
+	<th style='width:80px;'>Tuesday</th>
+	<th style='width:80px;'>Wednesday</th>
+	<th style='width:80px;'>Thusday</th>
+	<th style='width:80px;'>Friday</th>
+	<th style='width:80px;'>Saturday</th></tr>
+	<?php 
+	function getSelector($aSrc, $sControlName, $mCurrentItem, $route, $tech_num, $day)
+	{
+		$sRet = "<select onchange='setTech(\"$route\", \"$day\", $tech_num, this);' style='background:transparent;'>";
+		$selected = "";
+		if (!$mCurrentItem)
+			$selected = "selected='selected'";
+		$sRet.= "<option value='' $selected>&nbsp;</option>";
+	  
+		foreach ($aSrc as $k => $v)
+		{
+			$selected = "";
+			if ($k == $mCurrentItem)
+				$selected = "selected='selected'";
+			$sRet.= "<option value='$k' $selected>$v</option>";
+		}
+		
+		$sRet.= "</select>";
+		
+		return $sRet;
+	}
+	
+	$r = 1;
+	foreach ($AllRoutes as $cur)
+	{
+		$class = 'cell'.(++$r%2);
+		echo '<tr>';
+		echo '<td rowspan=2 class="'.$class.'"><a href="'.BASE_URL.'/routes/editItem?item_id=' .$cur['id'] .'">' .$cur['name'] .'</a></td>';
+		echo '<td rowspan=2 class="'.$class.'">' .$cur['truck_number'] .'</td>';
+		for ($j=0; $j<6; $j++)
+		{
+		    $select = getSelector($AllTechnicians,'tech',$cur['tech1'][$j], $cur['id'], 1, $j+1);
+			echo '<td class="'.$class.'">'.$select.'</td>';
+		}
+		echo '</tr>';
+		echo '<tr>';
+		for ($j=0; $j<6; $j++)
+		{
+		    $select = getSelector($AllTechnicians,'tech',$cur['tech2'][$j], $cur['id'], 2, $j+1);
+			echo '<td class="'.$class.'">'.$select.'</td>';
+		}
+		echo '</tr>';
+	}
+	?>
+</table>

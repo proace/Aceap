@@ -1,0 +1,125 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1> Callbacks <small></small> </h1>
+  <ol class="breadcrumb">
+    <li><a href="<?php echo $home_link ?>"><i class="fa fa-home"></i> Home</a></li>
+    <li>Calls</li>
+    <li class="active">Callbacks</li>
+  </ol>
+</section>
+
+<!-- Main content -->
+<section class="content">
+  <div class="row">
+  	<div class="col-md-12">
+      <!-- general form elements -->
+      <div class="box box-primary">
+        <div class="box-header">
+          <h3 class="box-title">To Call</h3>
+        </div><!-- /.box-header -->
+        <!-- form start -->
+          <?php
+		  	$agents = array(
+		  	'231277' => "Agent 1",
+			'44874' => "Agent 2",
+			'231296' => "Agent 3",
+			'231297' => "Agent 4",
+			
+			'44851' => "Ali (ACE)",
+			'226792' => "Roy (ACE)",
+			'231267' => "B Plumber (ACE)",
+			'231254' => "GG (ACE)",
+			'229528' => "Brizzi (ACE)"
+			);
+		  ?>
+                   
+            <div class="box-body">
+              <form method="post"> 
+              <div class="row">
+                 <div class="col-xs-4">                      
+                  <div class="form-group">                  
+                    <label>Date range: </label>
+                    <div class="input-group">
+                      <div class="input-group-addon">
+                        <i class="fa fa-calendar"></i>
+                      </div>
+                      <input type="text" class="form-control pull-right date-range" name="date_range" value="<?php echo $date_range ?>">
+                    </div><!-- /.input group -->
+                  </div>
+                 </div>
+                 <div class="col-xs-2">
+                  <div class="form-group">
+                      <label style="visibility:hidden">Submit</label>
+                      <div class="input-group">
+                          <button type="submit" class="btn btn-primary" name="btn-filter" value="1">Submit</button>
+                      </div>                    
+                  </div>
+                 </div>
+              </div>
+              </form>
+              <form method="post"> 
+              	<table class="table table-bordered">
+                  <tr>                    
+                      <th style="width:200px;">Name</th>  
+                      <th style="width:400px;">Note</th>    
+                      <th>Call Date</th>   
+                      <th>Phone</th>   
+                      <th class="center">Agent</th>  
+                      <th></th>                          
+                  </tr>
+                  <?php $c_count = 0; ?>
+                  <?php foreach($callbacks as $cb)  { ?> 
+                  <?php foreach($cb as $callback)  { ?>            
+                  <tr>                    
+                      <td><?php echo ucwords(strtolower($callback['lead_first_name']." ".$callback['lead_last_name']))?></td>
+                      <td><?php echo $callback['call_note']?></td>
+                      <td>
+                        <?php echo $callback['call_return_text']?>
+                        <input type="hidden" name="agent[<?php echo $callback['call_number']?>][date]" value="<?php echo $callback['call_return']?>" />
+                      </td>  
+                      <td><?php echo $callback['call_number']?></td>
+                      <td class="center">                            
+                        <!--<select name="agent[<?php echo $callback['call_number']?>][user]" class="form-control" autocomplete="off">
+                        <option value="">-</option>
+                        <?php foreach($agents as $agent_id => $agent) { ?>   
+                        <?php if($agent_id == $callback['user_id']) $sel = "selected"; else $sel = ""; ?>                     
+                        <option <?php echo $sel ?> value="<?php echo $agent_id ?>"><?php echo $agent ?></option>
+                        <?php } ?>
+                        </select>-->
+                        <?php echo $agents[$callback['user_id']] ?>                            
+                      </td>
+                  </tr>
+                  <?php $c_count++; ?>
+                  <?php } ?>
+                  <?php } ?>
+                  <tr>
+                  	<td colspan="4" style="text-align:right;">
+                    <strong>Results found: <?php echo $c_count ?></strong>
+                    </td>
+                  	<td>
+                    <select name="change_user" class="form-control" autocomplete="off">
+                        <option value="">-</option>
+                        <?php foreach($agents as $agent_id => $agent) { ?>                                          
+                        <option value="<?php echo $agent_id ?>"><?php echo $agent ?></option>
+                        <?php } ?>
+                    </select>                    
+                    </td>
+                    <td><button type="submit" class="btn btn-primary" name="callback_access" value="1">Save Changes</button></td>
+                    
+                  </tr>
+                </table>
+                <!--<pre><?php //print_r($data) ?></pre>-->
+                            
+              </form>                        
+            </div>
+           
+            <!-- /.box-body -->
+            <div class="box-footer">
+                <!--<button type="submit" class="btn btn-primary" name="callback_access" value="1">Submit</button>-->
+          	</div>
+      	
+      </div><!-- /.box -->      
+    </div><!-- end col -->
+  </div>
+</section>
+<!-- /.content --> 

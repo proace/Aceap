@@ -1,0 +1,337 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Book Online</title>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.validate.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/iv_items_edit.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/book_online.css" />
+<script>
+$(document).ready(function(){	
+	$("#editBookingform").validate({
+		rules: {		
+			items: {
+				required: function(element) {			
+					return countUnchecked() == 4;
+				}	  
+			},
+			timeslot: {
+				required: function(element) {
+					return $("#OrderJobTruck").val() == '';
+				}	  
+			},
+		},
+		messages: {
+			items: {
+				required: '<div class="error_required" title="Choose at least 1 item"></div>'
+			},
+			timeslot: {
+				required: '<div class="error_required" title="Check for available time slots"></div>'
+			}
+		}	
+	});
+	
+	$.validator.messages.required = '<div class="error_required" title="This field is required"></div>';
+	$.validator.messages.email = '<div class="error_email" title="Invalid email"></div>';
+	$.validator.messages.number = '<div class="error_number" title="Numbers only"></div>';
+	
+	function countUnchecked() {		
+		return $("input[type=checkbox]:unchecked").length;      
+    }
+	
+	$("#OrderJobDate").blur(function(){
+		$("#timeslot_results").html('');
+		$("#OrderJobTimeBegHour").val('');
+		$("#OrderJobTimeEndHour").val('');
+	});
+	
+	/*$("#checkdate").click(function(){
+		var city = $('#CustomerCity').val();
+		var date = $('#OrderJobDate').val();
+		
+		$("#OrderJobTimeBegHour").val('');
+		$("#OrderJobTimeEndHour").val('');
+		
+		if(date != '') {
+			if($("#airduct_booking").is(":checked")) var has_airduct = true;
+			else var has_airduct = false;
+			
+			$.get(G_URL + "orders/truckSlotsAjax",
+			{
+				city:city,
+				date:date,
+				has_airduct:has_airduct
+			},
+			function(data){
+				$("#timeslot_results").html(data);	      
+			});	
+		}
+	});*/
+	
+	$("#airduct_booking").click(function(){
+		$("#timeslot_results").html('');
+		$("#OrderJobTimeBegHour").val('');
+		$("#OrderJobTimeEndHour").val('');
+	});
+	
+	/*$("input[type=checkbox]").click(function(){
+		var item_str = '';
+		$("#item_values").html('');
+		$("input[type=checkbox]:checked").each(function(){
+			item_str = item_str + $(this).val() + '-';
+		});
+		item_str = item_str.substr(0, item_str.length - 1);
+		$.get(G_URL + "pages/onlineItemsAjax/" + item_str,
+			{},
+			function(data){
+				$("#item_values").html(data);				     
+		});
+	});*/
+	
+	/*$("#OrderTimeslot").live("change", function(){
+		var val = $(this).val();
+		var valArr = val.split('-');
+		var timeslot = parseInt(valArr[0]);
+		var truck = parseInt(valArr[1]);
+		switch(timeslot) {
+			case 1:
+				$("#OrderJobTimeBegHour").val(8);
+				$("#OrderJobTimeEndHour").val(10);
+				$("#OrderJobTruck").val(truck);
+			break;
+			case 2:
+				$("#OrderJobTimeBegHour").val(10);
+				$("#OrderJobTimeEndHour").val(12);
+				$("#OrderJobTruck").val(truck);
+			break;
+			case 3:
+				$("#OrderJobTimeBegHour").val(12);
+				$("#OrderJobTimeEndHour").val(14);
+				$("#OrderJobTruck").val(truck);
+			break;
+			case 4:
+				$("#OrderJobTimeBegHour").val(14);
+				$("#OrderJobTimeEndHour").val(16);
+				$("#OrderJobTruck").val(truck);
+			break;
+			default:
+				$("#OrderJobTimeBegHour").val('');
+				$("#OrderJobTimeEndHour").val('');
+				$("#OrderJobTruck").val('');
+			break;
+		}					
+	});*/
+	
+	$("#load_timeslots").click(function(){
+		var job_type = 1;
+		var date = $('#OrderJobDate').val();
+		var city_id = $('#CustomerCity').val();
+		if(date != '' && city_id != '') {
+			if($("#airduct_booking").is(":checked")) var job_type = 2;
+			else var job_type = 1;
+			
+		
+			var url = G_URL + "pages/verticalTimeSlots";
+	
+			
+			var job_date = $('#OrderJobDate').val();
+			$(this).hide();
+			$("#loading_timeslots").show();		
+			$.post(url,
+				{
+					city_id:city_id,
+					job_date:job_date,
+					job_type:job_type
+					
+				},
+				function(data){
+					$("#timeslot_results").html(data);	
+					$("#load_timeslots").show();			
+			});
+		} else {
+			alert("Fill in the city and the date first");
+		} //END if date
+		
+	});
+	
+	$(".slot_button").live("click", function(){
+		//alert($(this).siblings(".job_time_name").val());
+		$("#slot_confirmations").html("");
+		var job_date = $('#OrderJobDate').val();	
+		var job_time_beg = $(this).siblings(".from").val();
+		var job_time_end = $(this).siblings(".to").val();
+		var job_time_name = $(this).siblings(".job_time_name").val();
+		var city_id = $("#CustomerCity").val();
+		var job_type = $(this).siblings(".job_type").val();
+		
+		var url = G_URL + "pages/reserveTimeslot";
+		
+		$.post(url,
+			{
+				job_date:job_date,				
+				job_time_beg:job_time_beg,
+				job_time_end:job_time_end,
+				job_time_name:job_time_name,
+				city_id:city_id,
+				route_type:job_type
+			},
+			function(data){
+				$("#timeslot_results").html(data);
+		});	
+				
+	});
+	
+	$("#coupon_booking").blur(function(){
+		var url = G_URL + "pages/checkCoupon";
+		$.post(url,
+			{
+				code:$(this).val()
+			},
+			function(data){
+				if(data == "OK") alert("Your coupon is valid");
+				else alert("Your coupon is invalid. Please check our promotion fliers for details.");
+		});
+	});
+	
+});
+</script>
+</head>
+<body>
+<div>
+<h1>Book an appointment with us</h1>
+<form name="editBookingform" id="editBookingform" action="<?=BASE_URL;?>/pages/saveOnlineBooking" method="post">
+	<table class="info">
+		<tr>
+			<td align="right">First Name *:</td>
+            <td>
+            <?php echo $html->input('Customer/first_name', array('style'=>'width: 100px;','class'=>'required')); ?>            
+            </td>
+        </tr>
+        <tr>
+            <td align="right">Last Name *:</td>
+            <td>
+            <?php echo $html->input('Customer/last_name', array('style'=>'width: 100px;','class'=>'required')); ?>            
+            </td>
+        </tr>
+        <tr>
+            <td align="right">Address *:</td>
+            <td>
+            <?php echo $html->input('Customer/address', array('style'=>'width: 100px;','class'=>'required')); ?>            
+            </td>
+        </tr>
+        <tr>
+            <td align="right">City *:</td>
+            <td>
+                <select name="data[Customer][city]"  style="width: 106px;" id="CustomerCity" class="required">
+                <option value="">&nbsp;</option>
+                <?php foreach($allCities as $id => $city) { ?>
+                <option value="<?php echo $id ?>"><?php echo $city ?></option>
+                <?php } ?>                	
+                </select>                            
+			</td>
+        </tr>
+        <tr>
+            <td align="right">Postal Code*:</td>
+            <td>
+            <?php echo $html->input('Customer/postal_code',array('style'=>'width: 100px;','class'=>'required')); ?>            
+            </td>
+        </tr>
+        <tr>
+            <td align="right">Phone *:</td>
+            <td>
+            <?php echo $html->input('Customer/phone',array('style'=>'width: 100px;','class'=>'required number')); ?>
+            </td>
+        </tr>
+        <tr>
+            <td align="right">Mobile Phone:</td>
+            <td>
+            <?php echo $html->input('Customer/cell_phone',array('style'=>'width: 100px;','class'=>'number')); ?>
+            </td>
+        </tr>        
+        <tr>
+            <td align="right">Email *:</td>
+            <td>
+            <?php echo $html->input('Customer/email', array('style'=>'width: 100px;','class'=>'required email')); ?>
+            </td>
+        </tr>        
+	</table>    
+    <table class="info ticket">    	
+        <tr>
+        	<td colspan="2">            	
+            	Please book me for the following service(s):<input type="hidden" name="items" id="items" value="" />
+            	<table>
+                	<?php if($_GET['furnace'] == 1) { ?>
+                    <tr>
+                    	<td><input type="checkbox" id="furnace_booking" name="data[Item][Furnace]" value="1" /></td>
+                        <td><?php echo $items[18]['name'] ?></td>
+                        <td align="right">$<?php echo $items[18]['selling_price'] ?></td>
+                    </tr>
+                    <?php } ?>
+                    <?php if($_GET['airduct'] == 1) { ?>
+                    <tr>
+                    	<td><input type="checkbox" id="airduct_booking" name="data[Item][Airduct]" value="1" /></td>
+                        <td><?php echo $items[8]['name'] ?></td>
+                        <td align="right">$<?php echo $items[8]['selling_price'] ?></td>
+                    </tr>
+                    <?php } ?>
+                    <?php if($_GET['boiler'] == 1) { ?>
+                    <tr>
+                    	<td><input type="checkbox" id="boiler_booking" name="data[Item][Boiler]" value="1" /></td>
+                        <td><?php echo $items[14]['name'] ?></td>
+                        <td align="right">$<?php echo $items[14]['selling_price'] ?></td>
+                    </tr>
+                    <?php } ?>
+                    <tr>
+                    	<td><input type="checkbox" id="other_booking" name="data[Item][Other]" value="1" /></td>
+                        <td>Others (Please indicate in the note)</td>
+                        <td align="right">?</td>
+                    </tr>
+                   <!-- <tr>
+                    	<td colspan=3>Coupon:<input type="text" id="coupon_booking" name="data[Item][Coupon]" value="" /></td>                        
+                    </tr> -->
+                </table>
+            </td>
+        </tr>
+        <tr>
+        	<td align="left">
+            If you have indicated "Others" as a service<br />
+            request or have a specific concern you would like<br />
+            us to look at please leave us a note:<input type="hidden" name="others" id="others" value="" /></td>
+        </tr>  
+        <tr>
+        	<td><?php echo $html->textarea('Order/job_notes_office', array('style' => "width:98%; height: 100px;")); ?></td>
+        </tr>
+    </table>
+    <!--<input type="hidden" name="data[Order][job_time_beg_hour]"  id="OrderJobTimeBegHour" value="" />
+	<input type="hidden" name="data[Order][job_time_end_hour]"  id="OrderJobTimeEndHour" value="" />
+    <input type="hidden" name="data[Order][job_truck]"  id="OrderJobTruck" value="" />-->
+    <div id="item_values"></div>    
+    <table class="info">
+    	<tr>
+        	<td align="right">Date/Time*:</td>
+        	<td><?php echo $html->input('Order/job_date', array('style' => 'width: 75px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;','class'=>'required')); ?><input type="hidden" value="" name="timeslot" id="timeslot" />
+            <!--<input type="button" value="check slots" id="checkdate" />-->
+            <input type="button" value="Check Timeslots" id="load_timeslots" />
+            </td>
+        </tr>
+        <tr>        	
+            <td colspan="2" style="height:150px;text-align:center" id="timeslot_results">
+            <input type="hidden" name="data[Order][job_time_beg_hour]"  id="OrderJobTimeBegHour" value="" />
+			<input type="hidden" name="data[Order][job_time_end_hour]"  id="OrderJobTimeEndHour" value="" />
+    		<input type="hidden" name="data[Order][job_truck]"  id="OrderJobTruck" value="" /></td>            
+        </tr>
+    	 
+        <tr>
+        	<td></td>
+        	<td align="right"><input type="submit" value="Book Appointment" /></td>
+        </tr>     
+    </table>
+    <div class="clear_this"> </div>
+</form>
+</div>
+
+</body>
+</html>

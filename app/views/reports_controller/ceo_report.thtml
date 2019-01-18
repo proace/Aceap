@@ -1,0 +1,183 @@
+<script>
+	function clearFilters(){
+	 f = document.forms.viewform;
+	 f.fromdate.value = '';
+	 f.todate.value = '';
+}
+</script>
+<table width="800">
+<tr>
+<td>
+<form method="GET" name="viewform">
+<table  align="left" border="0" cellspacing="10" cellpadding="0"> 
+	<tr>
+		<td class="sectionTitle" colspan="5">Orders Report</td>
+	</tr>
+	<tr>
+		<td>
+    	From:<br/><input type="text" name="fromdate" style="width:100px" readonly="1" value="<?=$this->params['url']['fromdate']?>">
+      <a href="#" onclick="showCalendar('fromdate','viewform')">set</a>&nbsp;&nbsp;
+    </td>
+    <td>  
+      To:<br/><input type="text" name="todate" style="width:100px" readonly="1" value="<?=$this->params['url']['todate']?>">
+      <a href="#" onclick="showCalendar('todate','viewform')">set</a>
+    </td>
+    <td>&nbsp;</td>
+		<td align="right" valign="bottom">
+			<input type="submit" name="submit2" value="Update" class="buttons">&nbsp;&nbsp;&nbsp;
+			<input type="button" name="bnt2" value="clear" class="buttons" onclick="clearFilters()">
+		</td>
+	</tr>
+</table>
+</td>
+</tr>
+</table> 	
+</form>
+<br/>
+
+By Status:<br/>
+
+
+<table border=0>
+<tr>
+	<td valign="top">
+
+		<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px; width: 245px;">
+		<tr>
+			<th width="150"><b>Status</b></th>
+			<th width="35"><b>Jobs</b></th>
+			<th width="60"><b>Amount</b></th>
+		</tr>
+		<?php 
+			$r = 0;
+			for ($i = 0; $i < count($jbs_jobs); $i++)
+			{
+
+			$class = 'cell'.(++$r%2);
+
+		?>		<tr class="<?= $class ?>">
+					<td><?php echo $jbs_status[$i];?></td>
+					<td align="right"><?=$jbs_jobs[$i]?></td>	
+					<td align="right">$ <?=$jbs_amount[$i]?></td>
+				</tr>	
+		<?php
+			}
+		?>
+		</table>
+	</td>
+	<td valign="top">
+		<img src="<?=$byStatusImg;?>" border=0>
+	</td>
+</tr>
+</table>
+
+<br/><br/>
+
+By Source:<br/>
+<table border=0>
+<tr>
+	<td valign="top">
+
+		<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px; width: 245px;">
+		<tr>
+			<th width="150"><b>Source</b></th>
+			<th width="35"><b>Jobs</b></th>
+			<th width="60"><b>Amount</b></th>
+		</tr>
+		<?php 
+			$r = 0;
+			for ($i = 0; $i < count($jbr_jobs); $i++)
+			{
+
+			$class = 'cell'.(++$r%2);
+
+		?>		<tr class="<?= $class ?>">
+					<td><?php echo $jbr_source[$i];?></td>
+					<td align="right"><?=$jbr_jobs[$i]?></td>	
+					<td align="right">$ <?=$jbr_amount[$i]?></td>
+				</tr>	
+		<?php
+			}
+		?>
+		</table>
+	</td>
+	<td valign="top">
+		<img src="<?=$bySourceImg;?>" border=0>
+	</td>
+</tr>
+</table>
+
+
+<br/><br/>
+
+By Technician:<br/>
+<table border=0>
+<tr>
+	<td valign="top">
+
+		<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px; width: 245px;">
+		<tr>
+			<th width="150"><b>Technician</b></th>
+			<th width="35"><b>Jobs</b></th>
+			<th width="60"><b>Amount</b></th>
+		</tr>
+		<?php 
+			$r = 0;
+			for ($i = 0; $i < count($jbt_jobs); $i++)
+			{
+
+			$class = 'cell'.(++$r%2);
+
+		?>		<tr class="<?= $class ?>">
+					<td><?php echo $jbt_tech[$i];?></td>
+					<td align="right"><?=$jbt_jobs[$i]?></td>	
+					<td align="right">$ <?=$jbt_amount[$i]?></td>
+				</tr>	
+		<?php
+			}
+		?>
+		</table>
+	</td>
+	<td valign="top">
+		<img src="<?=$byTechImg;?>" border=0>
+	</td>
+</tr>
+</table>
+
+<br/><br/>
+
+By Payment Method:<br/>
+<table border=0>
+<tr>
+	<td valign="top">
+
+		<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px; width: 245px;">
+		<tr>
+			<th width="150"><b>Payment Method</b></th>
+			<th width="35"><b>Jobs</b></th>
+			<th width="60"><b>Amount</b></th>
+		</tr>
+		<?php 
+			$r = 0;
+			for ($i = 0; $i < count($jbp_jobs); $i++)
+			{
+
+			$class = 'cell'.(++$r%2);
+
+		?>		<tr class="<?= $class ?>">
+					<td><?php echo $jbp_method[$i];?></td>
+					<td align="right"><?=$jbp_jobs[$i]?></td>	
+					<td align="right">$ <?=$jbp_amount[$i]?></td>
+				</tr>	
+		<?php
+			}
+		?>
+		</table>
+	</td>
+	<td valign="top">
+		<img src="<?=$byMethodImg;?>" border=0>
+	</td>
+</tr>
+</table>
+
+<br><br><br><br>

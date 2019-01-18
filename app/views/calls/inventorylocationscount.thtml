@@ -1,0 +1,118 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1> Inventory Count <small></small> </h1>
+  <ol class="breadcrumb">
+    <li><a href="<?php echo $home_link ?>"><i class="fa fa-home"></i> Home</a></li>
+    <li>Inventory</li>
+    <li class="active">Count</li>
+  </ol>
+</section>
+<script type="text/javascript">
+$(function () {        
+  $("#example1").dataTable();
+});
+</script>
+<!-- Main content -->
+<section class="content">
+  <div class="row">
+  	<div class="col-md-12">
+      <!-- general form elements -->
+      <div class="box box-primary">
+        <div class="box-header">
+          <h3 class="box-title"> </h3>
+        </div><!-- /.box-header -->
+        <!-- form start -->
+          <?php
+		  	$agents = array(
+		  	'231277' => "Agent 1",
+			'44874' => "Agent 2",
+			'231296' => "Agent 3",
+			'231297' => "Agent 4",
+			
+			'44851' => "Ali (ACE)",
+			'226792' => "Roy (ACE)",
+			'231267' => "B Plumber (ACE)",
+			'231254' => "GG (ACE)",
+			'229528' => "Brizzi (ACE)"
+			);
+		  ?>
+                   
+            <div class="box-body">
+              <form method="post"> 
+              <div class="row">                               
+                 <div class="col-xs-3">
+                      <div class="form-group">
+                      <?php 
+					  $types = array(
+						"1" => "Items",
+						"2" => "Items, Locations",
+						"3" => "Items, Suppliers",
+						"4" => "Items, Locations, Suppliers",						                    
+					  );
+					  
+					  ?>
+                      <label for="list_name" style="visibility:hidden">Type</label>
+                      <select autocomplete="off" class="form-control" name="search_type">
+                      	  <?php foreach ($types as $id => $type) { ?>
+                          <?php if($search_type == $id) $sel = "selected='selected'"; else $sel = ""; ?>
+                          <option value="<?php echo $id ?>" <?php echo $sel; ?>><?php echo $type ?></option>                         
+                          <?php } ?>
+                      </select>                    
+                      </div>
+              	 </div>
+                 <div class="col-xs-2">
+                  <div class="form-group">
+                      <label style="visibility:hidden">Submit</label>
+                      <div class="input-group">
+                          <button type="submit" class="btn btn-primary" name="btn-filter" value="1">Submit</button>
+                      </div>                    
+                  </div>
+                 </div>
+              </div>
+              </form>
+              <table id="example1" class="table table-bordered table-striped">
+                <thead>
+                  <tr>   
+                  	  <th style="width:200px;">SKU</th>      
+                      <th>Description</th>  
+                      <th>Cost</th>
+                      <th>Quantity</th>    
+                      <th>Location</th>  
+                      <th>Supplier</th>                                                 
+                  </tr>
+                </thead>
+                <tbody>
+                  
+                  <?php foreach($items as $item)  { ?> 
+                  <tr>
+                  	<td><?php echo $item['item_sku'] ?></td>                    
+                    <td><?php echo $item['item_description'] ?></td>
+                    <td><?php echo $item['item_cost'] ?></td>
+                    <td><?php echo $item['item_quantity'] ?></td>
+                    <td><?php echo $item['location'] ?></td>
+                    <td><?php echo $item['supplier'] ?></td>
+                  </tr>
+                  <?php } ?>                      
+                <tfoot>
+                  <tr>   
+                  	  <th style="width:200px;">SKU</th>      
+                      <th>Description</th>  
+                      <th>Quantity</th>    
+                      <th>Location</th>  
+                      <th>Supplier</th>                                                 
+                  </tr>
+                </tfoot>
+              </table>
+                                                    
+            </div>
+           
+            <!-- /.box-body -->
+            <div class="box-footer">
+                <!--<button type="submit" class="btn btn-primary" name="callback_access" value="1">Submit</button>-->
+          	</div>
+      	
+      </div><!-- /.box -->      
+    </div><!-- end col -->
+  </div>
+</section>
+<!-- /.content --> 

@@ -1,0 +1,562 @@
+body, html {
+	padding:0;
+	margin:0;
+	height:100%;
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:85%;
+}
+
+#nav {
+	padding:0;
+	margin:0;
+	/*float:left;*/
+	position:fixed;
+	background-color:#333333;
+	height:100%;
+}
+
+#nav .buttons {
+	width:100px;
+	height:100px;
+	display:block;
+	color:#999999;
+	font-weight:bold;
+	position:relative;	
+	border-bottom:1px ridge #777;	
+}
+
+#nav .active {
+	width:100px;
+	height:100px;
+	display:block;
+	color:#999999;	
+	font-weight:bold;
+	position:relative;	
+	border-bottom:1px ridge #777;
+	background-color:black;
+}
+
+#nav a div {
+	position:absolute;
+	width:100%;
+	text-align:center;
+	margin-top:78px;
+}
+
+#invoice {
+	margin-left:100px;
+}
+
+#home_link {
+	background:url(../img/iconset_coquette/manilla_user_home64x64.png) no-repeat center;
+}
+
+#jobs_link {
+	background:url(../img/iconset_coquette/folder_full64x64.png) no-repeat center;
+}
+
+#overview_link {
+	background:url(../img/iconset_coquette/full_page64x64.png) no-repeat center;
+}
+
+#questions_link {
+	background:url(../img/iconset_coquette/info64x64.png) no-repeat center;
+}
+
+#items_link {
+	background:url(../img/iconset_coquette/add_page64x64.png) no-repeat center;
+}
+
+#new_link {
+	background:url(../img/iconset_coquette/add_page64x64.png) no-repeat center;
+}
+
+#messages_link {
+	background:url(../img/iconset_coquette/comment64x64.png) no-repeat center;
+}
+
+#preview_link {
+	background:url(../img/iconset_coquette/search_page64x64.png) no-repeat center;
+}
+
+#calc_link {
+	background:url(../img/iconset_coquette/chart64x64.png) no-repeat center;
+}
+
+#download_link {
+	background:url(../img/iconset_coquette/chart64x64.png) no-repeat center;
+}
+
+.error_icon {
+	background:url(../img/iconset_coquette/block.png) no-repeat center;
+	width:24px;
+}
+
+#job_list {
+	padding:0;
+	margin:0;
+	position:absolute;	
+	list-style:none;
+}
+
+#job_list li {
+	float:left;	
+}
+
+#job_list a:link, #job_list a:visited, #job_list a:hover, #job_list a:active {
+	color:white;	
+}
+
+.job {
+	width:80px;
+	height:100px;
+	display:block;
+	color:#ffffff;
+	/*background:#999 url(../img/iconset_coquette/full_page64x64.png) no-repeat center;*/
+	background-color:white;
+	font-weight:bold;
+	position:relative;	
+	-moz-border-radius:20px;
+	border-radius:20px;
+	margin:2px;
+	border:1px solid #aaa;
+}
+
+.job div {
+	position:absolute;
+	width:100%;
+	text-align:center;
+	margin-top:78px;
+	color:#333;
+}
+
+.job span {
+	position:absolute;
+	margin-top:5px;
+	display:block;
+	color:#333;
+	width:80px;
+	text-align:center;
+}
+
+.status5 { /*status done*/
+	background:#666666 url(../img/iconset_coquette/accept_page64x64.png) no-repeat center;
+}
+
+.status3 { /*status cancelled*/
+	background:#666666 url(../img/iconset_coquette/delete_page64x64.png) no-repeat center;
+}
+
+.header {
+	background-color:#cccccc;
+	padding:7px;
+	color:#333333;
+	border-bottom:3px solid #dddddd;
+}
+
+.header h1, .header h2 {
+	padding:0;
+	margin:0;
+}
+
+.questions_table {
+	margin-left:10px;
+	width:95%;	
+}
+
+.questions_table .question_text {
+	font-weight:bold;
+	width:130px;	
+}
+
+.questions_table .answer_text {
+	border-bottom:1px solid #ccc;
+}
+
+.time_log {
+	margin-top:20px;
+	margin-bottom:20px;
+	text-align:center;
+	font-size:160%;	
+}
+
+.time_log select {
+	font-size:100%;	
+}
+
+.next_div {
+	margin:50px 0;
+	text-align:center;	
+}
+
+.next_div input[type=submit], .next_div input[type=button] {
+	min-width:100px;
+	height:50px;
+	
+}
+
+.selection {
+	width:170px;	
+}
+
+#page_store_list {
+	overflow:visible;	
+}
+
+.item {
+	height:50px;	
+}
+
+#items_container {
+	position:absolute;
+	height:100%;
+	width:84%;
+	background-color:#FFF;	
+}
+
+#loading_text {
+	padding-left:200px;
+	border-top:1px solid #999;
+	border-bottom:1px solid #999;
+	margin-top:250px;
+	font-size:160%;
+}
+
+#items_div h3 {
+	padding-left:10px;	
+}
+
+#items_div .item_table {
+	border-collapse:collapse;
+	border:1px solid #CCC;
+	width:100%;	
+}
+
+#items_div .office {
+	background-color:#aefca4;
+}
+
+#items_div .tech {
+	background-color:#fab9b9;	 
+}
+
+#items_div .technew {
+	background-color:#6CF;	 
+}
+
+#items_div .item_table td {
+	border:1px solid #CCC;	
+}
+
+#items_div .item_table .item_name {
+	width:400px;
+}
+
+#items_div .item_table input[type=text] {
+	width:60px;
+	text-align:right;
+}
+
+#items_div .item_table select {
+	width:70px;
+}
+
+#items_div .order_div {
+	padding:10px;
+	border:1px solid #ccc;
+	margin:20px 10px;
+	-moz-border-radius:20px;
+	border-radius:20px;
+	background-color:#ddd;
+}
+
+#items_div .item_tabs {
+	float:left;
+	background-color:#CCC;
+	padding:10px 10px 5px 5px;	
+	-moz-border-radius-topright:10px;
+	-webkit-border-top-right-radius: 10px;
+	border-top-right-radius-:10px;
+	-moz-border-radius-topleft:10px;
+	-webkit-border-top-left-radius: 10px;
+	border-top-left-radius-:10px;	
+}
+
+#items_div .item_tabs input[type=button] {
+	height:40px;	
+}
+
+#items_div .delete_button {
+	height:30px;
+	width:30px;
+	margin:5px;	
+}
+
+.left {
+	text-align:left;	
+}
+
+.right {
+	text-align:right;	
+}
+
+.center {
+	text-align:center;	
+}
+
+#notes_table {
+	border-collapse:collapse;
+	width:300px;
+	margin:10px;
+}
+
+#questions_table {
+	border-collapse:collapse;
+	margin:10px;
+}
+
+#previous_notes {
+	border:1px solid #cccccc;
+}
+
+#previous_notes td {
+	padding:3px;
+}
+
+#previous_notes .odd_row {
+	background-color:#cccccc;	
+}
+
+.urgency_td {
+	width:20px;	
+}
+
+.message_td {
+	width:300px;
+}
+
+.float_right {
+	float:right;	
+}
+
+
+
+#timeslot_div .dates {
+	font-family:monospace;
+	font-size:16px;
+	text-align:center;
+}
+
+#timeslot_div .weeks, .months {
+	font-family:monospace;
+	text-align:center;	
+}
+
+#timeslot_div .slot {
+	padding:0;
+	margin:0;
+	width:38px;
+	height:30px;
+}
+
+#timeslot_div .slot a {
+	text-align:center;
+	font-weight:bold;
+	display:block;
+	text-decoration:none;		
+	border:1px solid transparent;
+	cursor:pointer;
+	width:38px;
+	height:30px;
+	font-size:16px;
+}
+
+#timeslot_div .slot a:link, #timeslot_div .slot a:visited {
+	
+}
+
+#timeslot_div .slot a:hover, #timeslot_div .slot a:active {
+	border:1px groove #336600;	
+	color:black;
+	background-color:#C93;	
+}
+
+#timeslot_div .slot_picker {
+	border:1px solid #cccccc;
+	border-collapse:collapse;	
+}
+
+#timeslot_div .slot_picker td {
+	border-bottom:1px solid #cccccc;
+}
+
+#timeslot_div .slot_name {
+	text-align:right;
+	color:black;	
+}
+
+#timeslot_div .slot_picker th {
+	border-right:1px solid #cccccc;	
+	border-left:1px solid #cccccc;
+	background-color:#6ccff;	
+}
+
+#timeslot_div .week1 {
+	background-color:#ffffff;	
+}
+
+#timeslot_div .week2 {
+	background-color:#eeeeee;	
+}
+
+#timeslot_div .week3 {
+	background-color:#dddddd;	
+}
+
+#timeslot_div .week4 {
+	background-color:#cccccc;	
+}
+
+#timeslot_div .week5 {
+	background-color:#bbbbbb;	
+}
+
+#timeslot_div .week6 {
+	background-color:#aaaaaa;	
+}
+
+#timeslot_div .week0 {
+	background-color:#999999;	
+}
+
+#timeslot_div .name0 a {
+	color:#00F;	
+}
+
+#timeslot_div .name1 a {
+	color:#C00;	
+}
+
+#slot_confirmations {
+	background-color:#F90;
+	text-align:center;	
+}
+
+#slot_confirmations input[type=button] {
+	height:40px;
+	width:100px;
+}
+
+#messages_div {
+	float:left;	
+	z-index:1000;
+	position:absolute;
+	margin-left:103px;
+	margin-top:100px;
+	padding:3px 10px;
+	background-color:#333;
+	border-radius:10px;
+}
+
+#messages_prev { 
+	width:300px;
+	min-height:230px;
+}
+
+#messages_reply { 
+	width:223px;
+	height:60px;
+	float:left;
+}
+
+#messages_send { 
+	width:70px;
+	height:70px;
+}
+
+#PaymentPaymentMethodId {
+	width:155px;	
+}
+
+#payment_details table {
+	border:1px solid red;
+	float:right;
+}
+
+.number_display {
+	text-align:right;	
+	border:1px solid #999;
+	width:100px;
+}
+
+#old_scale {
+	background-color:#CC0;	
+	position:absolute;
+	bottom:35px;
+	margin-left:30px;
+	width:80px;
+	text-align:center;
+	font-weight:bold;
+}
+
+#old_label {
+	position:absolute;
+	bottom:0;
+	margin-left:30px;
+	width:80px;	
+	text-align:center;
+	font-weight:bold;
+}
+
+#new1_scale {
+	background-color:#6F0;	
+	position:absolute;
+	bottom:35px;
+	margin-left:130px;
+	width:80px;
+	text-align:center;
+	font-weight:bold;
+}
+
+#new1_label {
+	position:absolute;
+	bottom:0;
+	margin-left:130px;
+	width:80px;	
+	text-align:center;
+	font-weight:bold;
+}
+
+#new2_scale {
+	background-color:#6C0;	
+	position:absolute;
+	bottom:35px;
+	margin-left:230px;
+	width:80px;
+	text-align:center;
+	font-weight:bold;
+}
+
+#new2_label {
+	position:absolute;
+	bottom:0;
+	margin-left:230px;
+	width:80px;	
+	text-align:center;
+	font-weight:bold;
+}
+
+#customer_list {
+	font-size:16px;
+}
+
+#customer_list a {
+	text-decoration:none;
+	border-radius:3px;
+	width:100%;
+	display:block;
+	background-color:#F90;
+	padding:3px;
+	margin:3px;
+	text-align:center;
+}

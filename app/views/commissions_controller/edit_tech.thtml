@@ -1,0 +1,252 @@
+<script language="JavaScript">
+	var nopen = <?=($_GET['view']==1)?1:(($_GET['view']==2)?3:2)?>;
+	function openTab(n){
+		$('#tab'+nopen).hide();
+		$('#trigger'+nopen).removeClass('tabOver').addClass('tabOff');
+		$('#tab'+n).show();
+		$('#trigger'+n).removeClass('tabOff').addClass('tabOver');
+		nopen = n;
+	}	
+	function ChangeType(element){
+		if (element.value==2){
+			$(".Commission").hide();
+			$(".FixedRates").show();
+		}else{
+			$(".FixedRates").hide();
+			$(".Commission").show();
+		}
+	}
+	$(document).ready(function(){
+		$.get("<?=BASE_URL;?>/commissions/getCalendar",
+			{cur_tech:"<?=$user_id?>",cur_year:<?=date('Y');?>,cur_month:<?=date('m');?>},
+			function(data){$("#tech_schedule").html(data);});
+	});
+</script>
+
+<style type="text/css">
+	.inactive{
+		color: #c8c8c8 !important;
+		cursor:default !important;
+	}
+	.active{
+		font-weight:bold;
+	}
+	.notready{
+		color: #f80e01 !important;
+	}
+	td.inactive.notready{
+		color: #ffaaa6 !important;
+	}
+	.results th{
+		color:black;
+		border-left:1px solid #9f9f9f;
+		border-bottom:1px solid #9f9f9f;
+	}
+	.results, .results td{
+		border-style: solid;
+		border-width:1px;
+	}
+	.calendar {
+    width:50px;
+		height:50px;
+		text-align:right;
+		vertical-align:bottom;
+		cursor:pointer;
+	}
+	.calendar_off {
+		text-align:center;
+		vertical-align:middle;
+	}
+#return {
+	display:block;
+	color:#ff6633;
+	background-color:#333333;
+	padding:3px;
+	position:relative;
+	left:-10px;
+	top:-10px;
+	font-size:140%;
+}
+</style>
+<?php if($ismobile == 1) { ?>
+	<a href="<?php echo BASE_URL ?>/pages/mobileMenu" id="return">Back to Main</a>
+<?php } ?>
+
+<?php echo $html->formTag('/commissions/editTech/'.$user_id.'?rurl='.$this->params['url']['rurl']); ?>
+<?php echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
+
+<input type="hidden" value="<?=$user_id?>" name="userid" id="userid"/>
+<input type="hidden" value="0" name="reloadDefaultSettings" id="reloadDefaultSettings"/>
+
+<table id="MainTable">
+<?php if ($access_method==''): ?>
+	<tr>
+		<td>
+			<div class="tabtrigger <? if ($_GET['view']==1) echo 'tabOver'; else echo 'tabOff'?>" id="trigger1" onclick="openTab(1);">Tech`s Info</div>
+			<div class="tabtrigger <? if (($_GET['view']!=1)&&($_GET['view']!=2)) echo 'tabOver'; else echo 'tabOff'?>" id="trigger2" onclick="openTab(2);">Commission</div>
+			<div class="tabtrigger <? if ($_GET['view']==2) echo 'tabOver'; else echo 'tabOff'?>" id="trigger3" onclick="openTab(3);">Schedule</div>
+		</td>
+	</tr>
+<?php endif; ?>
+<tr style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
+  <td>
+    <table>
+		<tr>
+			<td>
+				<?php if ($user_id == -1): ?>
+				<p><span class="sectionTitle">Default settings</span></p>
+				<?php else: ?>
+				<p><span class="sectionTitle"><?=$user_details['User']['first_name'].' '.$user_details['User']['last_name']?></span>
+				<b style="font-size:12pt">, phone: <?=$user_details['User']['phone']?></b></p>
+				<?php endif; ?>
+			</td>
+		</tr>
+		<?php if($user_id >= 0): ?>
+		<tr>
+			<td align="left">
+				<b style="font-size:10pt;">Default commission type:</b>
+				<?php echo $html->selectTag('User/commission_type', $comm_roles, $user_details['User']['commission_type']); ?>
+			</td>
+		</tr>
+		<?php endif; ?>
+	</table>
+    <div id="tab1" class="frame-wrap" <? if ($_GET['view']!=1) echo 'style="display:none"';?>>
+        <div class="frame-header-left"></div>
+        <div class="frame-header-title">Tech's information</div>
+        <div class="frame-header-right"></div>
+        <div class="frame-body" style="clear: both;">
+            <table>
+                <tr>
+                    <td align="right">First Name:</td>
+                    <td><input type="text" name='data[User][first_name]' value="<?=$user_details['User']['first_name']?>" style="width: 140px;" /></td>
+                    <td align="right">Phone:</td>
+                    <td><input type="text" name='data[User][phone]' value="<?=$user_details['User']['phone']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Last Name:</td>
+                    <td><input type="text" name='data[User][last_name]' value="<?=$user_details['User']['last_name']?>" style="width: 140px;" /></td>
+                    <td align="right">Cell Phone:</td>
+                    <td><input type="text" name='data[User][cell_phone]' value="<?=$user_details['User']['cell_phone']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Address:</td>
+                    <td><input type="text" name='data[User][address]' value="<?=$user_details['User']['address']?>" style="width: 140px;" /></td>
+                    <td align="right">E-Mail:</td>
+                    <td><input type="text" name='data[User][email]' value="<?=$user_details['User']['email']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right">City:</td>
+                    <td><input type="text" name='data[User][city]' value="<?=$user_details['User']['city']?>" style="width: 140px;" /></td>
+                    <td align="right">Login:</td>
+                    <td><input type="text" name='data[User][username]' value="<?=$user_details['User']['username']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Postal Code:</td>
+                    <td><input type="text" name='data[User][postal_code]' value="<?=$user_details['User']['postal_code']?>" style="width: 140px;" /></td>
+					<?php //Ali, Sanaz, Maria Flor, Anthony
+						if (!$method): 
+					?>
+					<td align="right">Password:</td>
+                    <td><input type="text" name='data[User][password]' value="<?=$user_details['User']['password']?>" style="width: 140px;" /></td>
+					<?php endif; ?>
+				</tr>
+				<?php //Ali, Sanaz, Maria Flor, Anthony
+					if (!$method): 
+				?>
+				<tr>
+					<td><? echo $html->submit("Save",array("class"=>"buttons")); ?></td>
+				</tr>
+				<?php endif; ?>
+			</table>
+        </div>
+    </div>
+    <div id="tab2" class="frame-wrap"  <? if (($_GET['view']==1)||($_GET['view']==2)) echo 'style="display:none"';?>>
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title">Commission</div>
+		<div class="frame-header-right"></div>
+		<div class="frame-body" style="clear: both;">
+		<table width="1150px">
+			<tr>
+				<td colspan=4>
+					<table class="results" cellspacing=0>
+						<tr>
+							<th rowspan=2>&nbsp;</th>
+							<th rowspan=2 class="Commission" width="70" style="background-color:#80ff80;">Booking comm</th>
+							<th rowspan=2 class="Commission" width="70" style="background-color:#c0c0c0;">Time comm</th>
+							<th rowspan=2 class="FixedRates" style="background-color:#80ff80;">Fixed rates</th>
+							<th rowspan=2 style="background-color:#53ffff;">Upsales<br/>commission</th>
+							<th colspan=2 style="background-color:#53ffff;">Source commission</th>
+							<th rowspan=2 class="Commission" style="background-color:#c0c0c0;">Per Job</th>
+							<th rowspan=2 class="Commission" style="background-color:#c0c0c0;">Driving</th>
+                            <th rowspan=2 class="Commission" style="background-color:#c0c0c0;">Redo</th>
+                            <th rowspan=2 class="Commission" style="background-color:#c0c0c0;">Redo Penalty</th>
+						</tr>
+						<tr>
+							<th width="70" style="background-color:#53ffff;">jobs</th>
+							<th style="background-color:#53ffff;">appliances</th>
+						</tr>
+						<?php
+						$var = 'alone'; $txt= 'Alone';
+						for ($x=0;$x<=1;$x++) {
+						?>
+						<tr class="cell<?=$x?>">
+							<td>&nbsp;<b><?=$txt?></b>&nbsp;</td>
+							<td class="Commission"><input type="text" <?=$access_method?> name="data[Rates][1][<?=$x?>][0]" style="width:50px;" value="<?=$comm_records['Booking'][$var]?>"/>%</td>
+							<td class="Commission">$<input type="text" <?=$access_method?> name="data[Rates][5][<?=$x?>][0]" style="width:50px;" value="<?=$comm_records['Time'][$var]?>"/></td>
+							<td class="FixedRates">
+								<table class="results" style="border-style:none" cellspacing=0>
+									<?php foreach ($job_types as $job_type_id => $job_type): ?>
+									<tr>
+										<td style="border-style:none;border-bottom-style:solid;"><?=$job_type?></td>
+										<td style="border-style:none;border-bottom-style:solid;">
+											$<input type="text" <?=$access_method?> name="data[Rates][6][<?=$x?>][<?=$job_type_id?>]" style="width:50px" value="<?=$comm_records['Fixed'][$var][$job_type_id]?>"/>
+										</td>
+									</tr>
+									<?php endforeach; ?>
+								</table>
+							</td>
+							<td><input type="text" <?=$access_method?> name="data[Rates][2][<?=$x?>][0]" style="width:50px" value="<?=$comm_records['Sales'][$var]?>"/>%</td>
+							<td><input type="text" <?=$access_method?> name="data[Rates][7][<?=$x?>][0]" style="width:50px" value="<?=$comm_records['Source'][$var]?>"/>%</td>
+							<td>
+								<table style="border-style:none" cellspacing=0>
+									<?php foreach ($job_types as $job_type_id => $job_type): ?>
+									<tr>
+										<td style="border-style:none;border-bottom-style:solid;"><?=$job_type?></td>
+										<td style="border-style:none;border-bottom-style:solid;">
+											<input type="text" <?=$access_method?> name="data[Rates][3][<?=$x?>][<?=$job_type_id?>]" style="width:50px" value="<?=$comm_records['Appliance'][$var][$job_type_id]?>"/>%
+										</td>
+									</tr>
+									<?php endforeach; ?>
+								</table>
+							</td>
+							<td class="Commission">$<input type="text" <?=$access_method?> name="data[Rates][8][<?=$x?>][0]" style="width:50px;" value="<?=$comm_records['PerJob'][$var]?>"/></td>
+							<td class="Commission">$<input type="text" <?=$access_method?> name="data[Rates][9][<?=$x?>][0]" style="width:50px;" value="<?=$comm_records['Driving'][$var]?>"/></td>
+                            <td class="Commission">$<input type="text" <?=$access_method?> name="data[Rates][4][<?=$x?>][0]" style="width:50px;" value="<?=$comm_records['Redo'][$var]?>"/></td>
+                            <td class="Commission">$<input type="text" <?=$access_method?> name="data[Rates][10][<?=$x?>][0]" style="width:50px;" value="<?=$comm_records['RedoPenalty'][$var]?>"/></td>
+						</tr>
+						<?php
+							$var = 'w_tech'; $txt= 'With Tech';
+						}
+						?>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td>
+					<?php if (!$access_method) echo $html->submit("Save",array("class"=>"buttons"));?>
+					</td>
+				</tr>
+			</table>
+		</div>
+    </div>
+    <div id="tab3" <? if ($_GET['view']!=2) echo 'style="display:none"';?> class="frame-wrap">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title">Schedule</div>
+		<div class="frame-header-right"></div>
+		<div id="tech_schedule" class="frame-body" style="clear: both;"></div><br/>
+		<? if ($_GET['view']==2)
+		echo "<div><input class='buttons' type='button' value='Save&Exit' onclick=\"document.location.href='".BASE_URL."/orders/scheduleView?ffromdate=".$_GET['date']."'\"></div>";
+		?>
+	</div>
+</table>
+</form>

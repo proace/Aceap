@@ -1,0 +1,186 @@
+<link rel="stylesheet" href="<?=ROOT_URL;?>/app/webroot/css/jquery.jgrowl.css" type="text/css"/>
+<style type="text/css">
+.menuOver{
+	background:#EBE9ED;
+	height:16px;
+	margin:0px;
+	background:'url(http://acesys.ace1.ca/app/webroot/img/red-grad.gif) repeat-x 0px -1px';
+}
+.tabOff{
+	height:14px;
+	margin:2px 0px 0px 0px;
+	background:'url(http://acesys.ace1.ca/app/webroot/img/red-grad.gif) repeat-x 0px -3px';
+}
+
+#chatframe {
+	width:0px;
+	height:0px;
+	border:none;
+}
+
+</style>
+
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.simplemodal.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.ui.all.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.jgrowl.js"></script>
+<script language="JavaScript">
+var nopen = 1;
+
+function openTab(n)
+{
+ $(".tabtrigger_sm").removeClass("menuOver").addClass("tabOff");
+ $("#trigger"+n).removeClass("tabOff").addClass("menuOver");
+ $(".tab_sm").hide();
+ $("#tabA"+n).show();
+}
+
+function opencb(non_valid)
+{
+	/*var test = parent.frames['frame_search'].document.getElementById('hidden_flag_hotlist').value = "tatt";*/
+
+	if(non_valid == 'non_valid'){
+		parent.frames['frame_search'].document.getElementById('hidden_flag_hotlist').value = "0";
+		parent.frames['frame_search'].document.getElementById('callback_option_id').selected = true;
+		parent.frames['frame_search'].callbackSearchforzero();
+		return false;
+	}
+	else{
+		parent.frames['frame_search'].document.getElementById('hidden_flag_hotlist').value = "1";
+		parent.frames['frame_search'].document.getElementById('callback_option_id').selected = true;
+		parent.frames['frame_search'].callbackSearch();
+		return false;
+	}
+}
+var ShownMessage = 0;
+function CheckForMessages()
+{
+ //This methods is called for checking if there are pending messages for current user
+	$.get("<?=BASE_URL;?>/messages/CheckForMessages",
+		function(data){
+			if (data!=''){
+		  val = jQuery.parseJSON(data);
+			var method = '<? if ($common->getLoggedUserRoleID() == "1") echo 'techBooking'; else echo 'editBooking';?>';
+			if (ShownMessage!=val['id']){
+			 ShownMessage=val['id'];
+			 if (val['file_link']!=null) 
+				$.jGrowl("<a target='main_view' href='<?=BASE_URL?>/orders/"+method+"?order_id="+val['file_link']+"'>Open file</a><br/>"+val['txt'],
+					{header: "From: "+val['from']+"&nbsp;<a href='#' onclick='respond("+val['from_user']+","+val['file_link']+")'>(Reply)</a>&nbsp;<a href='#' onclick='forward(\""+val['txt']+"\","+val['file_link']+")'>(Forward)</a>",
+					 close:function(){$.post("<?=BASE_URL;?>/messages/ReadMessage?message_id="+val['id']);},sticky:true,glue:'before'}
+				 );
+			 else
+				if (val['customer_link']!=null) 
+				 $.jGrowl("<a target='main_view' href='<?=BASE_URL?>/orders/"+method+"?customer_id="+val['customer_link']+"'>Open file</a><br/>"+val['txt'],
+					{header: "From: "+val['from']+"&nbsp;<a href='#' onclick='respond("+val['from_user']+")'>(Reply)</a>&nbsp;<a href='#' onclick='forward(\""+val['txt']+"\")'>(Forward)</a>",
+					 close:function(){$.post("<?=BASE_URL;?>/messages/ReadMessage?message_id="+val['id']);},sticky:true,glue:'before'}
+					);
+				else
+				 $.jGrowl(
+					val['txt'],
+					{header: "From: "+val['from']+"&nbsp;<a href='#' onclick='respond("+val['from_user']+")'>(Reply)</a>&nbsp;<a href='#' onclick='forward(\""+val['txt']+"\")'>(Forward)</a>",
+					 close:function(){$.post("<?=BASE_URL;?>/messages/ReadMessage?message_id="+val['id']);},sticky:true,glue:'before'}
+				 );
+			 }
+			}
+		});
+}
+function respond(to_user_id, order_id)
+{
+  var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id="+order_id+"&to_user_id="+to_user_id,'', 
+  "width=450, height=350, left=300, top=200");
+}
+function forward(text, order_id)
+{
+  var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id="+order_id+"&text="+text,'', 
+  "width=450, height=350, left=300, top=200");
+}
+function showMessages()
+{
+  var answer = window.open("<?=BASE_URL?>/messages/ShowMessages",'', 
+  "width=600, height=350,left=300, top=200");
+}
+function createMessage()
+{
+  var answer = window.open("<?=BASE_URL?>/messages/EditMessage",'', 
+  "width=450, height=350, left=300, top=200");
+}
+function openMap()
+{
+  window.open("<?=ROOT_URL?>/training/Maps/map.html",'', 
+  "width=800, height=500, left=300, top=200");
+}
+<?php
+if(!isset($_GET["rel"])){
+	//echo "setInterval(CheckForMessages, 300000);"; //1 minute = 60000
+         // echo "setInterval(CheckForMessages, 3000);"; //1 minute = 60000
+}
+?>
+parent.window.tabMode = 'bookings';
+</script>
+
+<div class="toolbar">
+<?php
+if( $_SESSION['user']['id'] > 0 ) {
+	$linkPrefix = "";
+	
+	$aMenu = $common->getMenuItems();
+	$tabs = $aMenu['tabs'];
+	$menu = $aMenu['content'];
+	$on_off = "menuOver";
+	$idx = 1;
+	echo "<div class='tabulator_sm'>";
+	foreach ($tabs as $tab)
+	{
+                if($idx==9){continue;}
+		echo "<div class='tabtrigger_sm $on_off' id='trigger$idx' onclick='openTab($idx);'>$tab</div>";
+		$on_off = "menuOff";
+		$idx++;
+	}
+	$u = BASE_URL;
+	echo "<div style='float:right;padding-right:10px;'>User: <a href='$u/users/editself' target='main_view'><b>{$_SESSION['user']['name']}</b></a>&nbsp;&nbsp;<a href='$u/login/logout' target='_top'>Logout</a></div>";
+	echo "</div>";
+	$idx = 1;
+	$on_off = "";
+	foreach ($menu as $tab)
+	{ 
+		echo "<div id='tabA$idx' class='tab_sm' style='$on_off'>";
+		foreach ($tab as $tbi)
+		{ 
+			if ($tbi['name'] == 'Chat') {
+			$userId = $common->getLoggedUserID();
+			 $db =& ConnectionManager::getDataSource('default');
+				 $query = "select username from ace_rp_users where id=".$userId."";
+				 $result = $db->_execute($query);
+				 if($row = mysql_fetch_array($result)) { 
+					$userName = $row[0];
+				 }
+				echo "<div class='icon'>";
+				$img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+				// $url = $linkPrefix.$tbi['url'];
+				$url = 'https://support.acecare.ca/lhc_web/doc/autologin/autologin.php?username='.$userName;
+				$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
+				$onclick = "";
+				if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
+				echo "<a href='$url' target='_blank' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']."</a>";
+				echo "</div>";
+				
+		} else {
+				echo "<div class='icon'>";
+				$img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+				$url = $linkPrefix.$tbi['url'];
+				$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
+				$onclick = "";
+				if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
+				echo "<a href='$url' target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']."</a>";
+				echo "</div>";
+			}
+			
+		}
+		echo "</div>";
+		$on_off = "display: none;";
+		$idx++;
+	}
+}
+?>
+</div>
+<iframe id="chatframe" src="http://aceno1.ca/chat/notify_admin.php?web_key=<?php echo $_SESSION['user']['web_key'] ?>"></iframe>

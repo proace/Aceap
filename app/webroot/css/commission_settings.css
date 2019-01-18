@@ -1,0 +1,233 @@
+html {
+	margin:0;
+	padding:0;
+}
+body {
+	
+	padding:10px;
+	font-family:Arial, Helvetica, sans-serif;	
+	font-size:70%;
+}
+
+.generic {
+	background-color:#cccccc;	
+}
+
+.tech {
+	background-color:#eeeeee;
+	min-width:200px;
+	border:1px solid #cccccc;
+	padding:2px;
+	float:left;
+	clear:both;
+	margin-bottom:15px;
+}
+
+.source {
+	background-color:#daeef3;
+	min-width:200px;
+	border:1px solid #cccccc;
+	padding:2px;
+	float:left;
+	clear:both;
+	margin-bottom:15px;
+}
+
+.from {
+	padding:4px;
+	margin-bottom:3px;	
+}
+
+.upsales {
+	background-color:#ffdddd;
+	border:1px solid #cccccc;	
+}
+
+.office {
+	background-color:#ddffdd;
+	border:1px solid #cccccc;	
+}
+
+h2, h3, h4 {
+	margin:0;	
+	clear:both;
+	padding:2px;
+}
+
+input[type=text] {
+	text-align:right;
+	width:45px;	
+}
+
+table
+{
+    border-collapse: collapse; /* 'cellspacing' equivalent */
+	border-top:none;
+	border:1px solid #cccccc;
+	background-color:#555555;
+	width:100%;
+}
+
+table td, table th
+{
+    padding: 3px;
+}
+
+th {
+	color:#ffffff;
+}
+
+tbody {
+	min-height:0px;
+	width:100%;
+}
+
+.right {
+	text-align:right;	
+}
+
+.label_header {
+	min-width:250px;	
+}
+
+.delete {
+	font-weight:bold;	
+}
+
+.nav {
+	margin:0;
+	padding:0;
+	border:1px solid #cccccc;
+	border-bottom:none;
+	list-style:none;
+	background-color:#555555;	
+}
+
+.nav li {
+	float:left;
+}
+
+.nav li a {
+	padding:4px;
+	display:block;
+	text-decoration:none;
+	color:#999999;
+	cursor:pointer;
+}
+
+.nav li a:link, .nav li a:visited {
+	color:#777777;
+}
+
+.nav li a:hover, .nav li a:active {
+	color:white;
+}
+
+.delete_link {
+	float:right !important;	
+}
+
+.clear_this {
+	clear:both;	
+}
+
+.item_box {
+	max-height:200px;
+	overflow:auto;
+}
+
+.item_box a {
+	padding:2px;
+	margin:1px;
+	border-left:10px solid #aaaaaa;
+	background-color:#777777;
+	display:block;
+	cursor:pointer;
+}
+
+.item_box a:hover, .item_box a:active {
+	color:#aaaaaa;
+	border-left:10px solid #555555;
+}
+
+.item_box .model {
+	background-color:#cccccc;
+	margin-right:5px;
+	padding:0 3px;
+}
+
+.job {
+	color:#ffffff;	
+	background-color:#888888;
+}
+
+.job_type {
+	color:#ffffff;	
+	background-color:#aaaaaa;
+}
+
+.item_category {
+	color:#555555;	
+	background-color:#cccccc;
+}
+
+.item {
+	color:#555555;	
+	background-color:#eeeeee;
+}
+
+.side_nav {
+	float:left;
+	border:1px solid #aaaaaa;
+	background-color:#cccccc;
+	min-width:130px;
+	margin-right:10px;
+	padding:0;
+}
+
+.side_nav a {
+	margin:1px 3px;
+	border:1px solid #eeeeee;
+	height:20px;
+	padding-left:5px;
+	display:block;
+	cursor:pointer;
+}
+
+.side_nav a:hover, .side_nav a:visited {
+	background-color:#eeeeee;
+}
+
+.side_nav ul {
+	list-style:none;
+	padding:0;
+	margin:3px 0 10px 0;
+}
+
+.side_nav li {
+	
+}
+
+.side_nav li input[type=text] {
+	padding:1px;
+	width:75px;
+	text-align:left;
+	font-size:90%;
+}
+
+.side_nav h2 {
+	font-size:100%;
+}
+
+.settings {
+	float:left;	
+}
+
+.tech_name {
+	border-bottom:1px dotted #cccccc;
+	margin-bottom:3px;	
+}
+
+#save_button {
+	width:130px;	
+}

@@ -1,0 +1,44 @@
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jQueryRotate.js"></script>
+<script type="text/javascript">
+
+var prices = new Array();
+
+prices[0] = "20";
+prices[1] = "9";
+prices[2] = "5";
+prices[3] = "8";
+prices[4] = "7";
+prices[5] = "15";
+prices[6] = "0";
+prices[7] = "6";
+prices[8] = "9";
+prices[9] = "5";
+prices[10] = "7";
+prices[11] = "6";
+prices[12] = "1";
+prices[13] = "3";
+prices[14] = "8";
+prices[15] = "15";
+prices[16] = "3";
+prices[17] = "9";
+prices[18] = "0";
+prices[19] = "7";
+prices[20] = "10";
+prices[21] = "6";
+prices[22] = "8";
+prices[23] = "3";
+
+
+$(document).ready(function(){
+	var randomNumber = Math.floor(Math.random()*24);
+	var nextPosition = (randomNumber * 15) % 360;			
+	$("#wheel").rotate({animateAngle:(360*10) + nextPosition, duration:15000});
+	$("#wheel").delay(15000).queue(function(){alert("You won " + prices[randomNumber] + "!");});
+	$("#wheel").click(function(){
+		$(location).attr('href',"roulette");	
+	});
+});
+</script>
+<div>
+<img id="wheel" src="<?php echo ROOT_URL ?>/app/webroot/img/acewheel_smaller.png" />
+</div>

@@ -1,0 +1,261 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1> Leads Generated <small></small> </h1>
+  <ol class="breadcrumb">
+    <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+    <li>Admin</li>
+    <li>Leads Generated</li>    
+  </ol>
+</section>
+
+<!-- Main content -->
+<section class="content"> 
+  
+  <!-- Default box -->
+  <div class="box">
+    <div class="box-header with-border">
+      <h3 class="box-title">Leads</h3>
+      <div class="box-tools pull-right">
+        <!--<button class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse"><i class="fa fa-minus"></i></button>-->
+        <!--<button class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove"><i class="fa fa-times"></i></button>-->
+      </div>
+    </div>
+    <div class="box-body">
+    	<div class="row">
+            <div class="col-md-12">
+              <!-- Custom Tabs -->
+                <form method="post">
+                <div class="row">
+                   <?php if(false) { ?>
+                   <div class="col-xs-4">                      
+                    <div class="form-group">                  
+                      <label>Date: </label>
+                      <div class="input-group">
+                        <div class="input-group-addon">
+                          <i class="fa fa-calendar"></i>
+                        </div>
+                        <input type="text" id="dp2" data-date-format="yyyy-mm-dd" name="date" value="<?php echo $date ?>" class="form-control pull-right datepicker">
+                      </div><!-- /.input group -->                                           
+                    </div>                                       
+                   </div>
+                   <?php } ?>
+                   <div class="col-xs-4">                      
+                      <div class="form-group">                  
+                        <label>Date range: </label>
+                        <div class="input-group">
+                          <div class="input-group-addon">
+                            <i class="fa fa-calendar"></i>
+                          </div>
+                          <input type="text" class="form-control pull-right date-range" name="date_range" value="<?php echo $date_range ?>">
+                        </div><!-- /.input group -->
+                      </div>
+                   </div> 
+                   <!--<div class="col-xs-3">
+                   	<div class="form-group">
+                    	<label>Status: </label>
+                    	<div class="input-group">
+                          
+                          <select class="form-control" name="status_id">
+                          	<option value="">All</option>
+                            <?php foreach($status as $status_id => $val) { ?>
+                            <?php if($status_id == $status_select) $sel = "selected"; else $sel = ""; ?>
+                        	<option <?php echo $sel ?> value="<?php echo $status_id ?>"><?php echo $val['call_status_name'] ?></option>
+                        	<?php } ?>
+                          </select>
+                        </div>
+                    </div>
+                   </div>-->
+                   <div class="col-xs-2">
+                      <div class="form-group">
+                          <label style="visibility:hidden">Submit</label>
+                          <div class="input-group">
+                              <button type="submit" class="btn btn-primary" name="btn-filter" value="1">Submit</button>
+                          </div>                    
+                      </div>
+                     </div>
+                </div>
+                </form>
+                <?php 
+					$agents['231277'] = "Agent 1";
+					$agents['44874']  = "Agent 2";
+					$agents['231296'] = "Agent 3";
+					$agents['231297'] = "Agent 4";
+				?>
+             <div class="nav-tabs-custom">
+             	<ul class="nav nav-tabs">
+                  <li  class="active"><a data-toggle="tab" href="#tab_summary">Summary</a></li>
+                  <?php $active = ""; ?>                 
+                  <?php foreach($lead_months as $l => $lead) { ?>
+                  <li  class="<?php echo $active; $active = ""; ?>"><a data-toggle="tab" href="#tab_<?php echo $l ?>"><?php echo $l ?></a></li>
+				  <?php } ?>                                    
+                </ul>
+                <div class="tab-content">
+                  <div id="tab_summary" class="tab-pane active">
+                  	<table>
+                    	<?php $sum_total = 0; ?>
+                    	<?php foreach($summary as $s) { ?>
+                    	<tr>
+                        	<td><strong><?php echo $s['call_status_name'] ?></strong> &nbsp; </td>
+                            <td class="text-right"><?php echo $s['call_total'] ?></td>
+                        </tr>
+                        <?php $sum_total += $s['call_total']; } ?>
+                        <tr>
+                        	<td></td>
+                            <td class="text-right"><?php echo $sum_total ?></td>
+                        </tr>
+                    </table>
+                  </div>
+                <?php $active = ""; ?> 
+                <?php foreach($lead_months as $l => $leads) { ?>
+                  <div id="tab_<?php echo $l ?>" class="tab-pane <?php echo $active; $active = ""; ?>"> 
+                    <div id="stats<?php echo $l ?>">
+                    </div>
+                  	<table class="table table-bordered">
+                        <tr>  
+                            <th class="center"></th>                                                
+                            <th class="center">Phone</th>
+                            <th class="center">Name</th>
+                            <th class="center">City</th>
+                            <th class="center">Status</th>
+                            <th class="center">When</th>                         
+                            <th class="center">Call Return</th>                        
+                        </tr>   
+                        <?php  
+							$callback = 0;
+							$done = 0;
+							
+							$not_interested = 0;
+							$answering_machine = 0;
+							$busy = 0;
+							$booked = 0;
+							
+							$dnc = 0;
+							$nis = 0;
+							$wrong = 0;
+							$no_eng = 0;
+							
+							$total = 0;
+						?> 
+                                        	
+                        <?php foreach($leads as $val)  { ?>
+                        
+                        <?php 
+                        $color = "";	  					
+                        if($val['call_status_name'] == "Busy") {
+							$color = "bg-busy";
+							$busy++;
+							$total++;
+						}
+                        if($val['call_status_name'] == "Booked") {
+							$color = "bg-booked"; 
+							$booked++;
+							$total++;
+						}
+                        if($val['call_status_name'] == "Not In Service") {
+							$color = "bg-nis";
+							$nis++;
+							$total++;
+						}
+                        if($val['call_status_name'] == "Call Back") {
+							$color = "bg-callback";
+							$callback++;
+							$total++;
+						}
+						if($val['call_status_name'] == "Done") {
+							$done++;
+							$total++;
+						}
+                        if(trim(substr($val['call_status_name'],0, 14)) == "Not Interested") {
+							$color = "bg-notin";
+							$not_interested++;
+							$total++;
+						}
+                        if($val['call_status_name'] == "Answering Machine") {
+							$color = "bg-ans";
+							$answering_machine++;
+							$total++;
+						}
+                        if($val['call_status_name'] == "Do Not Call") {
+							$color = "bg-dnc";  
+							$dnc++;
+							$total++;
+						}
+                        ?>
+                        <tr class="<?php echo $color ?>">
+                            <td><?php echo $val['mname']?></td>
+                            <td><?php echo $val['lead_phone']?></td>
+                            <td><?php echo $val['lead_first_name']." ".$val['lead_last_name']?></td> 
+                            <td><?php echo $val['lead_city']?></td>                 
+                            <td class="center"><?php echo $val['call_status_name']?></td>                         
+                            
+                            <!--<td class="center"><?php 
+                              if($val['call_date'] >= 30) {
+                                echo floor($val['call_date']/30)." months ";				
+                              }
+                              echo ($val['call_date']%30)." days ";
+                              ?> ago
+                            </td> -->
+                            <td><?php echo $val['call_date']?></td>
+                            <td><?php echo $val['call_return']?></td>
+                        </tr>
+                        <?php } ?>            
+                    </table>
+                    <div id="footer<?php echo $l ?>">
+                    <table>
+                    	<tr>
+                        	<td style="width:200px;">Done:</td>
+                            <td><?php echo $done ?></td>
+                        </tr>
+                        <tr>
+                        	<td>Callback:</td>
+                            <td><?php echo $callback ?></td>
+                        </tr>
+                        <tr>
+                        	<td>Not Interested:</td>
+                            <td><?php echo $not_interested ?></td>
+                        </tr>
+                        
+                        
+                        <tr>
+                        	<td>Booked:</td>
+                            <td><?php echo $booked ?></td>
+                        </tr>
+                        
+                        <tr>
+                        	<td><strong>Total</strong></td>
+                            <td><strong><?php echo $total ?></strong></td>
+                        </tr>
+                    </table>
+                    <script>
+                    $(function(){
+						$("#stats<?php echo $l ?>").html($("#footer<?php echo $l ?>"));
+					});
+                    </script>
+                    </div>
+                  </div>
+                <?php } ?>
+                </div>
+             </div>
+                
+            </div><!-- /.col -->
+			
+            
+          </div>
+
+    </div>
+    <!-- /.box-body -->
+    <div class="box-footer"> </div>
+    <!-- /.box-footer--> 
+  </div>
+  <!-- /.box --> 
+  
+</section>
+<!-- /.content -->
+<script>
+$(function(){
+	$('#dp2').datepicker({
+		format: "yyyy-mm-dd",
+		todayHighlight: true
+	});
+});
+</script>

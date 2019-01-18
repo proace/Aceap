@@ -1,0 +1,90 @@
+<style type="text/css">
+.chat{
+	font-size: 11px;
+	font-family: "Arial", "Helvetica", sans-serif;
+	line-height: 20px;
+}
+.ace_chat{
+	color: #b00f0b;
+}
+.user_chat{
+	color: #06790c;
+}
+.list_chat{
+	width:100%;
+	border:1px solid #999999;
+	border-bottom-style:none;
+	cursor:pointer;
+}
+.list_chat td{
+	background: #EEFFEE;
+	border-bottom:1px solid #999999;
+	font-size: 12px;
+	height: 25px;
+}
+.list_chat td.act{
+	background: #ff8042;
+}
+</style>
+<script>
+	function SelectUser(user_name,user_email){
+		$("#user_name").val(user_name);
+		$("#user_email").val(user_email);
+		document.viewform.submit();
+	}
+	function ChatSend(){
+		var nme=$("#user_name").val();
+		var eml=$("#user_email").val();
+		var msg=$("#MessageStr").val();
+		var sh=$("#show_past").val();
+		$.get("<?=BASE_URL?>/chat/AdminMessage",{
+			user_name:nme,
+			user_email:eml,
+			message_text:msg
+		},function(data){
+			$.get("<?=BASE_URL?>/chat/GetCurrent",
+				{user_name:nme,user_email:eml,show_past:sh},
+				function(data){
+					$("#ChatArea").html(data);
+					$("#MessageStr").val("");
+				});
+		});
+	}
+</script>
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+	<input type="hidden" name="user_name" id="user_name" value="<?=$_GET['user_name']?>">
+	<input type="hidden" name="user_email" id="user_email" value="<?=$_GET['user_email']?>">
+	<input type="hidden" name="show_past" id="show_past" value="<?=$show_past?>">
+</form>
+</script>
+  <table id="ChatTable" cellspacing=0 colspacing=0>
+		<tr>
+			<td>
+				<a href="<?=$PHP_SELF?>?show_past=1">Show history</a>
+			</td>
+		</tr>
+		<tr>
+			<td rowspan=2 style="width:120px;vertical-align:top;">
+				<table class="list_chat" cellspacing=0 colspacing=0>
+					<?php foreach ($all_users as $user){
+								$class = '';
+								if (($user_name==$user['user_name'])&&($user_email==$user['user_email'])) $class='class="act"';
+								if (($user['user_name']=='Internal chat')&&(!$user_name)) $class='class="act"';?>
+						<tr><td <?=$class?> onclick="SelectUser('<?=$user['user_name']?>','<?=$user['user_email']?>')"><?=$user['user_name']?></td></tr>
+					<?php }?>
+				</table>
+			</td>
+			<td>
+				<div id="ChatArea" style="border:1px solid #939393;background:#f5f5f5;width:420px;height:300px;font-size:12px;">
+					<?=$messages?>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<input type="text" id="MessageStr" style="width:380px;border:1px solid #939393;background:#f5f5f5" onchange="ChatSend()">
+				<input type="button" id="ChatGo" value="go!" onclick="ChatSend()">
+			</td>
+		</tr>
+  </table>
+</table>

@@ -1,0 +1,183 @@
+<!-- This tag creates our form tag -->
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.4.min.js"></script>
+<script type="text/javascript">
+function getBinaryPicture()
+{
+  var answer = window.showModalDialog("<?php echo ROOT_URL ?>/upload_picture.html",'', 
+  "dialogWidth:450px; dialogHeight:350px; dialogLeft:300px; dialogTop:200px;");
+  return answer;
+}
+
+function showHideTrucks(elem){
+	var roleId=$(elem).val();
+	if(3==roleId){
+		$(".assignedTrucksTr").show();
+	}else{
+		$(".assignedTrucksTr").hide();
+	}
+}
+$(function() {
+	$(".upload").click(function(){
+		var binary = getBinaryPicture();
+		$("#mugshot").attr("src", binary);
+		$("#UserBinaryPicture").val(binary);		
+	});
+});
+
+</script>
+<?php echo $html->formTag('/users/edit/' . $html->tagValue('User/id')); ?>
+<?php echo $html->hidden ('User/id', array("value",$html->tagValue('User/id'))); ?>
+<? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
+
+<table align="left" border="0" cellspacing="1" cellpadding="0">	
+	<tr style="padding-bottom:20px;">
+		<td class="sectionTitle" colspan="4"><?=$subtitle ?></td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>First Name:</td>
+		<td>
+			<?php echo $html->input('User/first_name'); ?>
+      		<?php echo $html->tagErrorMsg('User/first_name','Please enter in a first name for this user.') ?>
+		</td>
+		<td>Phone*:</td>
+		<td><?php echo $html->input('User/phone',array("value"=>$common->displayPhone($html->tagValue('User/phone'))));?>
+		<font color="red"><b><?php echo $html->tagErrorMsg('User/phone','Please enter in a phone for this user') ?></b></font>
+		</td>
+	</tr>
+	<tr>
+		<td>Last Name:</td>
+		<td>
+			<?php echo $html->input('User/last_name'); ?>
+			<?php echo $html->tagErrorMsg('User/last_name', 'Please enter in a last name for this user.') ?>
+		</td>
+		<td>Cell Phone:</td>
+		<td><?php echo $html->input('User/cell_phone',array("value"=>$common->displayPhone($html->tagValue('User/cell_phone'))));?></td>
+	</tr>
+	<tr style="padding-top:10px;">
+		<td>Address:</td><td><?php echo $html->input('User/address');?></td>
+		<td>E-Mail:</td><td><?php echo $html->input('User/email');?>
+		<font color="red"><b><?php echo $html->tagErrorMsg('User/email_1','Please enter in an e-mail for this user') ?>
+		<?php echo $html->tagErrorMsg('User/email_2','Please enter in a valid e-mail address for this user') ?></b></font>
+		</td>
+	</tr>
+	<tr>
+		<td>City:</td><td><?php echo $html->input('User/city');?></td>
+		<td>Theme:</td><td><?php echo $html->selectTag('User/interface_id',$interfaces,$data['User']['interface_id']);?></td>
+	</tr>
+	<tr>
+		<td>Postal Code:</td><td><?php echo $html->input('User/postal_code',array("value"=>$common->displayZip($html->tagValue('User/postal_code'))));?></td>
+		<td>Eprint Terminal:</td><td><?php echo $html->selectTag('User/eprint_id',$eprint,$data['User']['eprint_id']);?></td>
+	</tr>
+    <tr>
+		<td>Extension #:</td><td><?php echo $html->input('User/extension_id');?></td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Active:</td>
+		<td>
+			Yes<input type="radio" name="is_active" id="is_active"  value='1' <?=$this->data['User']['is_active'] == 1 ? 'checked="checked"' : ''?>/>
+			&nbsp;&nbsp;No<input type="radio" name="is_active" id="is_active"  value='0' <?=$this->data['User']['is_active'] == 0 ? 'checked="checked"' : ''?>/>
+		</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="4" class="sectionTitle">Login Information:</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Username:</td><td><?php echo $html->input('User/username');?></td>
+		<td>Password:</td><td><?php echo $html->input('User/password', array("type" => "password"));?></td>
+	</tr>
+	<tr>
+		<td>Role:</td>
+		<td colspan="3">
+			
+			<?=$html->selectTag('Role/role_id',$Roles4Select,$this->data['Role'][0]['id'], array("onChange" => "showHideTrucks(this);"));?>
+				
+		</td>
+	</tr>
+	
+	<tr class="assignedTrucksTr" style="display:<?php echo ($this->data['Role']['role_id']==3 || $this->data['Role'][0]['id']==3)?'block':'none'; ?>" >
+		<td>Assign Trucks:</td>
+		<td colspan="3">
+				<?php 
+					
+					foreach ($trucks as $key => $eachtruck) { 
+					?>
+						<div>
+							<label for="assigned_trucks_<?php echo $key; ?>">
+								<input id="assigned_trucks_<?php echo $key; ?>" class="truckAssignment" type="checkbox" value="<?php echo $key; ?>" name="data[assigned_trucks][]" <?php echo (in_array($key,$this->data['assigned_trucks']))?'checked':''; ?> /> <?php echo $eachtruck; ?> 
+							</label>
+						</div>
+			
+				<?php } ?>
+			
+		</td>
+	</tr>
+	<input type="hidden" name="view_mode" value="<?=$view_mode;?>" />
+    <tr>
+		<td>&nbsp;</td>
+	</tr>
+    <tr>
+		<td colspan="4" class="sectionTitle">Portfolio:</td>
+	</tr>
+    <tr>
+		<td>&nbsp;</td>
+	</tr>
+    <tr>
+    	<td colspan="4">Picture<br />
+        	<img src="<?php echo $data["User"]["binary_picture"] ?>" id="mugshot" style="max-height:300px;max-width:400px;border:1px dashed #999999" />
+			<?php echo $html->input('User/binary_picture', array('type'=>'hidden'));?>            
+		</td>
+    </tr>
+    <tr>
+    	<td colspan="4"><input type="button" value="Upload Picture" class="upload" /></td>
+    </tr>
+    <tr>
+        <td colspan="4">About<br /> <?php echo $html->textarea('User/about', array('cols'=>65));?>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="4">Qualifications<br /> <?php echo $html->textarea('User/qualifications', array('cols'=>65));?>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="4">Experience<br />  <?php echo $html->textarea('User/experience', array('cols'=>65));?>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="4">Skills<br /> <?php echo $html->textarea('User/skills', array('cols'=>65));?>
+        </td>
+    </tr>    
+    <tr>
+        <td colspan="4">Goals<br /> <?php echo $html->textarea('User/goals', array('cols'=>65));?>
+        </td>
+    </tr>
+    <tr>
+		
+        <td colspan="4">Hobbies<br /> <?php echo $html->textarea('User/hobbies', array('cols'=>65));?>
+        </td>
+    </tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td colspan="2" align="left"><br/>
+		  <input type="submit" name="submit" value="Submit" class="buttons">&nbsp;
+		  <input type="button" value="Cancel" onclick="javascript:history.go(-1);" class="buttons">          
+		</td>
+		<td colspan="1">&nbsp;</td>
+	</tr>
+</table>
+
+<?php echo $portfolio ?>
+
+<pre>
+<?php //print_r($portfolio) ?>
+</pre>

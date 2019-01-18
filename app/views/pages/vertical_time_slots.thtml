@@ -1,0 +1,14 @@
+<?php if(count($furnaceslots) > 0) { ?>
+	<?php foreach($furnaceslots as $key => $slot) { ?>
+    <div>
+        <input type="button" value="<?php echo $slot['name'] ?>" style="width:100px;" class="slot_button" />
+        <input type="hidden" class="from" value="<?php echo $slot['from'] ?>">
+        <input type="hidden" class="to" value="<?php echo $slot['to'] ?>">
+        <input type="hidden" class="job_type" value="<?php echo $job_type ?>">
+        <input type="hidden" class="job_time_name" value="<?php echo $slot['name'] ?>">
+    </div>
+    <?php } ?>
+<?php } else { ?>
+	<em>There are no available<br>timeslots on <strong><?php echo $date ?></strong>.
+	<br>Please call <strong>604-293-3770</strong><br />for more details.</em>    
+<?php } ?>

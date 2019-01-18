@@ -1,0 +1,202 @@
+<script>
+function SavePayment(order_id){
+	var method = $("#method"+order_id).val();
+	var amount = $("#amount"+order_id).val();
+	var date = $("#date"+order_id).val();
+	var notes = $("#notes"+order_id).val();
+	
+  $.post("<?=BASE_URL;?>/payments/savePayment",
+				{order_id:order_id, method:method, amount:amount, payment_type:2, date:date, notes:notes},function(data){
+    document.viewform.submit();
+  });
+}
+function ErasePayment(payment_id){
+  $.post("<?=BASE_URL;?>/payments/deletePayment",{payment_id:payment_id},function(data){
+    document.viewform.submit();
+  });
+}
+function InvoiceSubmitted(order_id, el){
+  flag = 0;
+	if (el.checked) flag = 1;
+  $.post("<?=BASE_URL;?>/payments/invoiceSubmitted",{order_id:order_id,flag:flag},function(data){
+    document.viewform.submit();
+  });
+}
+</script>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+<table width="90%" border="0px" cellspacing="10" cellpadding="0">
+	<tr>
+		<td class="sectionTitle">Payments</td>
+		<td>
+			<?php if ($common->getLoggedUserID()==44851) { ?>
+      <input type="button" onclick="document.location.href='<?=BASE_URL?>/payments/ManagerView'" value="Compare with techs" class="buttons">
+			<?php } ?>
+		&nbsp;Payment method:&nbsp;
+			<select name="payment_type" id="payment_type" onchange="document.viewform.submit();">
+				<option value=""></option>
+				<? 
+				foreach($allPaymentTypes as $k => $v) {
+					echo '<option value="'.$k.'"'.( $k == $payment_type ? ' selected' : '').'>'.$v.'</option>';
+				}
+				?>
+			</select>
+		</td>
+		<td>			
+		&nbsp;Auth:&nbsp;
+			<input name="auth_search" id="auth_search">
+		</td>
+		<td>			
+		&nbsp;Amount:&nbsp;
+			<input name="amount_search" id="amount_search">
+		</td>
+		<td rowspan=2>
+				<table cellpadding=0 cellspacing=0 border=1>
+				<tr><th>&nbsp;</th><th>jobs</th><th>redo</th><th>followup</th><th>install</th></tr>
+				<tr>
+								<td><b>Booked:</b></td>
+								<td align=center><?=$other['booked']?></td>
+								<td align=center><?=$redo['booked']?></td>
+								<td align=center><?=$followup['booked']?></td>
+								<td align=center><?=$install['booked']?></td>
+				</tr>
+				<tr>
+								<td><b>Done:</b></td>
+								<td align=center><?=$other['done']?></td>
+								<td align=center><?=$redo['done']?></td>
+								<td align=center><?=$followup['done']?></td>
+								<td align=center><?=$install['done']?></td>
+				</tr>
+				<tr>
+								<td><b>Canceled:</b></td>
+								<td align=center><?=$other['canceled']?></td>
+								<td align=center><?=$redo['canceled']?></td>
+								<td align=center><?=$followup['canceled']?></td>
+								<td align=center><?=$install['canceled']?></td>
+				</tr>
+				</table>
+		</td>
+	</tr>
+  <tr>
+		<td colspan=4>
+			Date from: &nbsp;&nbsp;
+      <input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			&nbsp;&nbsp;Date to: &nbsp;&nbsp;
+      <input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			&nbsp;&nbsp;
+			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_fdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+		  &nbsp;&nbsp;
+      <input type="submit" name="submit2" id="submit2" value="Update" class="buttons">
+		</td>			
+	</tr>
+</table> 	
+</form>
+
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+    <tr>
+        <th rowspan=2 width="50px"><a href="javascript:setOrder('order_number');">REF #</a></td>
+        <th rowspan=2 width="100px"><a href="javascript:setOrder('order_status');">Status</a></th>
+        <th rowspan=2 width="100px"><a href="javascript:setOrder('job_type_name');">Job Type</a></th>
+        <th rowspan=2 width="100px"><a href="javascript:setOrder('tech1_name');">Tech 1</a></th>
+        <th rowspan=2 width="100px"><a href="javascript:setOrder('tech2_name');">Tech 2</a></th>
+        <th rowspan=2 width="100px"><b>Amount</b></th>
+        <th rowspan=2 width="60px"><b>Method</b></th>
+        <th rowspan=2 width="100px"><b>Auth.#</b></th>
+        <th colspan=5 width="150px"><b>Payment</b></th>
+        <th rowspan=2 width="100px">Balance</th>
+        <th rowspan=2 width="100px">Invoice submitted</th>
+		<th rowspan=2 width="50px">Booked items</td>
+    </tr>
+    <tr>
+        <th width="100">Method</th>
+        <th width="80px">Amount</th>
+        <th width="80px">Date</th>
+        <th colspan=2>Note</th>
+    </tr>
+		<?php $r=1;
+			foreach ($items as $obj) {
+				$class = 'cell'.(++$r%2);
+				$balance = 1*$obj['total_payments'] - 1*$obj['total'];
+				$bal_color = 'black';
+				if ($balance<0) $bal_color = 'red';
+				$bg = '#ffffff';
+				if ($obj['order_status_id']==3) $bg = '#ffe1e1';
+				elseif ($obj['order_status_id']==5) $bg = '#e6ffcc';
+				$payments = $obj['payments'];
+				$cnt = count($payments)+1;
+		?>
+    <tr id="r<?=$r?>" class="cell0">
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">
+								<a href="<?=BASE_URL?>/orders/editBooking?order_id=<?php echo $obj['id'].'&rurl='.urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING'])?>"><?=$obj['order_number']?></a>
+				</td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['order_status']?></td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['job_type_name']?></td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech1_name']?></td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech2_name']?></td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>"><?=(1*$obj['total']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['total'])?></td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech_payments']?></td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech_auth']?></td>
+      	<td colspan=5 style="background:<?=$bg?>">
+								<a id='add_payment_link<?=$obj['id']?>' href='#'
+								onclick='$("#addnewform<?=$obj['id']?>").show();$("#add_payment_link<?=$obj['id']?>").hide();$("#cancel_payment_link<?=$obj['id']?>").show();'>
+								Add new payment</a>
+								<a id='cancel_payment_link<?=$obj['id']?>' href='#' style='display:none'
+								onclick='$("#addnewform<?=$obj['id']?>").hide();$("#add_payment_link<?=$obj['id']?>").show();$("#cancel_payment_link<?=$obj['id']?>").hide();'>
+								Cancel</a>
+								<table id='addnewform<?=$obj['id']?>' style='display:none'>
+								<tr class="cell0">
+										<td style="background:<?=$bg?>">
+										<select id="method<?=$obj['id']?>">
+										<?php
+                    foreach ($allPaymentTypes as $id => $name)
+										{
+												$selected = '';																
+												if ($oi['payment_method'] == $id)	$selected = 'selected';
+												echo "<option $selected value='$id'>$name</option>";
+										}
+										?>
+										</select>
+										</td>
+										<td style="background:<?=$bg?>">
+												<input style="width:85px" id="amount<?=$obj['id']?>" value=""/>
+								    </td>
+										<td style="background:<?=$bg?>">
+												<input style="width:85px;cursor:pointer;" id="date<?=$obj['id']?>" value="<?=date('d M Y')?>"/>
+								    </td>
+										<td style="background:<?=$bg?>">
+												<input style="width:185px;cursor:pointer;" id="notes<?=$obj['id']?>" value=""/>
+								    </td>
+										<td style="background:<?=$bg?>">
+												<input type='button' value='Save' onclick='SavePayment(<?=$obj['id']?>);'/>
+								    </td>
+								</tr>
+								</table>
+				</td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>; color:<?=$bal_color?>"><?=(1*$balance==0)?'&nbsp;':$HtmlAssist->prPrice($balance)?></td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>;">
+						<input type='checkbox' <?php if ($obj['invoice_submitted']) echo 'checked'; ?> onclick='InvoiceSubmitted(<?=$obj['id']?>, this);'/>
+				</td>
+		<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['name']?></td>
+    </tr>
+		<?php foreach ($payments as $ppp) {?>
+		<tr class="cell0">
+      	<td style="background:<?=$bg?>">&nbsp;<?=$ppp['payment_method']?></td>
+      	<td style="background:<?=$bg?>">
+				  <?=(1*$ppp['paid_amount']==0)?'&nbsp;':$HtmlAssist->prPrice($ppp['paid_amount'])?>
+				</td>
+      	<td style="background:<?=$bg?>">&nbsp;<?=$ppp['payment_date']?></td>
+      	<td style="background:<?=$bg?>">&nbsp;<?=$ppp['notes']?></td>
+				<td style="background:<?=$bg?>; width:40px">
+					<a href='#' style="color:blue" onclick='ErasePayment(<?=$ppp['id']?>);'>Delete</a>
+				</td>
+    </tr>
+    <? } ?>
+    <? } ?>
+</table>

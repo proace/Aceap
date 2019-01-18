@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>ACESYS</title>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/inventory.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/inventory.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+</head>
+<body id="page_index">
+<div id="tabs">
+    <ul>
+    	<li><a href="#tabs-0" class="tab_link">Search All</a></li>
+        <?php foreach($categories as $category) { ?>
+        <li><a onclick='callActiveClass("<?php echo $category['id'] ?>")' href="#tabs-<?php echo $category['id'] ?>" class="tab_link"><?php echo $category['name'] ?></a></li>
+        <?php } ?>        
+    </ul>    
+    <div id="list_filter"><input type="text" id="filter_name" /> <a id="link_filter_name">Filter</a></div>
+    <div id="list_search">
+    <select id="search_field">
+    	<option value="name">Name</option>
+        <option value="model">Model</option>
+        <option value="brand">Brand</option>
+        <option value="category">Category</option>
+        <option value="supplier">Supplier</option>
+        <option value="efficiency">Efficiency</option>
+    </select>
+    <input type="text" id="search_name" /> <a id="link_search_name">Search</a></div>
+    <div id="tabs-0" class="tabs">
+    	<div id="search_results"></div>
+    </div>
+    <?php foreach($categories as $category) { ?>
+	<div id="tabs-<?php echo $category['id'] ?>" class="tabs">
+   		<?php if($inventoryAccess['extended_view']) { ?>
+    	<a href="#" class="link_category_settings" title="Tree Settings"><input type="hidden" value="<?php echo $category['id'] ?>" /></a>
+        <?php } ?>
+    	<ul class="parent">
+        	<li><a href="#" title="More" class="all_node link_branch tab-<?php echo $category['id'] ?>">All
+				<input type="hidden" class="criteria" value='{"level":"0","category_id":"<?php echo $category['id'] ?>"}' />
+				<input type="hidden" class="path" value='branch' />
+            </a>
+            <ul></ul>
+            </li>
+        </ul>        
+    </div>
+    <?php } ?>    
+</div>
+
+<script>
+function callActiveClass(idd){
+	$(".activeClick"+idd).click();
+	getHref =$(".activeClick"+idd).attr('title');
+	if(getHref=="More"){
+		$(".activeClick"+idd).click();	
+	}
+}
+</script>
+
+</body>
+</html>

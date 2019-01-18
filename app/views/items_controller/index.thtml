@@ -1,0 +1,77 @@
+<script>
+function ChangeActive(id,elem_chk){
+  if (elem_chk.checked){
+		$.get("<?=BASE_URL;?>/items/changeActive",
+			{item_id:id,is_active:1},
+			function(data){document.forms['viewform'].submit();});
+	}
+	else
+		$.get("<?=BASE_URL;?>/items/changeActive",
+			{item_id:id,is_active:0},
+			function(data){document.forms['viewform'].submit();});
+}
+</script>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+	<input type="hidden" name="action" value="view" >
+	<input type="hidden" name="order" value="<?=$_GET['order']?>">
+	<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+	<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+	<table width="90%" border="0px" cellspacing="10" cellpadding="0">
+		<tr>
+			<td colspan=2 class="sectionTitle">Items</td>
+			<td>Search by name:</td>
+			<td><input type="text" id="ItemSearchString" onkeyup="SearchFilter(this)"/></td>
+			<td>Search by part #:</td>
+			<td colspan=3><input type="text" id="NumberSearchString" onkeyup="SearchFilter2(this,'.part_number_td')"/></td>
+			<td>Show Inactive:&nbsp;<input type="checkbox" id="ShowInactive" <?php if ($ShowInactive) echo 'checked';?> name="ShowInactive" onchange="document.forms['viewform'].submit();"/></td>
+		</tr>
+		<tr>
+			<td colspan=2>
+				<input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/items/editItem'" class="buttons" />
+			</td>
+			<td>Item category: </td>
+			<td>
+				<?php echo $html->selectTag('item_class', $itemclasses, $item_class);?>
+			</td>
+			<td>Job Type: </td>
+			<td>
+				<?php echo $html->selectTag('job_type', $jobtypes, $job_type);?>
+			</td>
+			<td colspan="7" align="left">
+				<input type="submit" name="submit2" id="submit2" value="Update" class="buttons">
+			</td>		
+		</tr>
+		</table>
+</form>
+
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+    <tr>
+        <th width="50" style="background-color:#CCCCCC;border-style: none;"><b><u>Item ID</b></u></td>
+        <th width="180"><a href="javascript:setOrder('name');">Name</a></th>
+        <th width="100"><a href="javascript:setOrder('part_number');">Part number</a></th>
+        <th width="100"><a href="javascript:setOrder('item_class');">Class</a></th>
+        <th width="100"><a href="javascript:setOrder('job_type');">Job Type</a></th>
+        <th width="100"><a href="javascript:setOrder('price');">Price</a></th>
+        <th width="100"><a href="javascript:setOrder('price');">Purch.prc.</a></th>
+        <th width="10"><a href="javascript:setOrder('flagactive');">Active</a></th>
+    </tr>
+		<?php $r=1;
+			foreach ($items as $obj) {
+				$class = 'cell'.(++$r%2);
+		?>
+    <tr id="r<?=$r?>" class="<?=$class?>" style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/items/editItem?item_id=<?=$obj['id']?>"'>
+      	<td class="firstcol" style="background-color:#CCCCCC;border-style: none;">&nbsp;<?=$obj['id']?></td>
+				<td class="item_name_td" style="display:none"><?php echo strtoupper($obj['name']);?></td>
+				<td class="part_number_td" style="display:none"><?php echo strtoupper($obj['part_number']);?></td>
+				<td>&nbsp;<?php echo $obj['name']; ?></td>
+				<td>&nbsp;<?php echo $obj['part_number']; ?></td>
+      	<td>&nbsp;<?php echo $obj['item_class']; ?></td>
+      	<td>&nbsp;<?php echo $obj['job_type']; ?></td>
+      	<td>&nbsp;<?php echo $obj['price']; ?></td>
+      	<td>&nbsp;<?php echo $obj['price_purchase']; ?></td>
+      	<td><input type="checkbox" <?php if ($obj['flagactive']) echo 'checked'; ?> onclick="ChangeActive(<?=$obj['id']?>,this)"/></td>
+    </tr>
+    <? } ?>
+</table>

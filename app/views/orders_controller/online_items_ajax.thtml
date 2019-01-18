@@ -1,0 +1,10 @@
+<?php foreach($items as $key => $item) { ?>
+<input id="data[Order][BookingItem][<?php echo $key ?>][class]" type="hidden" value="<?php echo $item['class'] ?>" name="data[Order][BookingItem][<?php echo $key ?>][class]" />
+<input id="data[Order][BookingItem][<?php echo $key ?>][item_id]" type="hidden" value="<?php echo $item['item_id'] ?>" name="data[Order][BookingItem][<?php echo $key ?>][item_id]" />
+<input id="data[Order][BookingItem][<?php echo $key ?>][item_category_id]" type="hidden" value="<?php echo $item['item_category_id'] ?>" name="data[Order][BookingItem][<?php echo $key ?>][item_category_id]" />
+<input id="data[Order][BookingItem][<?php echo $key ?>][name]" type="hidden" value="<?php echo $item['name'] ?>" name="data[Order][BookingItem][<?php echo $key ?>][name]" />
+<input id="data[Order][BookingItem][<?php echo $key ?>][quantity]" type="hidden" value="<?php echo $item['quantity'] ?>" name="data[Order][BookingItem][<?php echo $key ?>][quantity]" />
+<input id="data[Order][BookingItem][<?php echo $key ?>][price]" type="hidden" value="<?php echo $item['price'] ?>" name="data[Order][BookingItem][<?php echo $key ?>][price]" />
+<input id="data[Order][BookingItem][<?php echo $key ?>][discount]" type="hidden" value="<?php echo $item['discount'] ?>" name="data[Order][BookingItem][<?php echo $key ?>][discount]" />
+<input id="data[Order][BookingItem][<?php echo $key ?>][addition]" type="hidden" value="<?php echo $item['addition'] ?>" name="data[Order][BookingItem][<?php echo $key ?>][addition]">
+<?php } ?>

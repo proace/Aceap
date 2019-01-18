@@ -1,0 +1,108 @@
+<script>
+//*** SET PAGE TITLE ***
+
+document.title += " :: Customer List";
+
+//**********************
+</script>
+<script>
+function OpenPage(surl)
+{
+	location.href =surl;
+}
+
+function setChange(order){
+  f = document.forms.viewform;
+  f.paginationList1.value = '';  
+
+   if(f.order.value == order){
+    if(f.sort.value == 'ASC')
+      f.sort.value = 'DESC';
+    else
+      f.sort.value = 'ASC';
+  }
+  else{
+    f.order.value = order;
+    f.sort.value = 'ASC';
+  }
+  f.submit();
+}
+</script>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="index" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="view_mode" value="<?=$_GET['view_mode']?>">
+<input type="hidden" name="paginationList1" value="<?=$_GET['paginationList1']?>">
+<input type="hidden" name="txt_last_name" size="10" value="<?=$_GET['txt_last_name']?>">
+<input type="hidden" name="txt_address" size="10" value="<?=$_GET['txt_address']?>">
+<input type="hidden" name="txt_phone" size="10" value="<?=$_GET['txt_phone']?>">
+<input type="hidden" name="txt_email" size="10" value="<?=$_GET['txt_email']?>">
+<input type="hidden" name="txt_postal_code" size="10" value="<?=$_GET['txt_postal_code']?>">		
+<input type="hidden" name="txt_first_name" size="10" value="<?=$_GET['txt_first_name']?>">
+<input type="hidden" name="txt_city" size="10" value="<?=$_GET['txt_city']?>">
+<input type="hidden" name="txt_cell_phone" size="10" value="<?=$_GET['txt_cell_phone']?>">
+<input type="hidden" name="txt_card" size="10" value="<?=$_GET['txt_card']?>">
+
+
+<table cellpadding="0" cellspacing="0" border="0" width="100%">
+<?php
+if (0)	//temporarily off
+{
+?>
+<tr>
+	<th >
+		<a href="javascript:setChange('last_name')" ><b>Last</b></a><?=$last_name?>, 
+		<a href="javascript:setChange('first_name')">First Name</a><?=$first_name?>
+	</td>
+	<th ><a href="javascript:setChange('phone')">Phone</a><?=$phone?></th>
+</tr>
+<? } ?>
+<?php $r=1;
+	foreach ($users as $obj): 
+		//$class = 'cell'.(++$r%2);
+		$class = '';
+		
+		//javascript for click action
+		$js = 'if (this.checked) {';
+		$js .= "document.getElementById('CustomerId').value='".$obj['User']['id']."';";
+		//$js .= "alert(document.getElementById('CustomerId').value);";
+		$js .= "document.getElementById('CustomerFirstName').value='".$obj['User']['first_name']."';";
+		$js .= "document.getElementById('CustomerLastName').value='".$obj['User']['last_name']."';";
+		$js .= "document.getElementById('CustomerAddress').value='".$obj['User']['address']."';";
+		$js .= "document.getElementById('CustomerCity').value='".$obj['User']['city']."';";
+		$js .= "document.getElementById('CustomerState').value='".$obj['User']['state']."';";
+		$js .= "document.getElementById('CustomerPostalCode').value='".$obj['User']['postal_code']."';";
+		$js .= "document.getElementById('CustomerPhone').value='".$obj['User']['phone']."';";
+		$js .= "document.getElementById('CustomerCellPhone').value='".$obj['User']['cell_phone']."';";
+		$js .= "document.getElementById('CustomerEmail').value='".$obj['User']['email']."';";
+		$js .= "displayOrdersByArea('OrdersByArea', '".$obj['User']['postal_code']."');";
+		$js .= '}';
+		
+		//check the one that was previously selected
+		if ($obj["User"]["id"] == $rID)
+			$chk = "checked";
+		else
+			$chk = "";
+	?>
+<tr class="<?= $class ?>" onclick="this.td.style.background='orange';">
+	<td>
+		<input type="radio" name="rID" value="<?php echo $obj["User"]["id"] ?>" style="vertical-align: bottom;" onchange="<?=$js;?>" <?=$chk;?> />
+		<?php echo $obj["User"]["last_name"] ?>, <?php echo $obj['User']['first_name']; ?>
+	</td>
+	<td><?php 
+			if ($obj['User']['phone'] != '')
+				$phone = $obj['User']['phone'];
+			else if ($obj['User']['cell_phone'] != '')
+				$phone = $obj['User']['cell_phone'];
+				
+			echo ( $phone != '' ? $common->displayPhone($phone) : '' );
+		?>
+	</td>
+</tr>
+<?php endforeach; ?>
+</table>
+<br/>
+<?=$pagination?>
+</form>

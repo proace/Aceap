@@ -1,0 +1,81 @@
+<div style="width: 1250px; float: left;">
+<input type="hidden" id ="first_call" name="first_call" value="0">
+<input type="hidden" id ="call_mode" name="call_mode" value="">
+<input type="hidden" id="currentUserId" val="">
+<? if ($add == 0) { ?>
+<div style="clear: both; float: left;">
+	<div class="dhcell" style="width: 110px;">Last Name<?=$last_name?></div>
+	<div class="dhcell" style="width: 85px;"><b>First Name<?=$first_name?></b></div>
+	<div class="dhcell" style="width: 95px;">Source</div>
+	<div class="dhcell" style="width: 95px;">Phone<?=$phone?></div>
+	<div class="dhcell" style="width: 95px;">Cell Phone<?=$cell_phone?></div>
+	<div class="dhcell" style="width: 150px;">Address<?=$address?></div>
+	<div class="dhcell" style="width: 150px;">City<?=$city?></div>
+	<div class="dhcell" style="width: 70px;">Call Result</div>
+	<div class="dhcell" style="width: 80px;">Last Call</div>
+	<div class="dhcell" style="width: 80px;">Callback</div>
+	<div class="dhcell" style="width: 80px;">Time</div>
+</div>
+
+<? } ?>
+<?php $r=1;
+	foreach ($cust as $obj): 
+		$class = 'cell'.(++$r%2);
+	?>
+	<?php if ($obj["reminder_flag"]==1) $color="background-color:#FFDDDD"; else $color="";?>
+	<div id="div<?=$r?>" class="browser_item" style="clear: both; float: left; border-bottom: 1px solid #CCCCCC; cursor: hand; cursor: pointer;<?echo $color?>"
+			onclick="elementClick($('#<?="div".$r?>'),
+				    '<?php echo $obj["Order"]["job_date"] ?>',
+				    '<?php echo $obj["Order"]["id"] ?>',
+						'<?php echo $obj["id"] ?>',
+						'<?php echo str_replace("'","`",$obj["first_name"]) ?>',
+						'<?php echo str_replace("'","`",$obj["last_name"]) ?>',
+						'<?php echo str_replace("'","`",$obj["address_unit"]); ?>',
+						'<?php echo str_replace("'","`",$obj["address_street_number"]); ?>',
+						'<?php echo str_replace("'","`",$obj["address_street"]); ?>',
+						'<?php echo $obj["city"] ?>',
+						'<?php echo $obj["postal_code"] ?>',
+						'<?php echo $obj["phone"] ?>',
+						'<?php echo $obj["cell_phone"] ?>',
+						'<?php echo $obj["email"] ?>',
+						'<?php echo date("d M Y", strtotime($obj['callback_date'])); ?>',
+						'<?php echo date("d M Y", strtotime($obj['lastcall_date'])); ?>',
+						<?php echo $obj["callresult"] ? $obj["callresult"] : 0 ?>,
+						'<?php echo addslashes(ereg_replace("[\r\n]", "", $obj["callback_note"])) ?>',
+						<?php echo $obj["telemarketer_id"] ? $obj["telemarketer_id"] : 0 ?>);"
+	>
+	<div class="dcell" style="width: 110px;<? echo $color?>"><?php echo $obj["last_name"] ?> </div>
+	<div class="dcell" style="width: 85px;<? echo $color?>"><b><?php echo $obj['first_name']; ?></b> </div>
+	<div class="dcell" style="width: 95px;<? echo $color?>"><?=$obj['u']['telemarketer_first_name'].' '.$obj['u']['telemarketer_last_name'] ?></div>
+	<div class="dcell" style="width: 95px;<? echo $color?>"><?php echo ( $obj['phone'] != '' ? $common->displayPhone($obj['phone']) : '' ); ?> </div>
+	<div class="dcell" style="width: 95px;<? echo $color?>"><?php echo ( $obj['cell_phone'] != '' ? $common->displayPhone($obj['cell_phone']) : ''); ?> </div>
+	<div class="dcell" style="width: 150px;<? echo $color?>"><?=$obj["address_unit"].' '.$obj["address_street_number"].' '.$obj["address_street"]; ?></div>
+	<div class="dcell" style="width: 150px;<? echo $color?>"><?php echo $obj['city']; ?></div>
+	<div class="dcell" style="width: 70px;<? echo $color?>"><?php echo $call_results[$obj['callresult']]; ?> </div>
+	<div class="dcell" style="width: 80px;<? echo $color?>"><?php echo date("d M Y", strtotime($obj['lastcall_date'])); ?></a> </div>
+	<div class="dcell" style="width: 80px;<? echo $color?>"><?php echo date("d M Y", strtotime($obj['callback_date'])); ?></a> </div>
+	<div class="dcell" style="width: 80px;<? echo $color?>"><?php echo $obj['callback_time']; ?></a> </div>
+</div>
+<?php endforeach; ?>
+<script language="JavaScript">
+	window.curpage = <?=$curpage;?>;
+	window.sq_crit = '<?=$sq_crit;?>';
+	window.sq_str = '<?=$sq_str;?>';
+	<?
+	//Last page?
+	$arr = split(",", $_GET['limit']);
+	$expected_count = $arr[1] - $arr[0];
+
+	if ($expected_count > count($cust))
+		print "window.lastpage = 1;\n";
+	else
+		print "window.lastpage = 0;\n";
+	?>
+	<? if ($add == 0) { ?>
+	if (document.all)
+		document.body.scrollTop = 0;
+	else
+		document.body.scrollTo(0);
+	<? } ?>
+</script>
+</div>

@@ -1,0 +1,192 @@
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.quicksearch.js"></script>
+
+<script>
+//*** SET PAGE TITLE ***
+document.title += " :: Items Price";
+//**********************
+$(function () {
+	$('input#id_search').quicksearch('table tbody .affected');
+	
+});
+</script>
+
+<style>
+.wrapper {
+	width:500px;	
+}
+.sales_price {
+	width:80px;	
+	text-align:right;
+}
+.regular_price {
+	width:80px;	
+	text-align:right;
+}
+.search_tab li{
+	display: inline-block;		
+}
+
+
+</style>
+
+
+<form action="#">
+    <fieldset>        
+        <ul class="search_tab">
+        	<li>Search: <input type="text" name="search" value="" id="id_search" placeholder="Search" autofocus /> 
+            </li>
+            <li>All
+            </li>
+            <li>Heating
+            </li>
+            <li>Appliance
+            </li>
+            <li>Parts
+            </li>
+            <li>Carpet
+            </li>
+            <li>Others
+            </li>
+        </ul>
+    </fieldset>
+</form>
+
+<div class="wrapper">
+    <table class="searchtable" cellpadding="4" cellspacing="0" width="100%">
+    	<thead>
+        	<tr style="background-color:#9EE871;height:20px;">
+                <th>Heating Services
+                </th>
+                <th>Sales Price
+                </th>
+                <th>Regular Price
+                </th>
+            </tr>
+        </thead>
+    	<tbody>
+        <?php foreach($heating_items as $item) { 
+			$counter++;
+			$row_style = "";
+			if(($counter % 2) == 0){
+				$row_style = 'style="background-color:#F8F7F9;"';
+			}
+		?>
+    	<tr <?php echo $row_style; ?> class="affected">
+        	<td><?php echo htmlspecialchars($item['Item']['name']) ?></td>
+        	<td class="sales_price">$<?php echo $item['Item']['price'] ?></td>
+        	<td class="regular_price">$<?php echo $item['Item']['regular_price'] ?></td>
+        </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+    <table class="searchtable" cellpadding="4" cellspacing="0" width="100%">
+    	<thead>
+        	<tr style="background-color:#9EE871;height:20px;">
+                <th>Appliances
+                </th>
+                <th>Sales Price
+                </th>
+                <th>Regular Price
+                </th>
+            </tr>
+        </thead>
+    	<tbody>
+        <?php foreach($appliances_items as $item) { 
+			$counter++;
+			$row_style = "";
+			if(($counter % 2) == 0){
+				$row_style = 'style="background-color:#F8F7F9;"';
+			}
+		?>
+    	<tr <?php echo $row_style; ?> class="affected">
+        	<td><?php echo htmlspecialchars($item['Item']['name']) ?></td>
+        	<td class="sales_price">$<?php echo $item['Item']['price'] ?></td>
+        	<td class="regular_price">$<?php echo $item['Item']['regular_price'] ?></td>
+        </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+    <table class="searchtable" cellpadding="4" cellspacing="0" width="100%">
+    	<thead>
+        	<tr style="background-color:#9EE871;height:20px;">
+                <th>Parts
+                </th>
+                <th>Sales Price
+                </th>
+                <th>Regular Price
+                </th>
+            </tr>
+        </thead>
+    	<tbody>
+        <?php foreach($parts_items as $item) { 
+			$counter++;
+			$row_style = "";
+			if(($counter % 2) == 0){
+				$row_style = 'style="background-color:#F8F7F9;"';
+			}
+		?>
+    	<tr <?php echo $row_style; ?> class="affected">
+        	<td><?php echo htmlspecialchars($item['Item']['name']) ?></td>
+        	<td class="sales_price">$<?php echo $item['Item']['price'] ?></td>
+        	<td class="regular_price">$<?php echo $item['Item']['regular_price'] ?></td>
+        </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+    <table class="searchtable" cellpadding="4" cellspacing="0" width="100%">
+    	<thead>
+        	<tr style="background-color:#9EE871;height:20px;">
+                <th>Others
+                </th>
+                <th>Sales Price
+                </th>
+                <th>Regular Price
+                </th>
+            </tr>
+        </thead>
+    	<tbody>
+        <?php foreach($other_items as $item) { 
+			$counter++;
+			$row_style = "";
+			if(($counter % 2) == 0){
+				$row_style = 'style="background-color:#F8F7F9;"';
+			}
+		?>
+    	<tr <?php echo $row_style; ?> class="affected">
+        	<td><?php echo htmlspecialchars($item['Item']['name']) ?></td>
+        	<td class="sales_price">$<?php echo $item['Item']['price'] ?></td>
+        	<td class="regular_price">$<?php echo $item['Item']['regular_price'] ?></td>
+        </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+    <table class="searchtable" cellpadding="4" cellspacing="0" width="100%">
+    	<thead>
+        	<tr style="background-color:#9EE871;height:20px;">
+                <th>Carpets
+                </th>
+                <th>Sales Price
+                </th>
+                <th>Regular Price
+                </th>
+            </tr>
+        </thead>
+    	<tbody>
+        <?php foreach($carpet_items as $item) { 
+			$counter++;
+			$row_style = "";
+			if(($counter % 2) == 0){
+				$row_style = 'style="background-color:#F8F7F9;"';
+			}
+		?>
+    	<tr <?php echo $row_style; ?> class="affected">
+        	<td><?php echo htmlspecialchars($item['Item']['name']) ?></td>
+        	<td class="sales_price">$<?php echo $item['Item']['price'] ?></td>
+        	<td class="regular_price">$<?php echo $item['Item']['regular_price'] ?></td>
+        </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+</div>
+

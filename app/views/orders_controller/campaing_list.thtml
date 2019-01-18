@@ -1,0 +1,167 @@
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript">
+    function camp_list_change() {
+        var id = document.getElementById("camp_list").value;
+        $.get("<?=BASE_URL;?>/orders/remaining_leads_of_campain",
+            {
+                id:id
+            },
+        function(data){ 
+            var fields = data.split(',');
+            document.getElementById("numberofleads").value = fields[0];
+            document.getElementById("assignedto").value = fields[1];
+        }); 
+    }
+
+    function transfer(){
+
+    var source_id = document.getElementById("source_id").value;
+    var campaign_id = document.getElementById("camp_list").value;
+    var assignedto = document.getElementById("assignedto").value;
+    var numberofleads = document.getElementById("numberofleads").value;
+
+    $.get("<?=BASE_URL;?>/orders/transferCampaign",
+                {
+                    source_id:source_id,
+                    campaign_id:campaign_id
+                },
+            function(data){
+                var fields = data.split(',');
+                if(fields[0] == 'job'){
+                    var msg = numberofleads+" jobs has been transfered from "+assignedto+" to "+fields[1];
+                }
+                else{
+                    var msg = numberofleads+" calls has been transfered from "+assignedto+" to "+fields[1];
+                }
+                document.getElementById('transfer_msg').innerHTML = msg;
+                document.getElementById('transfer_msg_delete').innerHTML = '';
+                document.getElementById("camp_list").value = "";
+                document.getElementById("numberofleads").value = "";
+                document.getElementById("assignedto").value = "";
+                document.getElementById("source_id").value = "";
+                document.getElementById("delete_camp_list").value = "";
+            }); 
+    }
+
+    function delete_camp(){
+        var id = document.getElementById("delete_camp_list").value;
+        $.get("<?=BASE_URL;?>/orders/delete_campaign",
+            {
+                id:id
+            },
+        function(data){ 
+            var msg = "Campanign has been deleted";
+            document.getElementById('transfer_msg_delete').innerHTML = msg;
+            document.getElementById('transfer_msg').innerHTML = '';
+            document.getElementById("delete_camp_list").value = "";
+            document.getElementById("camp_list").value = "";
+
+            var selectobject=document.getElementById("delete_camp_list");
+            for (var i=0; i<selectobject.length; i++){
+                if (selectobject.options[i].value == id ){
+                   selectobject.remove(i);
+                }
+            }
+
+            var camp_list=document.getElementById("camp_list");
+            for (var i=0; i<camp_list.length; i++){
+                if (camp_list.options[i].value == id ){
+                   camp_list.remove(i);
+                }
+            }
+
+
+        }); 
+    }
+
+</script>
+<style type="text/css">
+    table, th, td {
+    border: 0px solid black !important;
+}
+</style>
+
+
+<h1>Campanign Status</h1>
+<body>
+
+<h4 style='color:red;' id='transfer_msg'></h3>
+<div class='table'>
+    <table width="40%" border="0" cellspacing="20" cellpadding="0">
+        <tr>
+            <td>
+            Campaing List: 
+                <select name="camp_list" id='camp_list' onchange="camp_list_change()">
+                    <option value="">Select Source</option>
+                    <? 
+
+                    foreach($campaing_list as $k => $v) {
+                        echo '<option value="'.$k.'"'.( $k == $source_id ? ' selected' : '').'>'.$v.'</option>';
+                    }
+                    ?>
+                </select>
+            </td>   
+        </tr>
+        <tr>
+            <td>
+            Remaining Leads <input name="numberofleads" value="" style="width: 100px;" type="text" id="numberofleads" readonly> 
+            </td>
+
+            <td>
+            Assigned to: <input name="assignedto" value="" style="width: 100px;" type="text" id="assignedto" readonly> 
+            </td>
+        </tr>
+        <tr>
+            <td>
+            Send to: 
+                <select name="source_id" id='source_id'>
+                    <option value="">Select Source</option>
+                    <? 
+                    foreach($booking_sources as $k => $v) {
+                        echo '<option value="'.$k.'"'.( $k == $source_id ? ' selected' : '').'>'.$v.'</option>';
+                    }
+                    ?>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <!-- <input type="hidden" id='export_data_change' value="false"> -->
+                <input type="button" onclick="transfer()" name="save" value="Transfer">
+                <!-- <input type="button" onclick="export_data()" name="save" value="Export Data"> -->
+
+                <img src="<?=ROOT_URL;?>/app/webroot/img/pink-loder.gif" style="width: 20px;vertical-align: bottom; display: none;" id="loader-img">
+            </td>
+        </tr>
+    </table>
+</div>
+
+
+<h1>Delete Campanign</h1>
+<table border="0" cellspacing="20" cellpadding="0">
+<tr><h4 style='color:red;' id='transfer_msg_delete'></h3></tr>
+        <tr>
+            <td>
+            Campaing List: 
+                <select name="delete_camp_list" id='delete_camp_list'>
+                    <option value="">Select Source</option>
+                    <? 
+                    foreach($campaing_list as $k => $v) {
+                        echo '<option value="'.$k.'"'.( $k == $source_id ? ' selected' : '').'>'.$v.'</option>';
+                    }
+                    ?>
+                </select>
+            </td>  
+            <td><input type="button" onclick="delete_camp()" name="delete" value="Delete"></td> 
+        </tr>
+</table>
+
+</body>
+
+
+
+<style type="text/css">
+    table, th, td {
+   border: 1px solid black;
+}
+</style>

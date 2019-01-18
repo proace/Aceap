@@ -1,0 +1,159 @@
+<script>
+//*** SET PAGE TITLE ***
+document.title += " :: Calls Summary";
+//**********************
+function PrintIt(){
+res=document.getElementById("results");
+parent['main_view'].print();
+}
+var id;
+$(document).ready(function(){
+   $("tr.cell1").click(function(event){
+     id=$(this).attr("id");
+     if (id==''){
+         $("tr.clDetails").hide();      
+         return;
+        }
+     $.get("<?=BASE_URL;?>/reports/JobsInTable", {person_id:id,from_date:$("#ffromdate").val(),to_date:$("#ftodate").val()}, function(data){
+      $("tr.clDetails").hide();      
+      $("#D_"+id).html(data);      
+      $("#D_"+id).toggle();      
+    });  
+   });
+   $("tr.cell0").click(function(event){
+     id=$(this).attr("id");
+     if (id==''){
+      $("tr.clDetails").hide();      
+      return;
+     }
+     $.get("<?=BASE_URL;?>/reports/JobsInTable", {person_id:id,from_date:$("#ffromdate").val(),to_date:$("#ftodate").val()}, function(data){
+       $("tr.clDetails").hide();      
+      $("#D_"+id).html(data);      
+      $("#D_"+id).toggle();      
+    });  
+   });
+});
+</script>
+
+<form method="GET" action="<?= $PHP_SELF ?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+<table width="800">
+	<tr>
+		<td class="sectionTitle" colspan="4">Calls Summary</td>
+	</tr>
+	<tr >
+		<td>
+			<input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_fdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+		</td>
+		<td>Date from: </td>
+		<td>
+			<input type="text" id="ffromdate" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<? if ($fdate) echo $fdate; else echo date("d M Y"); ?>">
+		</td>
+		<td>Date to: </td>
+		<td>
+			<input type="text" id="ftodate" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<? if ($tdate) echo $tdate; else echo date("d M Y"); ?>">
+		</td>
+		<td>
+			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_tdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+		</td>
+		<td colspan="7" align="left">
+			<input type="submit" name="submit2" value="Update >>>">
+		</td>
+		<td>
+		  <INPUT TYPE="button" value="Print" onClick="PrintIt()">
+		</td>
+	</tr>
+</table> 	
+</form>
+
+	<br/>       
+ 	<table id="results" class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+    <tr>
+			<th rowspan=2>Source</th>
+			<th rowspan=2>Calls</th>
+			<th colspan=2>Booked</th>
+			<th colspan=2>Canceled</th>
+			<th colspan=2>Done</th>
+			<th rowspan=2>Call back</th>
+			<th rowspan=2>Not interested</th>
+			<th rowspan=2>Answering</th>
+			<th rowspan=2>DNC</th>
+    </tr>
+    <tr>
+			<th>As user</th>
+			<th>As src</th>
+			<th>As user</th>
+			<th>As src</th>
+			<th>As user</th>
+			<th>As src</th>
+    </tr>
+<?php 
+	foreach ($records_order as $k => $cur_array) { ?>
+  <tr class="cell0">
+      <td><b><?=$k?></b></td>
+      <td><b>&nbsp;<?=$cur_array['calls']?></b></td>
+      <td><b>&nbsp;<?=$cur_array['book_user']?></b></td>
+      <td><b>&nbsp;<?=$cur_array['book_source']?></b></td>
+      <td><b>&nbsp;<?=$cur_array['cancel_user']?></b></td>
+      <td><b>&nbsp;<?=$cur_array['cancel_source']?></b></td>
+      <td><b>&nbsp;<?=$cur_array['done_user']?></b></td>
+      <td><b>&nbsp;<?=$cur_array['done_source']?></b></td>
+      <td><b>&nbsp;<?=$cur_array['call_back']?></b></td>
+      <td><b>&nbsp;<?=$cur_array['not_interesting']?></b></td>
+      <td><b>&nbsp;<?=$cur_array['answering_machine']?></b></td>
+      <td><b>&nbsp;<?=$cur_array['dnc']?></b></td>
+  </tr>
+<?php
+	 foreach ($cur_array['users'] as $cur) {
+	 	 $obj = $items[$cur];
+     	if ($obj['ace']!=1) $class='cell0'; else $class='cell1';
+?>
+  <tr class="<?= $class ?>" id="<?php echo $obj['id'];?>">
+      <td>&nbsp;&nbsp;&nbsp;<?php echo $obj['source_name']; ?></td>
+      <td>&nbsp;<?php if (0+$obj['call_back']+$obj['not_interesting']+$obj['book_user']!=0+$obj['calls']) echo $obj['calls']; ?></td>
+      <td>&nbsp;<?php echo ($obj['book_user']==0)?'':$obj['book_user']; ?></td>
+      <td>&nbsp;<?php echo ($obj['book_source']==0)?'':$obj['book_source']; ?></td>
+      <td>&nbsp;<?php echo ($obj['cancel_user']==0)?'':$obj['cancel_user']; ?></td>
+      <td>&nbsp;<?php echo ($obj['cancel_source']==0)?'':$obj['cancel_source']; ?></td>
+      <td>&nbsp;<?php echo ($obj['done_user']==0)?'':$obj['done_user']; ?></td>
+      <td>&nbsp;<?php echo ($obj['done_source']==0)?'':$obj['done_source']; ?></td>
+      <td>&nbsp;<?php echo ($obj['call_back']==0)?'':$obj['call_back']; ?></td>
+      <td>&nbsp;<?php echo ($obj['not_interesting']==0)?'':$obj['not_interesting']; ?></td>
+      <td>&nbsp;<?php echo ($obj['answering_machine']==0)?'':$obj['answering_machine']; ?></td>
+      <td>&nbsp;<?php echo ($obj['dnc']==0)?'':$obj['dnc']; ?></td>
+  </tr>
+  <tr>
+	<td colspan=11 class="clDetails" style="display:none; text-align:center" id="D_<?php echo $obj['id'];?>">
+	</td>
+  </tr>
+    <?php }} ?>
+  <TFOOT>
+      <tr class="cell_total">
+				<td><b>&nbsp;TOTAL</b></td>
+				<td><b>&nbsp;<?php echo $items['total']['calls']; ?></b></td>
+				<td><b>&nbsp;<?php echo $items['total']['book_user']; ?></b></td>
+				<td><b>&nbsp;<?php echo $items['total']['book_source']; ?></b></td>
+				<td><b>&nbsp;<?php echo $items['total']['cancel_user']; ?></b></td>
+				<td><b>&nbsp;<?php echo $items['total']['cancel_source']; ?></b></td>
+				<td><b>&nbsp;<?php echo $items['total']['done_user']; ?></b></td>
+				<td><b>&nbsp;<?php echo $items['total']['done_source']; ?></b></td>
+				<td><b>&nbsp;<?php echo $items['total']['call_back']; ?></b></td>
+				<td><b>&nbsp;<?php echo $items['total']['not_interesting']; ?></b></td>
+				<td><b>&nbsp;<?php echo $items['total']['answering_machine']; ?></b></td>
+				<td><b>&nbsp;<?php echo $items['total']['dnc']; ?></b></td>
+      </tr>
+  </TFOOT>
+ </table>
+<table width="100%">
+<tr>
+	<td width="100%" align="center">
+		<?php echo $html->link('<<','/reports/calls_summary?page='.$previousPage.'&ffromdate='.$fdate.'&ftodate='.$tdate)  ?>
+		&nbsp;
+		<?php echo $html->link('>>','/reports/calls_summary?page='.$nextPage.'&ffromdate='.$fdate.'&ftodate='.$tdate) ?>
+	</td>
+</tr>
+</table>

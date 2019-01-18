@@ -1,0 +1,153 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1> Inventory Count <small></small> </h1>
+  <ol class="breadcrumb">
+    <li><a href="<?php echo $home_link ?>"><i class="fa fa-home"></i> Home</a></li>
+    <li>Inventory</li>
+    <li class="active">Count</li>
+  </ol>
+</section>
+<script type="text/javascript">
+$(function () {        
+  $("#example1").dataTable();
+  
+  $(".line").click(function(){
+  	button = $(this);
+  	val = prompt(button.attr("lname"), button.html());  	
+  	//button.hide();
+  	if(val) {
+  	$.post("<?php echo BASE_URL?>/calls/adjuststock", 
+	{
+		location:button.attr("location"),
+		val: val,
+		item_id:button.attr("item_id")
+	})
+	.done(function(data) {
+		//button.show();
+		button.html(val);
+	});
+	}
+  });
+});
+</script>
+<!-- Main content -->
+<section class="content">
+<!--<div class="alert alert-warning alert-dismissable">
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+    <h4>	<i class="icon fa fa-exclamation-triangle"></i> This page is in TEST MODE!</h4>
+   The Editing has been disabled. check back around 3pm
+  </div>-->
+
+  <div class="row">
+  	<div class="col-md-12">
+      <!-- general form elements -->
+      <div class="box box-primary">
+        <div class="box-header">
+          <h3 class="box-title"> </h3>
+        </div><!-- /.box-header -->
+        <!-- form start -->
+          <?php
+		  	$agents = array(
+		  	'231277' => "Agent 1",
+			'44874' => "Agent 2",
+			'231296' => "Agent 3",
+			'231297' => "Agent 4",
+			
+			'44851' => "Ali (ACE)",
+			'226792' => "Roy (ACE)",
+			'231267' => "B Plumber (ACE)",
+			'231254' => "GG (ACE)",
+			'229528' => "Brizzi (ACE)"
+			);
+		  ?>
+                   
+            <div class="box-body">
+              
+              <table id="example1" class="table table-bordered table-striped">
+                <thead>
+                  <tr>   
+                  	  <th style="width:200px;">SKU</th> 
+                  	  <th>Category</th>     
+                      <th>Description</th>  
+                      <th>Cost</th>
+                      <th>Price</th>                            
+                      <!--<th>Supplier</th>  -->
+                      <?php foreach($locations as $location) { ?>
+                      <th>
+                      <?php echo $location['name'] ?><br />
+                      <?php echo $location['first_name'] ?>
+                      </th>
+                      <?php } ?>
+                      <!--
+                      <th>WH</th>
+                      <th>Route 1</th> 
+                      <th>Route 2</th>
+                      <th>Route 3</th>
+                      <th>Route 4</th>  
+                      <th>Route 6</th>
+                      <th>Route 7</th>  
+                      <th>Route 8</th>  
+                      <th>Route C</th>       
+                      <th>Route 9</th>      
+                      -->                          
+                  </tr>
+                </thead>
+                <tbody>
+                  
+                  <?php foreach($items as $item)  { ?> 
+                  <tr>
+                  	<td><?php echo $item['sku'] ?></td>    
+                  	<td><?php echo $item['category_name'] ?></td>                
+                    <td><?php echo $item['name'] ?></td>
+                    <td><?php echo $item['supplier_price'] ?></td>
+                    <td><?php echo $item['regular_price'] ?></td>
+                    <!--<td><?php echo $item['location'] ?></td>-->
+                    <!--<td><?php echo $item['supplier'] ?></td>-->
+                    
+                    
+                    <td><button lname="Warehouse" location="1" item_id="<?php echo $item['id'] ?>" class="btn line line1_<?php echo $item['id'] ?>"><?php echo $item['location1'] ?></button></td>
+                    <td><button lname="Route 1" location="2" item_id="<?php echo $item['id'] ?>" class="btn line line2_<?php echo $item['id'] ?>"><?php echo $item['location2'] ?></button></td>
+                    <td><button lname="Route 2" location="3" item_id="<?php echo $item['id'] ?>" class="btn line line3_<?php echo $item['id'] ?>"><?php echo $item['location3'] ?></button></td>
+                    <td><button lname="Route 3" location="4" item_id="<?php echo $item['id'] ?>" class="btn line line4_<?php echo $item['id'] ?>"><?php echo $item['location4'] ?></button></td>
+                    <td><button lname="Route 4" location="5" item_id="<?php echo $item['id'] ?>" class="btn line line5_<?php echo $item['id'] ?>"><?php echo $item['location5'] ?></button></td>
+                    <td><button lname="Route 6" location="6" item_id="<?php echo $item['id'] ?>" class="btn line line6_<?php echo $item['id'] ?>"><?php echo $item['location6'] ?></button></td>
+                    <td><button lname="Route 7" location="7" item_id="<?php echo $item['id'] ?>" class="btn line line7_<?php echo $item['id'] ?>"><?php echo $item['location7'] ?></button></td>
+                    <td><button lname="Route 8" location="8" item_id="<?php echo $item['id'] ?>" class="btn line line8_<?php echo $item['id'] ?>"><?php echo $item['location8'] ?></button></td>
+                    <td><button lname="Route C" location="9" item_id="<?php echo $item['id'] ?>" class="btn line line9_<?php echo $item['id'] ?>"><?php echo $item['location9'] ?></button></td>
+                    <td><button lname="Route 9" location="10" item_id="<?php echo $item['id'] ?>" class="btn line line10_<?php echo $item['id'] ?>"><?php echo $item['location10'] ?></button></td>
+
+                  </tr>
+                  <?php } ?>                      
+                <tfoot>
+                  <tr>   
+                  	  <th style="width:200px;">SKU</th>      
+                      <th>Description</th>  
+                      <th>Cost</th>
+                      <th>Price</th>                            
+                      <!--<th>Supplier</th>  -->
+                      <th>WH</th>
+                      <th>Route 1</th> 
+                      <th>Route 2</th>
+                      <th>Route 3</th>
+                      <th>Route 4</th>  
+                      <th>Route 6</th>
+                      <th>Route 7</th>  
+                      <th>Route 8</th>  
+                      <th>Route C</th>       
+                      <th>Route 9</th>                                                 
+                  </tr>
+                </tfoot>
+              </table>
+              <!--<pre><?php //print_r($items) ?></pre>                                   -->
+            </div>
+           
+            <!-- /.box-body -->
+            <div class="box-footer">
+                <!--<button type="submit" class="btn btn-primary" name="callback_access" value="1">Submit</button>-->
+          	</div>
+      	
+      </div><!-- /.box -->      
+    </div><!-- end col -->
+  </div>
+</section>
+<!-- /.content --> 

@@ -1,0 +1,354 @@
+<meta http-equiv="refresh" content="30">
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />	
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+
+<script type="text/javascript">
+<!--
+/*
+toggle hiding of groups with checkboxes
+*/
+$(document).ready(function() {
+	$('input.check').change(function () {
+		if($(this).attr("checked")) {
+			//do the stuff that you would do when 'checked'
+			$(this).parents('div.segment').show();
+			return;
+		}
+		//Here do the stuff you want to do when 'unchecked'
+		$(this).parents('div.segment').hide();
+	});
+	
+	$('#showAllGroups').click(function () {
+		$('div.segment').show();
+		$('input.check').attr('checked', true);	
+	});
+	
+	$('input.check').each(function () {
+		if($(this).attr("checked")) {
+			//do the stuff that you would do when 'checked'
+			$(this).parents('div.segment').show();
+			return;
+		}
+		//Here do the stuff you want to do when 'unchecked'
+		$(this).parents('div.segment').hide();
+	});		
+});
+
+function toggleSegments() {
+	$('input:checkbox')
+}
+
+function updateClock ( )
+{
+  var currentTime = new Date ( );
+
+  var currentHours = currentTime.getHours ( );
+  var currentMinutes = currentTime.getMinutes ( );
+  var currentSeconds = currentTime.getSeconds ( );
+
+  // Pad the minutes and seconds with leading zeros, if required
+  currentMinutes = ( currentMinutes < 10 ? "0" : "" ) + currentMinutes;
+  currentSeconds = ( currentSeconds < 10 ? "0" : "" ) + currentSeconds;
+
+  // Choose either "AM" or "PM" as appropriate
+  var timeOfDay = ( currentHours < 12 ) ? "AM" : "PM";
+
+  // Convert the hours component to 12-hour format if needed
+  currentHours = ( currentHours > 12 ) ? currentHours - 12 : currentHours;
+
+  // Convert an hours component of "0" to "12"
+  currentHours = ( currentHours == 0 ) ? 12 : currentHours;
+
+  // Compose the string for display
+  var currentTimeString = currentHours + ":" + currentMinutes + ":" + currentSeconds + " " + timeOfDay;
+
+  // Update the time display
+  document.getElementById("clock").firstChild.nodeValue = currentTimeString;
+}
+function sendMsg(el){
+	var txt = $(el).val();
+	$.post("<?=BASE_URL;?>/reports/sendMsg", {text:txt});  
+}
+function saveGoal(){
+	var goal = $("#newGoal").val();
+	$(el).html(goal);
+	$.post("<?=BASE_URL;?>/reports/setGoal", {goal:goal,userid:userid}, function(){
+		$("#dialog").dialog('close');
+	});  
+}
+function saveQuota(){
+	var quota = $("#newQuota").val();
+	$(el).html(quota);
+	$.post("<?=BASE_URL;?>/reports/setQuota", {quota:quota,userid:userid}, function(){
+		$("#dialog2").dialog('close');
+	});  
+}
+
+var userid = 0;
+var el;
+function ChangeGoal(ell){
+	el = ell;
+	$("#dialog").dialog({ height: 100, width: 250,  modal: true, position:['center',150] });
+}
+function ChangeQuota(ell){
+	el = ell;
+	$("#dialog2").dialog({ height: 100, width: 250,  modal: true, position:['center',150] });
+}
+$(document).ready(function(){updateClock();setInterval('updateClock()', 1000 );setInterval('document.viewform.submit();', 60000 );});
+
+function saveGroup(o){
+	var s=o; 
+	window.open('http://192.168.2.150/acesys/framework1.3/index.php/groups/saveGroup/?uid=' + s, '_self');
+}
+
+function saveLeader(o){
+	var s=o; 
+	window.open('http://192.168.2.150/acesys/framework1.3/index.php/groups/saveLeader/?uid=' + s, '_self');
+}
+
+// -->
+</script>
+<style>
+.results th {border-bottom: 1px solid #6c6c6c;background-color:#800000; color:white;border:2px outset white;font-size: small;}
+.regular {font-weight:bold;}
+
+</style>
+<div id="dialog" title="Goal Setting" style="display:none;vertical-align:middle;text-align:center;">
+  Goal:&nbsp;<input id="newGoal" type="text" />&nbsp;<input type="button" value="Save" onclick="saveGoal();"/>
+</div>
+<div id="dialog2" title="Quota Setting" style="display:none;vertical-align:middle;text-align:center;">
+  Quota:&nbsp;<input id="newQuota" type="text" />&nbsp;<input type="button" value="Save" onclick="saveQuota();"/>
+</div>
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform" id="viewform">
+	<input type="hidden" name="action" value="view" >
+	<input type="hidden" name="order" value="<?=$_GET['order']?>">
+	<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+	
+	<table width="1100px" border="0" cellspacing="3" cellpadding="0">
+	<tr>
+		<td class="sectionTitle">Call Center Board</td>
+		<td style="color:#000000; font-weight:bold; text-align:left; font-size: large;">
+			&nbsp;<?=date("M, d")?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="clock">&nbsp;</span>
+		</td>
+		<td width=10% style="color:#000000; font-weight:bold; text-align:center;">
+			Today
+		</td>
+		<td width=10% style="color:#000000; font-weight:bold; text-align:center;">
+			Pay Period
+		</td>			
+	</tr>
+	<tr>
+		<td>
+			<?php  if (($_SESSION['user']['role_id'] != 3)&&($_SESSION['user']['role_id'] != 9)): ?>
+			Pay period:&nbsp;
+			<select name="pay_period" onchange="document.viewform.submit();">            
+			<?php foreach ($allPayPeriods as $v => $k) {
+				$selected = '';
+				if ($v == $pay_period) $selected = 'selected';?>
+				<option value="<?=$v?>" <?=$selected?>><?=$k?></option>
+			<?php } ?>
+			</select>
+			<?php else: ?>
+			&nbsp;
+			<?php endif; ?>
+			<!--&nbsp;&nbsp;&nbsp;
+			<input type="submit" name="submit2" id="submit2" value="Update" class="buttons">-->
+		</td>			
+		<td style="text-align:left;">
+			<?php  if (($_SESSION['user']['role_id'] != 3)&&($_SESSION['user']['role_id'] != 9)): ?>
+			<textarea id="msg" name="msg" rows=2 cols=80 onkeyup="sendMsg(this)"><?=$msg?></textarea>
+			<?php else: ?>
+			<span style="color:#800000; font-weight:bold; text-align:center; font-size: large;"><?=$msg?></span>
+			<?php endif; ?>
+		</td>			
+		<td width=10% style="color:#800000; font-weight:bold; text-align:center; font-size: xx-large;">
+			<?=$today_total?>
+		</td>			
+		<td width=10% style="color:#800000; font-weight:bold; text-align:center; font-size: xx-large;">
+			<?=$total?>
+		</td>			
+	</tr>
+	</table>
+<!--</form>-->
+<input type="button" value="Show All Groups" id="showAllGroups" />
+<?php foreach($groups as $group) { ?>
+<div class="segment" id="segment<?php echo $group['id'] ?>">
+
+<h2><?php echo $group['name'] ?><input type="checkbox" checked="checked" class="check" /></h2>
+<table class="results" cellpadding="0" cellspacing="0" style="border-style: solid;border-width:1px;">
+    <tr style="height:25px;">
+        <th width="150">Name</th>        
+		<!--<th width="50">Booked</th>-->
+<?php	$brd = "";
+	foreach ($dates as $cur): ?>
+        <th width="42"><?=$cur?></th>
+<?php	$brd = "border-left: 1px solid #bfbfbf;";
+	endforeach; ?>
+        <!--<th width="50">Prev.</th>-->
+ 		<!--<th width="50">Cancel</th>-->
+        <th width="50" style="background-color:#008c00;">Done</th>
+        <th width="50">To Go</th>
+        <th width="50" style="background-color:#ff8000;">Quota</th>
+        <th width="50" style="background-color:#0055aa;">Goal</th>
+		<th width="50">Hrs</th>
+		<th width="50">H/Job</th>
+    </tr>
+<?php
+	$total = array();
+	foreach ($items as $obj):
+		$class = 'cell0';
+		$togo = $obj['goal']-$obj['done'];
+?>
+	<?php if($obj['gid'] == $group['id']) { ?>
+    <tr class="<?= $class ?>" style="height:35px;">
+    	<?php if($disp == 0) { ?>
+        	<?php if($obj['gleaderid'] == $obj['id']) { ?>
+            <td align="left" style="background-color:#<?php echo $obj['lead_color']; ?>;border:2px outset #d0d0ce;font-size: small; font-weight:bold; font-style: italic;">
+            <?php } else { ?>
+            <td align="left" style="background-color:#<?php echo $obj['team_color']; ?>;border:2px outset #d0d0ce;font-size: small; font-weight:bold; font-style: italic;">
+            <?php } ?>
+        <?php } else { ?>
+        	<td align="left" style="border:2px outset #d0d0ce;font-size: small; font-weight:bold; font-style: italic;">
+        <?php } ?>        
+		<?php echo $obj['name'];?>
+        </td>
+		<!--<td align="center" style="font-weight:bold;font-size:medium;border:2px outset #d0d0ce;color:gray;"><?=($obj['booked']-$obj['previous']['booked']==0)?'&nbsp;':$obj['booked']-$obj['previous']['booked']?></td>        -->
+<?php foreach ($dates as $cur => $v): ?>
+<?php
+		$bg = "background-color:#d7ffd7;";
+		if ($obj[$cur]['booked']==0) $bg="";
+		elseif ($obj[$cur]['pending']>=8) $bg="background-color:#ff0000;";
+		elseif ($obj[$cur]['pending']>=4) $bg="background-color:#ffcc00;";
+		elseif ($obj[$cur]['pending']>=3) $bg="background-color:#ffcccc;";
+		
+		$total[$cur] += $obj[$cur]['booked'];
+		
+		$total_bg = "background-color:#008c00;color:#ffffff;";		
+		if ($obj['done']>=20) $total_bg="background-color:#fa5201;color:#ffffff;";
+?>
+		<td class="regular" align="center" style="border:2px outset #c7fcad;<?=$bg?>;padding:0px;margin:0px;">
+			<table cellpadding=0 cellspacing=0 width=100% style="background: transparent;">
+				<tr>
+					<td colspan=3 style="font-weight:bold;font-size:medium;text-align:center;background: transparent;border:none;">
+						<?=($obj[$cur]['booked']==0)?'&nbsp;':$obj[$cur]['booked']?>
+					</td>
+				</tr>
+				<tr>
+					<td style="width:14px;background: transparent;text-align:center;border:none;color:gray;"><?=($obj[$cur]['pending']==0)?'&nbsp;':$obj[$cur]['pending']?></td>
+					<td style="width:14px;background: transparent;text-align:center;border:none;color:red;"><?=($obj[$cur]['cancelled']==0)?'&nbsp;':$obj[$cur]['cancelled']?></td>
+					<td style="width:14px;background: transparent;text-align:center;border:none;color:green;"><?=($obj[$cur]['done']==0)?'&nbsp;':$obj[$cur]['done']?></td>
+				</tr>
+			</table>
+		</td>
+<?php endforeach; ?>
+		<!--<td align="center" style=""><?=($obj['previous']['booked']==0)?'&nbsp;':$obj['previous']['booked']?></td>-->
+		<!--<td align="center" style="font-weight:bold;font-size:larger;color:#800000;border:2px outset #d0d0ce;"><?=($obj['cancelled']==0)?'&nbsp;':$obj['cancelled']?></td>        -->
+		<td align="center" style="<?=$total_bg?>border:2px outset #008c00;font-weight:bold;font-size:larger;"><?=($obj['done']==0)?'&nbsp;':$obj['done']?></td>        
+		<td align="center" style="background-color:#fffd9f;color:black;font-weight:bold;font-size:larger;border:3px outset #ffff15;"><?=($togo<=0)?'&nbsp;':$togo?></td>
+		<td align="center" style="background-color:#ff8000;border:2px outset #205a03;font-weight:bold;color:white;font-size:larger;">
+			<?php if (($common->getLoggedUserRoleID() == "6") or ($common->getLoggedUserRoleID() == "13")): ?>
+			<a href="#" onclick="userid = <?=$obj['id']?>;ChangeQuota(this);return false;">
+			<?php endif; ?>
+            <?php echo $obj['quota']?>
+			<?php if (($common->getLoggedUserRoleID() == "6") or ($common->getLoggedUserRoleID() == "13")): ?>
+			</a>
+			<?php endif; ?>
+		</td>
+        <td align="center" style="background-color:#0055aa;border:2px outset #205a03;font-weight:bold;color:white;font-size:larger;">
+			<?php if (($common->getLoggedUserRoleID() == "6") or ($common->getLoggedUserRoleID() == "13")): ?>
+			<a href="#" onclick="userid = <?=$obj['id']?>;ChangeGoal(this);return false;">
+			<?php endif; ?>
+			<?=($obj['goal']==0)?'&nbsp;':$obj['goal']?>
+			<?php if (($common->getLoggedUserRoleID() == "6") or ($common->getLoggedUserRoleID() == "13")): ?>
+			</a>
+			<?php endif; ?>
+		</td>        
+	    <td align="center" style=""><?=($obj['hours_total']==0)?'&nbsp;':$obj['hours_total']?></td>
+	    <td align="center" style=""><?=(round($obj['hours_total']/($obj['booked_today']),1)==0)?'&nbsp;':round($obj['hours_total']/($obj['booked_today']),1)?></td>
+    </tr>
+    <?php } //end if($obj['gname'] != null || $obj['gname'] != '') ?>
+<?php endforeach; ?>
+
+    <tr class="total" style="height:35px;">      
+        <td align="left" style="border:2px outset #d0d0ce;font-size: small; font-weight:bold; font-style: italic;"><b>Total</b></td>
+<?php foreach ($dates as $cur => $v): ?>
+<?php $total_bg = "background-color:#008c00;color:#ffffff;"; ?>
+		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">
+			<table cellpadding=0 cellspacing=0 width=100% style="background: transparent;">
+				<tr>
+					<td colspan=3 style="font-weight:bold;font-size:medium;text-align:center;background: transparent;border:none;">
+						<?=($total[$cur]==0)?'&nbsp;':$total[$cur]?>
+					</td>
+				</tr>
+			</table>
+		</td>
+<?php endforeach; ?>
+		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
+		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
+		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
+		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
+		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
+        <td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
+    </tr>
+</table>
+</div> <!--END segment-->
+<br />
+<?php } //end foreach groups ?>
+
+</form>
+<table style="font-family:Arial, Helvetica, sans-serif; font-size:90%;border:1px solid #666666">
+	<tr>
+    	<td style="background-color:#9C0;">&nbsp;
+        </td>
+        <td>Team Leader
+        </td>
+    </tr>
+	<tr>
+    	<td style="color:black; width:20px; text-align:center;">#
+        </td>
+        <td style="width:100px">Pending
+        </td>        
+    </tr>
+    <tr>
+    	<td style="color:blue; text-align:center;">#
+        </td>
+        <td>Rescheduled
+        </td>        
+    </tr>
+    <tr>
+    	<td style="color:red; text-align:center;">#
+        </td>
+        <td>Cancelled
+        </td>
+    </tr>
+    <tr>
+    	<td style="color:green; text-align:center;">#
+        </td>
+        <td>Done
+        </td>
+    </tr>
+    <tr>
+    	<td style="background-color:#d7ffd7;">&nbsp;
+        </td>
+        <td>1+ Pending
+        </td>
+    </tr>
+    <tr>
+    	<td style="background-color:#ffcccc;">&nbsp;
+        </td>
+        <td>3+ Pending
+        </td>
+    </tr>
+    <tr>
+    	<td style="background-color:#ffcc00;">&nbsp;
+        </td>
+        <td>4+ Pending
+        </td>
+    </tr>
+    <tr>
+    	<td style="background-color:#ff0000;">&nbsp;
+        </td>
+        <td>8+ Pending
+        </td>
+    </tr>    
+</table>

@@ -1,0 +1,27 @@
+<div class="slot_confirmation">
+	<div class="slot_status <?php echo $availability_class ?>"><?php echo $availability ?></div>
+    <div>
+        <span class="city_area"><?php echo $city_area ?></span> : 
+        <span class="job_truck"><?php echo $job_truck_name ?></span>
+    </div>
+    <div>
+        <strong class="job_date"><?php echo $job_date_name ?></strong>
+        <em class="job_time"><?php echo $job_time_name ?></em>    
+    </div>
+      <?php if($availability == "Available") { ?> 
+    <div>
+        <!--<input type="button" id="slot_no" value="Cancel" />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->
+        <input type="button" id="slot_yes" value="Book" />    	
+    </div>
+    <? } ?>
+    <input type="hidden" id="job_text_route" value="[<?php echo $city_area ?>] - [<?php echo $job_date_name ?>] between [<?php echo $job_time_name ?>]" />
+    <input type="hidden" id="job_date" value="<?php echo $job_date_name ?>" />
+    <input type="hidden" id="job_date_ymd" value="<?php echo $job_date ?>" />
+    <input type="hidden" id="job_time_beg" value="<?php echo $job_time_beg ?>" />
+    <input type="hidden" id="job_time_end" value="<?php echo $job_time_end ?>" />
+    <input type="hidden" id="job_truck" value="<?php echo $job_truck ?>" />
+    <input type="hidden" id="tech1" value="<?php echo $tech1 ?>" />
+    <input type="hidden" id="tech2" value="<?php echo $tech2 ?>" />
+</div>

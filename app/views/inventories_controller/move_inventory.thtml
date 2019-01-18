@@ -1,0 +1,131 @@
+<script>
+//*** SET PAGE TITLE ***
+
+document.title += " :: Move Inventory";
+
+//**********************
+</script>
+<script>
+	function OpenPage(surl)
+	{
+		location.href =surl;
+	}
+</script>
+
+<table width="100%" align="center" border="0" cellspacing="10" cellpadding="0"> 
+	<tr>
+		<td class="sectionTitle">Move Inventory</th>
+	</tr>
+</table>
+<br/>
+
+<form method="POST" action="<?= $PHP_SELF?>" name="moveInventory">
+<? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
+<?php //pr($this->data); 
+//echo "<br/>";
+//echo($this->data["InventoryChange"]["destination_id"]);
+?>
+
+<table border="0" cellspacing="0" cellpadding="5" class="results">
+<tr style="display:none;"><th colspan=2 align="left">Add new</th></tr>
+<tr> 
+  <td>Item :</td>
+  <td>
+  <select name="data[InventoryChange][item_id]" style="width:250;">
+  	<option value="0">----choose item----</option>
+	<?
+	$cat = -1;
+  	foreach ($items as $objItm):
+
+	if ($cat != $objItm['ItemCategory']['id'])
+	{
+		$cat = $objItm['ItemCategory']['id'];
+		print "<option value=\"0\">".strtoupper($objItm['ItemCategory']['name'])."</option>";
+
+	}
+  	?>
+  	<option value="<?php echo $objItm['Item']['id'];?>"
+  	<?php
+  		if($this->data["InventoryChange"]["item_id"] == $objItm['Item']['id'])
+  		{
+  			echo "selected='selected'";
+  		}
+  	?>>
+  	<?php echo "&nbsp;&nbsp;&nbsp;&nbsp;".$objItm['Item']['name'];?></option>
+  	<?php
+  	endforeach;
+  	?>
+  </select> 
+  <?php echo $html->tagErrorMsg('InventoryChange/item_id', 'Please select item.') ?>
+  </td>
+</tr>
+<tr> 
+  <td>Quantity :</td>
+  <td>
+      <?php echo
+      $html->input('InventoryChange/qty');
+      ?>
+      <?php echo $html->tagErrorMsg('InventoryChange/qty','Please enter valid quantity.') ?>
+  </td>
+</tr>
+<tr> 
+  <td>Date of Move :</td>
+  <td>
+   	<?php echo $html->dateTimeOptionTag('InventoryChange/date','DMY',none); ?>
+    <?php echo $html->tagErrorMsg('InventoryChange/date','Please enter valid date.') ?>
+  </td>  
+</tr>
+<tr> 
+  <td>From:</td>
+  <td><select name="data[InventoryChange][source_id]" style="width:250;">
+  	<option value="0">----choose source----</option>
+  	<?php 
+  	foreach ($inventoryLocations as $obj):
+  	?>
+  	<option value="<?php echo $obj['InventoryLocation']['id'];?>"
+  	<?php
+		if($this->data["InventoryChange"]["source_id"] == $obj['InventoryLocation']['id'])
+		{
+			echo "selected='selected'";
+		}
+  	?>>
+  	<?php echo $obj['InventoryLocation']['name'];?></option>
+  	<?php
+  	endforeach;
+  	?>  	
+  </select> 
+    <?php echo $html->tagErrorMsg('InventoryChange/source_id', 'Please select source.') ?>
+</td>
+</tr>
+<tr> 
+  <td>To:</td>
+  <td><select name="data[InventoryChange][destination_id]" style="width:250;">
+  	<option value="0">----choose target----</option>
+  	<?php 
+  	foreach ($inventoryLocations as $obj):
+  	?>
+  	<option value="<?php echo $obj['InventoryLocation']['id'];?>"
+	  	<?php
+	  	if($this->data["InventoryChange"]["destination_id"] == $obj['InventoryLocation']['id'])
+		{
+			echo "selected='selected'";
+		}
+  	?>>
+  	<?php echo $obj['InventoryLocation']['name'];?></option>
+  	<?php
+  	endforeach;
+  	?>   	
+  </select>
+   <?php echo $html->tagErrorMsg('InventoryChange/destination_id', 'Please select destination.') ?>
+	</td>
+</tr>
+<tr> 
+	<td>&nbsp;</td>
+  <td align="left" colspan="1">
+  <input type="submit" name="move" value="Move" class="buttons">&nbsp;
+  <input type="button" value="Cancel" onclick="history.go(-1);" class="buttons">
+  </td>
+</tr>
+</table>
+<br/><br/>
+</form>

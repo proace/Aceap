@@ -1,0 +1,31 @@
+<script type="text/javascript">
+function closeThis() {
+	window.open("<?=BASE_URL?>/messages/", "frame_reminder");
+	window.close();
+}
+
+<?php if($_GET['closethis'] == 1) { ?>
+	closeThis();
+<?php } ?>
+
+</script>
+<form action="<?php echo BASE_URL ?>/messages/saveTrackemSettings" method="post">
+<table>
+	<tr>
+    	<th>Route</th>
+        <th>GPS</th>
+    </tr>
+    <?php foreach($routes as $route) { ?>
+    <tr>
+    	<td><?php echo $route['name'] ?></td>
+        <td>
+        <?php echo $html->selectTag('Route/'.$route['id'], $trackemGPS, $route['trackem_id']);?>
+		</td>
+    </tr>
+    <?php } ?>
+    <tr>
+    	<td><!--<input type="button" value="Cancel">--></td>
+        <td align="right"><input type="submit" value="Save"></td>
+    </tr>
+</table>
+</form>

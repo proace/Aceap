@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Unresolved Issues</title>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<style>
+body {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:60%;	
+}
+
+#issues {
+	border-collapse:collapse;
+	width:100%;	
+}
+
+#issues td {
+	border:1px solid #cccccc;
+	text-align:center;	
+}
+
+textarea {
+	width:100%;	
+}
+
+.button_send {
+	width:100%;
+	height:50px;	
+}
+
+</style>
+
+<script type="text/javascript">
+var G_URL;
+var G_TIMER
+function goToJob(ref_id) {
+	window.open("<?php echo BASE_URL?>/orders/editBooking?order_id=" + ref_id, "main_view");
+	window.close();
+}
+
+function startFetch() {
+	G_TIMER = setTimeout("fetchNotes()", 15000);	
+}
+
+function stopFetch() {
+	clearTimeout(G_TIMER);	
+}
+
+function fetchNotes() {
+	$("#button_send").attr("disabled", "disabled");
+	$(".order_ids").each(function(){
+		order_id = $(this).children(".order_id").val();	
+		$.post(G_URL + "orders/invoiceTabletNotes", 
+			{"order_id":order_id},
+			function(data) {
+				$("#note" + order_id).html(data);
+				
+		});
+	});
+	$("#button_send").removeAttr("disabled");
+	startFetch();
+}
+
+$(function(){
+	var test_server = "/index.php/";
+	var live_server = "/index.php/";
+	
+	var l = $(location).attr('href');
+
+	if(l.indexOf("acesys-2.0") != -1) G_URL = test_server;
+	else G_URL = live_server;
+	
+	$("#tabs").tabs();
+	
+	$(".button_send").click(function(){
+		stopFetch();
+		var button = $(this);
+		var order_id = button.next().val();
+		//alert($("#urgency_id" + order_id).val());
+		button.attr("disabled","disabled");		
+		$.post(G_URL + "orders/addInvoiceTabletNotes", 
+			{
+				"order_id":order_id,
+				"message":$("#message" + order_id).val(),
+				"urgency_id":$("#urgency_id" + order_id).val(),
+				"note_type_id":2,
+			},
+			function(data) {
+				$("#message" + order_id).val("");
+				button.removeAttr("disabled","disabled");
+				if($("#urgency_id" + order_id).val() == 4 || $("#urgency_id" + order_id).val() == 5)
+					window.open(G_URL + "orders/scheduleView", "_self");
+				else fetchNotes();
+				
+		});		
+	});
+	
+	fetchNotes();
+	
+});
+</script>
+
+</head>
+
+<body>
+<div id="tabs">
+    <ul>
+        <li><a href="#tabs-0">Summary</a></li>
+        <?php $temp = 0; $index = 1; ?>
+		<?php foreach($issues as $issue) { ?>
+            <?php if($temp != $issue['order_number']) { ?>
+                <?php $temp = $issue['order_number']; ?>
+                <li class="order_ids"><input type="hidden" class="order_id" value="<?php echo $issue['order_id'] ?>" /><a href="#tabs-<?php echo $index++; ?>"><?php echo $temp ?></a></li>
+            <?php } ?>
+        <?php } ?>
+    </ul>
+    <div id="tabs-0">
+        <table id="issues">
+            <tr>
+                <th>Noted by</th>
+                <th>Message</th>
+                <th>Ref #</th>
+            </tr>
+            <?php foreach($issues as $issue) { ?>
+            <tr>
+                <td><?php echo $issue['noted_by'] ?></td>
+                <td><?php echo $issue['message'] ?></td>
+                <td><input type="button" class="job_button" onclick="goToJob(<?php echo $issue['order_id'] ?>)" value="<?php echo $issue['order_number'] ?>" /></td>
+            </tr>
+            <?php } ?>
+        </table>
+    </div>
+    <?php $temp = 0; $index = 1; ?>
+    <?php foreach($issues as $issue) { ?>
+    	<?php if($temp != $issue['order_number']) { ?>
+        	<?php $temp = $issue['order_number']; ?>
+            <div id="tabs-<?php echo $index++; ?>">
+            	<table width="100%">
+                    <tbody id="note<?php echo $issue['order_id']; ?>">
+                    </tbody>
+                    <tbody>
+                    <tr>
+                    	<td>
+                        	<select id="urgency_id<?php echo $issue['order_id']; ?>">
+                                <option value="1">Update</option>                                
+                                <option value="4">Approved Job</option>                                
+                            </select>
+                        </td>
+                        <td colspan="2"><textarea wrap="hard" id="message<?php echo $issue['order_id']; ?>"></textarea></td>
+                        <td><input type="button" value="Send" class="button_send" /><input type="hidden" class="send_id" value="<?php echo $issue['order_id']; ?>" /></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        <?php } ?>
+    <?php } ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<html>
+<head>
+<title>Send Email</title>
+<style>
+	
+	html, body {
+		background-color: #ccc;
+		margin: 0;
+		padding: 0;
+	}
+	body > .container {
+		width: 600px;
+		margin: 0 auto;
+		background-color: #fff;
+		margin-top: 20px;
+	}
+	h4 {
+		width: 100%;
+		border-bottom: solid 1px #ccc;
+		padding-bottom: 10px;
+	}
+	form {
+		width: 600px;
+		margin: 0 auto;
+	}
+	table {
+		min-width: 400px;
+		text-align: left;
+		margin-bottom: 20px;
+	}
+	table th {
+		width:80px;
+		color: #346b01;
+	}
+	table input {
+		width: 290px;
+	}
+	.border {
+		width: 600px;
+		border-bottom: solid 1px #aaa;
+	}
+	.border > table {
+		margin-bottom: 10px;
+	}
+
+</style>
+<script src="<?php echo ROOT_URL; ?>/app/webroot/js/jquery.js"></script>
+<script src="<?php echo ROOT_URL; ?>/app/webroot/js/tinymce/tinymce.min.js"></script>
+<script>
+
+	$(document).ready(function() {
+
+		tinyMCE.init({
+			mode: 'textareas',
+	        convert_urls: true,
+	        width: 600,
+	        height: 500,
+	        template_external_list_url : "js/template_list.js",
+			external_link_list_url : "js/link_list.js",
+			external_image_list_url : "js/image_list.js",
+			media_external_list_url : "js/media_list.js"
+		});
+
+	});
+
+</script>
+</head>
+<body>
+	<form id="emailForm" name="emailForm" method="post" action="<?php echo $target; ?>">
+		<h4>Send Thank You Email</h4>
+
+		<div class="border">
+			<table>
+			<?php foreach ($names as $name): ?>
+				<tr><th>Service:</th><td><?php echo $name; ?></td></tr>
+			<?php endforeach; ?>
+			<?php foreach ($notes as $note): ?>
+				<tr><th>Office Note:</th><td><?php echo $note; ?></td></tr>
+			<?php endforeach; ?>
+			</table>
+		</div>		
+
+		<table>
+			<tr><th style="width:70px;">To:</th><td><input id="to" name="to" value="<?php echo $to[0]; ?>"/></td></tr>
+			<tr><th>From:</th><td><input id="from" name="from" value="info@acecare.ca"/></td></tr>
+			<tr><th>Subject:</th><td><input id="subject" name="subject" value="<?php echo $subject; ?>"/></td></tr>
+		</table>
+
+		<div class="border" style="height:1px;"></div>
+
+		<textarea style="width:600px;" name="body">
+			<?php echo $body ?>
+		</textarea>
+		<input type="button" value="Send" class="buttons" onclick="sendEmail();return false;">
+
+	</form>
+	<script>
+
+		function sendEmail() {
+
+			var save = false;
+			var form = document.forms['emailForm'];
+			if (form.elements['to'].value != '<?php echo $to[0]; ?>') {
+				//save = confirm('Save new email address for: <?php echo $first_name.' '.$last_name; ?>');
+			}
+
+			var data = $('#emailForm').serializeArray();
+			data.push({ name: 'save', value: save });
+
+			$.ajax({
+				url: '<?php echo $target; ?>',
+				type: 'POST',
+				data: data,
+				complete: function() {
+					window.close();
+				}
+			});
+
+	    }
+	</script>
+</body>
+</html>

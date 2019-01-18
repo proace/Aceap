@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title></title>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.0.min.js"></script>
+<script type="text/javascript" src="tableExport.js"></script>
+<script type="text/javascript" src="jquery.base64.js"></script>
+<script type="text/javascript" src="html2canvas.js"></script>
+<script type="text/javascript" src="jspdf/jspdf.js"></script>
+<script type="text/javascript" src="jspdf/libs/sprintf.js"></script>
+<script type="text/javascript" src="jspdf/libs/base64.js"></script>
+<script type="text/javascript">
+$(document).ready(function(e) {
+  $("#pdf").click(function(e){
+    $("#myTable").tableExport({
+	   type: 'pdf',
+	   escape: 'false',
+	   pdfFontSize: 20
+	});
+  });
+  $("#png").click(function(e){
+    $("#myTable").tableExport({
+	   type: 'png',
+	   escape: 'false'
+	   
+	});
+  });
+  
+  $("#json").click(function(e){
+    $("#myTable").tableExport({
+	   type: 'json',
+	   escape: 'false'
+	   
+	});
+  });
+    $("#csv").click(function(e){
+    $("#myTable").tableExport({
+	   type: 'csv',
+	   escape: 'false'
+	   
+	});
+  });
+});
+</script>
+</head>
+
+<body>
+<button id="pdf">export to pdf</button> <br/><br/>
+<button id="png">export as png</button><br/><br/>
+<button id="json">export as json</button><br/><br/>
+<button id="csv">export as csv</button><br/><br/>
+
+<table id="myTable">
+<tr>
+<td>Mike</td>
+<td>20</td>
+<td>male</td>
+</tr>
+<tr>
+<td>Mary</td>
+<td>22</td>
+<td>Female</td>
+</tr>
+<tr>
+<td>Bob</td>
+<td>26</td>
+<td>male</td>
+</tr>
+<tr>
+<td>Mali</td>
+<td>20</td>
+<td>Female</td>
+</tr>
+</table>
+</body>
+</html>

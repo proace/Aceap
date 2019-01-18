@@ -1,0 +1,53 @@
+<script>
+//*** SET PAGE TITLE ***
+
+document.title += " :: New Order Coupon";
+
+//**********************
+</script>
+<form method="post" action="<?php echo $html->url('/order_coupons/addedit')?>">
+<input type="hidden" name="data[id]" value="<?=$this->params['url']['id']?>" />
+<table width="100%" align="center" border="0" cellspacing="10" cellpadding="0"> 
+	<tr>
+		<td class="sectionTitle">New Order Coupon</td>
+	</tr>
+</table>
+<br/>
+<table border="0" cellspacing="0" cellpadding="5" class="results">
+<tr style="display:none;"><th colspan=2 align="left"><?=($this->params['url']['id'] > 0 ? " Edit ID ".$this->params['url']['id'] : "Add new")?></th></tr>
+<tr> 
+  <td>Name :</td>
+  <td><?= $html->input('OrderCoupon/name');?></td>
+</tr>
+<tr> 
+  <td>Percent :</td>
+  <td><?= $html->input('OrderCoupon/percent');?></td>
+</tr>
+<tr> 
+  <td>Price :</td>
+  <td><?= $html->input('OrderCoupon/price');?></td>
+</tr>
+<tr> 
+  <td>Start date :</td>
+  <td><?=$html->dateTimeOptionTag('OrderCoupon/start_date','DMY',none); ?></td>
+</tr>
+<tr> 
+  <td>End date :</td>
+  <td><?=$html->dateTimeOptionTag('OrderCoupon/end_date','DMY',none); ?></td>
+</tr>
+<tr> 
+  <td>Order :</td>
+  <td>
+	<?=$html->selectTag('OrderCoupon/order_id',$Order,$this->data['OrderCoupon']['order_id']);?>
+	</td>
+</tr>
+<tr>
+	<td>&nbsp;</td> 
+  <td align="left" colspan="1">
+  <?php echo $html->submit('Save',array('class'=>'buttons'))?>&nbsp;
+  <input type="button" value="Cancel" onclick="javascript:history.go(-1)" class="buttons">
+  </td>
+</tr>
+</table>
+<br/><br/>
+</form>

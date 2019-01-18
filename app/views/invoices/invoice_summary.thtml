@@ -1,0 +1,23 @@
+<div class="invoice_summary">
+	<?php foreach($orders as $order) { ?>
+    <?php if($order['Order']['feedback_knowledge'] == null) { ?>
+    <div class="job">
+    	<a href="invoiceDetails?orderid=<?php echo $order['Order']['id'] ?>"><?php echo $order['Order']['order_number'] ?></a>
+    <?php } else { ?>
+    	<div class="job viewonly">
+    	<?php echo $order['Order']['order_number'] ?>   
+    <?php } ?>    	
+        <div class="info">
+			<?php echo ucfirst(strtolower($order['Customer']['first_name'])) ?> <?php echo ucfirst(strtolower($order['Customer']['last_name'])) ?>
+			<div><em><?php echo ucwords(strtolower($order['Customer']['address'])) ?></em></div>
+        	<div><em><?php echo ucwords(strtolower($order['Customer']['city'])) ?></em></div>
+        </div>
+        <div class="time">
+        	<?php echo $order['Order']['job_time_beg'] ?>
+        </div>
+    </div>
+    <?php } ?>
+</div>
+<pre>
+<?php //echo print_r($orders) ?>
+</pre>

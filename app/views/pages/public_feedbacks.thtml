@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>ACE public feedbacks</title>
+</head>
+
+<body>
+<table>
+	<tr>
+    	<td>Ref#</td>
+        <td>Name</td>
+        <td>Job Date</td>
+        <td>Comment</td>
+    </tr>
+    <?php foreach($results as $key => $result) { ?>
+    <tr>
+    	<td><?php echo $key; ?></td>    	
+        <td><?php echo $result['last_name']; ?></td>
+        <td><?php echo $result['job_date']; ?></td>
+        <td><?php echo $result['feedback_comment']; ?></td>
+    </tr>
+    <?php } ?>
+</table>
+</body>
+</html>

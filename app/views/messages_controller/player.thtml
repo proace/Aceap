@@ -1,0 +1,56 @@
+<style>
+input {
+	width:100px;	
+}
+</style>
+<script type="text/javascript">
+function recordingConfirmed(val) {
+	$(".content").html("<small>Saving...</small>");
+	$.get("<?=BASE_URL?>/messages/confirmation?order_id=<?php echo $_GET['order_id']; ?>&value=" + val,
+	function(data){
+		window.open("<?=BASE_URL?>/messages/", "frame_reminder");
+		window.close();
+	});
+}
+
+
+</script>
+<!--<table class="content">
+	<tr>
+    	<td colspan="2" height="50" valign="middle">        
+        <?php foreach($recordingFiles as $recordingFile) { ?>
+        <div>        
+        <embed type="application/x-shockwave-flash" flashvars="audioUrl=<?php echo $recordingFile['location']; ?>" src="http://www.google.com/reader/ui/3523697345-audio-player.swf" width="400" height="27" quality="best"></embed>
+        </div>
+        <?php } ?>
+        
+        <p><?php echo $confirmationMessage; ?></p>
+        </td>
+    </tr>
+    <tr>
+    	<td align="left"><input type="button" value="Not confirmed" onClick="recordingConfirmed(0)" />
+        </td>
+        <td align="right"><input type="button" value="Confirm" onClick="recordingConfirmed(1)" />
+        </td>
+    </tr>
+</table>-->
+
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+	<tr>
+		<th style='width:60px;'>Agent Number</th>
+		<th style='width:80px;'>Filename</th>
+	</tr>
+<?php $r=1;
+	foreach ($records as $record): 
+		$class = 'cell'.(++$r%2);
+		if ($fdetails) $extra = 'style="font-weight:bold;"';
+?>
+    <tr class="<?= $class ?>" style="cursor:pointer;" onclick="document.location.href='<?php echo $record['location']; ?>';">
+		<td>&nbsp;<?php echo $record['user']; ?></td>
+		<td>&nbsp;<?php echo $record['filename']; ?></td>
+    </tr>
+<?php endforeach; ?>
+</table>
+
+
+

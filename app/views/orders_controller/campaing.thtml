@@ -1,0 +1,57 @@
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript">
+    function ajax_Search(id) {
+        $.get("<?=BASE_URL;?>/orders/campaingSearch",
+            {
+                id:id
+            },
+        function(data){ 
+            console.log(data);
+            parent.frames['frame_browser'].document.getElementById('listbox').innerHTML = data;
+        }); 
+    }
+</script>
+
+
+<h1>Campaning</h1>
+<body>
+<div class='table'>
+    <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="900px">
+        <tbody>
+            <tr>
+                <th style="width:100px;"><a href="javascript:setOrder('campaign_name');">Campagin name</a></th>
+                <th style="width:100px;"><a href="javascript:setOrder('campaign_name');">Total transfered customers</a></th>
+                <th style="width:100px;"><a href="javascript:setOrder('camp_count');">Current available customers</a></th>
+                <th style="width:100px;"><a href="javascript:setOrder('camp_count');">Type</a></th>
+            </tr>
+            <?php
+                $r=1; 
+                $i = 0; 
+                foreach ($campaign as $key => $value) { 
+                    if($flag[$i] == 1){
+                        $flag_input = 'Job transfer';
+                    }
+                    else{
+                        $flag_input = 'Call transfer';
+                    }
+                    $class = 'cell'.(++$r%2);
+            ?>
+            <tr class="<?= $class ?>">
+                <td><a href="JavaScript:void(0)" onclick="ajax_Search(<?php echo($camp_id[$i]);?>)" value='<?php echo($camp_id[$i]);?>' class='search_ajx'><?php echo($key);?></td>
+                <td><?php echo($value);?></td>
+                <td><?php echo($original_count[$i]);?></td>
+                <td><?php echo($flag_input);?></td>
+            </tr>
+            <?php $i++; } ?>
+        </tbody>
+    </table>
+</div>
+</body>
+
+
+
+<style type="text/css">
+    table, th, td {
+   border: 1px solid black;
+}
+</style>

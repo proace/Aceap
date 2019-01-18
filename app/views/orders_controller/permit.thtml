@@ -1,0 +1,1 @@
+<embed src="../../training/Forms/<?=$file_name?>" width="800" height="800">

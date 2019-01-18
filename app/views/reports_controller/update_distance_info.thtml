@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Update Postal Code Distance Information</title>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript">
+
+//var g_url = "http://maps.google.com/maps/nav?q=from:London%20to:Dover";
+
+$(function(){
+	var test_server = "http://69.31.184.162:81/acesys/acetest/acesys-2.0/index.php/";
+	var live_server = "http://69.31.184.162:81/acesys/index.php/";
+	
+	var l = $(location).attr('href');
+
+	if(l.indexOf("acesys-2.0") != -1) G_URL = test_server;
+	else G_URL = live_server;
+	
+	
+	$("#start").click(function(){
+		extractAll(0);
+	});
+
+});
+
+function extractAll(i) {
+		
+	$("#distance" + i).addClass("current");	
+	
+	if($("#distance" + i)) {
+		from = $("#distance" + i).children(".from").val();
+		to = $("#distance" + i).children(".to").val();	
+		
+		url = G_URL + "reports/checkGoogleMaps";	
+		$.get(url,
+			{
+				from:from,
+				to:to	
+			},
+			function(data){			
+				maps = $.parseJSON(data);						
+				
+				if(maps.Directions) {
+					meters = maps.Directions.Distance.meters;
+					seconds = maps.Directions.Duration.seconds;
+					$("#distance" + i).children(".distance_display").html(maps.Directions.Distance.meters);
+					$("#distance" + i).children(".distance").val(maps.Directions.Distance.meters);
+					saveDistanceInfo(from, to, meters, seconds);				
+				} else {
+					$("#distance" + i).children(".distance_display").html("-");	
+				}
+				$("#distance" + i).removeClass("current");
+				$("#counter").html(++i);
+				extractAll(i);
+			}
+		);
+	}
+}
+
+function saveDistanceInfo(from, to, meters, seconds) {
+	$.post(G_URL + "reports/saveDistanceInfo",
+		{
+			from:from,
+			to:to,
+			meters:meters,
+			seconds:seconds
+		},
+		function(data){}
+	);	
+}
+
+function extract(from, to) {
+	url = G_URL + "reports/checkGoogleMaps";	
+	$.get(url,
+		{},
+		function(data){			
+			maps = $.parseJSON(data);
+			
+			meters = maps.Directions.Distance.meters;
+			seconds = maps.Directions.Duration.seconds;
+			
+			//alert(maps.Directions.Distance.meters);
+			//alert(maps.Directions.Duration.seconds);
+		}
+	);
+}
+
+</script>
+
+<style>
+.distance_display {
+	width:50px;	
+	text-align:right;
+}
+
+.current {
+	background-color:#69F;	
+}
+</style>
+
+</head>
+
+<body>
+<input type="button" id="start" value="START" /> Current Count:<span id="counter">0</span>
+<table cellspacing="0">
+	<tr>
+    	<th></th>
+    	<?php foreach($results as $result) { ?>
+    	<th><?php echo $result ?></th>
+        <?php } ?>
+    </tr>
+    <?php $i = 0 ?>
+    <?php foreach($results as $from) { ?>
+    <tr>
+    	<td><?php echo $from ?></td>
+    	<?php foreach($results as $to) { ?>
+    	<td id="distance<?php echo $i++ ?>" class="distance_info">
+        	<div class="distance_display"></div>
+        	<input type="hidden" class="from" value="<?php echo $from ?>" />
+            <input type="hidden" class="to" value="<?php echo $to ?>" />
+            <input type="hidden" class="distance" />
+        </td>
+        <?php } ?>
+    </tr>
+    <?php } ?>
+</table>
+
+<?php //echo $json; ?>
+<pre><?php //print_r($json_decoded); ?></pre>
+</body>
+</html>

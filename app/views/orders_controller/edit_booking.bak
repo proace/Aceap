@@ -1,0 +1,1830 @@
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script> <!-- Simple Calendar -->
+
+<script>
+//*** SET PAGE TITLE ***
+
+document.title += " :: Edit Booking";
+
+//**********************
+</script>
+
+<script language="JavaScript">
+var nopen = 1;
+
+//*****************************
+//Added by Metodi : 2010-01-16
+//*****************************
+function ValidateFields()
+{       
+	var submitForm = true;
+	var errorMsg = "";
+	//1. Check phone
+	var phoneObj = document.getElementById('CustomerPhone');
+	if(phoneObj != null){
+		if((phoneObj.value == null) || trim(phoneObj.value) == ''){
+			phoneObj.focus();
+			submitForm = false;
+			errorMsg += "Please enter in a phone for this customer.\n";
+		}
+		else
+		{phoneObj.value = trim(phoneObj.value);}
+	}
+	
+	//2. Check Email
+	var emailObj = document.getElementById('emailinput');
+	if(emailObj != null){
+		if((emailObj.value == null) || trim(emailObj.value) == ''){
+			emailObj.focus();
+			submitForm = false;
+			errorMsg += "Please enter in an email for this customer.\n";
+		}
+		else
+		{
+			//check if email is valid
+			if(!isValidEmail(emailObj.value)){
+				emailObj.focus();
+				submitForm = false;
+				errorMsg += "Please enter in a valid email for this customer.\n";
+				
+			}
+			else
+			{emailObj.value = trim(emailObj.value);}
+		}
+	}
+	//****************
+	if(submitForm){
+		document.forms['editBookingform'].submit();
+	}
+	else
+	{
+		alert(errorMsg);
+	}
+}
+// Removes leading whitespaces
+function LTrim( value ) {
+	var re = /\s*((\S+\s*)*)/;
+	return value.replace(re, "$1");
+}
+
+// Removes ending whitespaces
+function RTrim( value ) {
+	var re = /((\s*\S+)*)\s*/;
+	return value.replace(re, "$1");
+}
+
+// Removes leading and ending whitespaces
+function trim( value ) {
+	return LTrim(RTrim(value));
+}
+
+function isValidEmail(str) {
+
+   return (str.indexOf(".") > 2) && (str.indexOf("@") > 0);
+}
+
+//********************************
+//End Added by Metodi : 2010-01-16
+//********************************
+
+
+//existing/new customer edit
+
+function existingCustomerEdit()
+{
+	document.getElementById('CustomerLastName').style.display = 'none';
+	document.getElementById('CustomerFirstName').style.display = 'none';
+	document.getElementById('CustomerLastNameSpan').style.display = '';
+	document.getElementById('CustomerFirstNameSpan').style.display = '';
+
+	document.getElementById('CustomerLastNameSpan').innerHTML = document.getElementById('CustomerLastName').value;
+	document.getElementById('CustomerFirstNameSpan').innerHTML = document.getElementById('CustomerFirstName').value;
+}
+
+function requestNewCustomerEdit()
+{
+
+	r = confirm("You selected this customer from the list and cannot change her/his name. Do you want to add a new customer (not on the list)? [Note: this will clear all customer fields on the form]");
+	if (r == true)
+	{
+		//Clear Out Fields
+		document.getElementById('CustomerId').value = "";
+		document.getElementById('CustomerFirstName').value = "";
+		document.getElementById('CustomerLastName').value = "";
+		document.getElementById('CustomerAddress').value = "";
+		document.getElementById('CustomerPhone').value = "";
+		document.getElementById('CustomerCellPhone').value = "";
+		document.getElementById('CustomerCity').value = "";
+		document.getElementById('CustomerState').value = "";
+		document.getElementById('CustomerPostalCode').value = "";
+		document.getElementById('emailinput').value = "";
+
+		//Allow Editing
+		newCustomerEdit();
+	}
+}
+
+function newCustomerEdit()
+{
+	//Enable Name Edit
+	document.getElementById('CustomerLastName').style.display = '';
+	document.getElementById('CustomerFirstName').style.display = '';
+	document.getElementById('CustomerLastNameSpan').style.display = 'none';
+	document.getElementById('CustomerFirstNameSpan').style.display = 'none';
+}
+
+function existingCustomerCheck()
+{
+	if (document.getElementById('CustomerId').value != "")
+	{
+		existingCustomerEdit();
+		return true;
+	}
+	else
+	{
+		newCustomerEdit();
+		return false;
+	}
+}
+
+function conflictCheck()
+{       
+	//decide if check is to be performed
+	var selection = document.forms['editBookingform'].elements['data[Order][order_status_id]'];
+
+	for (i=0; i<selection.length; i++)
+		if (selection[i].checked == true)
+			if (selection[i].value == 7)
+			{
+				document.forms['editBookingform'].submit();
+				return true;
+			}
+
+	//perform check
+	order_id = document.getElementById('OrderId').value;
+	customer_id = document.getElementById('CustomerId').value;
+	job_date = document.getElementById('OrderJobDate').value;
+	job_truck = document.getElementById('OrderJobTruck').value;
+	from = document.getElementById('OrderJobTimeBegHour').value;
+	to = document.getElementById('OrderJobTimeEndHour').value;
+
+	url = "./conflictCheck?order_id=" + order_id + "&customer_id=" + customer_id + "&job_date=" + job_date + "&job_truck=" + job_truck + "&from=" + from + "&to=" + to;
+
+	//$.getJSON("./conflictCheck?order_id=" + $order_id + "&customer_id=" + $customer_id + "&job_date=" + $job_date + "&job_truck=" + $job_truck + "&from=" + $from + "&to=" + $to, null, conflictProcess);
+
+	new Ajax.Request(url, {
+	  method: 'get',
+	  onSuccess: function conflictProcess(data)
+			{
+				data = data.responseText.evalJSON();
+
+				if (data['conf_cust_date'] == 1)
+					alert("There is another order for the SAME customer on the date you have selected for this order. You cannot have two orders for the same customer on the same date. Please check the schedule.");
+				else if (data['conf_timeslot'] == 1)
+					alert("There is some other order already using part of the timeslot/truck combination for this date. Please check the schedule and make sure this order does not overlap with another one.");
+				else
+					document.forms['editBookingform'].submit();
+			}
+	});
+}
+
+// Window Opener
+
+
+var win = null;
+function newWindow(mypage,myname,w,h,features) {
+  var winl = (screen.width-w)/2;
+  var wint = (screen.height-h)/2;
+  if (winl < 0) winl = 0;
+  if (wint < 0) wint = 0;
+  var settings = 'height=' + h + ',';
+  settings += 'width=' + w + ',';
+  settings += 'top=' + wint + ',';
+  settings += 'left=' + winl + ',';
+  settings += features;
+  win = window.open(mypage,myname,settings);
+  win.window.focus();
+}
+
+// Tab Functions
+
+function tabOver(i)
+{
+	//document.getElementById('trigger'+i).class = 'tabtrigger_lite';
+	document.getElementById('trigger'+i).style.background = '#EBE9ED';
+	//document.getElementById('trigger'+i).style.padding = '2px';
+	document.getElementById('trigger'+i).style.height = '22px';
+	document.getElementById('trigger'+i).style.margin = '0px';
+}
+
+function tabOff(i)
+{
+	document.getElementById('trigger'+i).style.background = '#D0D0D0';
+	document.getElementById('trigger'+i).style.padding = '0px';
+	document.getElementById('trigger'+i).style.margin = '4px 0px 0px 0px';
+	document.getElementById('trigger'+i).style.height = '18px';
+}
+
+function openTab(n)
+	{
+	var i,j;
+	for (i = 1; i <= 4; i++)
+	{
+		j = i;
+		if (j==n)
+		{
+			document.getElementById('tabA'+j).style.display = '';
+			nopen = j;
+			hiLite(j);
+		}
+		else
+			document.getElementById('tabA'+j).style.display = 'none';
+	}
+}
+
+function hiLite(n)
+{
+	var i,j;
+	for (i = 1; i <= 4; i++)
+	{
+		j = i;
+		if ((j==n) || (j==nopen))
+		{
+			tabOver(j);
+		}
+		else
+			tabOff(j);
+	}
+}
+var PrevState = <?=$this->data['Order']['order_status_id']?>;
+function StatusChange(element)
+{
+	if (element.value==3) document.getElementById('divReason').style.display='block';
+	else document.getElementById('divReason').style.display='none';
+	if (PrevState==3)
+	{
+		if (PrevState!=element.value) document.getElementById('OrderNRebooked').checked=true;
+		else document.getElementById('OrderNRebooked').checked=false;
+	}
+}
+<?php
+	if( $this->params['url']['reschedule'] == 1 )
+		echo 'alert("Your order has been marked as rescheduled. On this screen you can confirm or change any details for the new order.");';
+?>
+</script>
+<form name="editBookingform" action="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post">
+
+<!-- This tag creates our form tag -->
+	<? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
+<input type="hidden" name="havetoprint" id="havetoprint" value="0"/>
+
+<div class="tabulator">
+	<div class="tabtrigger" id="trigger1" onclick="openTab(1);" style="background: #EBE9ED; height: 22px; margin: 0px;">Booking Info</div>
+	<div class="tabtrigger" id="trigger2" onclick="openTab(2);">Pricing</div>
+	<div class="tabtrigger" id="trigger3" onclick="openTab(3);">Feedback</div>
+	<?
+	if(intval($this->data["Customer"]["id"]) > 0){
+	?>
+	<div class="tabtrigger" id="trigger4" onclick="openTab(4);">Common Notes</div>
+	<?
+	}
+	?>
+</div>
+<br/>
+
+
+
+<!-- **** TAB 1 **** -->
+
+<div id="tabA1" class="tab">
+
+<div class="frame-wrap" style="margin:0px; padding: 0px;"><!--mega-frame-wrap-->
+<div class="frame-wrap">
+ <div class="frame-header-left"></div>
+ <div class="frame-header-title">
+   Name & Address:
+ </div>
+ <div class="frame-header-right"></div>
+ <div class="frame-body" style="clear: both;">
+
+   <div class="inputwrap" onclick="if (existingCustomerCheck()) { requestNewCustomerEdit(); }">
+      First Name:<br/>
+	<span id="CustomerFirstNameSpan" style="font-weight: bold; display: none;"></span>
+      <?php echo
+      $html->input('Customer/first_name');
+      ?>
+      <?php echo $html->tagErrorMsg('Customer/first_name',
+      'Please enter in a first name for this customer.') ?>
+   </div>
+
+   <div class="inputwrap" onclick="if (existingCustomerCheck()) { requestNewCustomerEdit(); }">
+       Last Name:<br/>
+	<span id="CustomerLastNameSpan" style="font-weight: bold; display: none;"></span>
+      <?php echo
+      $html->input('Customer/last_name');
+      ?>
+      <?php echo $html->tagErrorMsg('Customer/last_name',
+      'Please enter in a last name for this customer.') ?>
+   </div>
+
+   <br/><br/>
+   <br style="clear: both;">
+
+   <table style="float: left;">
+	<tr>
+		<td align="right">Address: </td>
+		<td>
+		<?php echo
+		$html->input('Customer/address', array('style' => 'width: 140px;'));
+		?>
+ 		<?php echo $html->tagErrorMsg('Customer/address',
+      		'Please enter address for this customer.') ?>
+		</td>
+	</tr>
+	<tr>
+		<td align="right">City: </td>
+		<td>
+		<?php echo
+		$html->input('Customer/city', array('style' => 'width: 140px;'));
+		?>
+		<?php echo $html->tagErrorMsg('Customer/city',
+		'Please enter in a city for this customer.') ?>
+		</td>
+	</tr>
+	<tr>
+		<td align="right">Province: </td>
+		<td>
+			<?php echo
+			$html->input('Customer/state', array('style' => 'width: 140px;'));
+			?>
+			<?php echo $html->tagErrorMsg('Customer/state',
+			'Please enter in a province for this customer.') ?>
+		</td>
+	</tr>
+	<tr>
+   		<td align="right">Postal Code: </td>
+   		<td>
+      		<?php 
+      			echo $html->input('Customer/postal_code',array("value"=>$common->displayZip($html->tagValue('Customer/postal_code')), 'style' => 'width: 140px;'));
+      		?>
+      		<?php echo $html->tagErrorMsg('Customer/postal_code',
+      			'Please enter in a postal code for this customer.') ?>
+   		</td>
+	</tr>
+   </table>
+
+   <table style="float: left;">
+	<tr>
+ 	  <td align="right">Phone*: </td>
+	   <td>
+	      <?php echo
+	      $html->input('Customer/phone',array("value"=>$common->displayPhone($html->tagValue('Customer/phone')), 'style' => 'width: 116px;'));
+	      ?>
+	      <?php echo $html->tagErrorMsg('Order/CustomerPhone','Please enter in a phone for this customer.') ?>
+	   </td>
+	</tr>
+	<tr>
+	   <td align="right">Cell Phone: </td>
+	   <td>
+	      <?php echo
+	      $html->input('Customer/cell_phone',array("value"=>$common->displayPhone($html->tagValue('Customer/cell_phone')), 'style' => 'width: 116px;'));
+	      ?>
+	      <?php echo $html->tagErrorMsg('Customer/cell_phone',
+	      'Please enter in a cell phone for this customer.') ?>
+	   </td>
+	</tr>
+	<tr>
+	   <td align="right">E-Mail*: </td>
+	   <td>
+	      <?php echo
+	      $html->input('Customer/email', array("onchange"=>"if (this.value != '') document.getElementById('maillink').innerHTML='<a href=\"#\" onclick=\"newWindow(\\'./sendMail?email='+this.value+'\\',\\'\\',480,350,\\'resize=no\\');\">E-Mail Customer</a>';", "id"=>"emailinput", 'style' => 'width: 116px;'));
+	      ?><?php echo $html->tagErrorMsg('Order/CustomerEmail1','Please enter in an email for this customer.') ?>
+	      <?php echo $html->tagErrorMsg('Order/CustomerEmail2','Please enter in a valid email for this customer.') ?><br/>
+		<div id="maillink"></div>
+		<script language="JavaScript">
+			document.getElementById('emailinput').onchange();
+		</script>
+	   </td>
+	</tr>
+   </table>
+
+   <br style="clear: both;"/>
+   <br/>
+
+   <div class="inputwrap">
+	Job Type: <br/>
+      <?php 
+      $disabled = '';
+      if( $_GET['fromjobcheck'] == "1" ) {
+      	$disabled = array('disabled'=>'1');
+      }
+      echo $html->selectTag('Order/order_type_id', $job_types, $this->data['Order']['order_type_id'],$disabled);
+      ?>
+      <?php echo $html->tagErrorMsg('Order/job_type_id',
+      'Please select a job type designation.') ?>
+   </div>
+
+   <div class="inputwrap">
+	Source: <br/>
+      <?php
+	if( ($common->getLoggedUserRoleID() != "3" ) && ($common->getLoggedUserRoleID() != "9" )) {
+		echo $html->selectTag('Order/booking_source_id', $booking_sources, $this->data['Order']['booking_source_id']);
+	}
+	else
+	{
+		echo $html->selectTag('Order/booking_source_id', $booking_sources, $this->data['Order']['booking_source_id'], array('style' => 'display: none;'));
+		echo '<b>'.$booking_sources[$this->data['Order']['booking_source_id']].'</b>';
+	}
+      ?>
+      <?php echo $html->tagErrorMsg('Order/booking_source_id',
+      'Please select the source for this order.') ?>
+   </div>
+
+   <div class="inputwrap">
+	Closer: <br/>
+      <?php
+	if( (!$this->data['Order']['booking_closer_id']) || ($common->getLoggedUserRoleID() == 6) ) { //$common->getLoggedUserRoleID() != "3" ) {
+		echo $html->selectTag('Order/booking_closer_id', $booking_sources, $this->data['Order']['booking_closer_id']);
+	}
+	else
+	{
+		echo $html->selectTag('Order/booking_closer_id', $booking_sources, $this->data['Order']['booking_closer_id'], array('style' => 'display: none;'));
+		echo '<b>'.$booking_sources[$this->data['Order']['booking_closer_id']].'</b>';
+	}
+      ?>
+      <?php echo $html->tagErrorMsg('Order/booking_closer_id',
+      'Please select the source for this order.') ?>
+   </div>
+
+   <br style="clear: both;" />
+
+   <div class="inputwrap">
+      Confirmation:<br/>
+      <?php 
+	echo $html->selectTag('Order/order_substatus_id', $sub_status, $this->data['Order']['order_substatus_id']);
+     	echo $html->tagErrorMsg('Order/order_substatus_id','Please enter confirmation status.') 
+      ?>
+   <br style="clear: both;" />
+      Spoke to:<br/>
+      <?php 
+	echo $html->input('Order/sSpokeTo', array('style' => 'width: 200px;'));
+      ?>
+   </div>
+   <div class="inputwrap">
+   <br/>Created By:&nbsp;<b><?=$created_by;?></b>
+   <br/>Created Date:&nbsp;<b><?=$created_date;?></b>
+   <Br/>Modified By:&nbsp;<b><?=$modified_by;?></b>
+   <br/>Modified Date:&nbsp;<b><?=$modified_date;?></b>
+   </div>
+
+   <br style="clear: both;" />
+
+	<br/>
+
+	Job Status:
+	<input type="radio" name="data[Order][order_status_id]" value="7" <?=((!$this->data['Order']) || ($this->data['Order']['order_status_id']==7) ? 'checked' : '');?> onclick="StatusChange(this)">&nbsp;Call-back&nbsp;&nbsp;
+
+	<input type="radio" name="data[Order][order_status_id]" value="1" <?=((!$this->data['Order']) || ($this->data['Order']['order_status_id']==1) ? 'checked' : '');?> onclick="StatusChange(this)">&nbsp;Booked&nbsp;&nbsp;
+
+	<input type="radio" name="data[Order][order_status_id]" value="2" <?=((!$this->data['Order']) || ($this->data['Order']['order_status_id']==2) ? 'checked' : '');?> onclick="StatusChange(this)">&nbsp;Estimate&nbsp;&nbsp;
+
+	<? 
+	$disableDoneOption = 0;
+	if ( ($common->getLoggedUserRoleID() == "3") || ($common->getLoggedUserRoleID() == "9")) {
+		$disableDoneOption = 1;
+	}
+	?>
+	<input <?echo ($disableDoneOption==1) ? 'disabled="disabled"' : ''?> type="radio" name="data[Order][order_status_id]" value="5" <?=($this->data['Order']['order_status_id']==5 ? 'checked' : '');?> onclick="StatusChange(this)">&nbsp;Done&nbsp;&nbsp;
+
+	<? if ($common->getLoggedUserRoleID() == "3") {
+		if ($this->data['Order']['order_status_id']==3)
+			print "<input type=radio disabled checked>";
+		else
+			print "<input type=radio disabled>";
+	   }
+	?>
+
+	<input type="radio" name="data[Order][order_status_id]" value="3" <?=($this->data['Order']['order_status_id']==3 ? 'checked' : '');?> onclick="StatusChange(this)" <? if ($common->getLoggedUserRoleID() == "3") print "style=\"display: none;\""; ?>>&nbsp;<span style="color: red;">Cancelled</span>
+
+	<div id="divReason" style="display: 
+	<?php
+	if (($this->data['Order']['order_status_id']=="3")||($this->data['Order']['order_status_id']=="4"))
+		echo 'block'; 
+	else
+		echo 'none'; 
+
+	?>
+	;">
+        <br/>Reason for cancellation:<br/>
+	<?
+	echo $html->textarea('Order/sCancelReason', array('style' => 'width: 420px; heigth: 50px'));
+	?>
+	</div>
+	<br/>
+
+   <br style="clear: both;" />
+
+	Redo:
+      <?php echo
+      $html->selectTag('Order/job_reference_id', $redo_orders, $this->data['Order']['job_reference_id']);
+      ?>
+      <?php echo $html->tagErrorMsg('Order/job_reference_id',
+      'You must select the order you are redoing for a penalty to be enacted.') ?>
+
+      <?php echo
+      $html->checkbox('Order/redo_with_penalty', "Penalize for redo");
+      ?> Penalize for redo
+      
+      <div onclick="return false;">
+      <?php echo
+      $html->checkbox('Order/nRebooked', "Re-booked");
+      ?> Re-booked
+      </div>
+	
+ <br style="clear: both;" />
+	<br style="clear: both;" />
+	Estimated job: <?php echo $html->selectTag('Order/job_estimate_id', $estimate_orders, $this->data['Order']['job_estimate_id']);?>
+
+	<br style="clear: both;" />
+	<br style="clear: both;" />
+	Hourly pay techs:<?php echo $html->checkbox('Order/hourly_pay_tech', "Hourly pay techs");?> </div><!--frame-body-->
+</div><!--frame-wrap-->
+
+<br style="clear:both;"/>
+
+<div class="frame-wrap">
+ <div class="frame-header-left"></div>
+ <div class="frame-header-title">
+   Callback:
+ </div>
+ <div class="frame-header-right"></div>
+ <div class="frame-body" style="clear: both;">
+
+        <div class="inputwrap">
+	Callback Date:<br/>
+
+      <?php
+	 echo
+      $html->input('Customer/callback_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;'));
+      ?>
+      <?php echo $html->tagErrorMsg('Customer/callback_date',
+      'Please enter in a correct date for the callback.') ?>
+
+	<br/><br/>
+	Call Time:<br/>
+	<?php echo $html->hourOptionTag('Customer/callback_time', null, 1) . " : " . $html->minuteOptionTag('Customer/callback_time');      ?>
+
+	<br/><br/>
+	Call Result:<br/>
+
+      <?php echo
+      $html->selectTag('Customer/callresult', $call_results, $this->data['Customer']['callresult']);
+      ?>
+      <?php echo $html->tagErrorMsg('Customer/callresult',
+      'Please select the call result for the last call.') ?>
+        </div>
+
+
+   	<div class="inputwrap">
+		Reason for Callback: <br/>
+       	<?php echo
+       	$html->textarea('Customer/callback_note', array('style' => "width:295px; height: 63px;"));
+       	?>
+
+       	<?php echo $html->tagErrorMsg('Customer/callback_note',
+       	'Please enter the notes.') ?>
+		
+		<br/>
+       	Last Call Date:<br/>
+	    <?php
+		echo
+	    $html->input('Customer/lastcall_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;'));
+	    ?>
+	    <?php echo $html->tagErrorMsg('Customer/lastcall_date',
+	    'Please enter in a correct date for the last call.') ?>
+
+		<br/>
+		Owning Telemarketer: <br/>
+		  <?php
+		//if( (!$this->data['Customer']['telemarketer_id']) && ($common->getLoggedUserRoleID() != "3" ) && ($common->getLoggedUserRoleID() != "9" )) {
+			echo $html->selectTag('Customer/telemarketer_id', $booking_sources, $this->data['Customer']['telemarketer_id']);
+		//}
+		//else
+		//{
+		//	echo $html->selectTag('Customer/telemarketer_id', $booking_sources, $this->data['Customer']['telemarketer_id'], array('style' => 'display: none;'));
+		//	echo '<b>'.$booking_sources[$this->data['Customer']['telemarketer_id']].'</b>';
+		//}
+		?>
+		<?php echo $html->tagErrorMsg('Customer/telemarketer_id',
+		  'Please select the telemarketer who is responsible for this callback.') ?>
+	</div>
+	
+ </div><!--frame-body-->
+</div><!--frame-wrap-->
+</div><!--mega-frame-wrap-->
+
+
+
+<div class="frame-wrap">
+ <div class="frame-header-left"></div>
+ <div class="frame-header-title">
+   Scheduling:
+ </div>
+ <div class="frame-header-right"></div>
+ <div class="frame-body" style="clear: both;">
+
+  <div class="inputwrap">
+      Job Date:<br/>
+
+      <?php
+		// Anthony Chernikov, 05/19/2010
+		// Disables the job date control for telemarketers for the existing jobs
+		$Enbl=true;
+		if (($this->data['Order']['id'])&&
+			(($this->data['Order']['order_status_id']==1)||
+			 ($this->data['Order']['order_status_id']==2)||
+			 ($this->data['Order']['order_status_id']==5)
+			 )
+			)
+		{
+			if (($common->getLoggedUserRoleID() == "3") || ($common->getLoggedUserRoleID() == "9")) 
+			{
+				$Enbl=false;
+			}
+		}
+		if ($Enbl)
+		{
+			echo $html->input('Order/job_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;'));
+			echo $html->tagErrorMsg('Order/job_date','Please enter in a correct date for this job.');
+		}
+		else
+		echo $html->input('Order/job_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onkeydown' => 'return false;'));
+      ?>
+   </div>
+
+   <br/><br/>
+   <br style="clear: both;" />
+
+   <div class="inputwrap">
+      Schedule:<br/>
+
+      <?php echo $html->hourOptionTag('Order/job_time_beg', null, 1);      ?>
+      &nbsp; to &nbsp;
+      <?php echo $html->hourOptionTag('Order/job_time_end', null, 1);      ?>
+
+   </div>
+
+   <br/><br/>
+   <br style="clear: both;" />
+
+   <div class="inputwrap">
+	Notes: <br/>
+       <?php echo
+       $html->textarea('Order/job_notes_office', array('style' => "width:265px; height: 90px;"));
+       ?>
+
+       <?php echo $html->tagErrorMsg('Order/job_notes_office',
+       'Please enter the notes.') ?>
+   </div>
+
+   <br style="clear: both;" />
+   <br/>
+   
+    <div class="inputwrap">
+	Truck #:<br/>
+	<?php 
+	echo $html->selectTag('Order/job_truck', $job_trucks, ($this->params['url']['job_truck'] ? $this->params['url']['job_truck'] : $this->data['Order']['job_truck']));
+	?>
+      	<?php echo $html->tagErrorMsg('Order/job_truck',
+      	'Please enter the truck number.'); ?>
+	</div>
+
+   <br style="clear: both;" />
+   <br/>
+   
+    <script language="JavaScript">
+	function TechHelpSel(obj)
+	{
+		if (obj.value > 0)
+		{
+			if (obj.id == 'OrderJobTechnician2Id')
+				document.getElementById('helper').selectedIndex = -1;
+			else
+				document.getElementById('OrderJobTechnician2Id').selectedIndex = -1;
+		}
+	}
+   </script>
+   
+   <div class="inputwrap">
+	Helper:<br/>
+	<?
+		echo $html->selectTag('helper',$allHelpers,$helper_id, array("onchange" => "TechHelpSel(this);"));
+	?>
+   </div>
+   
+   <br style="clear: both;" />
+   <br/>
+   
+   <div class="inputwrap">
+	Tech 1:<br/>
+	<? echo $html->selectTag('Order/job_technician1_id',$allTechnician,$this->data['Order']['job_technician1_id']);?>
+	<?php echo $html->tagErrorMsg('Order/job_technician1_id','Please enter technician1.') ?>
+   </div>
+
+   <br style="clear: both;" />
+   <br/>
+
+   <div class="inputwrap">
+	Tech 2:<br/>
+       <? echo $html->selectTag('Order/job_technician2_id',$allTechnician,$technician2_id, array("onchange" => "TechHelpSel(this);"));?>
+       <?php echo $html->tagErrorMsg('Order/job_technician2_id','Please enter technician2.') ?>
+   </div>
+
+	<?php echo $html->hidden('Customer/id')?>
+    <?php echo $html->hidden('Order/id')?>
+	<?php echo $html->hidden('Order/customer_id')?>
+	<?php echo $html->hidden('Order/booking_date')?>
+
+ </div><!--frame-body-->
+</div><!--frame-wrap-->
+
+<div class="frame-wrap">
+ <div class="frame-header-left"></div>
+ <div class="frame-header-title">
+   <?php echo $html->link('Feedback','/orders/feedbacks_add?id='.$this->data['Order']['id']) ?> Info:
+ </div>
+ <div class="frame-header-right"></div>
+ <div class="frame-body" style="clear: both;width:270px;">
+   	<br/><b>Callback date:</b>&nbsp;<? echo $this->data['Order']['feedback_callback_date'] == '' ? '' :date("Y-m-d",strtotime($this->data['Order']['feedback_callback_date']));;?>
+   	<br/><br/><b>Price:</b>&nbsp;<? echo $this->data['Order']['feedback_price'];?>
+	<br/><br/><b>Feedback:</b><br/>&nbsp;<? echo $this->data['Order']['feedback_comment'];?>
+	<br/><br/><b>Suggestion:</b><br/>&nbsp;<? echo $this->data['Order']['feedback_suggestion'];?>
+ </div><!--frame-body-->
+</div><!--frame-wrap-->
+<br style="clear:both;"/>
+
+<div class="frame-wrap">
+ <div class="frame-header-left"></div>
+ <div class="frame-header-title">
+   <b>Customer History:</b>
+ </div>
+ <div class="frame-header-right"></div>
+ <div class="frame-body" style="clear: both;">
+
+	<table class="historytable">
+		<tr cellpadding="10">
+		<th>Date</th><th>Booking</th><th>Sale</th><th>Services</th><th>Good Customer?</th><th>Tech 1</th><th>Technician's Note</th>
+		</tr>
+		<tr><td colspan=8 style="background: black; height: 2px;"></td></tr>
+		
+		<?
+		if ($this->data['Order']['id'] == null)
+			$add = "style=\"background: #9EE871;\"";
+		else
+		{
+			$add = "";
+			$add_past = " style=\"cursor: hand; cursor: pointer;\" onclick=\"location.href='./editBooking?donotredirect=" .$this->params['url']['donotredirect'] ."&customer_id=".$this->data['Customer']['id']."';\"";
+		}
+		
+		print "<tr class=\"orderline\" valign=\"top\" ".$add." ".$add_past." >";
+		print "<td>*</td>";
+		print "<td colspan=7><b>New Order:</b> select this to make a new job for this customer</td>";
+		print "</tr>\n";
+		print "<tr><td colspan=8 style=\"background: #AAAAAA; height: 5px;\"></td></tr>\n";
+		?>
+		
+		<?
+		//Ability to open past orders
+		foreach ($past_orders as $p_order)
+		{
+			$add_past = " style=\"cursor: hand; cursor: pointer;\" onclick=\"location.href='./editBooking?donotredirect=" .$this->params['url']['donotredirect'] ."&order_id=".$p_order['Order']['id']."';\"";
+
+			if ($p_order['Order']['id'] == $this->data['Order']['id'])
+				$add = "style=\"background: #9EE871;\"";
+			else
+				$add = "";
+
+			if ($add != "") $add_past = "";
+
+			print "<tr class=\"orderline\" valign=\"top\" ".$add." ".$add_past." >";
+			print "<td>".date('M d, y', strtotime($p_order['Order']['job_date']))."</td>";
+			print "<td>".$HtmlAssist->prPrice($p_order['Order']['booking_amount'])."</td>";
+			print "<td>".$HtmlAssist->prPrice($p_order['Order']['sale_amount'])."</td>";
+			print "<td><table class=\"inResultsBooking\">";
+					echo $HtmlAssist->tableOrderItems($p_order, 'BookingItem');
+			print "</table></td>";
+			print "<td>".$p_order['CustomerEvaluation']['name']."</td>";
+			print "<td>".$p_order['Technician1']['first_name'].' '.$p_order['Technician1']['last_name']."</td>";
+			print "<td>".$p_order['Order']['job_notes_technician']."</td>";
+			print "</tr>\n";
+			print "<tr><td colspan=8 style=\"background: #AAAAAA; height: 5px;\"></td></tr>\n";
+		}
+		?>
+	</table>
+
+	<br/>
+	<div style="width: 15px; height: 10px; background: #9EE871; float: left; border: 1px solid gray;"></div>&nbsp;= Currently Open Order
+
+ </div><!--frame-body-->
+</div><!--frame-wrap-->
+
+</div><!--tab-->
+
+<!-- **** TAB 2 NEW**** -->
+<script language="javascript">
+	function clickMenu(cellId, divId)
+	{
+		var table = document.getElementById("tabA2_");
+		if(table != null){
+			//var row = table.rows[0];
+			//var cell = row.cells[cellId];
+			
+			cell = table.getElementsByTagName("td");
+			for (var x = 0; x < cell.length; x++)
+		   	{
+		  		if(cell[x].id == cellId){
+		  			cell[x].className = "selectedMnu";
+		  		}
+		  		else{
+		  			cell[x].className = "";
+		  		}
+		   	}
+		}
+
+		document.getElementById('tabA2_tabA1').style.display = 'none';
+		document.getElementById('tabA2_tabA2').style.display = 'none';
+		document.getElementById('tabA2_tabA3').style.display = 'none';
+		document.getElementById('tabA2_tabA4').style.display = 'none';
+		document.getElementById('tabA2_tabA5').style.display = 'none';
+		document.getElementById('tabA2_tabA6').style.display = 'none';
+		document.getElementById(divId).style.display = 'block';
+	}
+	
+</script>
+<style type="text/css">
+	.selectedMnu{
+		background-color:#9EE871;
+	}
+</style>
+
+<div id="tabA2" style="display: none;" class="tab">
+	<table style="width: 500px;padding-top:10px;padding-bottom:0px;padding-left:10px;" border="0" id="tabA2_">
+	<tr height="22" style="background-color:#D0D0D0;">
+		<td style="cursor:pointer;text-align:center;width:100px;" id="tabA2_mnu1" class="selectedMnu" onclick="javascript:clickMenu('tabA2_mnu1', 'tabA2_tabA1');"><b>Heating/Air duct</b></td>
+		<td style="cursor:pointer;text-align:center;width:100px;" id="tabA2_mnu2" onclick="javascript:clickMenu('tabA2_mnu2','tabA2_tabA2');"><b>Parts</b></td>
+		<td style="cursor:pointer;text-align:center;width:100px;" id="tabA2_mnu3" onclick="javascript:clickMenu('tabA2_mnu3','tabA2_tabA3');"><b>Appliances</b></td>
+		<td style="cursor:pointer;text-align:center;width:100px;" id="tabA2_mnu4" onclick="javascript:clickMenu('tabA2_mnu4','tabA2_tabA4');"><b>Carpet</b></td>
+		<td style="cursor:pointer;text-align:center;width:100px;" id="tabA2_mnu5" onclick="javascript:clickMenu('tabA2_mnu5','tabA2_tabA5');"><b>Furniture</b></td>
+		<td style="cursor:pointer;text-align:center;width:100px;" id="tabA2_mnu6" onclick="javascript:clickMenu('tabA2_mnu6','tabA2_tabA6');"><b>Total</b></td>
+	</tr>
+	</table>	
+
+	<?php
+
+	/* Preparing the Input */
+
+	$i = 0;
+	$last_category = null;
+
+	$sarr = array();
+	$appliances ='';
+	
+	
+		echo '
+			<script>
+			function EnablePart(n, id)
+			{
+				if (document.getElementById("data[Order][BookingItem][" + n + "][check]").checked)
+					enabled = false;
+				else
+					enabled = true;
+				
+				document.getElementById("data[Order][BookingItem][" + n + "][name]").disabled = enabled;
+				document.getElementById("data[Order][BookingItem][" + n + "][invoice]").disabled = enabled;
+				document.getElementById("data[Order][BookingItem][" + n + "][dealer]").disabled = enabled;
+				document.getElementById("data[Order][BookingItem][" + n + "][price]").disabled = enabled;
+				document.getElementById("data[Order][BookingItem][" + n + "][price_purchase]").disabled = enabled;
+				document.getElementById("data[Order][BookingItem][" + n + "][quantity]").disabled = enabled;
+				document.getElementById("Item" + id).disabled = enabled;
+			}
+			</script>
+		';
+
+	foreach($this->data['Items'] as $item)
+	{
+		$p = $item['Item']['item_category_id'];
+
+		if ($last_category != $item['Item']['item_category_id'])
+		{
+			if ($item['Item']['item_category_id'] == 6)
+				$sarr[$p] .= "";
+			elseif ($item['Item']['item_category_id'] != 5)
+				$sarr[$p] .= "<tr><td colspan=3><b>" . $item['ItemCategory']['name'] . "</b></td><td>Qty</td></tr>";
+			else
+				$sarr[$p] .= "<tr><td colspan=2><b>" . $item['ItemCategory']['name'] . "</b></td><td>Invoice #</td><td>Dealer</td><td>Sale Price</td><td>Purch. Price</td><td>Qty</td><td>Paid</td></tr>";//"</b></td><td>Invoice #</td><td>Dealer</td><td>Price</td><td>Qty</td></tr>";
+			$last_category = $item['Item']['item_category_id'];
+		}
+
+		$sarr[$p] .= "<tr>\n";
+
+		$disabled = 'disabled';
+		$checked = '';
+		$quantity = '1';
+		$name = "";
+		$invoice = "";
+		$dealer = "";
+		$price = "";
+		$price_purchase = "";
+		//Find Pre-set values in the order
+		if (isset($this->data['BookingItem']))
+		{
+			foreach ($this->data['BookingItem'] as $oi)
+				if ($oi['item_id'] == $item['Item']['id'])
+				{
+					$checked = 'checked';
+					$disabled = '';
+					$quantity = $oi['quantity'];
+					
+					$name = $oi['name'];
+					$invoice = $oi['invoice'];
+					$dealer = $oi['dealer'];
+					$price = $oi['price'];
+					$price_purchase = $oi['price_purchase'];
+				}
+		}
+
+		if ($item['ItemCategory']['name'] == 'Adjustment')
+		{
+			$sarr[$p] = "<input style='display: none;' type=checkbox name='data[Order][BookingItem][" . $i . "][check]' id='data[Order][BookingItem][" . $i . "][check]'  checked />\n";
+		
+			$sarr[$p] .= htmlspecialchars($item['Item']['name']);
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][item_id]" id="data[Order][BookingItem][' . $i . '][item_id]" value="'. $item['Item']['id'] .'" />' . "\n";
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][class]" value="0" />' . "\n";
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][item_category_id]" id="data[Order][BookingItem][' . $i . '][item_category_id]" value="6" />' . "\n";
+			
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][name]" value="' . htmlspecialchars($item['Item']['name']) . '" />' . "\n";
+			$sarr[$p] .= '$<input type="input" style="width: 40px;" name="data[Order][BookingItem][' . $i . '][price]" id="data[Order][BookingItem][' . $i . '][price]" value="' . htmlspecialchars($price) . '"  onchange="TotalPriceBeforeCard();" />' . "\n";
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][price_purchase]" id="data[Order][BookingItem][' . $i . '][price_purchase]" value="' . htmlspecialchars($item['Item']['price_purchase']) . '" />' . "\n";
+
+			$sarr[$p] .= '<input type="hidden" size=2 name="data[Order][BookingItem][' . $i . '][quantity]" value="1"/>' . "\n";
+		}
+		elseif ($item['ItemCategory']['name'] != 'Custom Parts')
+		{
+			if(($item['ItemCategory']['id'] == 4) && $item['Item']['is_appliance'] == 1){
+				$appliances .= "<tr>\n";
+				$appliances .= "<td><input type=checkbox name='data[Order][BookingItem][" . $i . "][check]' id='data[Order][BookingItem][" . $i . "][check]' " . $checked . '  onclick="TotalPriceBeforeCard()"  '." /></td>\n";
+			
+				$appliances .= "<td>" . htmlspecialchars($item['Item']['name']);
+				$appliances.= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][item_id]" id="data[Order][BookingItem][' . $i . '][item_id]" value="' . $item['Item']['id'] . '" />' . "\n";
+				$appliances .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][class]" value="0"  />' . "\n";
+				$appliances .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][item_category_id]" id="data[Order][BookingItem][' . $i . '][item_category_id]" value="' . $item['Item']['item_category_id'] . '" />' . "\n";
+				$appliances .= '<input type="hidden" id="[' . $i . '][isappliance]" value="1"/>' . "\n";
+				
+				$appliances .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][name]" value="' . htmlspecialchars($item['Item']['name']) . '" />' . "\n";
+				$appliances .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][price]" id="data[Order][BookingItem][' . $i . '][price]" value="' . htmlspecialchars($item['Item']['price']) . '"  />' . "\n";
+				$appliances .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][price_purchase]" id="data[Order][BookingItem][' . $i . '][price_purchase]" value="' . htmlspecialchars($item['Item']['price_purchase']) . '"  />' . "\n";
+	
+				$appliances .= "</td>\n";
+	
+				$appliances .= "<td>$" . $item['Item']['price'] . "</td>\n";
+	
+				$appliances .= "<td>" . '<input size=2 name="data[Order][BookingItem][' . $i . '][quantity]" value="' . $quantity .'" id="data[Order][BookingItem][' . $i . '][quantity]" onchange="TotalPriceBeforeCard();" /></td>' . "\n";
+				$appliances .="</tr>\n";
+				
+			}
+			else{
+			$sarr[$p] .= "<td><input type=checkbox name='data[Order][BookingItem][" . $i . "][check]' id='data[Order][BookingItem][" . $i . "][check]' " . $checked . '  onclick="TotalPriceBeforeCard()"  '." /></td>\n";
+		
+			$sarr[$p] .= "<td>" . htmlspecialchars($item['Item']['name']);
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][item_id]" id="data[Order][BookingItem][' . $i . '][item_id]" value="' . $item['Item']['id'] . '" />' . "\n";
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][class]" value="0" />' . "\n";
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][item_category_id]" id="data[Order][BookingItem][' . $i . '][item_category_id]" value="' . $item['Item']['item_category_id'] . '" />' . "\n";
+			
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][name]" value="' . htmlspecialchars($item['Item']['name']) . '" />' . "\n";
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][price]" id="data[Order][BookingItem][' . $i . '][price]" value="' . htmlspecialchars($item['Item']['price']) . '" />' . "\n";
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][price_purchase]" id="data[Order][BookingItem][' . $i . '][price_purchase]" value="' . htmlspecialchars($item['Item']['price_purchase']) . '" />' . "\n";
+
+			$sarr[$p] .= "</td>\n";
+
+			$sarr[$p] .= "<td>$" . $item['Item']['price'] . "</td>\n";
+
+			$sarr[$p] .= "<td>" . '<input size=2 name="data[Order][BookingItem][' . $i . '][quantity]" value="' . $quantity .'" id="data[Order][BookingItem][' . $i . '][quantity]" onchange="TotalPriceBeforeCard();" /></td>' . "\n";
+		}
+		}
+		else
+		{
+			$sarr[$p] .= "<td><input type=checkbox name='data[Order][BookingItem][" . $i . "][check]' " . $checked . " ". ' id="data[Order][BookingItem][' . $i . '][check]"  onclick="EnablePart('.$i.', '.$item['Item']['id'].'); TotalPriceBeforeCard();"  '." />";
+			
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][item_id]" value="' . $item['Item']['id'] . '" />' . "\n";
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][class]" value="1" />' . "\n";
+			$sarr[$p] .= '<input type="hidden" name="data[Order][BookingItem][' . $i . '][item_category_id]" id="data[Order][BookingItem][' . $i . '][item_category_id]" value="' . $item['Item']['item_category_id'] . '" />' . "\n";
+			$sarr[$p] .= "</td>\n";
+			
+			$sarr[$p] .= "<td>" . '<input type="text" name="data[Order][BookingItem][' . $i . '][name]" id="data[Order][BookingItem][' . $i . '][name]" style="width: 70px;" value="' . htmlspecialchars($name) . '" '.$disabled.' />'. "</td>\n";
+			$sarr[$p] .= '<td><input type="text" name="data[Order][BookingItem][' . $i . '][invoice]" id="data[Order][BookingItem][' . $i . '][invoice]" style="width: 50px;" value="' . htmlspecialchars($invoice) . '" '.$disabled.' />'. "</td>\n";
+			$sarr[$p] .= '<td><input type="text" name="data[Order][BookingItem][' . $i . '][dealer]" id="data[Order][BookingItem][' . $i . '][dealer]" style="width: 40px;" value="' . htmlspecialchars($dealer) . '" '.$disabled.' />'. "</td>\n";
+			$sarr[$p] .= '<td>$<input type="text" name="data[Order][BookingItem][' . $i . '][price]" id="data[Order][BookingItem][' . $i . '][price]" style="width: 30px;" value="' . htmlspecialchars($price) . '" '.$disabled.' onchange="TotalPriceBeforeCard();"/>'. "</td>\n";
+			$sarr[$p] .= '<td>$<input type="text" name="data[Order][BookingItem][' . $i . '][price_purchase]" id="data[Order][BookingItem][' . $i . '][price_purchase]" style="width: 30px;" value="' . htmlspecialchars($price_purchase) . '" '.$disabled.' onchange="TotalPriceBeforeCard();"/>'. "</td>\n";
+			$sarr[$p] .= '<td><input type="text" name="data[Order][BookingItem][' . $i . '][quantity]" id="data[Order][BookingItem][' . $i . '][quantity]" style="width: 30px;" value="' . htmlspecialchars($quantity) . '" '.$disabled.' onchange="TotalPriceBeforeCard();"  />'. "</td>\n";
+			$sarr[$p] .= '<td><input type="checkbox" name="data[Order][BookingItem][' . $i . '][paid]" id="data[Order][BookingItem][' . $i . '][paid]" />'. "</td>\n";
+
+		
+		}
+
+		$sarr[$p] .= "</tr>\n";
+
+		if ($item['ItemCategory']['offered'] == 1)
+			$i++;
+	}
+
+	?>
+	
+	<?
+	if (!$ViewMode)
+	{
+	?>
+	<script language="JavaScript" type="text/javascript">
+	function TotalPriceForEverySubPage()
+	{
+		totalHeatingValue = 0;
+		totalPartsValue = 0;
+		totalAppliancesValue = 0; // ???
+		totalCarpetValue = 0;
+		totalFurnitureValue = 0;
+		
+		for(i=0; document.getElementById('data[Order][BookingItem]['+i+'][check]'); i++)
+		{
+			if ((document.getElementById('data[Order][BookingItem]['+i+'][check]').checked) && (document.getElementById('data[Order][BookingItem]['+i+'][price]').value != "") ){
+				categoryObj = document.getElementById('data[Order][BookingItem]['+i+'][item_category_id]');
+				if(categoryObj != null){
+					//Check if item is form category Heating: category id=3
+					if(categoryObj.value == 1){
+						totalCarpetValue += parseFloat(document.getElementById('data[Order][BookingItem]['+i+'][price]').value) * (document.getElementById('data[Order][BookingItem]['+i+'][quantity]') ? parseFloat(document.getElementById('data[Order][BookingItem]['+i+'][quantity]').value) : 1);
+					}
+					else if(categoryObj.value == 2){
+						totalFurnitureValue += parseFloat(document.getElementById('data[Order][BookingItem]['+i+'][price]').value) * (document.getElementById('data[Order][BookingItem]['+i+'][quantity]') ? parseFloat(document.getElementById('data[Order][BookingItem]['+i+'][quantity]').value) : 1);
+					}
+					//Check if item is form category Heating: category id=3
+					else if(categoryObj.value == 3){
+						
+						totalHeatingValue += parseFloat(document.getElementById('data[Order][BookingItem]['+i+'][price]').value) * (document.getElementById('data[Order][BookingItem]['+i+'][quantity]') ? parseFloat(document.getElementById('data[Order][BookingItem]['+i+'][quantity]').value) : 1);
+					}
+					//Check if item is form category Parts: category id=4
+					else if(categoryObj.value == 4){
+						
+						//check for appliance
+						itemIsApplianceObj = document.getElementById('['+i+'][isappliance]');
+						if(itemIsApplianceObj != null){
+							totalAppliancesValue += parseFloat(document.getElementById('data[Order][BookingItem]['+i+'][price]').value) * (document.getElementById('data[Order][BookingItem]['+i+'][quantity]') ? parseFloat(document.getElementById('data[Order][BookingItem]['+i+'][quantity]').value) : 1);
+						}
+						else{
+						totalPartsValue += parseFloat(document.getElementById('data[Order][BookingItem]['+i+'][price]').value) * (document.getElementById('data[Order][BookingItem]['+i+'][quantity]') ? parseFloat(document.getElementById('data[Order][BookingItem]['+i+'][quantity]').value) : 1);
+					}
+						
+					}
+				}
+
+			}
+		}
+		
+		//Heating / Airduct
+		totalHeating = document.getElementById('totalHeating');
+		if(totalHeating != null){
+			
+			totalHeating.value = totalHeatingValue;
+		}
+		//Parts
+		totalParts = document.getElementById('totalParts');
+		if(totalParts != null){
+			
+			totalParts.value = totalPartsValue;
+		}
+
+			
+		//Appliances
+		totalAppliances = document.getElementById('totalAppliances');
+		if(totalAppliances != null){
+			
+			totalAppliances.value = totalAppliancesValue;
+		}
+			
+		//Carpet
+		totalCarpet = document.getElementById('totalCarpet');
+		if(totalCarpet != null){
+			
+			totalCarpet.value = totalCarpetValue;
+		}
+			
+		//Furniture
+		totalFurniture = document.getElementById('totalFurniture');
+		if(totalFurniture != null){
+			
+			totalFurniture.value = totalFurnitureValue;
+		}
+
+	}
+	
+	function TotalPriceBeforeCard()
+	{
+		//Sum up all items shown and selected
+		s_items = 0;
+		for(i=0; document.getElementById('data[Order][BookingItem]['+i+'][check]'); i++)
+		{
+			if ((document.getElementById('data[Order][BookingItem]['+i+'][check]').checked) && (document.getElementById('data[Order][BookingItem]['+i+'][price]').value != "") )
+				s_items += parseFloat(document.getElementById('data[Order][BookingItem]['+i+'][price]').value) * (document.getElementById('data[Order][BookingItem]['+i+'][quantity]') ? parseFloat(document.getElementById('data[Order][BookingItem]['+i+'][quantity]').value) : 1);
+		}
+
+		//Sum up all the discounts from coupons
+		s_coupons = 0;
+		for(i=0; document.getElementById('data[Order][BookingCoupon]['+i+'][check]'); i++)
+		{
+			if (document.getElementById('data[Order][BookingCoupon]['+i+'][check]').checked)
+			{
+				if (document.getElementById('data[Order][BookingCoupon]['+i+'][order_item_id]').value != -1)
+				{
+					coupon_price_base = 0;
+					//this is a price-based coupon, limit it;
+					for(j=0; document.getElementById('data[Order][BookingItem]['+j+'][item_id]'); j++)
+					{
+						if (document.getElementById('data[Order][BookingItem]['+j+'][item_id]').value == document.getElementById('data[Order][BookingCoupon]['+i+'][order_item_id]').value)
+						{
+							coupon_price_base = parseFloat(document.getElementById('data[Order][BookingItem]['+j+'][price]').value);
+							break;
+						}
+					}
+				}
+				else
+					coupon_price_base = s_items;
+					
+				//apply percent discount
+				percent_discount = parseFloat(document.getElementById('data[Order][BookingCoupon]['+i+'][percent]').value) / 100;
+				if (!isNaN(percent_discount))
+					s_coupons -= coupon_price_base * percent_discount;
+	
+				//apply value discount
+				s_coupons -= parseFloat(document.getElementById('data[Order][BookingCoupon]['+i+'][price]').value);
+			}
+		}
+		
+		//alert("t:" + s_items + ", d:" + s_coupons);
+		s_total = s_items + s_coupons;
+		
+		//advantage card
+		card_number = document.getElementById('data[Order][card_number]').value;
+		
+		new Ajax.Updater('totalpricediv','<?=BASE_URL;?>/orders/calculateOrder?order_id=<?=$html->tagValue("Order/id")?>&card_number='+card_number+'&total='+s_total, {asynchronous:true, evalScripts:true, requestHeaders:['X-Update', 'OrdersByArea']});
+	
+		TotalPriceForEverySubPage();
+	}
+	</script>
+	
+	<div class="frame-wrap" id="tabA2_tabA1" style="width:98%;">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title"><!--Heating/Air duct:--></div>
+		<div class="frame-header-right"></div>
+		<div class="frame-body" style="clear: both;width:98%;">
+			<table>
+			<tr>
+			<td valign="top">
+				<table width="100%" border="0">
+					<?=$sarr[3];?>
+				</table>
+			</td>
+			</tr>
+			<tr>
+				<td height="1px" style="background-color:#000000"></td>			
+			</tr>
+			<tr>
+				<td align="right">
+				<b>Total</b>: &#36;<input type="text" id="totalHeating" name="totalHeating" value="0" size="7"/>
+				</td>
+			</tr>
+			</table>		
+		</div>
+		
+	</div>
+	
+	<div class="frame-wrap" id="tabA2_tabA2" style="width:98%;display:none;">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title"><!--Parts:--></div>
+		<div class="frame-header-center"></div>
+		<div class="frame-body" style="clear: both;both;width:98%;">
+			<table border="0">
+			<tr>
+			<td valign="top">
+				<table width="100%" border="0">
+					<?=$sarr[4];?>
+				</table>
+			</td>
+			<td valign="top">
+				<div class="frame-wrap">
+				 <div class="frame-header-left"></div>
+				 <div class="frame-header-title">
+				   Custom Parts:
+				 </div>
+				 <div class="frame-header-right"></div>
+				 <div class="frame-body" style="clear: both;">
+				
+						<table width="100%" border="0">
+							<?=$sarr[5];?>
+						</table>
+				
+				  </div><!--frame-body-->
+				</div><!--frame-wrap-->
+			</td>
+			</tr>
+			<tr>
+				<td height="1px" style="background-color:#000000"></td><td>&nbsp;</td>			
+			</tr>
+			<tr>
+				<td align="right">
+				<b>Total</b>: &#36;<input type="text" id="totalParts" name="totalParts" value="0" size="7"/>
+				</td>
+				<td>&nbsp;</td>
+			</tr>
+			</table>
+			
+		</div>
+		</div>
+
+
+
+	<div class="frame-wrap" id="tabA2_tabA3" style="width:98%;display:none;">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title">Appliances:</div>
+		<div class="frame-header-center"></div>
+		<div class="frame-body" style="clear: both;both;width:98%;">
+			<table border="0">
+			<tr>
+			<td valign="top">
+				<table width="100%" border="0">
+				<?=$appliances;?>
+					
+				</table>
+			</td>
+			</tr>
+			<tr>
+				<td height="1px" style="background-color:#000000"></td>			
+			</tr>
+			<tr>
+				<td align="right">
+				<b>Total</b>: &#36;<input type="text" id="totalAppliances" name="totalAppliances" value="0" size="7"/>
+				</td>
+			</tr>
+			</table>
+		</div>
+	</div>
+
+	<div class="frame-wrap" id="tabA2_tabA4" style="width:98%;display:none;">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title"><!--Carpet:--></div>
+		<div class="frame-header-center"></div>
+		<div class="frame-body" style="clear: both;both;width:98%;">
+			<table>
+			<tr>
+			<td valign="top">
+				<table width="100%" border="0">
+					<?=$sarr[1];?>
+				</table>
+			</td>
+			</tr>
+			<tr>
+				<td height="1px" style="background-color:#000000"></td>			
+			</tr>
+			<tr>
+				<td align="right">
+				<b>Total</b>: &#36;<input type="text" id="totalCarpet" name="totalCarpet" value="0" size="7"/>
+				</td>
+			</tr>
+			</table>
+		</div>
+	</div>
+
+	<div class="frame-wrap" id="tabA2_tabA5" style="width:98%;display:none;">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title"><!--Furniture:--></div>
+		<div class="frame-header-center"></div>
+		<div class="frame-body" style="clear: both;both;width:98%;">
+			<table>
+			<tr>
+			<td valign="top">
+				<table width="100%" border="0">
+					<?=$sarr[2];?>
+				</table>
+			</td>
+			</tr>
+			<tr>
+				<td height="1px" style="background-color:#000000"></td>			
+			</tr>
+			<tr>
+				<td align="right">
+				<b>Total</b>: &#36;<input type="text" id="totalFurniture" name="totalFurniture" value="0" size="7"/>
+				</td>
+			</tr>
+			</table>
+		</div>
+	</div>
+
+	<div class="frame-wrap" id="tabA2_tabA6" style="width:98%;display:none;">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title">Total:</div>
+		<div class="frame-header-center"></div>
+		<div class="frame-body" style="clear: both;both;width:98%;">
+			
+		<!-- DISCOUNTs -->
+			<div class="frame-wrap">
+			 <div class="frame-header-left"></div>
+			 <div class="frame-header-title">
+			   Discounts:
+			 </div>
+			 <div class="frame-header-right"></div>
+			 <div class="frame-body" style="clear: both;">
+			
+						<b>Coupons:</b>
+						<?
+						$i = 0;
+						$carr = "";
+						foreach( $this->data['Coupon'] as $obj ) {
+							//echo '<option value="'.$obj['Coupon']['id'].'">'.$obj['Coupon']['name'].'</option>';
+			
+							$checked = '';
+							if (isset($this->data['BookingCoupon']) && (count($this->data['BookingCoupon']) > 0))
+							{
+								foreach ($this->data['BookingCoupon'] as $oc)
+									if ($oc['coupon_id'] == $obj['Coupon']['id'])
+									{
+										$checked = 'checked';
+									}
+							}
+						
+							$carr .= "<tr><td><input type=checkbox name='data[Order][BookingCoupon][" . $i . "][check]' id='data[Order][BookingCoupon][" . $i . "][check]' " . $checked . ' onclick="TotalPriceBeforeCard()"'." /></td>\n";
+							$carr .= "<td>" . $obj['Coupon']['name'];
+							$carr .= '<input type="hidden" name="data[Order][BookingCoupon][' . $i . '][coupon_id]" id="data[Order][BookingCoupon][' . $i . '][coupon_id]" value="' . $obj['Coupon']['id'] . '" />' . "\n";
+							$carr .= '<input type="hidden" name="data[Order][BookingCoupon][' . $i . '][name]" id="data[Order][BookingCoupon][' . $i . '][name]" value="' . htmlspecialchars($obj['Coupon']['name']) . '" />' . "\n";
+							$carr .= '<input type="hidden" name="data[Order][BookingCoupon][' . $i . '][percent]" id="data[Order][BookingCoupon][' . $i . '][percent]" value="' . $obj['Coupon']['percent'] . '" />' . "\n";
+							$carr .= '<input type="hidden" name="data[Order][BookingCoupon][' . $i . '][price]" id="data[Order][BookingCoupon][' . $i . '][price]" value="' . $obj['Coupon']['price'] . '" />' . "\n";
+							$carr .= '<input type="hidden" name="data[Order][BookingCoupon][' . $i . '][order_item_id]" id="data[Order][BookingCoupon][' . $i . '][order_item_id]" value="' . $obj['Coupon']['order_item_id'] . '" />' . "\n";
+							$carr .= '<input type="hidden" name="data[Order][BookingCoupon][' . $i . '][order_id]" id="data[Order][BookingCoupon][' . $i . '][order_id]" value="' . $this->data['Order']['id'] . '" />' . "\n";
+							$carr .= '</td>';
+							$carr .= "<td>";
+							if ($obj['Coupon']['percent'])
+								$carr .= $obj['Coupon']['percent'].'%';
+							if ($obj['Coupon']['percent'] && $obj['Coupon']['price'])
+								$carr .= ' + ';
+							if ($obj['Coupon']['price'])
+								$carr .= '$'.$obj['Coupon']['price'];
+							$carr .= '</td></tr>';
+							$i++;
+						}
+						?>	
+						<table border=0>
+						<tr>
+							<td>&nbsp;</td>
+							<td>Name</td>
+							<td>Value</td>
+						</tr>
+							<?=$carr;?>
+						</table>
+						<br/><br/>
+			
+						<b>Advantage Card:</b><br/>
+						<? echo $html->input('Order/card_number', array('onchange' => 'TotalPriceBeforeCard();', 'onkeyup' => 'TotalPriceBeforeCard();', 'id' => 'data[Order][card_number]')); ?>
+			 </div><!--frame-body-->
+			</div><!--frame-wrap-->	
+
+			<!-- Adjustment -->
+			<div class="frame-wrap" style="clear: both;">
+				 <div class="frame-header-left"></div>
+				 <div class="frame-header-title">
+				   Adjustment:
+				 </div>
+				 <div class="frame-header-right"></div>
+				 <div class="frame-body" style="clear: both;">
+					<div style="display: none;">
+						<table><?	print $sarr[5];	?></table>
+					</div>
+				
+					<?	print $sarr[6];	?>
+				 </div><!--frame-body-->
+			</div><!--frame-wrap-->
+			
+			<!-- PAYMENT -->
+			<div class="frame-wrap" style="clear: both;">
+			 <div class="frame-header-left"></div>
+			 <div class="frame-header-title">
+			   Payment:
+			 </div>
+			 <div class="frame-header-right"></div>
+			 <div class="frame-body" style="clear: both;">
+			
+						<div id="totalpricediv" style="width:150px; height: 30px;"></div>
+						<br/>
+						<div class="inputwrap">
+						Pay By:<br/>
+						<?php 
+							echo $html->selectTag('Order/customer_desired_payment_method_id', $payment_methods, $this->data['Order']['customer_desired_payment_method_id']);
+							echo $html->tagErrorMsg('Order/customer_desired_payment_method_id','Please enter Desired Method of Payment.');
+						?>
+						</div>
+			
+			 </div><!--frame-body-->
+			</div><!--frame-wrap-->			
+			
+		</div>
+	</div>
+	<?
+	}
+	else
+	{
+	?>
+
+	<div class="frame-wrap">
+	 <div class="frame-header-left"></div>
+	 <div class="frame-header-title">
+	   View Booking:
+	 </div>
+	 <div class="frame-header-right"></div>
+	 <div class="frame-body" style="clear: both;">
+	
+				<table class="tbl_orderitems">
+				<? echo $HtmlAssist->tableOrderItems($this->data['BookingItem'], ''); ?>
+				</table>
+	
+				<? if ($this->data['BookingCoupon']) { ?>
+				<br/><br/>
+				<b><u>Coupons:</u></b><br/><br/>
+				<table>
+				<? echo $HtmlAssist->tableOrderCoupons($this->data['BookingCoupon']); ?>
+				</table>
+				<? } ?>
+				
+				<? if ($this->data['Order']['card_number']) { ?>
+				<br/><br/>
+				<b><u>Advantage Card:</u></b><br/><?=$this->data['Order']['card_number'];?>
+				<? } ?>
+	
+				<br/><br/>
+	
+				<b><u>Total Booking:</u><br><br>
+				<big><?=$HtmlAssist->prPrice($this->data['Order']['booking_amount'])?></big></b>
+	
+	 </div><!--frame-body-->
+	</div><!--frame-wrap-->
+		<?
+		}
+		?>	
+	<script language="JavaScript" type="text/javascript">
+			function ots() {
+				TotalPriceBeforeCard();
+				//displayOrdersByArea1();
+			}
+			window.onload = ots;
+	</script>	
+</div>
+<!-- **** END OF TAB 2 NEW **** -->
+
+
+<!-- **** TAB 3 **** -->
+
+<div id="tabA3" style="display: none;" class="tab">
+
+<div class="frame-wrap">
+ <div class="frame-header-left"></div>
+ <div class="frame-header-title">
+   Sale Summary:
+ </div>
+ <div class="frame-header-right"></div>
+ <div class="frame-body" style="clear: both;">
+
+			<b><u>Sale Items:</u></b><br/><br/>
+			
+			<table class="tbl_orderitems">
+			<? echo $HtmlAssist->tableOrderItems($this->data['SaleItem'],''); ?>
+			</table>
+			
+			<? if ($this->data['SaleCoupon']) { ?>
+			<br/><br/>
+			<b><u>Coupons:</u></b><br/><br/>
+			<table>
+			<? echo $HtmlAssist->tableOrderCoupons($this->data['SaleCoupon']); ?>
+			</table>
+			<? } ?>
+			
+			<? if ($this->data['Order']['card_number']) { ?>
+			<br/><br/>
+			<b><u>Advantage Card:</u></b><br/><?=$this->data['Order']['card_number'];?><br/><br/>
+			<? } ?>
+
+			<br/><br/>
+			<b><u>Sale Total:</u></b><br><br>
+			<big><?=$HtmlAssist->prPrice($this->data['Order']['sale_amount'])?> (Owed)</big><br/>
+			<b><big><?=$HtmlAssist->prPrice($this->data['Order']['customer_paid_amount'])?> (Paid)</big></b><br/>
+
+			<br/><br/>
+
+			<? if (($this->data['Order']['id']) && ($common->getLoggedUserRoleID() != "3")) { ?>
+				<input class="button" id="b_editsale" type="button" onclick="location.href='./jobCheckout?order_id=<?=$this->data['Order']['id'];?>';" value="Edit Sale" />
+			<? } ?>
+
+ </div><!--frame-body-->
+</div><!--frame-wrap-->
+
+
+<div class="frame-wrap">
+ <div class="frame-header-left"></div>
+ <div class="frame-header-title">
+   Technician's Feedback:
+ </div>
+ <div class="frame-header-right"></div>
+ <div class="frame-body" style="clear: both;">
+
+   	<div class="inputwrap">
+		Technician's Note: <br/>
+       	<?php echo
+       	$html->textarea('Order/job_notes_technician', array('style' => "width:340px; height: 100px;"));
+       	?>
+
+       	<?php echo $html->tagErrorMsg('Order/job_notes_technician',
+       	'Please enter the notes.') ?>
+   	</div>
+	<p>&nbsp;</p>
+   	<div class="inputwrap">
+	<script language="javascript" type="text/javascript">
+		function SetAnswer(answerObj, answerEnd){
+			//alert(answerObj.value);
+			if(answerObj != null){
+				//1. Get text area
+				applianceInfoObj = document.getElementsByName('data[Customer][appliance_info]');
+				if(applianceInfoObj != null){
+					var applianceInfoMsg = applianceInfoObj[0].value;
+				
+					//get first char and last char
+					var startIndexOfAnswer = applianceInfoMsg.indexOf(answerObj.id) + 5;//#AN1#
+					var endIndexOfAnswer = applianceInfoMsg.indexOf(answerEnd);//#AN1_END#
+
+					if(endIndexOfAnswer == -1){ 
+						applianceInfoObj[0].value = applianceInfoMsg.replace(answerObj.id,answerObj.id+answerObj.value+answerEnd);
+					}
+					else {
+						var answer = applianceInfoMsg.slice(startIndexOfAnswer,endIndexOfAnswer);
+						//alert(answer);
+						applianceInfoObj[0].value = applianceInfoMsg.replace(answerObj.id+answer+answerEnd, answerObj.id+answerObj.value+answerEnd);
+					}
+					
+					//LoadInfoContentInTempArea
+					LoadInfoContentInTempArea(applianceInfoObj);
+				}
+			}
+		}
+		
+		function ReloadApplianceInfoTemplate(){
+
+			applianceInfoObj = document.getElementsByName('data[Customer][appliance_info]');
+			if(applianceInfoObj != null){
+
+				new Ajax.Updater(applianceInfoObj[0].id,'<?=BASE_URL;?>/orders/requestInfoTemplate?order_id=<?=$html->tagValue("Order/id")?>&order_type_id=<?=$html->tagValue("Order/order_type_id")?>', {asynchronous:true, evalScripts:true, requestHeaders:['X-Update', 'ApplianceInfoTemplate']});
+				document.getElementById('divReloadTemplate').style.display = 'none';
+				document.getElementById('divSaveTemplate').style.display = 'block';
+
+				//LoadInfoContentInTempArea
+				LoadInfoContentInTempArea(applianceInfoObj);
+			}
+		}
+		
+		function LoadInfoContentInTempArea(objInfoArea)
+		{
+			if(objInfoArea != null){
+				if(objInfoArea[0] != null){
+					
+					var infoMsg = objInfoArea[0].value;
+					for (x=0;x<=100;x++)
+					{
+						infoMsg = infoMsg.replace("#AN"+x+"#","");
+						infoMsg = infoMsg.replace("#AN"+x+"_END#","");
+					}
+										
+					applianceInfoTempObj = document.getElementsByName('appliance_info_temp');
+					if(applianceInfoTempObj){
+						applianceInfoTempObj[0].value = infoMsg;
+					}
+
+				}
+			}
+			
+		}
+
+	</script>
+   		<br/>
+		Info: 
+		<?php echo '<img style="cursor: hand; cursor: pointer; margin-right: 1px;" src="'.ROOT_URL.'/app/webroot/img/icon-vsm-printer.png" onclick="window.open(\'printView?id='.$this->data['Order']['id'].'\');return false;">'  ?>
+		<br/>
+		<textarea id="appliance_info_temp" name="appliance_info_temp" rows="15" cols="50" onfocus="javascript:this.blur();"><?echo $this->data['Customer']['appliance_info'] ?></textarea>
+		<?php //echo $html->textarea('Customer/appliance_info', array('style' => "width:320px; height: 300px;", 'onfocus'=>"javascript:this.blur();",'onChange'=>"javascript:LoadInfoContentInTempArea(this);"));//,'disabled'=>"disabled"));	?>
+       	<?php echo $html->tagErrorMsg('Customer/appliance_info', 'Please enter the notes.') ?>
+
+     <!-- Added by Metodi: 2009-11-24 
+     Find #A1#...#An# strings these are areas for entering answers, generate input field for this answers  	
+     -->  
+   		<div style="float:right;vertical-align:top;">
+   		<!-- <p> for first line </p>--> 
+     <?
+		$thereIsAnswerTemplate = false;
+     	for ($i=0;$i<100;$i++){ //no more then 100 questions
+			if(strpos($this->data['Customer']['appliance_info'], '#AN'.$i.'#')){
+				$thereIsAnswerTemplate = true;
+				$answerStartIndex = strpos($this->data['Customer']['appliance_info'], '#AN'.$i.'#')+5;//#AN1#
+				$answerEndIndex = -1;
+				$endOfAnswer = "'#AN".$i."_END#'";
+				$answerValue = "";
+				if(strpos($this->data['Customer']['appliance_info'], '#AN'.$i.'_END#')){
+					$answerEndIndex = strpos($this->data['Customer']['appliance_info'], '#AN'.$i.'_END#');
+					$answerValue = substr($this->data['Customer']['appliance_info'],$answerStartIndex, $answerEndIndex - $answerStartIndex);
+				}
+				
+				echo '<br/><input type="text" name="#AN'.$i.'#" id="#AN'.$i.'#" value="'.$answerValue.'" size="50" onchange="javascript:SetAnswer(this,'.$endOfAnswer.')"/><b>Answer'.$i.'</b>: ';
+			}
+		}
+		
+		if(! $thereIsAnswerTemplate){
+			echo '<div id="divReloadTemplate"><br/><br/><font color="red">Please <span onclick="javascript:ReloadApplianceInfoTemplate();" style="cursor:pointer;"><b>click here</b></span> to reload the Info template, because current is not correct!</font></div>';
+			echo '<div id="divSaveTemplate" style="display:none;"><font color="green"><b>Please save template first then you can enter your questions!</b></font></div>';
+		}
+     ?>
+
+     	    <!-- PUT INFO in full format - whit #AN1# -->
+	       	<br/>
+     	    <?php echo $html->textarea('Customer/appliance_info', array('style' => "width:320px; height: 300px;display:none;", 'onfocus'=>"javascript:this.blur();",'onChange'=>"javascript:LoadInfoContentInTempArea(this);"));//,'disabled'=>"disabled"));	?>
+			<script>LoadInfoContentInTempArea(document.getElementsByName('data[Customer][appliance_info]'))</script>
+
+   	</div>
+
+     </div>
+ </div><!--frame-body-->
+</div><!--frame-wrap-->
+
+</div>
+
+<!-- **** TAB 4**** -->
+<!-- THIS TAB SHOW ALL CUSTOMER NOTES  -->
+<script language="javascript">
+
+function AddCustomerNote()
+{
+	var customer_id = document.getElementById("customer_id");
+	var customer_note = document.getElementById("txt_customer_note");
+	
+	if(customer_note == null || customer_note.value == ""){
+		alert("Please enter note!");
+		customer_note.focus();
+		return;
+	}
+
+	//1. Add note
+	if(customer_id != null && customer_note != null)
+	{
+		url = "./customer_notes_add_ajax?customer_id="+customer_id.value+"&note="+escape(customer_note.value);
+		new Ajax.Request(url, {
+		  method: 'get',
+		  onSuccess: function ProcessResult(data)
+				{
+					data = data.responseText.evalJSON();
+					
+					addRowToTable(data['date'], data['note'], data['created_by']);
+					customer_note.value = "";
+				},
+			onFailure: function(transport, ipe) {
+	      		//alert('Error communication with the server: ' + transport.responseText.stripTags());
+	    	}
+		});
+	}
+	//2. Reload Notes List
+}
+
+function addRowToTable(date, note, created_by)
+{
+	var tbl = document.getElementById('note_table');
+  	var lastRow = tbl.rows.length;
+	//2- header, 1-separator
+  	//alert((lastRow/2)- 1);
+  	
+	var row = tbl.insertRow(lastRow);
+	if((((lastRow/2)- 1) % 2) == 0)
+	{
+		row.setAttribute("style", "height: 20px;");
+	}
+	else
+	{
+		row.setAttribute("style", "height: 20px;background-color:#F8F7F9;");
+	}
+	
+	var cellDate = row.insertCell(0);
+	var textNodeDate = document.createTextNode(date);
+  	cellDate.appendChild(textNodeDate);
+
+	var cellCreatedBy = row.insertCell(1);
+	var textNodeCreatedBy = document.createTextNode(created_by);
+  	cellCreatedBy.appendChild(textNodeCreatedBy);
+
+  	var cellNote = row.insertCell(2);
+	var textNodeNote = document.createTextNode(note);
+  	cellNote.appendChild(textNodeNote);
+
+
+  	//Add Separator
+	var row1 = tbl.insertRow(lastRow+1);
+	var cellSeparator = row1.insertCell(0);
+	cellSeparator.setAttribute("colSpan", 3);
+	cellSeparator.setAttribute("style", "background: #AAAAAA; height: 2px;");
+
+}  	
+</script>
+
+<div id="tabA4" style="display: none;min-height:600px;" class="tab">
+<input type="hidden" id="customer_id" name="customer_id" value="<?=$html->tagValue('Customer/id')?>" />
+<br/>
+<table cellpadding="5" cellspacing="2" border="0">
+	<tr>
+		<td>Customer: <b><? echo $this->data["Customer"]["first_name"].' '.$this->data["Customer"]["last_name"]?></b></td>
+	</tr>
+	<tr>
+		<td valign="top">
+			Note: <br/><textarea id="txt_customer_note" name="txt_customer_note" rows="3" cols="50"></textarea>
+			<input type="button" value="Add Note" style="border-color: #72BF44 #72BF44 #72BF44 #72BF44;" onclick="javascript:AddCustomerNote();"/>
+		</td>
+	</tr>
+</table>
+
+<table class="historytable" width="100%" id="note_table" name="note_table">
+	<tr cellpadding="10" style="background: #9EE871;height:25px;">
+		<th width="120">Date</th><th width="120">Created By</th><th align="left">Note</th>
+	</tr>
+	<tr><td colspan="3" style="background: black; height: 2px;"></td></tr>
+
+	<?
+	$counter = 0;
+	foreach ($customer_notes as $c_note)
+	{
+		$counter++;
+		$row_style = "";
+		if(($counter % 2) == 0){
+			$row_style = 'style="background-color:#F8F7F9;"';
+		}
+
+		echo '<tr '.$row_style.' height="20">';
+		echo 	"<td>".date('d-M-y H:i:s', strtotime($c_note['note_date']))."</td>";
+		echo 	"<td>".$c_note['created_by']."</td>";
+		echo 	"<td>".htmlspecialchars($c_note['note'])."</td>";
+		echo '</tr>';
+		echo "<tr><td colspan='3' style=\"background: #AAAAAA; height: 2px;\"></td></tr>";
+	}
+	
+	?>
+
+</table>
+</div>
+<!-- END OF TAB 4 -->
+
+<div style="float: left; width: 95%; text-align: right;">
+	<br/>
+
+	<input type="hidden" name="reschedulerequest" id="reschedulerequest" value="0">
+	<!-- And finally, the submit button-->
+	<?php 
+	// Accountants have no permission to save orders 
+	$ShowSave = true; 
+	if ($common->getLoggedUserRoleID() == "4") $ShowSave = false; 
+
+	//Telemarketers have no rigts to save done or cancelled by office documents
+	if (($common->getLoggedUserRoleID() == "3")||($common->getLoggedUserRoleID() == "9"))
+	{
+		if ($this->data['Order']['order_status_id']=="5")
+			$ShowSave = false; 
+		else
+			$ShowSave = true; 
+	}
+	
+	if ($ShowSave)
+        {
+		if ($common->getLoggedUserID() == 44851)
+			echo $html->submit("Save", array("class" => "buttons", "onclick" => "ValidateFields(); return false;" ) );
+		else
+			echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(); return false;" ));
+	
+
+		echo "&nbsp;&nbsp;&nbsp;";
+		echo $html->submit("Save & Send", array("class" => "buttons","onclick" => "javascript:document.getElementById('havetoprint').value=1;ValidateFields(); return false;" ));
+	}
+	?>
+	&nbsp;&nbsp;&nbsp;<input type="button" value="Exit" onclick="history.go(-1);" class="buttons">
+
+</div>
+<?php echo "Order ID: ".$this->data['Order']['id']?>
+<br/><br/>
+<br/><br/>
+
+</form>
+
+<script language="JavaScript">
+
+	existingCustomerCheck();
+
+</script>

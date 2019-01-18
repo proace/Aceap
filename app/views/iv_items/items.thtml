@@ -1,0 +1,66 @@
+<input type="hidden" class="criteria" value='<?php echo $criteria ?>' />
+<div class="item_count"><?php echo $count ?> result<?php echo $count==1?'':'s' ?></div>
+<li><?php //echo $criteria //for debugging ?>
+<div class="list_wrapper">
+    <div class="list_header">
+    <?php if($inventoryAccess['add_item'] && $mode != 'store') { ?>
+    <a href="#" title="Add Item" class="link_additem"></a>
+    <?php } ?>
+    <span class="clear_this">&nbsp;</span>
+    </div>
+    <table class="list clear_this">
+        <tr>
+        	<th><?php echo $aliases['sku']['alias']==''?'SKU':$aliases['sku']['alias'] ?></th>
+            <th>Name</th>                        
+            <th><?php echo $aliases['regular_price']['alias']==''?'Regular Price':$aliases['regular_price']['alias'] ?></th>
+            <th><?php echo $aliases['selling_price']['alias']==''?'Selling Price':$aliases['selling_price']['alias'] ?></th>
+             
+            <?php if($inventoryAccess['extended_view']) { ?>      
+            <th><?php echo $aliases['model']['alias']==''?'Model':$aliases['model']['alias'] ?></th>
+            <th><?php echo $aliases['supplier_price']['alias']==''?'Supplier Price':$aliases['supplier_price']['alias'] ?></th>
+            <th><?php echo $aliases['efficiency']['alias']==''?'Efficiency':$aliases['efficiency']['alias'] ?></th>
+            <th><?php echo $aliases['brand']['alias']==''?'Brand':$aliases['brand']['alias'] ?></th>
+            <th><?php echo $aliases['supplier']['alias']==''?'Supplier':$aliases['supplier']['alias'] ?></th>
+            <th><?php echo $aliases['description1']['alias']==''?'Description 1':$aliases['description1']['alias'] ?></th>
+            <th><?php echo $aliases['description2']['alias']==''?'Description 2':$aliases['description2']['alias'] ?></th>
+            <?php } ?>
+        </tr>
+        <?php $i = 0; ?>
+        <?php foreach($items as $item) { ?>
+        <tr class="<?php echo $i++%2==0?'odd':'even' ?> <?php if($inventoryAccess['edit_item'] && $mode != 'store') { ?>editable<?php } ?> item"><input type="hidden" class="id" value="<?php echo $item['id'] ?>" />
+            <input type="hidden" class="item_active" value="<?php echo $item['active'] ?>" />
+            <input type="hidden" class="item_id" value="<?php echo $item['id'] ?>" />
+            <input type="hidden" class="item_sku" value="<?php echo $item['sku'] ?>" />
+            <input type="hidden" class="item_name" value="<?php echo $item['name'] ?>" />
+            <input type="hidden" class="item_model" value="<?php echo $item['model'] ?>" />
+            <input type="hidden" class="item_regular_price" value="<?php echo $item['regular_price'] ?>" />
+            <input type="hidden" class="item_selling_price" value="<?php echo $item['selling_price'] ?>" />
+            <input type="hidden" class="item_supplier_price" value="<?php echo $item['supplier_price'] ?>" />
+            <input type="hidden" class="item_efficiency" value="<?php echo $item['efficiency'] ?>" />
+            <input type="hidden" class="item_brand_id" value="<?php echo $item['brand_id'] ?>" />
+            <input type="hidden" class="item_supplier_id" value="<?php echo $item['supplier_id'] ?>" />
+            <input type="hidden" class="item_description1" value="<?php echo $item['description1'] ?>" />
+            <input type="hidden" class="item_description2" value="<?php echo $item['description2'] ?>" />
+            <td><?php echo $item['sku'] ?></td> 
+            <td><?php echo $item['name'] ?></td>                        
+            <td class="right "><?php echo $item['regular_price'] ?></td>
+            <td class="right "><?php echo $item['selling_price'] ?></td>
+            
+            <?php if($inventoryAccess['extended_view']) { ?> 
+            <td><?php echo $item['model'] ?></td>
+            <td class="right "><?php echo $item['supplier_price'] ?></td>
+            <td><?php echo $item['efficiency'] ?></td>
+            <td><?php echo $item['brand'] ?></td>
+            <td><?php echo $item['supplier'] ?></td>
+            <td><?php echo $item['description1'] ?></td>
+            <td><?php echo $item['description2'] ?></td>
+            <?php } ?>
+        </tr>
+        <?php } ?>
+    </table>    
+</div>
+<div class="clear_this">&nbsp;</div>
+</li>
+<pre>
+<?php //echo $query ?>
+</pre>

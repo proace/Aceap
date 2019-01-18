@@ -1,0 +1,31 @@
+/* CSS Document */
+
+input {
+	width:150px;
+}
+
+textarea {
+	width:150px;
+	height:200px;	
+}
+
+.input {
+	float:left;
+	border:1px solid #cccccc;
+	height:320px;
+	padding:0 5px 0 5px;
+}
+
+.output {
+	width:200px;
+	height:320px;
+	margin:0px 0 0 180px;
+	border:1px solid #cccccc;
+	overflow:auto;
+	font-size:11px;
+}
+
+.section {
+	
+}
+

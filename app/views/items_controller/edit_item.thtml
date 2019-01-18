@@ -1,0 +1,90 @@
+<script>
+//*** SET PAGE TITLE ***
+document.title += " :: Edit Item";
+//**********************
+</script>
+
+<form name="editItemForm" action="<?=BASE_URL;?>/items/saveItem" method="post">
+<?php echo $html->hidden('Item/id')?>
+<div class="frame-wrap" style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title">Item information</div>
+		<div class="frame-header-right"></div>
+		<div class="frame-body" style="clear: both;">
+				<table>
+						<tr>
+								<td align="right">Item name:</td>
+								<td>
+								<?php echo$html->input('Item/name', array('style' => 'width: 200px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Part number:</td>
+								<td>
+								<?php echo$html->input('Item/part_number', array('style' => 'width: 200px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Item category:</td>
+								<td>
+								<?php echo $html->selectTag('Item/item_category_id', $itemcategories, $this->data['Item']['item_category_id']);?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Related job type:</td>
+								<td>
+								<?php echo $html->selectTag('Item/related_order_type_id', $jobtypes, $this->data['Item']['related_order_type_id']);?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right"><!--Purchase price-->Tech Price:</td>
+								<td>
+								<?php echo $html->input('Item/price_purchase', array('style' => 'width: 50px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right"><!--Regular price-->Office Price:</td>
+								<td>
+								<?php echo $html->input('Item/regular_price', array('style' => 'width: 50px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Sell price:</td>
+								<td>
+								<?php echo $html->input('Item/price',array('style' => 'width: 50px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Item class:</td>
+								<td>
+								<?php echo $html->selectTag('Item/is_appliance', array(0=>'Service',1=>'Appliance',2=>'Parts',3=>'Other',5=>'Special Parts'), $this->data['Item']['is_appliance']);?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Manufacturer:</td>
+								<td>
+								<?php echo$html->input('Item/manufacturer', array('style' => 'width: 200px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Application:</td>
+								<td>
+								<?php echo$html->input('Item/application', array('style' => 'width: 200px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Show to techs:</td>
+								<td>
+								<?php echo $html->selectTag('Item/show_tech', array(0=>'No',1=>'Yes'), $this->data['Item']['show_tech']);?>
+								</td>
+						</tr>
+						<tr>
+								<td style="text-align:right" colspan=2>
+												<?php echo $html->submit("Save", array("class" => "buttons"));?>
+												<input type="button" value="Exit" onclick="history.go(-1);" class="buttons">
+								</td>
+						</tr>
+				</table>
+		</div>
+</div>
+</form>

@@ -1,0 +1,241 @@
+<style>
+.invisible {
+	visibility:hidden;	
+}
+</style>
+<script>
+$(function(){
+	$(".check_pay").on("click", function(e) {
+		
+        if($(this).is(":checked")) {
+			$("#pay"+$(this).attr("payid")).removeClass("invisible");
+			$("#cost"+$(this).attr("payid")).val($(this).attr("pay_value"));
+		} else {
+			$("#pay"+$(this).attr("payid")).addClass("invisible");
+			$("#cost"+$(this).attr("payid")).val(0);
+		}
+		calculate_payment();
+    });
+});
+
+function calculate_payment() {
+	var total = 0;
+	$(".check_pay").each(function(index, element) {
+		if($(this).is(":checked")) {
+        	total += parseFloat($(this).attr("pay_value"));
+        }
+    });	
+	$("#total_payment").html(total);
+}
+
+</script>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1> Purchases <small></small> </h1>
+  <ol class="breadcrumb">
+    <li><a href="<?php echo $home_link ?>"><i class="fa fa-home"></i> Home</a></li>
+    <li>Inventory</li>
+    <li class="active">Purchases</li>
+  </ol>
+</section>
+
+<!-- Main content -->
+<section class="content">
+  <div class="row">
+  	<div class="col-md-8">
+      <!-- general form elements -->
+      <div class="box box-primary">
+        <div class="box-header">
+          <h3 class="box-title"> </h3>
+        </div><!-- /.box-header -->
+        <!-- form start -->
+          <?php
+		  	$agents = array(
+		  	'231277' => "Agent 1",
+			'44874' => "Agent 2",
+			'231296' => "Agent 3",
+			'231297' => "Agent 4",
+			
+			'44851' => "Ali (ACE)",
+			'226792' => "Roy (ACE)",
+			'231267' => "B Plumber (ACE)",
+			'231254' => "GG (ACE)",
+			'229528' => "Brizzi (ACE)"
+			);
+		  ?>
+                   
+          <div class="box-body">
+              <form method="post">               
+              <div class="row">
+                 <div class="col-xs-5">                      
+                  <div class="form-group">                  
+                    <label>Date range: </label>
+                    <div class="input-group">
+                      <div class="input-group-addon">
+                        <i class="fa fa-calendar"></i>
+                      </div>
+                      <input type="text" class="form-control pull-right date-range" name="date_range" value="<?php echo $date_range ?>">
+                    </div><!-- /.input group -->
+                  </div>
+                 </div>
+                 <div class="col-xs-5">                      
+                  <div class="form-group">                  
+                    <label>Supplier: </label>
+                    <div class="input-group" style="width:100%;">     
+                                     
+                      <input type="text" class="form-control pull-right" name="supplier_name" value="<?php echo $supplier_name ?>">
+                    </div><!-- /.input group -->
+                  </div>
+                 </div>
+                 <div class="col-xs-2">
+                  <div class="form-group">
+                      <label style="visibility:hidden">Submit</label>
+                      <div class="input-group">
+                          <button type="submit" class="btn btn-primary" name="btn-filter" value="1">Search</button>
+                      </div>                    
+                  </div>
+                 </div>                 
+              </div>
+              
+              </form>
+              <form method="post"> 
+              <div class="row">
+                <div class="col-xs-12"> 
+              	<table class="table table-bordered">
+                  <tr>                  	   
+                  	  <!--<th style="width:70px;">ID</th> -->
+                      <th>Supplier</th>     
+                      <th style="width:200px;">Invoice #</th> 
+                      <th>Date</th>                           
+                      <th class="text-right">Type</th>                         
+                      <th class="text-right">Cost</th>  
+                      <th></th>                                            
+                  </tr>                  
+                  
+                  <?php 
+				  $types = array(
+				  	"J" => "Job",
+				  	"0" => "Void",
+				  	"1" => "Purchase",
+					"2" => "Refund",
+					"3" => "Return",
+					"4" => "Warranty",
+					"5" => "Adjustment",
+					"6" => "Transfer",
+					"7" => "Payment",
+				  );
+				  
+				  ?>
+                  <?php foreach($purchases as $purchase)  { ?> 
+                  <tr>                    
+                  	<!--<td><?php echo $purchase['purchase_id'] ?></td>-->
+                    <td><?php echo $purchase['supplier_name'] ?></td>
+                    <td><?php echo $purchase['purchase_invoice'] ?></td>   
+                    <td><?php echo $purchase['purchase_date'] ?></td>                 
+                    <td class="text-right"><?php echo $types[$purchase['purchase_type']] ?></td>                    
+                  	<td class="text-right">$<?php echo money_format("%i", $purchase['purchase_cost']) ?></td>
+                    <td>
+                    	<label>
+                          <input type="checkbox" class="check_pay" pay_value="<?php echo round($purchase['purchase_cost'], 2) ?>" value="1" payid="<?php echo $purchase['purchase_id'] ?>"  />
+                        </label>
+                    </td>
+                    
+                  </tr>
+                  <?php } ?>
+                  <tr>
+                    
+                  	<td class="text-right" colspan="6"><strong>Summary for <?php echo $date_range ?> </strong></td>
+                    
+                  </tr><?php $total = 0; ?>
+                  <?php foreach($summaries as $summary)  { ?>                  
+                  <tr>
+                  	
+                    <td></td>
+                    <td></td> 
+                    <td></td>                 
+                    <td class="text-right"><?php echo $summary['purchase_type_name'] ?></td>                    
+                  	<td class="text-right">$<?php echo money_format("%i", $summary['purchase_sum']*$summary['purchase_debit']) ?></td>
+                    <td></td>
+                  </tr>
+                  <?php $total += $summary['purchase_sum']*$summary['purchase_debit']; ?>
+                  <?php } ?> 
+                  <tr>
+                    
+                  	
+                    <td></td>
+                    <td></td> 
+                    <td></td>   
+                    <td class="text-right"><strong>Total Owing</strong></td>
+                    <td class="text-right"><strong><?php echo money_format("%i", $total) ?></strong></td>
+                   </tr>
+                </table>
+                <!--<pre><?php //print_r($query) ?></pre>-->                     
+              </form> 
+
+              </div>                                      
+            </div>
+           
+            <!-- /.box-body -->
+            <div class="box-footer">
+                <!--<button type="submit" class="btn btn-primary" name="callback_access" value="1">Submit</button>-->
+          	</div>
+      	 </div>
+      </div><!-- /.box -->      
+    </div><!-- end col -->
+    <div class="col-md-4">
+      <!-- general form elements -->
+      <div class="box box-primary">
+        <div class="box-header">
+          <h3 class="box-title">Add Payment</h3>
+        </div><!-- /.box-header -->
+        <div class="box-body">
+        	
+        	<div class="row">                 
+               <div class="col-xs-6">
+                <div class="form-group">
+                    <label>Payment #</label>
+                    <input type="text" class="form-control" name="purchase_invoice" id="purchase_invoice" value="">
+                </div>                               
+               </div> 
+               <div class="col-xs-6">                
+                <div class="form-group">
+                    <label>Cheque / Auth #</label>
+                    <input type="text" class="form-control" name="purchase_invoice" id="purchase_invoice" value="">
+                </div>
+               </div>
+            </div>
+            <div class="row">
+               <div class="col-xs-12">
+               <table class="table table-bordered">
+                  <tr>
+                      <th>Invoice #</th> 
+                      <th style="width:150px;">Payment</th>                                                
+                  </tr>                  
+                    <?php foreach($purchases as $purchase)  { ?>
+                  	<tr id="pay<?php echo $purchase['purchase_id'] ?>" class="invisible">
+                      <td><?php echo $purchase['purchase_invoice'] ?></td> 
+                      <td style="padding-top:3px;padding-bottom:4px;"><input type="text" class="form-control text-right pay-amount" name="purchase_invoice" value="0" id="cost<?php echo $purchase['purchase_id'] ?>"></td>
+                    </tr>
+                    <?php } ?>
+                    <td><strong>Payment Total</strong></td>
+                    <td class="text-right" id="total_payment"></td>
+               </table>
+               </div>
+            </div>
+            <div class="row">                 
+               <div class="col-xs-12">
+                <div class="form-group">
+                    <label>Inclusive Dates</label>
+                    <input type="text" class="form-control" name="purchase_daterange" id="purchase_daterange" value="">
+                </div>                  
+               </div>                                  
+            </div>
+        	<div class="box-footer">
+                <button type="submit" class="btn btn-primary" name="callback_access" value="1">Submit</button>
+          	</div>
+        </div>
+      </div>
+    </div><!-- end col -->
+  </div>
+</section>
+<!-- /.content --> 

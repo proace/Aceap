@@ -1,0 +1,113 @@
+
+
+
+
+
+
+* { margin: 0px; padding: 0px; text-decoration: none !important; }
+
+img { max-width: 100%; border: 0px; height: auto; width: auto\9; /* ie8 */ }
+
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section { display: block; }
+
+body { margin: 0px; padding: 0px; background: #fff; color: #000; font-family: 'Roboto', sans-serif; font-size: 15px; line-height: 1.3; }
+ .form-control{ width: 100%; height: 34px; box-sizing: border-box; background: #fff; border: solid 1px #ddd; padding: 6px; font-family: 'Roboto', sans-serif;}
+.dialer-sec a:hover{ text-decoration: none !important;}
+
+.clearfix{ clear: both;}
+.clearfix:after{ display: block; content: ""; clear: both;}
+.dialer-sec{ max-width: 900px; background: #ebe9ed; padding: 10px; box-sizing: border-box;}
+.dialer-hdr{}
+.pitch-icon{ float: left; line-height: 25px; color: #333; font-size: 16px;}
+.pitch-icon:before{ font-family: 'FontAwesome'; content: "\f130"; vertical-align: middle;  margin-right: 5px;}
+
+
+
+
+.btn{ width: 98px; height: 23px; line-height: 23px; display:inline-block;  text-align: center;font-size: 12px; border-style: solid; border-width: 2px;  border-color: #fff #7d7d7d #7d7d7d #fff;}
+.btn:hover{ opacity: 0.8;}
+
+
+ 
+
+
+.btn-yellow{ background: #f7f7b5; color:#4e0000; font-weight: 600; }
+.btn-teal{ background: #c4ffff; color:#000; }
+.btn-navy{ background: #000040; color:#fff; }
+.btn-teal-r{ color: #920015;}
+
+.btn-blue{ background: #3c8dbc; color:#fff; }
+.btn-wht{ background: #e1e1e1; color:#000;font-weight: 600; }
+
+
+
+
+.sch-btn{ float: right;}
+
+
+.dailer-txt{ width: 100%; margin:5px 0 15px 0px;}
+.dailer-txt textarea.form-control{ width: 100%; box-sizing: border-box;  height: 60px; resize: none; border: solid 1px #ddd; padding: 10px; font-family: 'Roboto', sans-serif;}
+
+.title{ margin: 0 0 15px 0px; }
+.title span{ background: #666; display: inline-block; line-height: 1; font-size: 18px; color: #fff; padding: 5px 8px; vertical-align: top;}
+.title:after{ width: 30px;  height: 28px; line-height: 28px; background: #fff;  color: #3c8dbc;  font-size: 14px; text-align: center; display: inline-block; font-weight: normal;  vertical-align: top;font-family: 'FontAwesome';  content: "\f164";}
+
+
+
+.dialer-ctn{ width: 100%; margin-bottom: 30px;}
+.dialer-left{ width: calc(100% - 250px); float: left; margin-bottom: 20px;} 
+.dialer-right{ width:225px; float: right;}
+
+.dialer-tbl{ width: 100%; height: 180px; overflow: auto;} 
+    
+.dialer-book{ background: #c0c0c0; border: solid 2px #fff; padding: 5px 0px;}
+.dialer-book ul{ margin: 0px; padding: 0px; font-size: 0; }
+.dialer-book ul li{ list-style: none; margin: 0 0 8px 0px; width:50%; display: inline-block; padding: 0 5px;box-sizing: border-box; }
+
+
+.sub-w100{ width: 100% !important; text-align: center;}
+.sub-w100 .btn{font-size: 16px; font-weight: 600; width: 125px;}
+
+.dialer-book-ftr { border-top: solid 1px rgba(255,255,255,0.2); font-size: 0; padding: 10px 5px 0 5px; text-align: center;}
+.dialer-book-ftr .btn{ font-size: 14px; font-weight: 600;   }
+
+.btn-bk{ float: left;}
+.btn-nxt{ float: right;}
+
+
+.dialer-ftr{ width: 100%; padding: 10px 0px 10px 1px; box-sizing: border-box; background: #3c8dbc;}
+
+.ftr-left{ float: left; padding-top: 3px;}
+.ftr-left a{ display: inline-block; margin-left: 3px; font-weight: 400;}
+.ftr-left .btn:hover{ opacity: 1; background: #d1d1d1;}
+.ftr-right{ float: right;}
+
+.num-fild{ display: inline-block; }
+.num-fild .form-control{ width: 100%; height: 30px; box-sizing: border-box; background: #fff; border: solid 1px #ddd; padding: 6px; font-family: 'Roboto', sans-serif;}
+
+.call-fild{ display: inline-block; margin-left: 15px;}
+.call-fild a{ display: inline-block; color: #fff; font-size: 16px; margin: 0 10px;}
+.call-fild a:hover{ color: #ed0c1f;}
+
+
+
+@media(max-width:767px) {
+
+	.dialer-left{  width: calc(100% - 0px);}
+	.dialer-right{ float:left; }
+	.dialer-right:after{ clear: both; content: ""; display: block;}
+
+	
+	.ftr-left{ width: 100%; text-align: center; margin-bottom: 10px;}
+	.ftr-left .btn{ width: 80px; margin: 0;}
+	.ftr-right{ width: 100%; text-align: center;}
+	.num-fild{ display: block; margin-bottom: 10px; }
+}
+
+
+
+
+@media(max-width:600px) {
+	
+
+}

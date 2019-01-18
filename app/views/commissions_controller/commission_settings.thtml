@@ -1,0 +1,598 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Commission Settings</title>
+<link href="<?php echo ROOT_URL ?>/app/webroot/css/commission_settings.css" rel="stylesheet" />
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/commission_settings.js"></script>
+</head>
+<!--
+[commission_role][commission_from_id][commission_type][commission_item][commission_division]
+                      office            job         refer to tables       alone
+                      upsales         job type                            w/ tech
+                                    item category
+                                        item
+-->
+<body>
+<h1>Commission Settings</h1>
+<pre><?php //print_r($commission_settings) ?></pre>
+<h2 class="tech_name"><?php echo $techs[$user_id]?></h2>
+<form action="<?php echo BASE_URL ?>/commissions/saveCommissionSettings/<?php echo $user_id ?>" method="post">
+<div class="side_nav">
+	<h2>Add Tech Role</h2>
+	<ul class="tech_menu_role">    	
+        <?php foreach($commission_tech_roles as $role) { ?>
+        <li><a class="link_add"><?php echo $role['name'] ?></a>
+        	<input type="hidden" class="role_id" value="<?php echo $role['id'] ?>" />
+        </li>
+    	<?php } ?>
+        <li><a class="link_new">New</a></li>
+    </ul>
+    <input type="submit" value="Save Settings" id="save_button" />
+    <!--
+    <h2>Copy Tech Setting</h2>
+	<ul class="tech_menu_copy_role">
+        <?php foreach($commission_techs as $tech) { ?>
+        <li><a class="add"><?php echo $tech['first_name'] ?> <?php echo $tech['last_name'] ?></a>
+        	<input type="hidden" class="tech_id" value="<?php echo $tech['id'] ?>" />
+        </li>
+    	<?php } ?>
+    </ul>
+    -->
+</div>
+<div class="settings">    
+    <h2>Technician</h2>
+    <div class="all_tech_settings">
+    	<?php if(count($commission_existing_roles[2]) > 0) { ?>
+    	<?php foreach($commission_existing_roles[2] as $role_id => $existing_role) { ?>          
+        <div class="setting tech">
+            <h3><input type="button" class="toggle_button" value="+" title="Show/Hide details" />&nbsp;<?php echo $existing_role ?></h3>
+            <div class="from office">
+            	<h4>Office</h4>
+                <?php $from_id = 0 ?>
+                <input type="hidden" class="commission_from_id" value="0" />
+                <input type="hidden" class="commission_role_id" value="<?php echo $role_id ?>" />
+                <ul class="nav">
+                    <li><a class="link_job_type">Add Job Type</a></li>
+                    <li><a class="link_item_category">Add Item Category</a></li>
+                    <li><a class="link_item">Add Item</a></li>
+                    <li><a class="link_cancel">Close</a></li>
+                    <?php if($role_id > 2) { ?>
+                    <li class="delete_link"><a>Delete <?php echo $existing_role ?></a></li>
+                    <?php } ?>
+                    <div class="clear_this"></div>
+                </ul>	
+                <div class="item_box"></div>
+                <table>
+                    <tr>
+                        <th rowspan="2" class="label_header"></th>
+                        <th colspan="2">Alone</th>
+                        <th colspan="2">w/ Tech</th>
+                    </tr>
+                    <tr>        	
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                    </tr>
+                    <tbody class="job">
+                    <?php $type_id = 1 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>
+                        <td>Per Job</td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                	           	
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" disabled="disabled" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>
+                    </tbody>                
+                    
+                    <tbody class="job_type"> 
+                    <?php $type_id = 2 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>
+                        <td><?php echo $job_types[$commission_item_id]['name'] ?><input type="hidden" class="commission_item_id" value="<?php echo $commission_item_id ?>" /></td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                	
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>              	
+                    </tbody>
+                    
+                    <tbody class="item_category">
+                    <?php $type_id = 3 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>                
+                        <td><?php echo $item_categories[$commission_item_id]['name'] ?><input type="hidden" class="commission_item_id" value="<?php echo $commission_item_id ?>" /></td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                	
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>
+                    </tbody>
+                    
+                    <tbody class="item">
+                    <?php $type_id = 4 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>
+                        <td><?php echo $items[$commission_item_id]['name'] ?><input type="hidden" class="commission_item_id" value="<?php echo $commission_item_id ?>" /></td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                        
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>
+                    </tbody>
+                </table>
+        	</div><!--END .office-->
+            <div class="from upsales">
+            	<h4>Upsales</h4>
+                <?php $from_id = 1 ?>
+                <input type="hidden" class="commission_from_id" value="1" />
+                <input type="hidden" class="commission_role_id" value="<?php echo $role_id ?>" />
+                <ul class="nav">
+                    <li><a class="link_job_type">Add Job Type</a></li>
+                    <li><a class="link_item_category">Add Item Category</a></li>
+                    <li><a class="link_item">Add Item</a></li>
+                    <li><a class="link_cancel">Close</a></li>
+                    <?php if($role_id > 2) { ?>
+                    <li class="delete_link"><a>Delete <?php echo $existing_role ?></a></li>
+                    <?php } ?>
+                    <div class="clear_this"></div>
+                </ul>	
+                <div class="item_box"></div>
+                <table>
+                    <tr>
+                        <th rowspan="2" class="label_header"></th>
+                        <th colspan="2">Alone</th>
+                        <th colspan="2">w/ Tech</th>
+                    </tr>
+                    <tr>        	
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                    </tr>
+                    <tbody class="job">
+                    <?php $type_id = 1 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>
+                        <td><?php echo $commission_item_id==1?"Per Job":"Per Hour" ?></td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                	           	
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" disabled="disabled" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>
+                    </tbody>                
+                    
+                    <tbody class="job_type"> 
+                    <?php $type_id = 2 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>
+                        <td><?php echo $job_types[$commission_item_id]['name'] ?><input type="hidden" class="commission_item_id" value="<?php echo $commission_item_id ?>" /></td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                	
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>              	
+                    </tbody>
+
+                    
+                    <tbody class="item_category">
+                    <?php $type_id = 3 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>                
+                        <td><?php echo $item_categories[$commission_item_id]['name'] ?><input type="hidden" class="commission_item_id" value="<?php echo $commission_item_id ?>" /></td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                	
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>
+                    </tbody>
+                    
+                    <tbody class="item">
+                    <?php $type_id = 4 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>
+                        <td><?php echo $items[$commission_item_id]['name'] ?><input type="hidden" class="commission_item_id" value="<?php echo $commission_item_id ?>" /></td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                        
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>
+                    </tbody>
+                </table>
+        	</div><!--END .upsales-->
+        </div><!--END .setting-->
+        <?php } //END commission_existing_roles ?>
+        <?php } else { ?>
+        <div class="setting tech">
+        	<h3><input type="button" class="toggle_button" value="+" title="Show/Hide details" />&nbsp;Default</h3>
+            <div class="from office">
+            	<h4>Office</h4>
+                <input type="hidden" class="commission_from_id" value="0" />
+                <input type="hidden" class="commission_role_id" value="2" />
+                <ul class="nav">
+                    <li><a class="link_job_type">Add Job Type</a></li>
+                    <li><a class="link_item_category">Add Item Category</a></li>
+                    <li><a class="link_item">Add Item</a></li>
+                    <li><a class="link_cancel">Close</a></li>
+                    <!--<li class="delete_link"><a>Delete Fixed</a></li>-->
+                    <div class="clear_this"></div>
+                </ul>	
+                <div class="item_box"></div>
+                <table>
+                    <tr>
+                        <th rowspan="2" class="label_header"></th>
+                        <th colspan="2">Alone</th>
+                        <th colspan="2">w/ Tech</th>
+                    </tr>
+                    <tr>        	
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                    </tr>
+                    <tbody class="job">                	
+                        <tr>
+                            <td>Per Job</td>                                                	
+                            <td><input type="text" name="data[Settings][2][0][1][1][1][value_fixed]" value="0" /></td>
+                            <td><input type="text" name="data[Settings][2][0][1][1][1][value_percent]" value="0" /></td>                        	
+                            <td><input type="text" name="data[Settings][2][0][1][1][2][value_fixed]" value="0" /></td>
+                            <td><input type="text" name="data[Settings][2][0][1][1][2][value_percent]" value="0" /></td>                    
+                            <td><input type="button" value="X" class="delete" disabled="disabled" /></td>                      
+                        </tr>                            
+                    </tbody>
+                    <tbody class="job_type">
+                    </tbody>
+                    <tbody class="item_category">
+                    </tbody>
+                    <tbody class="item">
+                    </tbody>
+                </table>
+            </div><!--END .office-->
+            <div class="from upsales">
+            	<h4>Upsales</h4>
+                <input type="hidden" class="commission_from_id" value="1" />
+                <input type="hidden" class="commission_role_id" value="2" />
+                <ul class="nav">
+                    <li><a class="link_job_type">Add Job Type</a></li>
+                    <li><a class="link_item_category">Add Item Category</a></li>
+                    <li><a class="link_item">Add Item</a></li>
+                    <li><a class="link_cancel">Close</a></li>
+                    <!--<li class="delete_link"><a>Delete Fixed</a></li>-->
+                    <div class="clear_this"></div>
+                </ul>	
+                <div class="item_box"></div>
+                <table>
+                    <tr>
+                        <th rowspan="2" class="label_header"></th>
+                        <th colspan="2">Alone</th>
+                        <th colspan="2">w/ Tech</th>
+                    </tr>
+                    <tr>        	
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                    </tr>
+                    <tbody class="job">                	
+                        <tr>
+                            <td>Per Job</td>                                                	
+                            <td><input type="text" name="data[Settings][2][1][1][1][1][value_fixed]" value="0" /></td>
+                            <td><input type="text" name="data[Settings][2][1][1][1][1][value_percent]" value="0" /></td>                        	
+                            <td><input type="text" name="data[Settings][2][1][1][1][2][value_fixed]" value="0" /></td>
+                            <td><input type="text" name="data[Settings][2][1][1][1][2][value_percent]" value="0" /></td>                    
+                            <td><input type="button" value="X" class="delete" disabled="disabled" /></td>                      
+                        </tr>
+                        <tr>
+                            <td>Per Hour</td>                                                	
+                            <td><input type="text" name="data[Settings][2][1][1][2][1][value_fixed]" value="0" /></td>
+                            <td><input type="text" name="data[Settings][2][1][1][2][1][value_percent]" value="0" /></td>                        	
+                            <td><input type="text" name="data[Settings][2][1][1][2][2][value_fixed]" value="0" /></td>
+                            <td><input type="text" name="data[Settings][2][1][1][2][2][value_percent]" value="0" /></td>                    
+                            <td><input type="button" value="X" class="delete" disabled="disabled" /></td>                      
+                        </tr>                            
+                    </tbody>
+                    <tbody class="job_type">
+                    </tbody>
+                    <tbody class="item_category">
+                    </tbody>
+                    <tbody class="item">
+                    </tbody>
+                </table>
+            </div><!--END .upsales-->
+        </div><!--END .setting-->
+        <?php } ?>
+    </div><!--END .all_tech_settings-->
+    <h2>Source</h2>
+    <div class="all_source_settings">
+    	<?php if(count($commission_existing_roles[1]) > 0) { ?>
+    	<?php foreach($commission_existing_roles[1] as $role_id => $existing_role) { ?>          
+        <div class="setting source">
+            <h3><input type="button" class="toggle_button" value="+" title="Show/Hide details" />&nbsp;<?php echo $existing_role ?></h3>
+            <div class="from office">
+            	<h4>Office</h4>
+                <?php $from_id = 0 ?>
+                <input type="hidden" class="commission_from_id" value="0" />
+                <input type="hidden" class="commission_role_id" value="<?php echo $role_id ?>" />
+                <ul class="nav">
+                    <li><a class="link_job_type">Add Job Type</a></li>
+                    <li><a class="link_item_category">Add Item Category</a></li>
+                    <li><a class="link_item">Add Item</a></li>
+                    <li><a class="link_cancel">Close</a></li>
+                    <?php if($role_id > 2) { ?>
+                    <li class="delete_link"><a>Delete <?php echo $existing_role ?></a></li>
+                    <?php } ?>
+                    <div class="clear_this"></div>
+                </ul>	
+                <div class="item_box"></div>
+                <table>
+                    <tr>
+                        <th rowspan="2" class="label_header"></th>
+                        <th colspan="2">Alone</th>
+                        <th colspan="2">w/ Tech</th>
+                    </tr>
+                    <tr>        	
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                    </tr>
+                    <tbody class="job">
+                    <?php $type_id = 1 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>
+                        <td>Per Job</td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                	           	
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" disabled="disabled" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>
+                    </tbody>                
+                    
+                    <tbody class="job_type"> 
+                    <?php $type_id = 2 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>
+                        <td><?php echo $job_types[$commission_item_id]['name'] ?><input type="hidden" class="commission_item_id" value="<?php echo $commission_item_id ?>" /></td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                	
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>              	
+                    </tbody>
+                    
+                    <tbody class="item_category">
+                    <?php $type_id = 3 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>                
+                        <td><?php echo $item_categories[$commission_item_id]['name'] ?><input type="hidden" class="commission_item_id" value="<?php echo $commission_item_id ?>" /></td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                	
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>
+                    </tbody>
+                    
+                    <tbody class="item">
+                    <?php $type_id = 4 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>
+                        <td><?php echo $items[$commission_item_id]['name'] ?><input type="hidden" class="commission_item_id" value="<?php echo $commission_item_id ?>" /></td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                        
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>
+                    </tbody>
+                </table>
+        	</div><!--END .office-->
+            <div class="from upsales">
+            	<h4>Upsales</h4>
+                <?php $from_id = 1 ?>
+                <input type="hidden" class="commission_from_id" value="1" />
+                <input type="hidden" class="commission_role_id" value="<?php echo $role_id ?>" />
+                <ul class="nav">
+                    <li><a class="link_job_type">Add Job Type</a></li>
+                    <li><a class="link_item_category">Add Item Category</a></li>
+                    <li><a class="link_item">Add Item</a></li>
+                    <li><a class="link_cancel">Close</a></li>
+                    <?php if($role_id > 2) { ?>
+                    <li class="delete_link"><a>Delete <?php echo $existing_role ?></a></li>
+                    <?php } ?>
+                    <div class="clear_this"></div>
+                </ul>	
+                <div class="item_box"></div>
+                <table>
+                    <tr>
+                        <th rowspan="2" class="label_header"></th>
+                        <th colspan="2">Alone</th>
+                        <th colspan="2">w/ Tech</th>
+                    </tr>
+                    <tr>        	
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                    </tr>
+                    <tbody class="job">
+                    <?php $type_id = 1 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>
+                        <td>Per Job</td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                	           	
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" disabled="disabled" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>
+                    </tbody>                
+                    
+                    <tbody class="job_type"> 
+                    <?php $type_id = 2 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>
+                        <td><?php echo $job_types[$commission_item_id]['name'] ?><input type="hidden" class="commission_item_id" value="<?php echo $commission_item_id ?>" /></td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                	
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>              	
+                    </tbody>
+
+                    
+                    <tbody class="item_category">
+                    <?php $type_id = 3 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>                
+                        <td><?php echo $item_categories[$commission_item_id]['name'] ?><input type="hidden" class="commission_item_id" value="<?php echo $commission_item_id ?>" /></td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                	
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>
+                    </tbody>
+                    
+                    <tbody class="item">
+                    <?php $type_id = 4 ?>
+                    <?php foreach($commission_settings[$role_id][$from_id][$type_id] as $commission_item_id => $commission_item) { ?>
+                    <tr>
+                        <td><?php echo $items[$commission_item_id]['name'] ?><input type="hidden" class="commission_item_id" value="<?php echo $commission_item_id ?>" /></td>                    
+                    <?php foreach($commission_item as $commission_division_id => $value) { ?>                        
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_fixed]" value="<?php echo $value['value_fixed'] ?>" /></td>
+                        <td><input type="text" name="data[Settings][<?php echo $role_id ?>][<?php echo $from_id ?>][<?php echo $type_id ?>][<?php echo $commission_item_id ?>][<?php echo $commission_division_id ?>][value_percent]" value="<?php echo $value['value_percent'] ?>" /></td>
+                    <?php } //END commission_item ?>
+                        <td><input type="button" value="X" class="delete" /></td>
+                    </tr>
+                    <?php } //END commission_type ?>
+                    </tbody>
+                </table>
+        	</div><!--END .upsales-->
+        </div><!--END .setting-->
+        <?php } //END commission_existing_roles ?>
+        <?php } else { ?>
+        <div class="setting source">
+            <h3><input type="button" class="toggle_button" value="+" title="Show/Hide details" />&nbsp;Default</h3>
+            <div class="from office">
+            	<h4>Office</h4>
+                <input type="hidden" class="commission_from_id" value="0" />
+                <input type="hidden" class="commission_role_id" value="1" />
+                <ul class="nav">
+                    <li><a class="link_job_type">Add Job Type</a></li>
+                    <li><a class="link_item_category">Add Item Category</a></li>
+                    <li><a class="link_item">Add Item</a></li>
+                    <li><a class="link_cancel">Close</a></li>
+                    <!--<li class="delete_link"><a>Delete Fixed</a></li>-->
+                    <div class="clear_this"></div>
+                </ul>	
+                <div class="item_box"></div>
+                <table>
+                    <tr>
+                        <th rowspan="2" class="label_header"></th>                    
+                        <th colspan="2">Alone</th>
+                        <th colspan="2">w/ Tech</th>
+                    </tr>
+                    <tr>        	
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                    </tr>
+                    <tbody class="job">                	
+                        <tr>
+                            <td>Per Job</td>                        
+                            <td><input type="text" name="data[Settings][1][0][1][1][1][value_fixed]" value="0" /></td>
+                            <td><input type="text" name="data[Settings][1][0][1][1][1][value_percent]" value="0" /></td>      
+                            <td><input type="text" name="data[Settings][1][0][1][1][2][value_fixed]" value="0" /></td>
+                            <td><input type="text" name="data[Settings][1][0][1][1][2][value_percent]" value="0" /></td>                    
+                            <td><input type="button" value="X" class="delete" disabled="disabled" /></td>                      
+                        </tr>                              
+                    </tbody>
+                    <tbody class="job_type">
+                    </tbody>
+                    <tbody class="item_category">
+                    </tbody>
+                    <tbody class="item">
+                    </tbody>
+                </table>
+            </div><!--END .office-->
+            <div class="from upsales">
+            	<h4>Upsales</h4>
+                <input type="hidden" class="commission_from_id" value="1" />
+                <input type="hidden" class="commission_role_id" value="1" />
+                <ul class="nav">
+                    <li><a class="link_job_type">Add Job Type</a></li>
+                    <li><a class="link_item_category">Add Item Category</a></li>
+                    <li><a class="link_item">Add Item</a></li>
+                    <li><a class="link_cancel">Close</a></li>
+                    <!--<li class="delete_link"><a>Delete Fixed</a></li>-->
+                    <div class="clear_this"></div>
+                </ul>	
+                <div class="item_box"></div>
+                <table>
+                    <tr>
+                        <th rowspan="2" class="label_header"></th>                    
+                        <th colspan="2">Alone</th>
+                        <th colspan="2">w/ Tech</th>
+                    </tr>
+                    <tr>        	
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                        <th title="fixed">$</th>
+                        <th title="percent">%</th>
+                    </tr>
+                    <tbody class="job">                	
+                        <tr>
+                            <td>Per Job</td>                        
+                            <td><input type="text" name="data[Settings][1][1][1][1][1][value_fixed]" value="0" /></td>
+                            <td><input type="text" name="data[Settings][1][1][1][1][1][value_percent]" value="0" /></td>      
+                            <td><input type="text" name="data[Settings][1][1][1][1][2][value_fixed]" value="0" /></td>
+                            <td><input type="text" name="data[Settings][1][1][1][1][2][value_percent]" value="0" /></td>                    
+                            <td><input type="button" value="X" class="delete" disabled="disabled" /></td>                      
+                        </tr>                              
+                    </tbody>
+                    <tbody class="job_type">
+                    </tbody>
+                    <tbody class="item_category">
+                    </tbody>
+                    <tbody class="item">
+                    </tbody>
+                </table>
+            </div><!--END .upsales-->
+        </div><!--END .setting-->
+        <?php } ?>
+    </div><!--END .all_source_settings-->    
+</div><!--END .settings-->
+</form>
+</body>	
+</html>

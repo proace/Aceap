@@ -1,0 +1,1060 @@
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
+<!-- Simple Calendar -->
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+<script>
+//*** SET PAGE TITLE ***
+document.title += " :: Callback List";
+function setOrder(order){
+  f = document.forms.viewform;
+  f.currentPage.value = '';  
+  if(f.order.value == order){
+    if(f.sort.value == 'ASC')
+      f.sort.value = 'DESC';
+    else
+      f.sort.value = 'ASC';
+  }
+  else{
+    f.order.value = order;
+    f.sort.value = 'ASC';
+  }
+  f.submit();
+}
+function clearFilters(){
+	 f = document.forms.viewform;
+	 f.fserach.value = '';
+	 
+}
+
+
+function PrintIt(){
+res=document.getElementById("results");
+parent['main_view'].print();
+}
+function ChangeUser(OldID){
+$.get("<?=BASE_URL;?>/reports/transferCallbacks",
+			{fromuser:OldID,
+			 touser:$("#SEL_"+OldID).val(),
+			 fdate:$("#ffromdate").val(),
+			 tdate:$("#ftodate").val()
+			},
+		function(data){
+			document.forms.viewform.submit();
+		});  
+}
+</script>
+<!-- renaming viewform to viewform1 because when selecting date in calender in new form, old form was submitting-->
+<form method="GET" action="<?= $PHP_SELF ?>" name="viewform1">
+	<input type="hidden" name="action" value="view" >
+	<input type="hidden" name="order" value="<?=$_GET['order']?>">
+	<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+	<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+	
+	<table width="90%" border="0" cellspacing="10" cellpadding="0">
+		<tr>
+			<td class="sectionTitle" colspan="4">Callback List</td>
+		</tr>
+		<tr>
+			<td>				
+                &nbsp;&nbsp;
+                Date from: 
+                &nbsp;&nbsp;
+				<input type="text" id="ffromdate" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<? if ($fdate) echo $fdate; else echo date("d M Y"); ?>">
+                &nbsp;&nbsp;
+                Date to:
+                &nbsp;&nbsp;
+				<input type="text" id="ftodate" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<? if ($tdate) echo $tdate; else echo date("d M Y"); ?>">
+                &nbsp;&nbsp;				
+                &nbsp;&nbsp;
+				<input type="submit" name="submit2" value="Update >>>">
+                &nbsp;&nbsp;
+				<INPUT TYPE="button" value="Print" onClick="PrintIt()">
+			</td>
+		</tr>
+	</table>
+</form>
+
+<br/>
+<div style="float:left"><b>Callbacks</b><br/>
+	<table id="callbacks" class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;vertical-align:top; text-align:left">
+		<tr>
+			<th>Telemarketer</th>
+			<th>Callbacks</th>
+            <?php if ($_SESSION['user']['role_id'] == 6){ ?>
+			<th>Transfer</th>
+            <?php } ?>
+		</tr>
+		<?php
+			$r=1; 
+			foreach ($callbacks as $obj)
+			{
+				$class = 'cell'.(++$r%2);
+		?>
+		<tr class="<?= $class ?>" id="<?php echo $obj['id'];?>">
+				<td>&nbsp;<?php echo $obj['source_name']; ?></td>
+				<td>&nbsp;<?php echo $obj['calls']; ?></td>
+                <?php if ($_SESSION['user']['role_id'] == 6){ ?>
+				<td class="action" align="center">
+					<select class="transferselect" id="SEL_<?php echo $obj['id'];?>" onchange="ChangeUser(<?php echo $obj['id'];?>)">
+					<?php
+					foreach ($telemarketers as $cur_id => $cur_tel)
+					{
+					?>
+						<option value="<?=$cur_id?>"><?=$cur_tel?></option>
+					<?php
+					}
+					?>
+					</select>
+				</td>
+                <?php } ?>
+		</tr>
+		<tr>
+			<td colspan=11 class="clDetails" style="display:none; text-align:center" id="D_<?php echo $obj['id'];?>"></td>
+		</tr>
+		<?php
+		}
+		?>
+</table>
+</div>
+<div style="float:left;width:30px">&nbsp;</div>
+<!-- <div style="float:left"><b>Not interested CSV</b>
+	<?php
+    if ($_SESSION['user']['role_id'] == 6){ 
+	$txt = '?fdate=';
+	if ($fdate) $txt.=$fdate; else $txt.=date("d M Y");
+	$txt .= '&tdate=';
+	if ($tdate) $txt.=$tdate; else $txt.=date("d M Y");
+	?>
+    <ul>
+		<li><?php echo $html->link("All",'/reports/exportNIToCSV'.$txt); ?></li>
+    </ul>
+    <?php } ?>
+	<br/>
+	<table id="not_interested" class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;vertical-align:top; text-align:left">
+		<tr>
+			<th>Telemarketer</th>
+			<th>Calls</th>
+		</tr>
+		<?php
+			$r=1; 
+			foreach ($not_interested as $obj)
+			{
+				$class = 'cell'.(++$r%2);
+		?>
+		<tr class="<?= $class ?>" id="<?php echo $obj['id'];?>">
+				<td>&nbsp;<?php echo $obj['source_name']; ?></td>
+				<td>&nbsp;<?php echo $obj['calls']; ?></td>
+		</tr>
+		<tr>
+			<td colspan=11 class="clDetails" style="display:none; text-align:center" id="D_<?php echo $obj['id'];?>"></td>
+		</tr>
+		<?php
+		}
+		?>
+	</table>
+    <br />
+    <b>Clients CSV</b>&nbsp;&nbsp;&nbsp;&nbsp;
+    <?php
+    if ($_SESSION['user']['role_id'] == 6){ 
+		$txt = '?fdate=';
+		if ($fdate) $txt.=$fdate; 
+		else $txt.=date("d M Y"); 
+		$txt .= '&tdate=';
+		if ($tdate) $txt.=$tdate; 
+		else $txt.=date("d M Y");
+	 ?>
+     <ul>
+		<li><?php echo $html->link("All",'/reports/exportClientsToCSV'.$txt.''); ?></li>
+		<li><?php echo $html->link("Callback",'/reports/exportClientsToCSV'.$txt.'&option=2'); ?></li>
+		<li><?php echo $html->link("Do not call",'/reports/exportClientsToCSV'.$txt.'&option=3'); ?></li>
+		<li><?php echo $html->link("Sale",'/reports/exportClientsToCSV'.$txt.'&option=1'); ?></li>
+		<li><?php echo $html->link("Not In Service",'/reports/exportClientsToCSV'.$txt.'&option=7'); ?></li>
+        <li><?php echo $html->link("Not Intrested",'/reports/exportNIToCSV'.$txt); ?>
+        	<ul>
+				<li><?php echo $html->link("3 Months",'/reports/exportClientsToCSV'.$txt.'&option=4'); ?></li>
+				<li><?php echo $html->link("6 Months",'/reports/exportClientsToCSV'.$txt.'&option=8'); ?></li>
+				<li><?php echo $html->link("9 Months",'/reports/exportClientsToCSV'.$txt.'&option=9'); ?></li>
+            </ul>
+        </li>
+	 </ul>
+    <?php } ?>
+    <table id="client_records" class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;vertical-align:top; text-align:left">
+		<tr>
+			<th>Telemarketer</th>
+			<th>Calls</th>
+		</tr>
+		
+		<tr class="">
+				<td>&nbsp;All Users</td>
+				<td>&nbsp;<?php echo $clients; ?></td>
+		</tr>
+		<tr>
+			<td colspan=11 class="clDetails" style="display:none; text-align:center" id="D_<?php echo $obj['id'];?>"></td>
+		</tr>
+	</table>
+</div> -->
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+<div class="cont_main">
+<hr>
+
+<table width="80%" border="0" cellspacing="10" cellpadding="0">
+		<tr style="padding-bottom:20px;">
+			<td class="sectionTitle" colspan="3" >
+				<nobr><?=$subtitle ?></nobr>
+			</td>
+			<td class="sectionTitle" colspan="3" >
+				<p style='color:red;' id='job_tans_msg'></p>
+			</td>
+		</tr>
+</table>
+<table>
+		<tr>
+			<td>
+                Date from: 
+                &nbsp;&nbsp;
+				<input type="text" id="ffromdate1" name="ffromdate" class="emboss1" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onchange="ffromdate1Change()"  value="<? echo date("d M Y"); ?>">
+                &nbsp;&nbsp;
+                Date to:
+                &nbsp;&nbsp;
+				<input type="text" id="ftodate1" name="ftodate" class="emboss1" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);"  onchange="ftodate1Change()" value="<? echo date("d M Y"); ?>">
+                &nbsp;&nbsp;
+            </td>
+
+			<td>
+				<div style='display:inline-block;vertical-align: middle;margin-top: -55px;'>Status:</div>
+				&nbsp;&nbsp;
+				<div style="height: 6em; width: 15em; overflow: auto;border: 1px solid gray;display:inline-block;">
+					<?php 
+					foreach($job_statuses as $k => $v) { 
+						if($k == 1 || $k == 3 ||$k == 5){
+						?>
+						 <input id="job_status_multi<?php echo $k;?>" type="checkbox" name="OrderOrderStatusName" onclick="multi_select_job_status(this.id);" value=<?php echo $k ?> />
+						 <label for="job_status"><?php echo $v ?></label>
+						 <br />
+					<?php } }
+					?>
+				<input type="hidden" id='multi_select_job_status_hidd' value=''>
+				</div>
+			</td>
+			<td width="20%"></td>
+			<td width="30%">Number of customers found: <span id="numberofrecords">0</span></td>
+		</tr>
+</table>
+<table>
+		<tr>
+			<td width="300px">
+				<div style='display:inline-block;vertical-align: middle;margin-top: -55px;'>Job Type:</div>
+				&nbsp;&nbsp;
+				<div style="height: 8em; width: 20em; overflow: auto;border: 1px solid gray;display:inline-block;">
+					<?php 
+					foreach($job_types as $k => $v) { 
+						?>
+						 <input id="job_types_multi<?php echo $k;?>" type="checkbox" name="OrderOrderStatusName" onclick="multi_select_job_types(this.id);" value=<?php echo $k ?> />
+						 <label for="job_types"><?php echo $v ?></label>
+						 <br />
+					<?php }
+					?>
+				<input type="hidden" id='multi_select_job_types_hidd' value=''>
+				</div>
+			</td>
+
+			<td>
+                City:
+                &nbsp;&nbsp;
+
+				<select id='OrderJobTechnician2Id' onchange="cityTypeChange()" name="OrderJobTechnician2Name"; ?> >
+
+					<option value="">ALL</option>
+
+					<?php
+					foreach($allCities as $k => $v) {
+						echo '<option value="'.$k.'"'.( $k === $_GET['forder_type_id'] ? ' selected' : '').'>'.$v.'</option>';
+					}
+					?>
+					&nbsp;&nbsp;
+
+				</select>
+
+				&nbsp;&nbsp;
+			</td>
+		</tr>
+</table>
+
+	<table width="50%" border="0" cellspacing="10" cellpadding="0">
+		<tr>
+			<td class="sectionTitle" colspan="10">Do you want to check for last call made on this campaing
+			<input type="button" name="yes" id="yes" value="Yes" onclick="lastcallsection('yes')">
+			<input type="button" name="no" id="no" value="No" onclick="lastcallsection('no')">
+			<input type="hidden" name="hidden_token" id="hidden_token" value="no">
+			</td>
+		</tr>
+	</table>
+	<table width="50%" border="0" cellspacing="10" cellpadding="0" class='lastcalldata' style="display: none;">
+		<tr>
+			<td width="120px" style="text-align: right;">
+				Last call made: 
+			</td>
+			<td width="100px">
+				<input type="text" id="callmodefrom1" name="callmodefrom" class="emboss1" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" value="">
+            </td>
+
+            <td width="80px" style="text-align: right;">
+            	Date To:
+            </td>
+            <td width="100px">
+				<input type="text" id="callmodeto1" name="callmodeto" class="emboss1" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);"  value="">
+            </td>
+            <td width="80px" style="text-align: right;">
+				Disposition:
+			</td>
+			<td width="120px">
+				<div style="height: 10em; width: 20em; overflow: auto;border: 1px solid gray;">
+					<?php 
+					foreach($call_results as $k => $v) { 
+						if($k != 10){
+						?>
+						 <input id="call_result_multi<?php echo $k;?>" type="checkbox" name="ingredients" onclick="multi_select_call_result(this.id);" value=<?php echo $k ?> />
+						 <label for="call_result"><?php echo $v ?></label>
+						 <br />
+					<?php } }
+					?>
+				<input type="hidden" id='multi_select_call_result_hidd' value=''>
+				 </div>
+			</td>
+			<td width="131px">
+				<input type="hidden" name="Search_disposition" id="Search_disposition" value='false'>
+			</td>
+		</tr>
+	</table>
+
+<table>
+	<tr>
+		<td>
+		New Campaing <input name="campaing" value="" style="width: 200px;" type="text" id="campaing">
+		</td>	
+
+		<td>
+		Number Of Leads <input name="numberofleads" value="" style="width: 100px;" type="text" id="numberofleads" readonly> 
+		</td>
+
+		<td>
+		Send to: 
+
+			<select name="source_id" id='source_id'>
+				<option value="">Select Source</option>
+				<? 
+				foreach($booking_sources as $k => $v) {
+					echo '<option value="'.$k.'"'.( $k == $source_id ? ' selected' : '').'>'.$v.'</option>';
+				}
+				?>
+			</select>
+		</td>	 
+	</tr>
+</table>
+<table>
+	<tr><br><br></tr>
+	<tr>
+		<input type="hidden" id='export_data_change' value="false">
+		<input type="button" onclick="Search_dispo()" name="Search_dispo" value="Search">&nbsp;&nbsp;
+		<input type="button" onclick="transfer()" name="save" value="Transfer">&nbsp;&nbsp;
+		<input type="button" onclick="export_data()" name="save" value="Export Data">&nbsp;&nbsp;
+
+		<img src="<?=ROOT_URL;?>/app/webroot/img/pink-loder.gif" style="width: 20px;vertical-align: bottom; display: none;" id="loader-img">
+	</tr>
+</table>
+<br><br>
+<?php echo '--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------';?>
+<br><br>
+
+
+
+<table width="70%" border="0" cellspacing="10" cellpadding="0">
+		<tr>
+			<!-- <td class="sectionTitle" colspan="4">Callback List</td> -->
+		</tr>
+		<tr style="padding-bottom:20px;">
+			<td class="sectionTitle" colspan="4" >
+				<nobr>Transfer Calls</nobr>
+			</td>
+			<td class="sectionTitle" colspan="3" >
+				<p style='color:red;' id='job_tans_msg_forcall'></p>
+			</td>
+		</tr>
+		<tr><td><br><br></td></tr>
+		<tr>
+			<td>
+				Last call made: 
+				&nbsp;&nbsp;
+				<input type="text" id="callmodefrom1_call" name="callmodefrom_call" class="emboss1" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" value="<? if ($callmodefrom) echo $callmodefrom; else echo date("d M Y"); ?>">
+                &nbsp;&nbsp;
+
+                Date To:
+                &nbsp;&nbsp;
+				<input type="text" id="callmodeto1_call" name="callmodeto_call" class="emboss1" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);"  value="<? if ($callmodeto) echo $callmodeto; else echo date("d M Y"); ?>">
+                &nbsp;&nbsp;
+				</td>
+			<td>Number of customers found: <span id="numberofrecords_forcall">0</span></td>
+		</tr>
+		<tr><td><br></td></tr>
+</table>
+
+<table>
+		<tr>
+			<td>
+				<div style='margin-bottom: 16px;'>
+					<div style='display:inline-block;margin-right: 39px;'>
+						City:
+					</div>
+					<div style='display:inline-block;'>
+						<select name="city_forcall" id='city_forcall' onchange="cityTypeChange_forcall()">
+							<option value="">All</option>
+							<? 
+							foreach($allCities as $k => $v) {
+								echo '<option value="'.$k.'"'.( $k === $source_id ? ' selected' : '').'>'.$v.'</option>';
+							}
+							?>
+						</select>
+					</div>
+
+					&nbsp;&nbsp;&nbsp;&nbsp;
+				</div>
+				<div style='margin-bottom: 16px;'>
+					<div style='display:inline-block;'>
+						Postal Code: 
+					</div>
+					<div style='display:inline-block;'>
+						<input name="CustomerPostalCode" value=""  style="width: 140px;" type="text" id="CustomerPostalCode">
+						&nbsp;&nbsp;&nbsp;&nbsp;
+					</div>
+				</div>
+				<div style='margin-bottom: 16px;'>
+					<div style='display:inline-block;margin-right: 28px;'>
+						Street: 
+					</div>
+					<div style='display:inline-block;'>
+						<input name="CustomerAddressStreet" style="width: 120px;" value="" type="text" id="CustomerAddressStreet">
+						&nbsp;&nbsp;&nbsp;&nbsp;
+					</div>
+				</div>
+
+			</td>	
+
+
+			<td width="131px" style="text-align: right;">
+				Disposition:
+			</td>
+			<td width="131px">
+				<div style="height: 10em; width: 20em; overflow: auto;border: 1px solid gray;">
+					<?php 
+					foreach($call_results as $k => $v) { 
+						if($k != 10){
+						?>
+						 <input id="call_result_multi_forcall<?php echo $k;?>" type="checkbox" name="disposition_forcall" onclick="multi_select_call_result_forcall(this.id);" value=<?php echo $k ?> />
+						 <label for="call_result"><?php echo $v ?></label>
+						 <br />
+					<?php } }
+					?>
+				<input type="hidden" id='multi_select_call_result_hidd_forcall' value=''>
+				 </div>
+			</td>
+		</tr> 
+		<tr><td><br></td></tr>
+</table>
+
+<table width="40%" border="0" cellspacing="10" cellpadding="0">
+		<tr>
+			<td width="30px" style="text-align: right;">
+				From:
+			</td>
+			<td width="100px">
+					<?php
+                    if( ($common->getLoggedUserRoleID() != "3" ) && ($common->getLoggedUserRoleID() != "9" )) {
+                          echo $html->selectTag('Order/booking_source_id', $booking_sources, $this->data['Order']['booking_source_id'],array('onchange'=>'fromTypeChange_forcall()'));
+                    }
+                    else
+                    {
+                          echo $html->selectTag('Order/booking_source_id', $booking_sources, $this->data['Order']['booking_source_id'], array('style' => 'display: none;'),array('onchange'=>'fromTypeChange_forcall()'));
+                          echo '<b>'.$booking_sources[$this->data['Order']['booking_source_id']].'</b>';
+                    }
+                    ?>
+                    <?php echo $html->tagErrorMsg('Order/booking_source_id','Please select the source for this order.') ?>
+			</td>
+			
+			<td width="30px" style="text-align: right;">
+				To:
+			</td>
+			<td width="100px">
+				<select name="source_id_forcall" id='source_id_forcall' onchange="toTypeChange_forcall()">
+					<option value="">Select Source</option>
+					<? 
+					foreach($booking_sources as $k => $v) {
+						echo '<option value="'.$k.'"'.( $k == $source_id ? ' selected' : '').'>'.$v.'</option>';
+					}
+					?>
+				</select>
+			</td>
+			<td><input type="button" onclick="search_forcall()" name="search_forcall" value="Search"></td>
+		</tr>
+</table>
+
+<!-- <table width="40%" border="0" cellspacing="10" cellpadding="0">
+		<tr>
+			<td>
+				City:
+			</td>
+			<td>
+				 <select name="city_forcall" id='city_forcall' onchange="cityTypeChange_forcall()">
+					<option value="">All</option>
+					<? 
+					foreach($allCities as $k => $v) {
+						echo '<option value="'.$k.'"'.( $k === $source_id ? ' selected' : '').'>'.$v.'</option>';
+					}
+					?>
+				</select>
+
+				&nbsp;&nbsp;&nbsp;&nbsp;
+
+			</td>	
+
+			<td>
+				Postal Code: <input name="CustomerPostalCode" value=""  style="width: 140px;" type="text" id="CustomerPostalCode">
+
+			</td>
+			
+			<td>
+				Street:
+				<input name="CustomerAddressStreet" style="width: 120px;" value="" type="text" id="CustomerAddressStreet">
+			</td>
+		</tr>
+</table> -->
+
+<table>
+	<tr>
+		<td>
+		New Campaing <input name="campaing_call" value="" style="width: 200px;" type="text" id="campaing_call">
+		</td>	
+
+
+		<td>
+		Number Of Leads <input name="numberofleads_call" value="" style="width: 100px;" type="text" id="numberofleads_call" readonly> 
+		<input type="button" onclick="transfer_forcall()" name="save" value="Transfer">
+		<img src="<?=ROOT_URL;?>/app/webroot/img/pink-loder.gif" style="width: 20px;vertical-align: bottom; display: none;" id="loader-img-oncall">
+		</td>	 
+
+
+	</tr>
+</table>
+<br><br>
+
+
+
+
+</div>
+
+
+
+<script language="JavaScript">
+
+function multi_select_job_types(id){
+	var job_types_multi = document.getElementById(id).value;
+	var multi_select_job_types_hidd = document.getElementById("multi_select_job_types_hidd").value;
+
+	var arr = new Array();
+	if(multi_select_job_types_hidd == ''){
+		arr.push(job_types_multi);
+		document.getElementById("multi_select_job_types_hidd").value = arr;
+	}
+	else{
+		var avai_or_not = multi_select_job_types_hidd.includes(job_types_multi);
+		if(avai_or_not == false){
+			arr.push(multi_select_job_types_hidd);
+			arr.push(job_types_multi);
+			document.getElementById("multi_select_job_types_hidd").value = arr;
+		}
+		else{
+			var ttt = multi_select_job_types_hidd.split(",");
+			for (var i = 0; i < ttt.length; i++) {
+				if(ttt[i] != job_types_multi){
+					arr.push(ttt[i]);
+				}
+			}
+			document.getElementById("multi_select_job_types_hidd").value = arr;
+		}
+	}
+}
+
+function multi_select_job_status(id){
+	var job_status_multi = document.getElementById(id).value;
+	var multi_select_job_status_hidd = document.getElementById("multi_select_job_status_hidd").value;
+
+	var arr = new Array();
+	if(multi_select_job_status_hidd == ''){
+		arr.push(job_status_multi);
+		document.getElementById("multi_select_job_status_hidd").value = arr;
+	}
+	else{
+		var avai_or_not = multi_select_job_status_hidd.includes(job_status_multi);
+		if(avai_or_not == false){
+			arr.push(multi_select_job_status_hidd);
+			arr.push(job_status_multi);
+			document.getElementById("multi_select_job_status_hidd").value = arr;
+		}
+		else{
+			var ttt = multi_select_job_status_hidd.split(",");
+			for (var i = 0; i < ttt.length; i++) {
+				if(ttt[i] != job_status_multi){
+					arr.push(ttt[i]);
+				}
+			}
+			document.getElementById("multi_select_job_status_hidd").value = arr;
+		}
+	}
+}
+
+function multi_select_call_result_forcall(id){
+	var call_result_multi = document.getElementById(id).value;
+	var multi_select_call_result_hidd_forcall = document.getElementById("multi_select_call_result_hidd_forcall").value;
+
+	var arr = new Array();
+	if(multi_select_call_result_hidd_forcall == ''){
+		arr.push(call_result_multi);
+		document.getElementById("multi_select_call_result_hidd_forcall").value = arr;
+	}
+	else{
+		var avai_or_not = multi_select_call_result_hidd_forcall.includes(call_result_multi);
+		if(avai_or_not == false){
+			arr.push(multi_select_call_result_hidd_forcall);
+			arr.push(call_result_multi);
+			document.getElementById("multi_select_call_result_hidd_forcall").value = arr;
+		}
+		else{
+			var ttt = multi_select_call_result_hidd_forcall.split(",");
+			for (var i = 0; i < ttt.length; i++) {
+				if(ttt[i] != call_result_multi){
+					arr.push(ttt[i]);
+				}
+			}
+			document.getElementById("multi_select_call_result_hidd_forcall").value = arr;
+		}
+	}
+}
+
+function multi_select_call_result(id){
+	var call_result_multi = document.getElementById(id).value;
+	var multi_select_call_result_hidd = document.getElementById("multi_select_call_result_hidd").value;
+
+	var arr = new Array();
+	if(multi_select_call_result_hidd == ''){
+		arr.push(call_result_multi);
+		document.getElementById("multi_select_call_result_hidd").value = arr;
+	}
+	else{
+		var avai_or_not = multi_select_call_result_hidd.includes(call_result_multi);
+		if(avai_or_not == false){
+			arr.push(multi_select_call_result_hidd);
+			arr.push(call_result_multi);
+			document.getElementById("multi_select_call_result_hidd").value = arr;
+		}
+		else{
+			var ttt = multi_select_call_result_hidd.split(",");
+			for (var i = 0; i < ttt.length; i++) {
+				if(ttt[i] != call_result_multi){
+					arr.push(ttt[i]);
+				}
+			}
+			document.getElementById("multi_select_call_result_hidd").value = arr;
+		}
+	}
+}
+
+	if (document.location.href.indexOf('print=1') != -1)
+		window.print();
+
+	function lastcallsection(data){
+		if(data == 'yes'){
+			$('.lastcalldata').css('display','block');
+			$('#hidden_token').val('yes');
+		}
+		else{
+			$('.lastcalldata').css('display','none');
+			$('#hidden_token').val('no');
+		}
+	}
+</script>
+
+
+<script type="text/javascript">
+
+/* this is for call section*/
+
+function ffromdate1Change_forcall(){
+	search_forcall();
+} 
+
+function ftodate1Change_forcall(){
+	search_forcall();
+} 
+
+function fromTypeChange_forcall(){
+	search_forcall();
+}
+
+function toTypeChange_forcall(){
+	search_forcall();
+}
+
+function dispositionTypeChange_forcall(){
+	search_forcall();
+}
+
+function jobTypeChange_forcall(){
+	search_forcall();
+}
+
+function cityTypeChange_forcall(){
+
+	console.log("fhhgwefbsdfhdsvfsdfhjsdhjf");
+
+	search_forcall();
+}
+
+// function customerPostalCodeChange_forcall(){
+// 	search_forcall();
+// } 
+
+// function customerAddressStreetChange_forcall(){
+// 	search_forcall();
+// } 
+
+
+function search_forcall()
+{
+	var frm = document.getElementById("OrderBookingSourceId");
+	var fromuser = frm.options[frm.selectedIndex].value;
+
+	var to = document.getElementById("source_id_forcall");
+	var ttouser = to.options[to.selectedIndex].value;
+
+	if(fromuser == ""){
+			alert("Booking source 1 user can not be empty");
+			return;
+		}
+	
+
+	var ct = document.getElementById("city_forcall");
+	var city = ct.options[ct.selectedIndex].value;
+
+	var disposition = document.getElementById("multi_select_call_result_hidd_forcall").value;
+
+	var PostalCode = document.getElementById("CustomerPostalCode").value;
+	var campaing = document.getElementById("campaing_call").value;
+	var numberofleads = document.getElementById("numberofleads_call").value;
+	var CustomerAddressStreet = document.getElementById("CustomerAddressStreet").value;
+
+	var callmodefrom = document.getElementById("callmodefrom1_call").value;
+	var callmodeto = document.getElementById("callmodeto1_call").value;
+
+	$.get("<?=BASE_URL;?>/reports/transferCallbacksrecords_oncall",
+				{
+				 fromuser:fromuser,
+				 ttouser:ttouser,
+				 fromdate:callmodefrom,
+				 ttodate:callmodeto,
+				 city:city,
+				 disposition:disposition,
+				  PostalCode:PostalCode,
+				 campaing:campaing,
+				 numberofleads:numberofleads,
+				 CustomerAddressStreet:CustomerAddressStreet
+				},
+			function(data){	
+				document.getElementById("numberofleads_call").value = data;
+				document.getElementById("numberofrecords_forcall").innerHTML=data;
+			}); 
+}
+
+function transfer_forcall(){ 
+	var frm = document.getElementById("OrderBookingSourceId");
+	var fromuser = frm.options[frm.selectedIndex].value;
+
+	var campaing = document.getElementById("campaing_call").value;
+
+	if(fromuser == ""){
+		alert("Booking source 1 user can not be empty");
+		return;
+	}
+
+	var to = document.getElementById("source_id_forcall");
+	var ttouser = to.options[to.selectedIndex].value;
+
+	if(ttouser == ""){
+		alert("Booking source 2 user can not be empty");
+		return;
+	}
+
+	if(campaing == ""){
+		alert("campaign can not be empty");
+		return;
+	}
+
+	var ct = document.getElementById("city_forcall");
+	var city = ct.options[ct.selectedIndex].value;
+
+	var disposition = document.getElementById("multi_select_call_result_hidd_forcall").value;
+
+	var PostalCode = document.getElementById("CustomerPostalCode").value;
+	
+	var numberofleads = document.getElementById("numberofleads_call").value;
+	var CustomerAddressStreet = document.getElementById("CustomerAddressStreet").value;
+
+	var callmodefrom = document.getElementById("callmodefrom1_call").value;
+	var callmodeto = document.getElementById("callmodeto1_call").value;
+
+	$("#loader-img-oncall").css('display', 'inherit');
+	$.get("<?=BASE_URL;?>/reports/transferCallbacksInBulk_callback",
+				{
+				 fromuser:fromuser,
+				 ttouser:ttouser,
+				 fromdate:callmodefrom,
+				 ttodate:callmodeto,
+				 city:city,
+				 disposition:disposition,
+				  PostalCode:PostalCode,
+				 campaing:campaing,
+				 numberofleads:numberofleads,
+				 CustomerAddressStreet:CustomerAddressStreet
+				},
+			function(data){	
+				$("#loader-img-oncall").css('display', 'none');
+				console.log(data);
+				if(data == 1){
+					document.getElementById("numberofleads_call").value = 0;
+					document.getElementById("numberofrecords_forcall").innerHTML=0;
+					document.getElementById('job_tans_msg_forcall').innerHTML = '';
+				}
+				else{
+					document.getElementById('job_tans_msg_forcall').innerHTML = data;
+				}
+			
+		}); 
+}
+
+
+/* end job section*/
+
+/* this is for job section*/
+
+function ffromdate1Change(){
+	search();
+} 
+
+function ftodate1Change(){
+	search();
+} 
+
+
+function jobTypeChange(){
+	search();
+}
+
+function toTypeChange(){
+	search();
+}
+
+
+function cityTypeChange(){
+	search();
+}
+
+function order_status(){
+	search();
+}
+
+/*function dispositionTypeChange(){
+	search();
+}*/
+
+
+function Search_dispo(){
+	document.getElementById("Search_disposition").value = 'true';
+	search();
+}
+
+
+function export_data()
+{
+/*var ct = document.getElementById("OrderJobTechnician2Id");
+var city = ct.options[ct.selectedIndex].value;*/
+
+var city = document.getElementById("OrderJobTechnician2Id").value;
+
+var campaing = document.getElementById("campaing").value;
+var numberofleads = document.getElementById("numberofleads").value;
+
+var fromdate = document.getElementById("ffromdate1").value;
+var ttodate = document.getElementById("ftodate1").value;
+
+var job_type = document.getElementById("multi_select_job_types_hidd").value;
+var status = document.getElementById("multi_select_job_status_hidd").value;
+var source_id = document.getElementById("source_id").value;
+
+var callmodefrom = document.getElementById("callmodefrom1").value;
+var callmodeto = document.getElementById("callmodeto1").value;
+
+var disposition = document.getElementById("multi_select_call_result_hidd").value;
+
+var hidden_token = document.getElementById("hidden_token").value;
+
+var Search_disposition = document.getElementById("Search_disposition").value;
+
+var export_data_val = 'export_data_val';
+
+$.get("<?=BASE_URL;?>/reports/export_csv",
+			{fromdate:fromdate,
+				 ttodate:ttodate,
+				 city:city,
+				 campaing:campaing,
+				 numberofleads:numberofleads,
+				 status:status,
+				 source:source_id,
+				 jobtype:job_type,
+				 callmodefrom:callmodefrom,
+				 callmodeto:callmodeto,
+				 disposition:disposition,
+				 hidden_token:hidden_token,
+				 Search_disposition:Search_disposition,
+				 export_data_val:export_data_val
+			},
+		function(data){
+			console.log(data);
+			if(data == 'no'){
+				alert();
+				document.getElementById('job_tans_msg').innerHTML = 'File can not be export because currently no data present.';
+			}
+			else{
+				window.location = "http://aceno1.ca/development/csv_folder/"+data+".csv";
+				document.getElementById('job_tans_msg').innerHTML = '';
+			}
+		}); 
+
+}
+
+function search()
+{
+/*var ct = document.getElementById("OrderJobTechnician2Id");
+var city = ct.options[ct.selectedIndex].value;*/
+
+var city = document.getElementById("OrderJobTechnician2Id").value;
+
+var campaing = document.getElementById("campaing").value;
+var numberofleads = document.getElementById("numberofleads").value;
+
+var fromdate = document.getElementById("ffromdate1").value;
+var ttodate = document.getElementById("ftodate1").value;
+
+var job_type = document.getElementById("multi_select_job_types_hidd").value;
+var status = document.getElementById("multi_select_job_status_hidd").value;
+var source_id = document.getElementById("source_id").value;
+
+var callmodefrom = document.getElementById("callmodefrom1").value;
+var callmodeto = document.getElementById("callmodeto1").value;
+
+var disposition = document.getElementById("multi_select_call_result_hidd").value;
+
+var hidden_token = document.getElementById("hidden_token").value;
+
+var Search_disposition = document.getElementById("Search_disposition").value;
+
+$.get("<?=BASE_URL;?>/reports/transferCallbacksrecords",
+			{fromdate:fromdate,
+				 ttodate:ttodate,
+				 city:city,
+				 campaing:campaing,
+				 numberofleads:numberofleads,
+				 status:status,
+				 source:source_id,
+				 jobtype:job_type,
+				 callmodefrom:callmodefrom,
+				 callmodeto:callmodeto,
+				 disposition:disposition,
+				 hidden_token:hidden_token,
+				 Search_disposition:Search_disposition
+			},
+		function(data){	
+			console.log(data);
+			document.getElementById("numberofleads").value = data;
+			document.getElementById("numberofrecords").innerHTML=data;
+			
+		}); 
+
+}
+
+function transfer(){
+
+	/*var ct = document.getElementById("OrderJobTechnician2Id");
+	var city = ct.options[ct.selectedIndex].value;
+*/
+
+	var city = document.getElementById("OrderJobTechnician2Id").value;
+
+	var campaing = document.getElementById("campaing").value;
+	var numberofleads = document.getElementById("numberofleads").value;
+	var job_type = document.getElementById("multi_select_job_types_hidd").value;
+
+	var fromdate = document.getElementById("ffromdate1").value;
+	var ttodate = document.getElementById("ftodate1").value;
+	var status = document.getElementById("multi_select_job_status_hidd").value;
+
+	var source_id = document.getElementById("source_id").value;
+
+	var callmodefrom = document.getElementById("callmodefrom1").value;
+	var callmodeto = document.getElementById("callmodeto1").value;
+	var disposition = document.getElementById("multi_select_call_result_hidd").value;
+	var hidden_token = document.getElementById("hidden_token").value;
+	var Search_disposition = document.getElementById("Search_disposition").value;
+
+	if(campaing == ""){
+		alert("campaign can not be empty");
+		return;
+	}
+
+	if(source_id == ""){
+		alert("Booking source 2 user can not be empty");
+		return;
+	}
+
+	$("#loader-img").css('display', 'inherit');
+	$.get("<?=BASE_URL;?>/reports/transferCallbacksInBulk",
+				{fromdate:fromdate,
+				 ttodate:ttodate,
+				 city:city,
+				 campaing:campaing,
+				 numberofleads:numberofleads,
+				 status:status,
+				 source:source_id,
+				 jobtype:job_type,
+				 callmodefrom:callmodefrom,
+				 callmodeto:callmodeto,
+				 disposition:disposition,
+				 hidden_token:hidden_token,
+				 Search_disposition:Search_disposition
+				},
+			function(data){	
+				$("#loader-img").css('display', 'none');
+				console.log(data);
+				if(data == 1){
+					document.getElementById("numberofleads").value = 0;
+					document.getElementById("numberofrecords").innerHTML=0;
+					document.getElementById('job_tans_msg').innerHTML = '';
+				}
+				else{
+					document.getElementById('job_tans_msg').innerHTML = data;
+				}
+		}); 
+}
+
+</script>

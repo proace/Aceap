@@ -1,0 +1,14 @@
+<div class="slot_confirmation">
+	<div class="slot_status <?php echo $availability_class ?>"><?php echo $availability ?></div>
+    <div>
+        <span class="city_area"><?php echo $city_area ?></span> : 
+        <!--<span class="job_truck"><?php echo $job_truck_name ?></span>-->
+    </div>
+    <div>
+        <strong class="job_date"><?php echo $job_date_name ?></strong>
+        <em class="job_time"><?php echo $job_time_name ?></em>    
+    </div>
+    <input type="hidden" name="data[Order][job_time_beg_hour]"  id="OrderJobTimeBegHour" value="<?php echo $job_time_beg ?>" />
+	<input type="hidden" name="data[Order][job_time_end_hour]"  id="OrderJobTimeEndHour" value="<?php echo $job_time_end ?>" />
+    <input type="hidden" name="data[Order][job_truck]"  id="OrderJobTruck" value="<?php echo $job_truck ?>" />
+</div>

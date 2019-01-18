@@ -1,0 +1,29 @@
+<!-- This tag creates our form tag -->
+
+
+
+<form method="post" action="<?php echo $html->url('/user/add')?>">
+<? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
+
+<table cellpadding="10" cellspacing="0">
+<tr>
+   <td align="right">First Name: </td>
+   <td>
+
+      <!-- Here's where we use the HTML helper to render the text
+           area tag and its possible error message the $note
+           variable was created by the controller, and contains
+           the data for the note we're editing. -->
+      <?php echo
+      $html->input('User/first_name');
+      ?>
+      <?php echo $html->tagErrorMsg('User/first_name',
+      'Please enter in a first name for this user.') ?>
+   </td>
+</tr>
+</table>
+
+<!-- And finally, the submit button-->
+<?php echo $html->submit('Submit')?>
+
+</form>

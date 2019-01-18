@@ -1,0 +1,393 @@
+<html>
+<head>
+    <style>
+    td {
+        font-size: 10pt; /* 12pt */
+        width: 5mm !important;
+        height: 5mm !important;
+    }
+    .item_head{
+        border-right-style:solid;
+        border-right-color:black;
+        border-right-width:1px;
+        border-top-style:solid;
+        border-top-color:black;
+        border-top-width:1px;
+        border-bottom-style:solid;
+        border-bottom-color:black;
+        border-bottom-width:1px;
+        padding:2px;
+    }
+    .item_head_last{
+        border-top-style:solid;
+        border-top-color:black;
+        border-top-width:1px;
+        border-bottom-style:solid;
+        border-bottom-color:black;
+        border-bottom-width:1px;
+        padding:2px;
+    }
+    .item_string{
+        border-right-style:solid;
+        border-right-color:black;
+        border-right-width:1px;
+        padding:2px;
+    }
+    .item_string_last{
+        padding:2px;
+    }
+    th {
+        width: 5mm !important;
+        height: 0mm !important;
+    }
+    .rtop, .rbottom{display:block}
+    .rtop *, .rbottom *{display: block; height: 1px; overflow: hidden}
+    .r1{margin: 0 5px;background-color:black;}
+    .r10{margin: 0 3px;background-color:white;}
+    .r2{margin: 0 3px;background-color:black;}
+    .r11{margin: 0 2px;background-color:white;}
+    .r3{margin: 0 2px;background-color:black;}
+    .r12{margin: 0 1px;background-color:white;}
+    .r4{margin: 0 1px; height: 2px;background-color:black;}
+    </style>
+</head>
+<body>
+<?php
+    function Headers($NumCols)
+    {
+		echo '<tr>';
+        for ($x=1;$x<=$NumCols;$x++) echo '<th></th>';
+		echo '</tr>';
+    }
+    function SkipCol($NumCols)
+    {
+        for ($x=1;$x<=$NumCols;$x++) echo '<td></td>';
+    }
+    function SkipRow($NumRols)
+    {
+        for ($x=1;$x<=$NumRols;$x++)
+        {
+            echo '<tr>';
+            SkipCol(12);
+            echo '</tr>';
+        }
+    }
+?>
+    <div id="container" style="width:750px">
+    <div class="rtop">
+      <div class="r1"></div>
+      <div class="r2"><div class="r10"></div></div>
+      <div class="r3"><div class="r11"></div></div>
+      <div class="r4"><div class="r12"></div><div class="r12"></div></div>
+    </div>
+    <table cellpadding=0 cellspacing=0 style="border-right-color:black;border-right-style:solid;border-right-width:1px;border-left-color:black;border-left-style:solid;border-left-width:1px;">
+        <?php Headers(40);?>
+        <tr>
+            <td colspan=15 rowspan=3>
+                <img width=300px src="<?=ROOT_URL?>/app/webroot/img/print_ace2.png"/>
+            </td>
+            <td colspan=25 align=right valign=top>HST #896625589&nbsp;</td>
+        </tr>
+        <tr>
+            <td colspan=20 align=right valign=top>&nbsp;</td>
+            <td colspan=5 align=right valign=top>017585&nbsp;</td>
+        </tr>
+        <tr>
+            <td colspan=5>&nbsp;</td>
+            <td colspan=20 align=left>
+                <b style="font-size: 14pt;"><?=$job_type;?></b>
+            </td>
+        </tr>
+        <tr>
+            <td colspan=20 style="font-size:8pt;" valign=middle>
+                &nbsp;102-3855 Henning Dr. Burnaby, BC V5C 6N3
+            </td>
+            <td colspan=20 align=left>
+                <b style="font-size: 14pt;">Estimate</b>
+						</td>
+        </tr>
+        <tr>
+            <td colspan=22 valign=top style="font-size:8pt;border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:black;">
+                &nbsp;Tel:&nbsp;604-293-3770&nbsp;&nbsp;Fax:&nbsp;604-293-3773
+            </td>
+            <td colspan=8 align=right style="border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:black;">&nbsp;</td>
+            <td colspan=10 style="border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:black;">&nbsp;</td>
+        </tr>
+        <!--Customer's information-->
+        <tr>
+            <td>&nbsp;</td>
+            <td colspan=27>Customer:</td>
+            <td colspan=9 align=left style="font-size: 8pt">REF #:</td>
+            <td>&nbsp;</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td colspan=19>&nbsp;</td>
+            <td colspan=20>&nbsp;</td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td colspan=19>Address:</td>
+            <td colspan=10 align=right>Labor warranty:&nbsp;</td>
+						<td colspan=11><input type="text" value="" style="width:40px;border:1xp solid black;">&nbsp;years</td>
+        </tr>
+        <tr>
+            <td colspan=20 style="border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:black;">&nbsp;</td>
+            <td colspan=10 align=right style="border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:black;">
+								Factory warranty:&nbsp;
+						</td>
+						<td colspan=11 style="border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:black;">
+								<input type="text" value="" style="width:40px;border:1xp solid black;">&nbsp;years
+						</td>
+        </tr>
+        <!--Questions-->
+<?php
+    //No more then 13 questions in each column
+    for ($i=1;$i<25;$i++)
+    {
+				$question1 = $questions[$i];
+?>
+        <tr>
+            <td colspan=1 align=left style="border-bottom-color:#666666;border-bottom-style:dotted;border-bottom-width:1px">&nbsp;<?php if ($question1['question_number']!='') echo ($i).'.';?></td>
+            <td colspan=19 align=left style="border-bottom-color:#666666;border-bottom-style:dotted;border-bottom-width:1px"><b style="font-size: 8pt"><?php echo $question1['question']?></b>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td colspan=19 align=left style="border-bottom-color:#666666;border-bottom-style:dotted;border-bottom-width:1px">&nbsp;</td>
+				</tr>
+<?php
+		}
+?>
+		<tr>
+		<td colspan=20 align=left>
+				<b>Our installation includes:</b><br/>
+<?php
+    if (($job_type_id==11)||($job_type_id==12)) //Furnace installation
+    {
+?>
+				1. Venting<br/>
+				2. Wiring main power<br/>
+				3. Wiring Thermostat<br/>
+				4. Gas line<br/>
+				5. Sheet metal (only if the furnace is getting in the position)<br/>
+				6. Filter rack<br/>
+				7. Drain piping to sanitary drain<br/>
+<?php
+		}
+		elseif (($job_type_id==13)||($job_type_id==19)) //Boiler installation
+    {
+?>
+				1. Venting<br/>
+				2. Expansion Tank<br/>
+				3. Circulator Pump<br/>
+				4. Wiring main power<br/>
+				5. Wiring Thermostat<br/>
+				6. Gas line<br/>
+<?php
+		}
+?>
+		</td>
+            <td colspan=20 align=left>
+								<b>Extra charges will apply:</b><br/>
+<?php
+    if (($job_type_id==11)||($job_type_id==12)) //Furnace installation
+    {
+?>
+						1. Shut off valves:             $119<br/>
+						2. Condensing Pumps:            $169<br/>
+						3. Power Switch:                $89<br/>
+						4. Chimney Liner:               $250<br/>
+						5. Sheet Metal Special sizes:   $400<br/>
+						6. Electrostatic filter:        $186<br/>
+						7. B vent for a hot water tank: $30/piece<br/>
+						8. Digital thermostat:          $110<br/>
+						9. Permit:                      $120 - $150<br/>
+<?php
+		}
+		elseif (($job_type_id==13)||($job_type_id==19)) //Boiler installation
+    {
+?>
+						1. Shut off valves: $119<br/>
+						2. Power Switch: $89<br/>
+						3. B vent for a hot water tank: $30/piece<br/>
+						4. Pressure Reducer Valve: $189<br/>
+						5. Back flow Preventer: $179<br/>
+						6. Air Vent: $29<br/>
+						7. Digital thermostat: $110<br/>
+						8. Permit: $120 - $150<br/>
+<?php
+		}
+?>
+				</td>
+    </tr>
+        <!--Booked Items-->
+        <tr>
+            <td colspan=20 class="item_head" align=center><b>ITEMS & DESCRIPTION</b></td>
+            <td colspan=5 class="item_head" align=center><b>PRICE</b></td>
+            <td colspan=5 class="item_head" align=center><b>QUANTITY</b></td>
+            <td colspan=10 class="item_head_last" align=center><b>TOTAL PRICE</b></td>
+        </tr>
+				<tr>
+						<td colspan=20 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=10 class="item_string_last">&nbsp;</td>
+				</tr>
+				<tr>
+						<td colspan=20 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=10 class="item_string_last">&nbsp;</td>
+				</tr>
+				<tr>
+						<td colspan=20 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=10 class="item_string_last">&nbsp;</td>
+				</tr>
+				<tr>
+						<td colspan=20 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=10 class="item_string_last">&nbsp;</td>
+				</tr>
+				<tr>
+						<td colspan=20 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=10 class="item_string_last">&nbsp;</td>
+				</tr>
+				<tr>
+						<td colspan=20 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=10 class="item_string_last">&nbsp;</td>
+				</tr>
+				<tr>
+						<td colspan=20 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=10 class="item_string_last">&nbsp;</td>
+				</tr>
+				<tr>
+						<td colspan=20 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=10 class="item_string_last">&nbsp;</td>
+				</tr>
+				<tr>
+						<td colspan=20 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=10 class="item_string_last">&nbsp;</td>
+				</tr>
+				<tr>
+						<td colspan=20 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=10 class="item_string_last">&nbsp;</td>
+				</tr>
+				<tr>
+						<td colspan=20 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=5 class="item_string">&nbsp;</td>
+						<td colspan=10 class="item_string_last">&nbsp;</td>
+				</tr>
+				<tr>
+						<td colspan=20 class="item_string" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;</td>
+						<td colspan=5 class="item_string" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;</td>
+						<td colspan=5 class="item_string" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;</td>
+						<td colspan=10 class="item_string_last" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;</td>
+				</tr>
+        <!--Office notes and Footer-->
+        <tr>
+            <td colspan=12 align=left valign=center style="line-height:25px;">&nbsp;<b>Financing</b></td>
+            <td colspan=12 align=right valign=center style="line-height:25px;"><b>phone: 1-888-737-3674</b></td>
+            <td colspan=1 align=center>&nbsp;</td>
+            <td colspan=5 class="item_string" style="border-left-style:solid;border-left-color:black;border-left-width:1px;border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">
+                <b style="font-size: 7pt">SUBTOTAL</b>
+            </td>
+            <td colspan=10 class="item_string_last" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td colspan=24 align=left valign=center style="line-height:25px;">
+								&nbsp;House:&nbsp;<input type="checkbox"/>&nbsp;Rent&nbsp;&nbsp;<input type="checkbox"/>&nbsp;Own
+						</td>
+            <td>&nbsp;</td>
+            <td colspan=5 class="item_string" style="border-left-style:solid;border-left-color:black;border-left-width:1px;border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">
+                <b style="font-size: 7pt">HST</b>
+            </td>
+            <td colspan=10 class="item_string_last" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td colspan=24 align=left valign=center style="line-height:25px;">
+								&nbsp;Date of birth (mm/dd/yy):&nbsp;<input type="text" style="width:50px"/>/<input type="text" style="width:50px"/>/<input type="text" style="width:50px"/>
+						</td>
+            <td>&nbsp;</td>
+            <td colspan=5 class="item_string" style="border-left-style:solid;border-left-color:black;border-left-width:1px;border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">
+                <b style="font-size: 7pt">TOTAL</b>
+            </td>
+            <td colspan=10 class="item_string_last" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;
+
+            </td>
+        </tr>
+        <tr>
+            <td colspan=24 align=left valign=center style="line-height:25px;">
+								&nbsp;Employer name:&nbsp;<input type="text" style="width:340px"/>
+						</td>
+            <td>&nbsp;</td>
+            <td colspan=5 class="item_string" style="border-left-style:solid;border-left-color:black;border-left-width:1px;border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">
+                <b style="font-size: 7pt">DEPOSIT</b>
+            </td>
+            <td colspan=10 class="item_string_last" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">
+                <?php if ($obj['Order']['customer_deposit']>0) echo $obj['Order']['customer_deposit']; else echo '&nbsp;';?>
+            </td>
+        </tr>
+        <tr>
+            <td colspan=12 align=left valign=center style="line-height:25px;">
+								&nbsp;Number of years:&nbsp;&nbsp;&nbsp;<input type="text" style="width:80px"/>
+						</td>
+            <td colspan=12 align=left valign=center style="line-height:25px;">
+								Monthly payment:&nbsp;&nbsp;&nbsp;<input type="text" style="width:80px"/>
+						</td>
+            <td>&nbsp;</td>
+            <td colspan=5 class="item_string" style="border-left-style:solid;border-left-color:black;border-left-width:1px;border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">
+                <b style="font-size: 7pt">REMAINING</b>
+            </td>
+            <td colspan=10 class="item_string_last" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;
+
+            </td>
+        </tr>
+        <tr>
+            <td colspan=12 align=left valign=center style="line-height:25px;">
+								&nbsp;Approval number:&nbsp;<input type="text" style="width:80px"/>
+						</td>
+            <td colspan=12 align=left valign=center style="line-height:25px;">
+								Amount approved:&nbsp;<input type="text" style="width:80px"/>
+						</td>
+            <td>&nbsp;</td>
+            <td colspan=3 align=left style="font-size:7pt;"><input type="checkbox"/>Cash</td>
+            <td colspan=3 align=left style="font-size:7pt;"><input type="checkbox"/>Debit</td>
+            <td colspan=3 align=left style="font-size:7pt;"><input type="checkbox"/>Visa</td>
+            <td colspan=6 align=left style="font-size:7pt;"><input type="checkbox"/>MasterCard</td>
+        </tr>
+        <tr>
+            <td colspan=25 valign=top align=center style="font-size: 8pt">&nbsp;</td>
+            <td colspan=15 align=left style="font-size:7pt;"><input type="checkbox"/>Certified Cheque</td>
+        </tr>
+        <tr>
+            <td colspan=25 align=left valign=top>&nbsp;Customer&nbsp;Signature:________________ Date:_____________</td>
+            <td colspan=15 align=left valign=top>Techs:</td>
+        </tr>
+    </table>
+    <div class="rbottom">
+      <div class="r4"><div class="r12"></div><div class="r12"></div></div>
+      <div class="r3"><div class="r11"></div></div>
+      <div class="r2"><div class="r10"></div></div>
+      <div class="r1"></div>
+    </div>
+    </div>
+    <div style="page-break-after: always">&nbsp;</div>
+</body>
+<script  language="JavaScript">
+	//window.print();
+</script>
+</html>

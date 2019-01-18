@@ -1,0 +1,14 @@
+<a href="http://acecare.ca/feedbacks.html" target="_top">
+<table style="color:white; font-family:'Times New Roman', Times, serif;font-size:12px;padding:3px;margin-left: 12px;margin-top:10px;font-style:italic;font-weight:bold;">
+	<tr>
+    	<td>
+        Happy Clients:<br />
+        Since January 2012
+        </td>
+        <td style="text-align:left;">
+		<?php foreach($counter as $digit) { ?><img style="margin:0" src="<?php echo ROOT_URL ?>/app/webroot/img/counter_pics/<?php echo $digit ?>.jpg" alt="<?php echo $digit ?>" /><?php } ?>
+        </td>
+    </tr>
+</table>
+<pre><?php //print_r($counter) ?></pre>
+</a>

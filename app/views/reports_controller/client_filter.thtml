@@ -1,0 +1,74 @@
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+
+<table border="0" cellspacing="10" cellpadding="0">
+	<tr>
+		<td class="sectionTitle" colspan="2">Client Filter</td>
+	</tr>
+	<tr >
+		<td>Date from: 
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			&nbsp;&nbsp;
+			Date to:
+			&nbsp;&nbsp;
+			<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			&nbsp;&nbsp;            
+            <nobr>Cities:</nobr>
+            <?php echo $html->selectTag('Customer/city', $allCities, $city);?>
+		</td>
+		<td>
+			<input type="submit" name="submit2" value="Update" class="buttons">
+		</td>		
+	</tr>	
+</table>
+<input type="button" value="Prev" <?php echo $has_prev ?> onClick='document.getElementById("pageNumber").value = parseInt(document.getElementById("pageNumber").value) - 1;this.disabled = true;document.forms["viewform"].submit();' />
+<input type="text" name="page" id="pageNumber" value="<?php echo $page ?>" style="width:70px;text-align:center" />
+<input type="button" value="Next" <?php echo $has_next ?> onClick='document.getElementById("pageNumber").value = parseInt(document.getElementById("pageNumber").value) + 1;this.disabled = true;document.forms["viewform"].submit();' />
+</form>
+
+<p><b>Number of clients: <?php echo $count ?></b><?php echo $html->link("Download this list",'/reports/exportClientListToCsv?fdate='.$fdate.'&tdate='.$tdate.'&city='.$city); ?></p>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="900px">
+	<tr>
+    	<th>Phone</th>	
+		<th>First Name</th>
+        <th>Last Name</th>        
+        <th>Email</th>
+        <th>Address</th>
+        <th>City</th>
+        <th>Last Job</th>
+        <th>Last Called</th>
+        <th>Is DNC</th>
+    </tr>
+	<?php $r = 1; ?>
+	<?php foreach($items as $id => $item) { ?>
+    
+    <?php $class = 'cell'.(++$r%2); ?>
+    	<tr class="<?= $class ?>">
+        	<td>&nbsp;<?php echo $item['phone']; ?></td>
+			<td>&nbsp;<?php echo $item['first_name']; ?></td>
+            <td>&nbsp;<?php echo $item['last_name']; ?></td>
+            <td>&nbsp;<?php echo $item['email']; ?></td>
+            <td>&nbsp;<?php echo $item['address']; ?></td>
+            <td>&nbsp;<?php echo $item['city']; ?></td>
+            <td>&nbsp;<?php echo $item['latest_job']; ?></td>
+            <td>&nbsp;<?php echo $item['call_date']; ?></td>
+            <?php if(!($item['acednc'] == 1 || $item['systemdnc'] == 1 || $item['vicidnc'] == 1)) { ?>
+            <td>&nbsp;</td>
+            <?php $result_count++; ?>
+			<?php } else { ?>
+            <td>DNC</td>
+            <?php $dnc_count++; ?>
+            <?php } //END if item ?>
+            <!--<td>&nbsp;<?php echo $item['acednc']; ?></td>
+            <td>&nbsp;<?php echo $item['systemdnc']; ?></td>
+            <td>&nbsp;<?php echo $item['vicidnc']; ?></td>-->
+        </tr>
+    
+    <?php } //END foreach items ?>
+</table>
+
+
+<pre><?php //echo $query; ?></pre>
+<pre><?php //print_r($_GET); ?></pre>
+

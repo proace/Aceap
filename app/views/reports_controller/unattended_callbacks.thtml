@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Unattended Callbacks</title>
+</head>
+
+<body>
+<?php if($_GET['m'] != 'print') { ?>
+<div><?php echo count($records) ?> callbacks found</div>
+<a href="http://69.31.184.162:81/acesys/acetest/acesys-2.0/index.php/reports/unattendedCallbacks?m=print" target="_new">Printable Version</a>
+<?php } ?>
+<table>
+	<tr>
+    	<th>phone_number</th>
+        <th>campaign_id</th>
+        <th>status</th>
+        <th>callback_time</th>
+        <th>comments</th>
+    </tr>
+<?php foreach($records as $record) { ?>
+	<tr>
+    	<td><?php echo $record['phone_number'] ?></td>
+        <td><?php echo $record['campaign_id'] ?></td>
+        <td><?php echo $record['status'] ?></td>
+        <td><?php echo $record['callback_time'] ?></td>
+        <td><?php echo $record['comments'] ?></td>
+    </tr>
+<?php } ?>
+</table>
+
+</body>
+</html>

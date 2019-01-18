@@ -1,0 +1,69 @@
+<form method="post" action="<?php echo $html->url('/tableeditor/addedit')?>">
+<input type="hidden" name="id" value="<?=$this->data['id']?>" />
+<input type="hidden" name="table" value="<?=$this->data['table']?>" />
+<input type="hidden" name="order" value="<?=$this->data['order']?>">
+<input type="hidden" name="sort" value="<?=$this->data['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$this->data['currentPage']?>">
+
+<input type="hidden" name="filter_fld" value="<?=$filter_fld?>" />
+<input type="hidden" name="filter_val" value="<?=$filter_val?>" />
+<input type="hidden" name="filter_fld2" value="<?=$filter_fld2?>" />
+<input type="hidden" name="filter_val2" value="<?=$filter_val2?>" />
+<input type="hidden" name="filter_tbl" value="<?=$filter_tbl?>" />
+
+<? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
+<table border="0" cellspacing="3" cellpadding="0" class="results">
+<?
+foreach( $tableFields as $k => $v )
+{
+	$fielddata = $common->getFriendlyName($tableName, $k);
+
+	if ($k == $filter_fld)
+	{
+		echo '<input type="hidden" name="data['.$k.']" value="'.$filter_val.'" size="50" />';
+	}
+	else
+	{
+		//added by Metodi: 16-11-2009 ($k == 'appliance_info')
+		if($k == 'appliance_info'){
+			echo '
+			<tr> 
+			  <th>'.$fielddata['title'].'</th>
+			  <td>'.( $k == 'idd' ? $this->data['values'][$k] : '<textarea name="data['.$k.']" cols="50" rows="20">'.$this->data['values'][$k].'</textarea>').'</td>
+			</tr>
+			';
+		}
+		elseif ($tableName == 'ace_rp_items' && $k=='is_appliance'){
+			echo '
+			<tr style="display:none;"> 
+			  <th>'.$fielddata['title'].'</th>
+			  <td>'.( $k == 'idd' ? $this->data['values'][$k] : '<input type="text" name="data['.$k.']" value="'.$this->data['values'][$k].'" size="50" />').'</td>
+			</tr>
+			';
+		}
+		else{
+		echo '
+		<tr> 
+		  <th>'.$fielddata['title'].'</th>
+		  <td>'.( $k == 'idd' ? $this->data['values'][$k] : '<input type="text" name="data['.$k.']" value="'.$this->data['values'][$k].'" size="50" />').'</td>
+		</tr>
+		';
+	}
+}
+}
+?>
+
+<tr>
+	<td>&nbsp;</td> 
+  <td align="left">
+  <?php echo $html->submit('Submit',array('class'=>'buttons'))?>&nbsp;
+  <input type="button" value="Cancel" onclick="javascript:history.go(-1)" class="buttons">
+  </td>
+</tr>
+</table>
+<br/><br/>
+<br/><br/>
+</form>
+<?
+//pr($this->data);
+?>

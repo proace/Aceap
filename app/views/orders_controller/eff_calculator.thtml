@@ -1,0 +1,55 @@
+
+<table>
+	<tr>
+    	<td>
+        	<h3>Yearly Cost</h3>
+        	<table>
+            	<tr>
+                	<td colspan="3"><div class="number_display" id="cost">0</div></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="7" class="calc_digits"></td>
+                    <td><input type="button" value="8" class="calc_digits"></td>
+                    <td><input type="button" value="9" class="calc_digits"></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="4" class="calc_digits"></td>
+                    <td><input type="button" value="5" class="calc_digits"></td>
+                    <td><input type="button" value="6" class="calc_digits"></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="1" class="calc_digits"></td>
+                    <td><input type="button" value="2" class="calc_digits"></td>
+                    <td><input type="button" value="3" class="calc_digits"></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="0" class="calc_digits"></td>
+                    <td><input type="button" value="." class="calc_dot"></td>
+                    <td><input type="button" value="D" class="calc_delete"></td>
+                </tr>
+            </table>
+            <h3>Old Furnace</h3>
+        	<table>
+            	<tr>
+                	<td><div class="number_display" id="old_eff">0</div></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="60%" class="button_percent"></td>
+                </tr>
+                <tr>
+                    <td><input type="button" value="70%" class="button_percent"></td>
+                </tr>
+                <tr>
+                    <td><input type="button" value="80%" class="button_percent"></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="90%" class="button_percent"></td>
+                </tr>
+                <tr>
+                    <td><input type="button" value="92%" class="button_percent"></td>
+                </tr>                
+            </table>
+        </td>
+        <td></td>
+    </tr>
+</table>

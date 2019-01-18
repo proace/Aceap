@@ -1,0 +1,30 @@
+<h1>Portfolio E-mail</h1>
+<div>
+<p>Today is <?php echo date('l jS \of F Y'); ?></p>
+<form name="sendPortfolioEmailForm" id="sendPortfolioEmailForm" action="<?=BASE_URL;?>/orders/sendPortfolioEmail" method="post">
+<table>
+	<tr>
+    	<th>Job Date
+        </th>
+        <th>Days before Job
+        </th>
+        <th>
+        </th>
+    </tr>
+<?php foreach($jobs as $job) { ?>
+	<tr>
+    	<td><?php echo $job['textdate'] ?>
+        </td>
+        <td align="center"><?php echo $job['days'] ?>
+        </td>
+        <td><input type="button" onclick="window.open('<?=BASE_URL;?>/orders/sendPortfolioEmail?for_date=<?php echo $job['job_date'] ?>', '_self');" value="Send for <?php echo $job['textdate'] ?>" <?php echo $job['is_sent']==1?'disabled':''; ?> />
+        </td>
+    </tr>    
+<?php } ?>
+</table>
+
+<input type="hidden" id="for_date" name="for_date" />
+</form>
+<?php //print_r($jobs) ?>
+
+</div>

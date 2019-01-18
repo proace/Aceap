@@ -1,0 +1,71 @@
+<table id="DetailsTable" cellspacing=0 colspacing=0 class="inResultsBooking">
+<tr>
+	<th>#</th>
+	<th>Question</th>
+	<th>Answer</th>
+    <th>Suggestions</th>
+<!--	<th>Response</th>
+	<th>Note</th>-->
+</tr>
+<?php $i = 0; ?>
+<?php foreach($questions as $key => $question) { ?>
+<tr id="question_<?php echo $i ?>" <?php echo $question['display'] ?>>
+	<td style="color:#000000"><input type="hidden" name="data[Order][OrdersQuestions][<?php echo $i ?>][id]" id="data[Order][OrdersQuestions][<?php echo $i ?>][id]" value="<?php echo $i ?>"/>
+        <input type="hidden" name="data[Order][OrdersQuestions][<?php echo $i ?>][for_office]" id="data[Order][OrdersQuestions][<?php echo $i ?>][for_office]" value="<?php echo $question['for_office'] ?>"/>
+        <input type="hidden" name="data[Order][OrdersQuestions][<?php echo $i ?>][for_tech]" id="data[Order][OrdersQuestions][<?php echo $i ?>][for_tech]" value="<?php echo $question['for_tech'] ?>"/>
+        <input type="hidden" name="data[Order][OrdersQuestions][<?php echo $i ?>][question_id]" id="data[Order][OrdersQuestions][<?php echo $i ?>][question_id]" value="<?php echo $key ?>"/>
+        <input type="hidden" name="data[Order][OrdersQuestions][<?php echo $i ?>][question_number]" id="data[Order][OrdersQuestions][<?php echo $i ?>][question_number]" value="<?php echo $question['question_number'] ?>"/>
+        <?php echo $question['question_number'] ?> - <?php echo $question['display'] ?>
+	</td>
+    <td style="color:#000000">
+		<input type="hidden" name="data[Order][OrdersQuestions][<?php echo $i ?>][question]" id="data[Order][OrdersQuestions][<?php echo $i ?>][question]" value="<?php echo $question['question'] ?>"/>
+		<?php echo $question['question'] ?>
+    </td>
+    <td style="color:#000000">
+    	<?php if($question['answers'] == 'text') { ?>
+        <input type="text" name="data[Order][OrdersQuestions][<?php echo $i ?>][answers]" id="data[Order][OrdersQuestions][<?php echo $i ?>][answers]" value="<?php echo $order_answers[$key]['answers'] ?>" />
+        <?php } else { ?>
+    	<select name="data[Order][OrdersQuestions][<?php echo $i ?>][answers]" id="data[Order][OrdersQuestions][<?php echo $i ?>][answers]" style="width:140px">
+        	<option value="<?php echo $order_answers[$key]['answers'] ?>"><?php echo $order_answers[$key]['answers'] ?></option>
+            <?php foreach($question['answers'] as $answer) { ?>
+            <option value="<?php echo $answer ?>"><?php echo $answer ?></option>
+            <?php } ?>
+        </select>
+        <?php } ?>
+    </td>
+    <td style="color:#000000">
+    	<?php if($question['suggestions'] == 'text') { ?>
+        <input type="text" name="data[Order][OrdersQuestions][<?php echo $i ?>][suggestions]" id="data[Order][OrdersQuestions][<?php echo $i ?>][suggestions]" value="<?php echo $order_answers[$key]['suggestions'] ?>" />
+        <?php } else { ?>
+    	<select name="data[Order][OrdersQuestions][<?php echo $i ?>][suggestions]" id="data[Order][OrdersQuestions][<?php echo $i ?>][suggestions]" style="width:140px">
+        	<option value="<?php echo $order_answers[$key]['suggestions'] ?>"><?php echo $order_answers[$key]['suggestions'] ?></option>
+            <?php foreach($question['suggestions'] as $answer) { ?>
+            <option value="<?php echo $answer ?>"><?php echo $answer ?></option>
+            <?php } ?>
+        </select>
+        <?php } ?>
+    </td>
+    <!--<td style="color:#000000">
+    	<?php if($question['response'] == 'text') { ?>
+        <input type="text" name="data[Order][OrdersQuestions][<?php echo $i ?>][response]" id="data[Order][OrdersQuestions][<?php echo $i ?>][response]" value="<?php echo $order_answers[$key]['response'] ?>" />
+        <?php } else { ?>
+    	<select name="data[Order][OrdersQuestions][<?php echo $i ?>][response]" id="data[Order][OrdersQuestions][<?php echo $i ?>][response]" style="width:140px">
+        	<option value="<?php echo $order_answers[$key]['response'] ?>"><?php echo $order_answers[$key]['response'] ?></option>
+            <?php foreach($question['response'] as $answer) { ?>
+            <option value="<?php echo $answer ?>"><?php echo $answer ?></option>
+            <?php } ?>
+        </select>
+        <?php } ?>
+    </td>
+    <td style="color:#000000">
+    	<input name="data[Order][OrdersQuestions][<?php echo $i ?>][local_answer]" id="data[Order][OrdersQuestions][<?php echo $i ?>][local_answer]" value="<?php echo $order_answers[$key]['local_answer'] ?>"/>
+    </td>-->
+</tr>
+<?php $i++; ?>
+<?php } //END foreach questions ?>
+</table>
+<table>
+	<tr>
+</table>
+<pre><?php //print_r($questions)?></pre>
+<pre><?php //print_r($order_answers)?></pre>

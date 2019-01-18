@@ -1,0 +1,220 @@
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script> <!-- Simple Calendar -->
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script> <!-- Simple Calendar -->
+<script>
+//*** SET PAGE TITLE ***
+
+document.title += " :: New Feeback";
+
+//**********************
+function ShowMarks(el){
+  $("#NegativeMarks").hide();
+  $("#PositiveMarks").hide();
+  if (el.value == 'BAD') $("#NegativeMarks").show();
+  else $("#PositiveMarks").show();
+}
+
+function sendFeedback() {
+	var review = document.getElementById("OrderFeedbackComment").value;
+	var name = document.getElementById("customer_name").innerHTML;
+	var order_number = document.getElementById("order_number").innerHTML;
+	var ratingText = document.getElementById("OrderFeedbackQuality").value;
+	var rating = 1;
+	
+	switch(ratingText) {
+		case "BAD":	
+			rating = 2;
+			break;
+		case "OK":	
+			rating = 3;
+			break;
+		case "GOOD":	
+			rating = 4;
+			break;
+		case "EXCELLENT":	
+			rating = 5;
+			break;
+		default: rating = 1;
+	}
+	
+	inputtext  = "?review=" + review;
+	inputtext += "&name=" + name;
+	inputtext += "&order_number=" + order_number;
+	inputtext += "&rating=" + rating;
+	
+	var answer = window.showModalDialog("http://acecare.ca/reviews/save_from_ace.php"+inputtext,'', "dialogWidth:450px; dialogHeight:100px; dialogLeft:300px; dialogTop:200px;");
+	
+	//window.open("http://acecare.ca/reviews/save_from_ace.php"+inputtext, "_new");
+		
+}
+
+</script>
+<form method="post" action="<?php echo $html->url('/orders/feedbacks_add?id='.$this->params['url']['id'])?>">
+<input type="hidden" name="data[id]" value="<?=$this->params['url']['id']?>" />
+<input type="hidden" name="search_query" value="<?= $search_query ?>"/>
+<input type="hidden" name="customer_id" value="<?=$this->data['Order']['customer_id']?>"/>
+
+<div class="frame-wrap" style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title"><b>Manage Feedback</b></div>
+		<div class="frame-header-right"></div>
+		<div class="frame-body" style="clear: both;">
+
+<table border="0" cellspacing="0" cellpadding="5">
+<?
+	if(isset($errorMessage))
+	{
+		echo '<tr>';			
+		echo '<td colspan="2"><span style="color:red;"><b>Please correct errors below.</b></br></br>';
+		echo $errorMessage;
+		echo '</span></td>';
+		echo '</tr>';			
+		
+	}
+?>
+	<tr>
+    <td style="vertical-align:top;">
+				<table border="0" cellspacing="0" cellpadding="5">
+					<tr style="display:none;"><th colspan=2 align="left"><?=($this->params['url']['id'] > 0 ? " Edit ID ".$this->params['url']['id'] : "Add new")?></th></tr>
+					<tr> 
+						<td>REF #:</td>
+						<td id="order_number"><?=$this->data['Order']['order_number']?></td>
+					</tr>
+                    <tr> 
+						<td>Customer Name:</td>
+						<td id="customer_name"><?=$this->data['Customer']['first_name']?> <?=$this->data['Customer']['last_name']?></td>
+					</tr>
+					<tr> 
+						<td>Service date:</td>
+						<td id="job_date"><?=$this->data['Order']['job_date']?></td>
+					</tr>
+					<tr> 
+						<td>Service type:</td>
+						<td><?=$this->data['Type']['name']?></td>
+					</tr>
+					<tr> 
+						<td><strong>Order total:</strong></td>
+						<td><?php echo $HtmlAssist->prPrice($total); ?></td>
+					</tr>
+					<tr> 
+						<td>Tech name 1:</td>
+						<td><?=$this->data['Tech1']?></td>
+					</tr>
+					<tr> 
+						<td>Tech name 2:</td>
+						<td><?=$this->data['Tech2']?></td>
+					</tr>
+					<tr> 
+						<td colspan="2"><hr/></td>
+					</tr>
+					<tr> 
+						<td>
+				      <?php echo $html->submit('Submit',array('class'=>'buttons'))?>
+				    </td>
+						<td>
+							<input type="button" value="Exit" onclick="javascript:document.location='feedbacks_list?<?=$search_query?>'" class="buttons">
+						</td>
+					</tr>
+                    <!--<tr> 
+						<td colspan="2"><hr/></td>
+					</tr>
+                    <tr> 
+						<td colspan="2"><input type="button" value="Add Feedback to website" class="buttons" onclick="sendFeedback()"></td>
+					</tr>-->
+				</table>
+                <br />
+                <br />
+                <div><strong>Notes</strong>
+                <table id="notes_table">
+                            	<tbody id="previous_notes">
+                                	<?php foreach($notes as $note) { ?>
+                                    <tr class="<?php echo $note['row_class'] ?>">
+                                        <td class="note_type <?php echo $note['note_type_name'] ?>" title="<?php echo $note['author_name'] ?> <?php echo $note['note_date'] ?>"><?php echo $note['note_type_name'] ?></td>
+                                        <td class="note_urgency <?php echo $note['urgency_name'] ?>"><img src="<?php echo ROOT_URL ?>/app/webroot/img<?php echo $note['urgency_image'] ?>" title="<?php echo $note['urgency_name'] ?>" /></td>
+                                        <td class="note_message" style="width:200px"><?php echo $note['message'] ?></td>                                    
+                                    </tr>                                    
+                                    <?php } //END foreach notes ?>
+                                </tbody>                                
+                            </table>
+                </div>
+                <br />
+                <div><strong>Tech Invoice Notes</strong></div>
+                <div><?php echo $tech_notes ?></div>
+                <br />
+                <br />
+                <a href="#" onclick="window.open('<?=BASE_URL?>/orders/invoiceTabletPrint?order_id=<?=$this->data["Order"]["id"]?>&type=office');">Invoice</a>
+		</td>
+		<td>
+				<table border="0" cellspacing="0" cellpadding="5">
+				  <tr>
+					  <td>1. We normally call our customers every 6 month or one year. Which one do you prefer?</td>
+				  </tr>
+				  <tr>
+					  <td>
+						  <input type="text" name="callback_date" id="callback_date" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$callback_date?>"/>
+					    <input type="button" onclick="document.getElementById('callback_date').value='<?=$callback_date_6?>';" value="6 months">
+					    <input type="button" onclick="document.getElementById('callback_date').value='<?=$callback_date_12?>';" value="1 year">
+					    <input type="button" onclick="document.getElementById('callback_date').value='<?=$callback_date_dnc?>';" value="DNC">
+				    </td>
+				  </tr>
+				  <tr>
+					  <td>2. Did our Tech leave a sticker on your furnace or boiler?</td>
+				  </tr>
+				  <tr>
+				    <td>
+				    <?php echo $html->selectTag('Order/feedback_sticker', array(0=>'No',1=>'Yes'), $this->data['Order']['feedback_sticker']);?>
+				    </td>
+				  </tr>
+				  <tr>
+					  <td>3. Did our Tech give his phone number for emergency?</td>
+				  </tr>
+				  <tr>
+				    <td>
+				    <?php echo $html->selectTag('Order/feedback_number', array(0=>'No',1=>'Yes'), $this->data['Order']['feedback_number']);?>
+				    </td>
+				  </tr>
+					<tr> 
+						<td>4. How much did you pay in total?</td>
+				  </tr>
+				  <tr>
+						<td><?= $html->input('Order/feedback_price');?></td>
+					</tr>
+					<tr> 
+						<td>5. Quality of our service:</td>
+				  </tr>
+				  <tr>
+				    <td>
+						<?php echo $html->selectTag('Order/feedback_quality', array('BAD'=>'BAD','OK'=>'OK','GOOD'=>'GOOD','EXCELLENT'=>'EXCELLENT'), $this->data['Order']['feedback_quality'], array('onchange' => 'ShowMarks(this)'));?>
+						<div id="PositiveMarks" <? if ($this->data['Order']['feedback_quality']=='BAD') echo 'style="display:none;"';?>>
+								<input type="checkbox" name="data[Order][feedback_professional]" <? if ($this->data['Order']['feedback_professional']) echo 'checked';?>>Professional techs<br/>
+								<input type="checkbox" name="data[Order][feedback_knowledgeable]" <? if ($this->data['Order']['feedback_knowledgeable']) echo 'checked';?>>Knowledgeable techs<br/>
+								<input type="checkbox" name="data[Order][feedback_skilled]" <? if ($this->data['Order']['feedback_skilled']) echo 'checked';?>>Skilled techs<br/>
+								<input type="checkbox" name="data[Order][feedback_clear]" <? if ($this->data['Order']['feedback_clear']) echo 'checked';?>>Clear and understandable techs<br/>
+								<input type="checkbox" name="data[Order][feedback_timing]" <? if ($this->data['Order']['feedback_timing']) echo 'checked';?>>Good timing<br/>
+						</div>
+						<div id="NegativeMarks" <? if ($this->data['Order']['feedback_quality']!='BAD') echo 'style="display:none;"';?>>
+								<input type="checkbox" name="data[Order][feedback_not_professional]" <? if ($this->data['Order']['feedback_not_professional']) echo 'checked';?>>Not professional techs<br/>
+								<input type="checkbox" name="data[Order][feedback_not_knowledgeable]" <? if ($this->data['Order']['feedback_not_knowledgeable']) echo 'checked';?>>Not knowledgeable techs<br/>
+								<input type="checkbox" name="data[Order][feedback_not_skilled]" <? if ($this->data['Order']['feedback_not_skilled']) echo 'checked';?>>Not skilled techs<br/>
+								<input type="checkbox" name="data[Order][feedback_not_clear]" <? if ($this->data['Order']['feedback_not_clear']) echo 'checked';?>>Not clear/understandable techs<br/>
+								<input type="checkbox" name="data[Order][feedback_not_timing]" <? if ($this->data['Order']['feedback_not_timing']) echo 'checked';?>>Didn't show up<br/>
+						</div>
+						</td>
+					</tr>
+				  <tr> 
+		        <td>Notes :</td>
+          </tr>
+	        <tr>
+		        <td><?= $html->textarea('Order/feedback_comment',array('style' => "width:450px; height: 80px;"));?></td>
+          </tr>
+				  <tr> 
+		        <td>Solution :</td>
+          </tr>
+	        <tr>
+		        <td><?= $html->textarea('Order/feedback_suggestion',array('style' => "width:450px; height: 80px;"));?></td>
+          </tr>
+				</table>
+    </td>
+  </tr>
+</table>
+</div></div>
+</form>

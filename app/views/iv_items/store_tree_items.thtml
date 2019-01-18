@@ -1,0 +1,40 @@
+<input type="hidden" class="criteria" value='<?php echo $criteria ?>' />
+<div class="item_count"><?php echo $count ?> result<?php echo $count==1?'':'s' ?></div>
+<li><?php //echo $criteria //for debugging ?>
+<div class="list_wrapper">
+    <table class="list clear_this">
+        <tr>
+            <th>Name</th>
+            <th><?php echo $aliases['model']['alias']==''?'Model':$aliases['model']['alias'] ?></th>         
+            <th><?php echo $aliases['regular_price']['alias']==''?'Regular Price':$aliases['regular_price']['alias'] ?></th>
+            <th><?php echo $aliases['selling_price']['alias']==''?'Selling Price':$aliases['selling_price']['alias'] ?></th>
+        </tr>
+        <tbody>
+        <?php $i = 0; ?>
+        <?php foreach($items as $item) { ?>
+        <tr class="<?php echo $i++%2==0?'odd':'even' ?> item"><input type="hidden" class="id" value="<?php echo $item['id'] ?>" />
+            <input type="hidden" class="item_active" value="<?php echo $item['active'] ?>" />
+            <input type="hidden" class="item_category_id" value="<?php echo $item['category_id'] ?>" />
+            <input type="hidden" class="item_id" value="<?php echo $item['id'] ?>" />
+            <input type="hidden" class="item_name" value="<?php echo $item['name'] ?>" />
+            <input type="hidden" class="item_model" value="<?php echo $item['model'] ?>" />
+            <input type="hidden" class="item_regular_price" value="<?php echo $item['regular_price'] ?>" />
+            <input type="hidden" class="item_selling_price" value="<?php echo $item['selling_price'] ?>" />
+            <input type="hidden" class="item_supplier_price" value="<?php echo $item['supplier_price'] ?>" />
+            <input type="hidden" class="item_efficiency" value="<?php echo $item['efficiency'] ?>" />
+            <input type="hidden" class="item_brand_id" value="<?php echo $item['brand_id'] ?>" />
+            <input type="hidden" class="item_supplier_id" value="<?php echo $item['supplier_id'] ?>" />
+            <input type="hidden" class="item_description1" value="<?php echo $item['description1'] ?>" />
+            <input type="hidden" class="item_description2" value="<?php echo $item['description2'] ?>" />
+            <input type="hidden" class="item_mode" value="<?php echo $mode ?>" />
+            <td class="left"><?php echo $item['name'] ?></td>
+            <td class="right"><?php echo $item['model'] ?></td>                    
+            <td class="right"><?php echo $item['regular_price'] ?></td>
+            <td class="right"><?php echo $item['selling_price'] ?></td>
+        </tr>
+        <?php } ?>
+        </tbody>
+    </table>    
+</div>
+<div class="clear_this">&nbsp;</div>
+</li>

@@ -1,0 +1,14 @@
+<div class="wrapper">
+<form action="<?php echo BASE_URL ?>/login" method="post">
+	<?php if($message != "") { ?>
+    <div class="<?php echo $message_type ?>"><?php echo $message; ?></div>
+    <?php } ?>
+    <div class="padding3"><label for="LoginUsername">Username:</label><?php echo $html->input('Login/username'); ?></div>
+    <div class="padding3"><label for="LoginPassword">Password:</label><?php echo $html->input('Login/password', array("type"=>"password")); ?></div>
+    <div class="padding3 right_align"><input type="submit" value="Login" class="buttons"></div>
+</form>
+<script>
+document.getElementById('LoginUsername').focus();
+</script>
+</div><!-- end of wrapper -->
+<?php echo $_SERVER['HTTP_USER_AGENT'] ?>

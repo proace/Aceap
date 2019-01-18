@@ -1,0 +1,222 @@
+<script>
+//*** SET PAGE TITLE ***
+
+document.title += " :: New Expense";
+
+//**********************
+</script>
+
+<script language="javascript">
+	
+	function OpenPage(surl)
+	{
+		location.href =surl;
+	}
+	
+	function ShowItemsList(obj)
+	{
+
+		if(obj.value == 1)
+		{//Show List
+			ShowItemList(true);
+		}
+		else if(obj.value == 2)
+		{//Hide List
+			ShowItemList(false);
+		}
+	}
+	
+	function ShowItemList(show)
+	{
+		var itemList = document.getElementById("itemList");			
+		var itemNote = document.getElementById("itemNote");			
+
+		if(itemList != null && itemNote != null)
+		{
+			if(show)
+			{
+				itemList.style.visibility = 'visible';
+				itemNote.style.visibility = 'hidden';
+			}
+			else
+			{
+				itemList.style.visibility = 'hidden';
+				itemNote.style.visibility = 'visible';
+			}
+		}
+	
+	}
+
+	function onLoad()
+	{	
+		var radio = document.getElementById("type_id_1");			
+
+		if(radio.checked)
+		{
+			ShowItemList(true);
+		}
+		else
+		{
+			ShowItemList(false);
+		}
+		
+		CalcQtyPrice();
+	}
+	
+	function CalcQtyPrice()
+	{
+		qty = document.getElementById('ExpenseQty').value;
+		amount = document.getElementById('ExpenseAmount').value;
+		
+		if (qty != 0)
+			str = "($" + (amount/qty).toFixed(2) + " per item)";
+		else
+			str = '';
+		
+
+		
+		document.getElementById('qtyPrice').innerHTML = str;
+	}
+	
+</script>
+<table width="100%" align="center" border="0" cellspacing="10" cellpadding="0"> 
+	<tr>
+		<td class="sectionTitle">New Expense</td>
+	</tr>
+</table>
+<br/>
+<form method="POST" action="<?= $PHP_SELF?>" name="newExpense">
+<? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
+
+<?php 
+//pr($this->data);
+//pr($this->data["Expense"]["location_id"]);
+?>
+<table border="0" cellspacing="0" cellpadding="5" class="results">
+<tr style="display: none;"><th colspan=2 align="left">Add new</th></tr>
+<?php 
+if($_GET['expenseTypeID'] <= 0)
+{
+?>
+<tr>
+	<td valign="top">Item Type :</td>
+	<td>
+	<?php echo $html->radio('Expense/type_id',array('1'=>'inventory expense','2'=>'truck maintenance expense'),'<br/>',array('onclick'=>'javascript:ShowItemsList(this);')) ?>
+	<?php echo $html->tagErrorMsg('Expense/type_id', 'Please select type.') ?></td>
+	</tr>
+<?php 
+}
+else 
+{
+	$this->data["Expense"]["type_id"] = $_GET['expenseTypeID'];
+}
+?>
+<tr> 
+  <td valign="top">Item:</td>
+  <td>
+	<div id="itemList">
+
+  <select name="data[Expense][item_id]" style="width:250;">
+  	<option value="0">----choose item----</option>
+  	<?php
+
+	$cat = -1;
+  	foreach ($items as $objItm):
+
+	if ($cat != $objItm['ItemCategory']['id'])
+	{
+		$cat = $objItm['ItemCategory']['id'];
+		print "<option value=\"0\">".strtoupper($objItm['ItemCategory']['name'])."</option>";
+
+	}
+  	?>
+  	<option value="<?php echo $objItm['Item']['id'];?>"
+  	<?php
+  		if($this->data["Expense"]["item_id"] == $objItm['Item']['id'])
+  		{
+  			echo "selected='selected'";
+  		}
+  	?>>
+  	<?php echo "&nbsp;&nbsp;&nbsp;&nbsp;".$objItm['Item']['name'];?></option>
+  	<?php
+  	endforeach;
+  	?>
+  </select> 
+  <?php echo $html->tagErrorMsg('Expense/item_id', 'Please select item.') ?>
+  </div><div id="itemNote" >
+  <?php echo $html->textarea('Expense/note') ?>
+  <?php echo $html->tagErrorMsg('Expense/note', 'Please enter truck maintenance,note.') ?>
+  </div>
+  </td>
+</tr>
+<tr> 
+  <td>Date Purchased :</td>
+  <td>
+	<?php echo $html->dateTimeOptionTag('Expense/date','DMY',none); ?>
+  	<?php echo $html->tagErrorMsg('Expense/date', 'Please select destination.') ?>
+  </td>
+</tr>
+<tr> 
+  <td>Supplier :</td>
+  <td>
+	<?php echo $html->input('Expense/supplier'); ?>
+  	<?php echo $html->tagErrorMsg('Expense/supplier', 'Please enter supplier.') ?>
+  </td>
+</tr>
+<tr> 
+  <td>Quantity :</td>
+  <td>
+	<?php echo $html->input('Expense/qty', array('onchange' => 'CalcQtyPrice();')); ?>
+  	<?php echo $html->tagErrorMsg('Expense/qty', 'Please enter qty.') ?>
+  </td>
+</tr>
+<tr> 
+  <td>Invoice# :</td>
+  <td>
+	<?php echo $html->input('Expense/invoiceNo'); ?>
+  	<?php echo $html->tagErrorMsg('Expense/invoiceNo', 'Please enter invoice.') ?>
+  </td>
+</tr>
+<tr> 
+  <td>Location target :</td>
+  <td><select name="data[Expense][location_id]" style="width:250;">
+  	<option value="0">----choose location----</option>
+  	<?php 
+  	foreach ($inventoryLocations as $obj):
+  	?>
+  	<option value="<?php echo $obj['InventoryLocation']['id'];?>"
+  	<?php
+  		if($this->data["Expense"]["location_id"] == $obj['InventoryLocation']['id'])
+  		{
+  			echo "selected='selected'";
+  		}
+  	?>><?php echo $obj['InventoryLocation']['name'];?></option>
+  	<?php
+  	endforeach;
+  	?>  	
+  </select> 
+    <?php echo $html->tagErrorMsg('Expense/location_id', 'Please select location.') ?>
+</td>
+</tr>
+<tr> 
+  <td>$ Amount :</td>
+  <td>
+	<?php echo $html->input('Expense/amount', array('onchange' => 'CalcQtyPrice();')); ?>&nbsp;&nbsp;<span id="qtyPrice"></span>
+  	<?php echo $html->tagErrorMsg('Expense/amount', 'Please enter amount.') ?>
+  </td>
+</tr>
+<tr> 
+  <td>&nbsp;</td>
+  <td align="left" colspan="1">
+	  <input type="submit" name="submit2" value="Submit" class="buttons">&nbsp;
+	  <input type="button" value="Cancel" onclick="history.go(-1);" class="buttons">
+  </td>
+</tr>
+</table>
+<br/><br/>
+
+<script>
+	onLoad();
+</script>
+</form>
+

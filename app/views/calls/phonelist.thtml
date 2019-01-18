@@ -1,0 +1,558 @@
+<style>
+.custom-max-width {
+	width:100%;
+	display:inline-block;	
+}
+.other-button-float {
+	margin-bottom:10px;	
+}
+.span-type {
+	border-radius:4px;
+	padding:0 4px;	
+}
+.history-entry {
+	border-radius:4px;
+	padding:4px;	
+}
+.info-box {
+	min-height:inherit;	
+}
+.info-box-content {
+	margin-left:0;	
+}
+.progress-description, .info-box-text {
+    overflow: initial;
+    text-overflow: initial;
+    white-space: initial;
+}
+.table-mini {
+	border:none;
+	font-size:90%;
+	margin-bottom:0;
+}
+.table-mini tbody tr td, .table-mini tbody tr th {
+	border-top:none;
+	text-align:right;
+	padding:2px 0;
+}
+.table-mini tbody tr td:first-child, .table-mini tbody tr th:first-child {
+	text-align:left;
+}
+
+
+.vertical-alignment-helper {
+    display:table;
+    height: 100%;
+    width: 100%;
+    pointer-events:none;
+}
+.vertical-align-center {
+    /* To center vertically */
+    display: table-cell;
+    vertical-align: middle;
+    pointer-events:none;
+}
+.modal-content {
+    /* Bootstrap sets the size of the modal in the modal-dialog class, we need to inherit it */
+    width:inherit;
+    height:inherit;
+    /* To center horizontally */
+    margin: 0 auto;
+    pointer-events:all;
+}
+.right-align {
+	text-align:right;	
+}
+.hist-header {
+	padding:0;	
+}
+</style>
+<script>
+$(function(){
+	$(".btn-disp").click(function(){
+		$("#disposition").val($(this).val());
+		//alert("submited");
+		$("#form-disp").submit();
+	});	
+	$(".btn-call").click(function(){
+		calltrigger($(this).attr("href"));
+	});
+	//$("#call-button").click();	
+
+	$('#basicModal').modal({
+		"backdrop" : "static",
+		"show": false
+	});
+	$('#editModal').modal({
+		"backdrop" : "static",
+		"show": false
+	});
+	$("#call_return_picker").datepicker({
+		format: "yyyy-mm-dd",
+		todayHighlight: true
+	});
+	$("#call_return_picker").on('changeDate', function (e) {
+		$("#call_return_display").html(e.format("M d yyyy"));
+		$("#call_return").val(e.format("yyyy-mm-dd"));
+	});
+	
+	$("#notes").keydown(function(){
+		$("#callback_note").val($(this).val());
+	});
+	
+	$("#callback_note").keydown(function(){
+		$("#notes").val($(this).val());
+	});
+	
+	$("#save_edit").click(function(){
+		email_is_valid = true;
+		if($("#edit_email").val() != "") {
+			email_is_valid = validateEmail($("#edit_email").val());
+		}
+		if(email_is_valid) {
+			$.post("<?php echo BASE_URL?>/calls/updatelead", 
+				{
+					edit_id: $("#edit_id").val(),
+					edit_first_name: $("#edit_first_name").val(),
+					edit_last_name: $("#edit_last_name").val(),
+					edit_postal_code: $("#edit_postal_code").val(),
+					edit_email: $("#edit_email").val()
+				}, 
+				function(data){
+					$("#display_name").html($("#edit_first_name").val()+ " " + $("#edit_last_name").val());
+					$("#display_postal_code").html($("#edit_postal_code").val());
+					$("#display_email").html($("#edit_email").val());
+					console.log("saved");
+				}
+			);
+		} else {
+			alert("Check email format");	
+		}
+	});
+	
+});
+
+function validateEmail(email) {
+    var re = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+    return re.test(email);
+}
+
+function calltrigger(phone) {
+	$(".btn-call").addClass("disabled");
+	
+	$.post("<?php echo BASE_URL?>/calls/calltrigger", 
+	{phone:phone})
+	.done(function(data) {
+		callsip(phone);
+		$(".btn-call").removeClass("disabled");
+		//alert( "Data Loaded: " + data );
+	});
+}
+function callsip(phone) {
+    var mail = 'mailto:contact@test.com';
+    var a = document.createElement('a');
+    a.href = 'sip:'+phone;
+    document.body.appendChild(a); // Add to the DOM
+    a.click();
+    document.body.removeChild(a); // Remove it back
+};
+</script>
+<section class="content-header">
+  <h1> Calls <small>Leads</small> </h1>
+  <ol class="breadcrumb">
+    <li><a href="<?php echo $home_link ?>"><i class="fa fa-home"></i> Home</a></li>
+    <li class="active">Calls</li>
+  </ol>
+</section>
+
+<!-- Main content -->
+<section class="content">
+  <?php if($test_phone != "") { ?>
+  <div class="alert alert-warning alert-dismissable">
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+    <h4>	<i class="icon fa fa-exclamation-triangle"></i> This page is in TEST MODE!</h4>
+    All leads will call <?php echo $test_phone ?>
+  </div>
+  <?php } ?>
+  <div class="row"> 
+    <!-- left column -->
+    <div class="col-md-6"> 
+      <!-- general form elements -->
+      
+      
+
+      <div class="box box-primary">
+        <div class="box-header">
+          <h3 class="box-title">Call Information</h3>
+        </div>
+        <!-- /.box-header -->
+        
+        <div class="box-body">
+          
+          <div class="box-group"> 
+            <!-- we are adding the .panel class so bootstrap.js collapse plugin detects it -->
+            <div class="panel box box-default">
+              <div class="box-header with-border">
+                <h4 class="box-title custom-max-width"> <a data-toggle="collapse" data-parent="#accordion" href="#collapse1" class="custom-max-width"> <i class="fa fa-phone-square"></i> Main Number </a> </h4>
+              </div>
+              <div id="collapse1" class="panel-collapse collapse in">
+                <div class="box-body">
+                	<div class="col-xs-8">                    	
+                        <div id="display_name"><strong><?php echo trim($hopper['lead_first_name']." ".$hopper['lead_last_name'])  ?></strong></div>
+                        <div><?php echo $hopper['lead_address'] ?></div>
+                        <div><?php echo $hopper['lead_city'] ?></div>
+                        <div id="display_postal_code"><?php echo $hopper['lead_postal_code'] ?></div>
+                        <div id="display_email"><?php echo $hopper['lead_email'] ?></div>
+                        <div style="display:initial;">
+                        	<a href="#" class="btn btn-default pull-left" data-toggle="modal" data-target="#editModal"><i class="fa fa-pencil"></i> Edit</a>                        	<div class="modal" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModal" aria-hidden="true">
+                            	<div class="vertical-alignment-helper">
+                                	<div class="modal-dialog vertical-align-center">
+                                    	<div class="modal-content">
+                                        	<div class="modal-header">
+                                            	<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times"></i></button>
+                                            	<h4 class="modal-title" id="myModalLabel">Edit Customer</h4>
+                                            </div>
+                                            
+                                            <input type="hidden" name="edit_id" id="edit_id" value="<?php echo $hopper['lead_id'] ?>" />
+                                            <div class="modal-body"> 
+                                            	<div class="form-group">
+                                                  <label>First Name</label>                                              
+                                                  <input type="text" class="form-control" name="edit_first_name" id="edit_first_name" value="<?php echo trim($hopper['lead_first_name'])  ?>">    
+                                                </div> 
+                                                <div class="form-group">
+                                                  <label>Last Name</label>                                              
+                                                  <input type="text" class="form-control" name="edit_last_name" id="edit_last_name" value="<?php echo trim($hopper['lead_last_name'])  ?>">  
+                                                </div>
+                                                <div class="form-group">
+                                                  <label>Postal Code</label>                                              
+                                                  <input type="text" class="form-control" name="edit_postal_code" id="edit_postal_code" value="<?php echo $hopper['lead_postal_code'] ?>">  
+                                                </div>
+                                                <div class="form-group">
+                                                  <label>Email</label>                                              
+                                                  <input type="email" class="form-control" name="edit_email" id="edit_email" value="<?php echo $hopper['lead_email'] ?>">  
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+                                                <button type="button" id="save_edit" class="btn btn-submit" data-dismiss="modal">Save</button>
+                                        	</div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>           
+                	<div class="col-xs-4">
+                    	<button class="btn btn-success pull-left btn-block btn-call" id="call-button" href="<?php echo $test_phone==""?$hopper['lead_phone']:$test_phone; ?>"><i class="fa fa-phone"></i> <?php echo $hopper['lead_phone'] ?></button>
+                        <a class="btn btn-default pull-left btn-block" href="<?php echo BASE_URL?>/orders/editBooking?customer_id=<?php echo $customers[0]['id'] ?>&order_id=0" target="_new"><i class="fa fa-external-link"></i> Book in ACE</a>
+                        <!--<a class="btn btn-default pull-left btn-block" href="<?php echo BASE_URL?>/orders/scheduleView" target="acewindow"><i class="fa fa-calendar"></i> Schedule</a>-->  
+                        <!--<a class="btn btn-default pull-left btn-block" href="<?php echo BASE_URL?>/pages/main" target="acewindow"><i class="fa fa-external-link"></i> Book in ACE</a>-->                      
+                    </div>                    
+                	<div class="clearfix"></div>
+                </div>
+              </div>
+            </div>
+            <div class="panel box box-warning" id="wrapper-collapse2">
+              <div class="box-header with-border">
+                <h4 class="box-title custom-max-width"> <a data-toggle="collapse" data-parent="#accordion" href="#collapse2" class="custom-max-width"> <i class="fa fa-tags"></i> Other Numbers </a> </h4>
+              </div>
+              <div id="collapse2" class="panel-collapse">
+                <div class="box-body">                
+                	<?php $other_numbers = false; if(isset($customers)) foreach($customers as $customer)  { ?> 
+                    <?php if(trim($hopper['lead_phone']) != trim($customer['phone']) && trim($customer['phone']) != "") { ?>
+                    <div class="row other-button-float">						
+                        <div class="col-xs-8">                    	
+                            <div><strong><?php echo trim($customer['first_name']." ".$customer['last_name'])  ?></strong></div>                        
+                        </div>           
+                        <div class="col-xs-4">
+                            <button class="btn btn-warning pull-left btn-block btn-call" href="<?php echo $test_phone==""?$customer['phone']:$test_phone; ?>"><i class="fa fa-phone"></i> <?php echo $hopper['lead_phone'] ?></button>
+                        </div>                        
+                    </div>
+                    <?php $other_numbers = true; } ?>
+                    <?php if(trim($hopper['lead_phone']) != trim($customer['cell_phone']) && trim($customer['cell_phone']) != "") { ?>
+                    <div class="row other-button-float">                    
+                        <div class="col-xs-8">                    	
+                            <div><strong><?php echo trim($customer['first_name']." ".$customer['last_name'])  ?></strong></div>                        
+                        </div>           
+                        <div class="col-xs-4">
+                            <button class="btn btn-warning pull-left btn-block btn-call" href="<?php echo $test_phone==""?$customer['cell_phone']:$test_phone; ?>"><i class="fa fa-phone"></i> <?php echo $hopper['lead_phone'] ?></button>
+                        </div>
+                    </div>
+                    <?php $other_numbers = true; } ?>                	
+                    <?php } ?>           	                                    
+                	<div class="clearfix"></div>
+                </div>
+              </div>
+            </div>
+            <?php if(!$other_numbers) { ?>
+            <script>$("#wrapper-collapse2").remove();</script>
+            <?php } ?>
+            <div class="panel box box-success">
+              <div class="box-header with-border">
+                <h4 class="box-title custom-max-width"> <a data-toggle="collapse" data-parent="#accordion" href="#collapse3" class="custom-max-width"> <i class="fa fa-thumbs-up"></i> Disposition </a> </h4>
+              </div>
+              <div id="collapse3" class="panel-collapse">
+                <div class="box-body">
+                	<form method="post" id="form-disp">
+                	<div class="row">
+                    	<div class="form-group">
+                          <label>Notes</label>
+                          <textarea class="form-control" rows="3" name="notes" id="notes" placeholder=""></textarea>
+                          <input type="hidden" id="disposition" name="disposition" />
+                          <input type="hidden" id="lead" name="lead" value="<?php echo $hopper['lead_id'] ?>" />
+                          <input type="hidden" id="number" name="number" value="<?php echo $hopper['lead_phone'] ?>" />
+                        </div>
+                    </div>
+                	<div class="row">
+                        <div class="col-xs-4">                            
+                            <button type="button" value="7" class="btn bg-nis pull-left btn-block btn-disp"> Not In Service</button>
+                        </div>
+                    	<div class="col-xs-4">
+                            <button type="button" value="4" class="btn bg-booked pull-left btn-block btn-disp"> Booked</button>
+                        </div>
+                        <div class="col-xs-4">
+                            <a href="#" class="btn bg-callback pull-left btn-block" data-toggle="modal" data-target="#basicModal">Callback</a>
+                            
+                            <div class="modal" id="basicModal" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+                            	<div class="vertical-alignment-helper">
+                                    <div class="modal-dialog vertical-align-center">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times"></i></button>
+                                            <h4 class="modal-title" id="myModalLabel">Callback Date</h4>
+                                            </div>
+                                            <div class="modal-body">
+                                                <input id="call_return" type="hidden" name="return">
+												<div id="call_return_picker"></div>  
+                                                <div class="form-group">
+                                                  <label>Date</label>                                              
+                                                  <div class="form-control" id="call_return_display"></div>    
+                                                </div>                                            
+                                                <div class="form-group">
+                                                  <label>Notes</label>
+                                                  <textarea class="form-control" rows="3" id="callback_note" placeholder=""></textarea>                       
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+                                                <button type="button" value="5" class="btn bg-callback btn-disp">Callback</button>
+                                        </div>
+                                    </div>
+                                </div>
+                              </div>
+                            </div>
+                        </div>                        
+                    </div>
+                    <br />
+                	<div class="row">
+                        <div class="col-xs-4">                            
+                            <button type="button" value="8" class="btn bg-wrong pull-left btn-block btn-disp"> Wrong Number</button>
+                        </div>
+                        <div class="col-xs-4">
+                            <button type="button" value="1" class="btn bg-notin pull-left btn-block btn-disp"> Not Interested</button>                            
+                        </div>
+                        <div class="col-xs-4">
+                            <button type="button" value="2" class="btn bg-ans pull-left btn-block btn-disp"> Answering Machine</button>
+                        </div>
+                    </div>
+                    <br />
+                	<div class="row">
+                        <div class="col-xs-4">
+                            <button type="button" value="6" class="btn bg-dnc pull-left btn-block btn-disp"> Do Not Call</button>
+                        </div>
+                        <div class="col-xs-4">
+                            
+                            <button type="button" value="9" class="btn bg-noeng pull-left btn-block btn-disp"> No English</button>
+                        </div>
+                        <div class="col-xs-4">
+                            
+                            <button type="button" value="3" class="btn bg-busy pull-left btn-block btn-disp"> Busy</button>
+                        </div>
+                    </div>
+                    </form>
+                	<div class="clearfix"></div>
+                </div>
+              </div>
+            </div>
+          </div>          
+        </div>
+        <!-- /.box-body -->
+        
+        <div class="box-footer"> 
+          <!--<button type="button" class="btn btn-primary">Submit</button>--> 
+        </div>
+      </div>
+      <!-- /.box -->
+      
+      <div class="box box-primary">
+        <div class="box-header">
+          <h3 class="box-title">Additional Information</h3>
+        </div>
+        <!-- /.box-header -->
+        
+        <div class="box-body">          
+          <table class="table table-bordered">
+          	<?php foreach($customers as $customer)  { ?>            
+          	<tr>
+            	<td><?php echo $customer['first_name']." ".$customer['last_name']?></td>
+                <td><?php echo 
+					trim($customer['address_street_number']." ".
+					$customer['address_street']." ".
+					$customer['city']." ".
+					$customer['postal_code'])
+				?></td>
+            </tr>
+            <?php } ?>            
+          </table>
+        </div>
+        <!-- /.box-body -->
+        
+        <div class="box-footer">
+          <!--<button type="submit" class="btn btn-primary">Submit</button>-->
+        </div>
+      </div>
+      <!-- /.box --> 
+    </div>
+    <!-- end col -->
+    <div class="col-md-6"> 
+      <?php if(isset($spiel) && trim($spiel) != "") { ?>
+      <div class="box box-solid">
+      	<div class="box-header">
+          <h3 class="box-title"><i class="fa fa-microphone"></i> Pitch</h3>
+        </div>        
+        <div class="box-body">
+        <em><?php echo $spiel ?></em>
+        </div>
+      </div>
+      <?php } ?>
+      
+      <div class="box box-primary">
+        <div class="box-header">
+          <h3 class="box-title"><i class="fa fa-clock-o"></i> History</h3>
+          <div class="box-tools pull-right">
+            <button class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>         
+          </div>
+        </div>
+        <!-- /.box-header --> 
+        <!-- form start -->
+        
+        <div class="box-body">
+          <!--<div class="form-group">
+            <label>Search</label>
+            <div class="input-group col-xs-8">
+              <input type="text" class="form-control">
+              <div class="input-group-btn">
+                <button type="button" class="btn btn-default"><i class="fa fa-search"></i></button>
+              </div>           
+            </div>           
+          </div>-->        
+          <!--<pre><?php print_r($history) ?></pre>-->
+          <?php foreach($history["history"] as $h) { ?>
+          <?php 
+		  //$color = "bg-gray"; 
+		  //if($h['call_type'] == "Call") $color = "bg-gray"; 
+		  if($h['call_result'] == "Done") $color = "bg-done"; 
+		  if($h['call_result'] == "Cancelled") $color = "bg-cancelled";
+		  if($h['call_result'] == "Booked") $color = "bg-booked"; 
+		  if($h['call_result'] == "Not In Service") $color = "bg-nis";	
+		  if($h['call_result'] == "Call Back") $color = "bg-callback";
+		  if(trim(substr($h['call_result'],0, 14)) == "Not Interested") $color = "bg-notin";
+		  if($h['call_result'] == "Answering Machine") $color = "bg-ans";
+		  if($h['call_result'] == "Do Not Call") $color = "bg-dnc";  
+		  ?>
+          <div class="info-box <?php echo $color ?>">
+            <div class="info-box-content">              
+              <span class="info-box-text">	
+              		  
+              <span class="col-md-5 hist-header"><i class="fa fa-clock-o"></i> <?php 
+			  $months = floor($h['call_last']/30);
+			  if($h['call_last'] >= 30) {
+				echo $months." months ";
+			  }
+			  $days = $h['call_last']%30;
+			  if($days || $months) {
+				  if($days > 0) echo "$days days ago";
+				  else echo " ago";
+			  } else {
+				echo "today";  
+			  }
+			  
+			  ?></span>
+              <strong class="col-md-3 hist-header"><i class="fa fa-calendar-o"></i> <?php echo $h['call_date'] ?></strong>      
+              <strong class="col-md-4 right-align hist-header"><?php echo trim(substr($h['call_result'],0, 14)) == "Not Interested"?"Not Interested":trim($h['call_result']) ?></strong>              
+              <div class="clearfix"></div>
+              </span>
+              <span class="info-box-number"></span>
+              
+              <?php if(trim($h['call_return']) != null) { ?>
+              <div class="progress">
+                <div style="width: 100%" class="progress-bar"></div>
+              </div>
+              <span class="progress-description">
+              	<i class="fa fa-phone"></i> Call back on <strong><?php echo trim($h['call_return']) ?></strong>
+              </span>
+              <?php } ?>
+              
+              <?php if(trim($h['call_note']) != "") { ?>
+              <div class="progress">
+                <div style="width: 100%" class="progress-bar"></div>
+              </div>
+              <span class="progress-description">
+              	<i class="fa fa-comment"></i> <?php echo trim($h['call_note']) ?>
+              </span>
+              <?php } ?>
+              
+			  <?php foreach($h['call_notes'] as $note) { ?>
+                  <div class="progress">
+                    <div style="width: 100%" class="progress-bar"></div>
+                  </div>
+                  <span class="progress-description">
+                    <i class="fa fa-comment"></i> <?php echo trim($note['message']) ?> <div class="text-muted"><?php echo trim($note['first_name'])." ".$note['note_date'] ?></div>
+                  </span>
+              <?php } ?>              
+              <?php if(!empty($h['call_subitems'])) { ?>
+              <div class="progress">
+                <div style="width: 100%" class="progress-bar"></div>
+              </div>              
+              <span class="progress-description">
+              	<table class="table table-mini">
+                    <tr>
+                        <th>Item</th>
+                        <th>Qty</th> 
+                        <th>Price</th>                        
+                        <th>Total</th>
+                    </tr>
+                    <?php foreach($h['call_subitems'] as $item) { ?>
+                    <tr>
+                        <td><?php echo $item['name'] ?></td>
+                        <td><?php echo $item['quantity'] ?></td>
+                        <td><?php echo ($item['price']*$item['quantity']) ?><?php echo $item['discount']>0?" - ".$item['discount']:""; ?></td>
+                        <td><?php echo ($item['price']*$item['quantity']) - $item['discount'] ?></td>
+                    </tr>
+                    <?php } ?>
+                </table>
+              	
+              </span>
+              <?php } ?>
+            </div>
+          </div>
+          <?php } ?>
+          <!--<pre><?php //print_r($history) ?></pre>-->
+          
+        </div>
+        <!-- /.box-body -->
+        
+        <div class="box-footer"> 
+          <!--<button type="submit" class="btn btn-primary">Submit</button>--> 
+        </div>
+      </div>
+      <!-- /.box --> 
+    </div>
+    <!-- end col --> 
+    
+  </div>
+  <!-- end row --> 
+</section>
+<!-- /.content --> 

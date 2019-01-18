@@ -1,0 +1,55 @@
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<table border="0" cellspacing="10" cellpadding="0">
+	<tr>
+		<td class="sectionTitle" colspan="2">Daily Invoice Summary</td>
+	</tr>
+	<tr >
+		<td>Date from: 
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			&nbsp;&nbsp;
+			Date to:
+			&nbsp;&nbsp;
+			<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">				
+		</td>
+        <td>
+				<!--<nobr>Technicians List:</nobr>	
+				<select name="ftechid">
+					<option value="">-=All=-</option>
+					<? 
+					foreach($allTechnician as $k => $v) {
+						echo '<option value="'.$k.'"'.( $k == $techid ? ' selected' : '').'>'.$v.'</option>';
+					}
+					?>
+				</select>-->		
+			</td>
+		<td>
+			<input type="submit" name="submit2" value="Update" class="buttons">
+		</td>		
+	</tr>
+</table>
+</form>
+<p><b>Number of feedbacks: <?=count($results)?></b></p>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="900px">
+	<tr>
+    	<th>Ref #</th>
+    	<th>Tech 1</th>
+        <th>Tech 2</th>
+		<th>Tech Notes</th>
+        <th>Date</th>
+	</tr>
+<?php $r=1;
+	foreach ($results as $id => $obj): 
+		$class = 'cell'.(++$r%2);
+		if ($fdetails) $extra = 'style="font-weight:bold;"';
+?>
+    <tr class="<?= $class ?>">
+		<td><a href="<?=BASE_URL?>/orders/editBooking?order_id=<?=$id?>"><?php echo $obj['order_number']; ?></a> </td>		
+        <td>&nbsp;<?php echo $obj['tech1']; ?></td> 
+        <td>&nbsp;<?php echo $obj['tech2']; ?></td> 
+        <td>&nbsp;<?php echo $obj['job_notes_technician']; ?></td> 
+		<td>&nbsp;<?php echo $obj['job_date']; ?></td>  
+    </tr>
+<?php endforeach; ?>
+</table>
+

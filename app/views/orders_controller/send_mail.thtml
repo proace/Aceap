@@ -1,0 +1,31 @@
+<div style="width: 100%; background: #6FC426; font-size: 16pt;">
+Send E-Mail
+</div>
+<br/><br/>
+<div style="<?=$hide_form;?>">
+<form>
+<input type="hidden" name="email" value="<?=$email;?>"/>
+<table>
+	<tr>
+		<td valign="top"><b>Subject:</b></td>
+		<td><input name="subject" style="width: 400px;"/></td>
+	</tr>
+	<tr>
+		<td valign="top"><b>Message:</b></td>
+		<td><textarea name="message" style="width: 400px; height: 200px;"></textarea></td>
+	</tr>
+	<tr>
+		<td colspan="2" align="right">
+			<input type="submit" value="Send" style="font-weight: bold;">
+			<input type="button" value="Cancel" onclick="window.close();" />
+		</td>
+	</tr>
+</table>
+</form>
+</div>
+
+<div style="text-align: center; <?=$hide_conf;?>">
+Your e-mail has been sent.
+<br/><br/>
+<input type="button" value="Close" onclick="window.close();" />
+</div>

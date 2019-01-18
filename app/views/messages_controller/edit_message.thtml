@@ -1,0 +1,66 @@
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script> <!-- Simple Calendar -->
+<script>
+//*** SET PAGE TITLE ***
+document.title += " :: Edit Message";
+//**********************
+function PressSave(){
+  document.forms['editMessageForm'].submit();
+}
+</script>
+
+<form name="editMessageForm" action="<?=BASE_URL;?>/messages/saveMessage"  method="post">
+<?php echo $html->hidden('Message/id')?>
+<div class="frame-wrap" style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title">Message</div>
+		<div class="frame-header-right"></div>
+		<div class="frame-body" style="clear: both;">
+				<table>
+						<tr>
+								<td align="right">From:</td>
+								<td><b><?php echo $from_user;?></b>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Created:</td>
+								<td><b><?php echo $created_date;?>&nbsp;<?php echo $created_time;?></b></td>
+						</tr>
+						<tr>
+								<td align="right">To:</td>
+								<td colspan=3>
+							    <?php echo $html->selectTag('Message/to_user', $allSources, $this->data['Message']['to_user']);?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Reminder date:</td>
+								<td>
+							    <?php echo $html->input('Message/to_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;'));?>
+								</td>
+								<td align="right">Time:</td>
+								<td>
+						      <?php echo $html->hourOptionTag('Message/to_time') . " : " . $html->minuteOptionTag('Message/to_time'); ?>
+								</td>
+						</tr>
+						<tr>
+							<?php if ($this->data['Message']['file_link']) { ?>
+								<td colspan=4>
+							    <?php echo $html->hidden('Message/file_link');?>
+								</td>
+							<?php } ?>
+						</tr>
+						<tr>
+								<td align="right">Note:</td>
+								<td colspan=3>
+                  <?php echo $html->textarea('Message/txt', array('rows' => 8, 'cols' => 40)); ?>
+								</td>
+						</tr>
+						<tr>
+								<td style="text-align:right" colspan=2>
+												<?php echo $html->submit("Save", array("onclick" => "PressSave()"));?>
+												<input type="button" value="Exit" onclick="window.close();">
+								</td>
+						</tr>
+				</table>
+		</div>
+</div>
+</form>

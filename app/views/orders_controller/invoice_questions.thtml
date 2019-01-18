@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Invoice</title>
+<!--<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+<meta name="apple-mobile-web-app-capable" content="yes">-->
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_questions.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/eff_calculator.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.21.custom.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
+</head>
+
+<body>
+<ul id="nav">
+    <li><a id="jobs_link" class="buttons"><div>Jobs</div></a></li>
+    <li><a href="<?php echo BASE_URL;?>/pages/main" id="home_link" class="buttons"><div>ACESYS</div></a></li>
+    <li><a id="calc_link" class="buttons"><div>Eff Calculator</div></a></li>
+</ul>
+
+<div id="invoice">
+	
+	<ul id="job_list">
+    	<?php foreach($jobs as $job) { ?>
+        <?php if($job['Order']['order_status_id'] == 5) $url = BASE_URL."/orders/invoiceTabletPrint?order_id=".$job['Order']['id'] ?>
+        <?php if($job['Order']['order_status_id'] == 3) $url = "#" ?>
+        <?php if($job['Order']['order_status_id'] == 1) $url = BASE_URL."/orders/invoiceTabletOverview?order_id=".$job['Order']['id'] ?>
+    	<li>
+        <a href="<?php echo $url;?>" class="job status<?php echo $job['Order']['order_status_id'] ?>">
+        	<span><?php echo $job['Customer']['first_name'] ?> <?php echo $job['Customer']['last_name'] ?> <?php echo $job['Order']['job_time_beg'] ?> <?php echo $job['Order']['job_time_end'] ?></span>            
+            <div><?php echo $job['Order']['order_number'] ?></div>
+        </a>        
+        </li>                
+        <?php } ?>
+    </ul>
+    
+    <?php foreach($jobs as $job) { ?>
+    <?php if($job['Order']['id'] == $order_id) { ?>
+    <div class="header">
+    <h1>#<?php echo $job['Order']['order_number'] ?> - <?php echo $job['Type']['name'] ?></h1>
+    <h2><?php echo $job['Customer']['first_name'] ?> <?php echo $job['Customer']['last_name'] ?> <?php echo $job['Customer']['phone'] ?></h2>
+    <p><a href="<?php echo $HtmlAssist->getOrderGoogleMap($job['Customer'])?>" target="_blank">
+		<?php echo $job['Customer']['address'] ?> <?php echo $job['Customer']['city'] ?> <?php echo $job['Customer']['postal_code'] ?>
+        </a>
+    </p>
+    </div>
+    <div>
+    <?php if($last_order['Order']['order_number'] != "") { ?>
+    <h2><?php echo $last_order['Order']['order_number'] ?> - <?php echo $last_order['Type']['name'] ?></h2>
+    <?php } ?>
+    </div>
+    <div id="overview_div">
+    <form id="questions_form" action="<?php echo BASE_URL ?>/orders/saveInvoiceQuestions" method="post">
+    <?php echo $html->input('Invoice/order_id', array('type'=>'hidden', 'value'=>$job['Order']['id'])); ?>
+    <?php echo $html->input('Invoice/order_type_id', array('type'=>'hidden', 'value'=>$job['Order']['order_type_id'])); ?>
+    <?php echo $html->input('Invoice/last_order_id', array('type'=>'hidden', 'value'=>$last_order['Order']['id'])); ?>
+        
+    <table>
+    	<tr>
+        	<th>Questions</th>
+            <th>Answers</th>
+            <th>Suggestions</th>
+        </tr>
+    	<?php foreach($questions as $key => $question) { ?>
+    	<tr>
+        	<td><?php echo $question['question'] ?></td>
+            <td>
+            	<input type="hidden" name="data[Question][<?php echo $key ?>][for_tech]" id="QuestionForTech" value="<?php echo $question['for_tech'] ?>" />
+                <input type="hidden" name="data[Question][<?php echo $key ?>][for_office]" id="QuestionForOffice" value="<?php echo $question['for_office'] ?>" />
+                <input type="hidden" name="data[Question][<?php echo $key ?>][question]" id="QuestionForTech" value="<?php echo $question['question'] ?>" />
+                <input type="hidden" name="data[Question][<?php echo $key ?>][question_number]" id="QuestionNumber" value="<?php echo $question['question_number'] ?>" />
+            	<?php //echo $key ?>
+				<?php if($question['answers'] == 'text') { ?>                 
+               		<?php if(trim($values[$key]['answers']) != "") { ?>       	                
+            		<input type="text" class="selection required" name="data[Question][<?php echo $key ?>][answers]" id="QuestionAnswers" value="<?php echo $values[$key]['answers'] ?>" />     
+                	<?php } else { ?>
+                    <input type="text" class="selection required" name="data[Question][<?php echo $key ?>][answers]" id="QuestionAnswers" value="<?php echo $order_answers[$key]['answers'] ?>" />                  
+                    <?php } ?>                    
+                <?php } else { ?>                	
+                    <select class="selection required" name="data[Question][<?php echo $key ?>][answers]" id="QuestionAnswers">                	
+                        <?php if(trim($order_answers[$key]['answers']) != "") { ?>
+                        <option selected="selected" value="<?php echo $order_answers[$key]['answers'] ?>"><?php echo $order_answers[$key]['answers'] ?></option>
+                        <?php } else { ?>
+                        	<?php if(trim($order_answers[$question['question']]['answers']) != "") { ?>
+                            <option selected="selected" value="<?php echo $order_answers[$question['question']]['answers'] ?>"><?php echo $order_answers[$question['question']]['answers'] ?></option>
+                            <?php } else { ?>
+                        	<option value=""></option>
+                            <?php } ?> 
+                        <?php } ?> 
+                        <?php foreach($question['answers'] as $answer) { ?>
+                        <option value="<?php echo $answer ?>"><?php echo $answer ?></option>
+                        <?php } ?>                    
+                    </select>                    
+				<?php } ?>
+            </td>
+            <td>
+            	<?php if($question['suggestions'] == 'text') { ?>                 
+               		<?php if(trim($values[$key]['suggestions']) != "") { ?>       	                
+            		<input type="text" class="selection " name="data[Question][<?php echo $key ?>][suggestions]" id="QuestionAnswers" value="<?php echo $values[$key]['suggestions'] ?>" />     
+                	<?php } else { ?>
+                    <input type="text" class="selection " name="data[Question][<?php echo $key ?>][suggestions]" id="QuestionAnswers" value="<?php echo $order_answers[$key]['suggestions'] ?>" />                  
+                    <?php } ?>                    
+                <?php } else { ?>                	
+                    <select class="selection required" name="data[Question][<?php echo $key ?>][suggestions]" id="QuestionAnswers">                	
+                        <?php if(trim($order_answers[$key]['suggestions']) != "") { ?>
+                        <option selected="selected" value="<?php echo $order_answers[$key]['suggestions'] ?>"><?php echo $order_answers[$key]['suggestions'] ?></option>
+                        <?php } else { ?>
+                        	<?php if(trim($order_answers[$question['question']]['suggestions']) != "") { ?>
+                            <option selected="selected" value="<?php echo $order_answers[$question['question']]['suggestions'] ?>"><?php echo $order_answers[$question['question']]['suggestions'] ?></option>
+                            <?php } else { ?>
+                        	<option value=""></option>
+                            <?php } ?> 
+                        <?php } ?> 
+                        <?php foreach($question['suggestions'] as $answer) { ?>
+                        <option value="<?php echo $answer ?>"><?php echo $answer ?></option>
+                        <?php } ?>                    
+                    </select>                    
+				<?php } ?>
+            </td>
+            
+            <!--<td>
+            	<?php if($question['response'] == 'text') { ?>                 
+               		<?php if(trim($values[$key]['response']) != "") { ?>       	                
+            		<input type="text" class="selection " name="data[Question][<?php echo $key ?>][response]" id="QuestionAnswers" value="<?php echo $values[$key]['response'] ?>" />     
+                	<?php } else { ?>
+                    <input type="text" class="selection " name="data[Question][<?php echo $key ?>][response]" id="QuestionAnswers" value="<?php echo $order_answers[$key]['response'] ?>" />                  
+                    <?php } ?>                    
+                <?php } else { ?>                	
+                    <select class="selection required" name="data[Question][<?php echo $key ?>][response]" id="QuestionAnswers">                	
+                        <?php if(trim($order_answers[$key]['response']) != "") { ?>
+                        <option selected="selected" value="<?php echo $order_answers[$key]['response'] ?>"><?php echo $order_answers[$key]['response'] ?></option>
+                        <?php } else { ?>
+                        	<?php if(trim($order_answers[$question['question']]['response']) != "") { ?>
+                            <option selected="selected" value="<?php echo $order_answers[$question['question']]['response'] ?>"><?php echo $order_answers[$question['question']]['response'] ?></option>
+                            <?php } else { ?>
+                        	<option value=""></option>
+                            <?php } ?> 
+                        <?php } ?> 
+                        <?php foreach($question['response'] as $answer) { ?>
+                        <option value="<?php echo $answer ?>"><?php echo $answer ?></option>
+                        <?php } ?>                    
+                    </select>                    
+				<?php } ?>
+            </td>
+            <td>
+            	<?php if(trim($order_answers[$question['question']]['local_answer']) != "" && $question['answers'] != 'text') { ?>
+            	<input type="text" name="data[Question][<?php echo $key ?>][local_answer]" id="QuestionLocalAnswer" value="<?php echo $order_answers[$question['question']]['local_answer'] ?>" />
+                <?php } else { ?>
+                <input type="text" name="data[Question][<?php echo $key ?>][local_answer]" id="QuestionLocalAnswer" value="<?php echo $order_answers[$key]['local_answer'] ?>" />
+                <?php } ?> 
+            </td>-->
+            <td class="error_indicator"></td>
+        </tr>
+        <?php } ?>
+    </table>
+    
+    	<div class="next_div">
+        	<!--<input type="submit" class="next_submit" value="Save" />-->
+            <input type="button" class="next_submit" id="test_required" value="Save" />
+        </div>
+    </form>    
+    </div>
+    <?php } ?>
+    <?php } ?>
+	
+    <!--<pre><?php print_r($last_order) ?></pre>-->
+</div>
+
+<div id="calc_dialog">
+<table>
+	<tr>
+    	<td>
+        	<h3>Yearly Cost</h3>
+        	<table>
+            	<tr>
+                	<td colspan="3"><div class="number_display" id="cost">0</div></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="7" class="calc_digits"></td>
+                    <td><input type="button" value="8" class="calc_digits"></td>
+                    <td><input type="button" value="9" class="calc_digits"></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="4" class="calc_digits"></td>
+                    <td><input type="button" value="5" class="calc_digits"></td>
+                    <td><input type="button" value="6" class="calc_digits"></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="1" class="calc_digits"></td>
+                    <td><input type="button" value="2" class="calc_digits"></td>
+                    <td><input type="button" value="3" class="calc_digits"></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="0" class="calc_digits"></td>
+                    <!--<td><input type="button" value="." class="calc_dot"></td>-->
+                    <td colspan="2" class="right"><input type="button" value="clear" class="calc_clear"></td>
+                </tr>
+            </table>
+            <h3>Old Furnace %</h3>
+        	<table>
+            	<tr>
+                	<td><div class="number_display" id="old_eff">0</div></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="60" class="calc_percent"></td>
+                </tr>
+                <tr>
+                    <td><input type="button" value="70" class="calc_percent"></td>
+                </tr>
+                <tr>
+                    <td><input type="button" value="80" class="calc_percent"></td>
+                </tr>
+                                
+            </table>
+        </td>
+        <td style="position:relative">
+        	<div id="old_scale">Old:<span id="old_cost"></span></div>
+            <div id="new1_scale">92:<span id="new1_cost"></span></div>
+            <div id="new2_scale">95:<span id="new2_cost"></span></div>
+        </td>
+    </tr>
+</table>
+</div>
+
+</body>
+</html>

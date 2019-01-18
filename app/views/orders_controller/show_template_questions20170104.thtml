@@ -1,0 +1,192 @@
+<table id="DetailsTable" cellspacing=0 colspacing=0 class="inResultsBooking">
+	<tr>
+        <th>#</th>
+        <th>Questions</th>
+        <th>Responses</th>
+        <th>Suggestions</th>
+        <th>Decisions</th>
+        <th>&nbsp;</th>
+    </tr>
+    <?php if($mode == 0) { ?>
+		<?php $row = ""; $index = 1;?>
+        <?php foreach($questions as $question_id => $question) { ?>
+        <?php $row = $index++%2==0?"even_row":"";?>
+        <?php if($question['type'] == 'dropdown') { ?>
+        <tr>
+            <td class="<?php echo $row ?>"><?php echo $question['rank'] ?></td>
+            <td class="<?php echo $row ?>"><?php echo $question['value'] ?></td>
+            <td class="<?php echo $row ?>">
+            <?php if(count($responses[$question_id]) > 0) { ?>
+            <input type="hidden" class="question_id" value="<?php echo $question_id ?>" />
+            <select class="responses rank<?php echo $question['rank'] ?> required" name="data[Template][<?php echo $question_id ?>][response_id]">
+                <option value="">?</option>
+                <?php foreach($responses[$question_id] as $response_id => $response) { ?>
+                <?php $is_selected = isset($working_answers[$question_id]['response_id'])&&$response_id==$working_answers[$question_id]['response_id']?'selected="selected"':isset($carried_answers[$question_id]['response_id'])&&$response_id==$carried_answers[$question_id]['response_id']?'selected="selected"':'' ?>                
+                <option <?php echo $is_selected ?> value="<?php echo $response_id ?>"><?php echo $response['value'] ?></option>                    
+                <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>
+            </select>
+            <?php }//END if ?>
+            </td>
+            <td class="<?php echo $row ?>">
+            <?php if(count($responses[$question_id]) > 0) { ?>        
+                <?php foreach($responses[$question_id] as $response_id => $response) { ?>
+                
+                <?php if(count($suggestions[$response_id]) > 0) { ?>
+                <input type="hidden" class="response_id" value="<?php echo $response_id ?>" />                    
+                <?php 
+                    if(isset($working_answers[$question_id]['suggestion_id']) && isset($working_answers[$question_id]['response_id']) && $response_id == $working_answers[$question_id]['response_id']) { 
+                        $is_hidden = "";
+                        $is_disabled = "";
+                    } else {
+                        //$is_hidden = "hide";
+                       // $is_disabled = 'disabled="disabled"';
+						if(isset($carried_answers[$question_id]['suggestion_id']) && isset($carried_answers[$question_id]['response_id']) && $response_id == $carried_answers[$question_id]['response_id']) { 
+							$is_hidden = "";
+							$is_disabled = "";
+						} else {
+							$is_hidden = "hide";
+							$is_disabled = 'disabled="disabled"';
+						}
+                    }
+                ?>            
+                <select class="suggestions <?php echo $is_hidden ?> q<?php echo $question_id ?> required" id="r<?php echo $response_id ?>" name="data[Template][<?php echo $question_id ?>][suggestion_id]" <?php echo $is_disabled ?>>
+                    <option value="">?</option>
+                    <?php foreach($suggestions[$response_id] as $suggestion_id => $suggestion) { ?>
+                    <?php $is_selected = isset($working_answers[$question_id]['suggestion_id'])&&$suggestion_id==$working_answers[$question_id]['suggestion_id']?'selected="selected"':isset($carried_answers[$question_id]['suggestion_id'])&&$suggestion_id==$carried_answers[$question_id]['suggestion_id']?'selected="selected"':'' ?>                    
+                    <option <?php echo $is_selected ?> value="<?php echo $suggestion_id ?>"><?php echo $suggestion['value'] ?></option>
+                    <?php }//END foreach($suggestions[$response_id] as $suggestion_id => $suggestion) ?>
+                </select>
+                <?php }//END if ?>
+                    
+                <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>
+            <?php }//END if ?>
+            </td>
+            <td class="<?php echo $row ?>">
+            <?php if(count($responses[$question_id]) > 0) { ?>        
+                <?php foreach($responses[$question_id] as $response_id => $response) { ?>
+                
+                <?php if(count($suggestions[$response_id]) > 0) { ?>            
+                    <?php foreach($suggestions[$response_id] as $suggestion_id => $suggestion) { ?>
+                    
+                    <?php if(count($decisions[$suggestion_id]) > 0) { ?>
+                    <input type="hidden" class="suggestion_id" value="<?php echo $suggestion_id ?>" />
+                    <?php 
+                        if(isset($working_answers[$question_id]['decision_id']) && isset($working_answers[$question_id]['suggestion_id']) && $suggestion_id == $working_answers[$question_id]['suggestion_id']) { 
+                            $is_hidden = "";
+                            $is_disabled = "";
+                        } else {
+                            //$is_hidden = "hide";
+                            //$is_disabled = 'disabled="disabled"';
+							if(isset($carried_answers[$question_id]['decision_id']) && isset($carried_answers[$question_id]['suggestion_id']) && $suggestion_id == $carried_answers[$question_id]['suggestion_id']) { 
+								$is_hidden = "";
+								$is_disabled = "";
+							} else {
+								$is_hidden = "hide";
+								$is_disabled = 'disabled="disabled"';
+							}
+                        }
+                    ?>
+                    <select class="decisions <?php echo $is_hidden ?> q<?php echo $question_id ?> r<?php echo $response_id ?> required" id="s<?php echo $suggestion_id ?>" name="data[Template][<?php echo $question_id ?>][decision_id]" <?php echo $is_disabled ?>>
+                        <option value="">?</option>
+                        <?php foreach($decisions[$suggestion_id] as $decision_id => $decision) { ?>
+                        <?php $is_selected = isset($working_answers[$question_id]['decision_id'])&&$decision_id==$working_answers[$question_id]['decision_id']?'selected="selected"':isset($carried_answers[$question_id]['decision_id'])&&$decision_id==$carried_answers[$question_id]['decision_id']?'selected="selected"':'' ?>
+						
+                        <option <?php echo $is_selected ?> value="<?php echo $decision_id ?>"><?php echo $decision['value'] ?></option>
+                        <?php }//END foreach($decisions[$suggestion_id] as $decision_id => $decision) ?>
+                    </select>	
+                    <?php }//END if ?>                        
+                    
+                    <?php }//END foreach($suggestions[$response_id] as $suggestion_id => $suggestion) ?>
+                <?php }//END if ?>
+                
+                <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>
+            <?php }//END if ?>
+            
+            </td> 
+            <td class="error_indicator <?php echo $row ?>"></td>     
+        </tr>
+        <?php }//END if($question['type'] == 'dropdown') ?>
+        <?php if($question['type'] == 'text') { ?>
+        <tr>
+            <td class="<?php echo $row ?>"><?php echo $question['rank'] ?></td>
+            <td class="<?php echo $row ?>"><?php echo $question['value'] ?></td>
+            <td class="<?php echo $row ?>">
+            <?php if(count($responses[$question_id]) > 0) { ?>
+            <input type="hidden" class="question_id" value="<?php echo $question_id ?>" />                
+            <input type="text" class="text_response rank<?php echo $question['rank'] ?> required" name="data[Template][<?php echo $question_id ?>][response_text]" value="<?php echo isset($working_answers[$question_id]['response_text'])?$working_answers[$question_id]['response_text']:isset($carried_answers[$question_id]['response_text'])?$carried_answers[$question_id]['response_text']:'' ?>" />       
+            <div class="response_codes">
+                <?php foreach($responses[$question_id] as $response_id => $response) { ?>
+                <div class="code">
+                    <input type="hidden" class="rank" value="<?php echo $question['rank'] ?>" />
+                    <input type="hidden" class="id" value="<?php echo $response_id ?>" />                
+                    <input type="hidden" class="operation_id" value="<?php echo $response['operation_id'] ?>" />
+                    <input type="hidden" class="which_id" value="<?php echo $response['which_id'] ?>" />
+                    <input type="hidden" class="value" value="<?php echo $response['value'] ?>" />
+                </div>
+                <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>          
+            </div>
+            <?php }//END if ?>
+            </td>
+            <td class="<?php echo $row ?>">
+            <?php if(count($responses[$question_id]) > 0) { ?>        
+                <?php foreach($responses[$question_id] as $response_id => $response) { ?>
+                
+                <?php if(count($suggestions[$response_id]) > 0) { ?>
+                <input type="hidden" class="response_id" value="<?php echo $response_id ?>" />
+                <select class="suggestions hide q<?php echo $question_id ?> required" id="r<?php echo $response_id ?>" name="data[Template][<?php echo $question_id ?>][suggestion_id]" disabled="disabled">
+                    <option value="">?</option>
+                    <?php foreach($suggestions[$response_id] as $suggestion_id => $suggestion) { ?>
+                    <?php $is_selected = isset($working_answers[$question_id]['suggestion_id'])&&$suggestion_id==$working_answers[$question_id]['suggestion_id']?'selected="selected"':isset($carried_answers[$question_id]['suggestion_id'])&&$suggestion_id==$carried_answers[$question_id]['suggestion_id']?'selected="selected"':'' ?>
+                    
+                    <option <?php echo $is_selected ?> value="<?php echo $suggestion_id ?>"><?php echo $suggestion['value'] ?></option>
+                    <?php }//END foreach($suggestions[$response_id] as $suggestion_id => $suggestion) ?>
+                </select>
+                <?php }//END if ?>
+                    
+                <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>
+            <?php }//END if ?>
+            </td>
+            <td class="<?php echo $row ?>">
+            <?php if(count($responses[$question_id]) > 0) { ?>        
+                <?php foreach($responses[$question_id] as $response_id => $response) { ?>
+                
+                <?php if(count($suggestions[$response_id]) > 0) { ?>            
+                    <?php foreach($suggestions[$response_id] as $suggestion_id => $suggestion) { ?>
+                    
+                    <?php if(count($decisions[$suggestion_id]) > 0) { ?>
+                    <input type="hidden" class="suggestion_id" value="<?php echo $suggestion_id ?>" />
+                    <select class="decisions hide q<?php echo $question_id ?> r<?php echo $response_id ?> required" id="s<?php echo $suggestion_id ?>" name="data[Template][<?php echo $question_id ?>][decision_id]" disabled="disabled">
+                        <option value="">?</option>
+                        <?php foreach($decisions[$suggestion_id] as $decision_id => $decision) { ?>
+                        <?php $is_selected = isset($working_answers[$question_id]['decision_id'])&&$decision_id==$working_answers[$question_id]['decision_id']?'selected="selected"':isset($carried_answers[$question_id]['decision_id'])&&$decision_id==$carried_answers[$question_id]['decision_id']?'selected="selected"':'' ?>
+                        
+                        <option <?php echo $is_selected ?> value="<?php echo $decision_id ?>"><?php echo $decision['value'] ?></option>
+                        <?php }//END foreach($decisions[$suggestion_id] as $decision_id => $decision) ?>
+                    </select>	
+                    <?php }//END if ?>
+                    
+                    <?php }//END foreach($suggestions[$response_id] as $suggestion_id => $suggestion) ?>
+                <?php }//END if ?>                        
+                <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>
+            <?php }//END if ?>                
+            </td>
+            <td class="error_indicator <?php echo $row ?>"></td> 
+        </tr>
+        <?php }//END if($question['type'] == 'text') ?>
+        <?php }//END foreach($questions as $question_id => $question) ?>
+    <?php } else { ?>
+		<?php $row = ""; $index = 1;?>
+        <?php foreach($questions as $question_id => $question) { ?>
+        <?php $row = $index++%2==0?"even_row":"";?>    
+        <tr>
+            <td class="<?php echo $row ?>"><?php echo $question['question_number'] ?></td>
+            <td class="<?php echo $row ?>"><?php echo $question['question_text'] ?></td>
+            <td class="<?php echo $row ?>"><?php echo $question['response_text'] ?></td>
+            <td class="<?php echo $row ?>"><?php echo $question['suggestion_text'] ?>&nbsp;</td>
+            <td class="<?php echo $row ?>"><?php echo $question['decision_text'] ?>&nbsp;</td>
+            <td class="<?php echo $row ?>">&nbsp;</td>
+        </tr>
+        <?php }//END foreach($questions as $question_id => $question) ?>        
+    <?php }//END if(mode == 0) ?>
+</table>
+<pre><?php //print_r($questions) ?></pre>

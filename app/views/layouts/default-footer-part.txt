@@ -1,0 +1,4 @@
+<div class="footer">
+	<div class="footer_placeholder">&nbsp;</div>
+	<div class="footer_grad">&nbsp;</div>
+</div>

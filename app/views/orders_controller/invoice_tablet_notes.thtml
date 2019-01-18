@@ -1,0 +1,8 @@
+<input type="hidden" id="needs_approval" value="<?php echo $needs_approval ?>" />
+<input type="hidden" id="needs_job_approval" value="<?php echo $needs_job_approval ?>" />
+<?php foreach($notes as $note) { ?>
+<tr>
+    <td><strong><?php echo $note['name'] ?>:</strong></td>
+    <td colspan="2"><?php echo $note['message'] ?></td>
+</tr>
+<?php } //END foreach notes ?>

@@ -1,0 +1,101 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1> Inventory Item <small></small> </h1>
+  <ol class="breadcrumb">
+    <li><a href="<?php echo $home_link ?>"><i class="fa fa-home"></i> Home</a></li>
+    <li>Inventory</li>
+    <li class="active">Inventory Item</li>
+  </ol>
+</section>
+
+<!-- Main content -->
+<section class="content">
+  <?php if($message != "") { ?>
+  <div class="alert alert-success alert-dismissable">
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+    <h4>	<i class="icon fa fa-check"></i> Success!</h4>
+    <?php echo $message ?>
+  </div>
+  <?php } ?>
+  <div class="row">
+    <!-- left column -->
+    <div class="col-md-6">
+      <!-- general form elements -->
+      <div class="box box-primary">
+        <div class="box-header">
+          <h3 class="box-title">Item Form</h3>
+        </div><!-- /.box-header -->
+        <!-- form start -->
+        <form role="form" method="post">
+          <div class="box-body">              
+            <div class="form-group">
+              <label for="list_name">Item SKU</label>
+              <input type="text" class="form-control" name="item_sku" id="item_sku" value="<?php echo $item['item_sku'] ?>">
+            </div>          
+            <div class="form-group">
+              <label for="list_name">Item Name</label>
+              <input type="text" class="form-control" name="item_name" id="item_name" value="<?php echo $item['item_name'] ?>">
+            </div>   
+            <div class="form-group">
+              <label for="list_name">Supplier</label>
+              <a class="btn btn-primary btn-edit">Edit</a><a class="btn btn-primary btn-cancel" style="display:none;">Cancel</a>
+              <input type="hidden" class="form-control" name="supplier_id" id="supplier_id" value="<?php echo $item['supplier_id'] ?>">
+            </div>
+            <div class="form-group">
+            	<table id="suppliers">
+                	<?php foreach($suppliers as $supplier) { ?>
+                	<tr class="sup-row" id="supplier_<?php echo $supplier['id'] ?>" style="display:none;">
+                    	<td style="padding-right:10px;"><?php echo $supplier['name'] ?></td>
+                        <td style="padding-right:10px;"><?php echo $supplier['phone'] ?></td>
+                        <td style="padding-right:10px;"><?php echo $supplier['address'] ?></td> 
+                        <td><a class="btn btn-primary btn-select" v="<?php echo $supplier['id'] ?>" style="display:none;">Select</a></td>                       
+                    </tr>
+                    <?php } ?>
+                </table>            
+            </div>
+            <script>
+            $(function(){
+				$("#supplier_<?php echo $item['supplier_id'] ?>").show();
+				$(".btn-select").click(function(){
+					$(".btn-edit").show();
+					$(".btn-cancel").hide();
+					$(".btn-select").hide();
+					$("#supplier_id").val($(this).attr("v"));
+					$(".sup-row").hide();
+					$("#supplier_" + $("#supplier_id").val()).show();
+				});
+				$(".btn-edit").click(function(){
+					$(".btn-edit").hide();
+					$(".btn-cancel").show();
+					$(".btn-select").show();
+					$(".sup-row").show();
+				});
+				$(".btn-cancel").click(function(){
+					$(".btn-edit").show();
+					$(".btn-cancel").hide();
+					$(".btn-select").hide();
+					$(".sup-row").hide();
+					$("#supplier_" + $("#supplier_id").val()).show();
+				});
+			});
+            </script>
+            <div class="form-group">
+              <label for="list_name">Price</label>
+              <input type="text" class="form-control" name="item_price" id="item_price" value="<?php echo $item['item_price'] ?>">
+            </div>
+            <div class="form-group">
+              <label for="list_name">Cost</label>
+              <input type="text" class="form-control" name="item_cost" id="item_cost" value="<?php echo $item['item_cost'] ?>">
+            </div>
+          </div><!-- /.box-body -->
+
+          <div class="box-footer">
+            <button type="submit" class="btn btn-primary" name="btn-save" value="1">Save</button>
+          </div>
+        </form>
+        
+      </div><!-- /.box -->      
+    </div><!-- end col -->
+  </div><!-- end row -->
+</section>
+<!-- /.content --> 

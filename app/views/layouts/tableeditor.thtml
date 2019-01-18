@@ -1,0 +1,40 @@
+<?
+If( $this->params['controller'] != 'login' && $_SESSION['user']['id'] <= 0 && 
+	($this->params['controller'] != 'orders' && $this->params['action'] != 'requestAppointment') ) {  
+	$this->controller->redirect("login");
+}
+
+If( $this->params['url']['logout'] == "1" ) {
+	unset($_SESSION['user']);
+	unset($_SESSION['menuWarehouse']);
+	unset($_SESSION['menuTech']);
+	unset($_SESSION['menuTele']);
+	session_start();
+	$this->controller->redirect("login");
+}
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title><?php echo $title_for_layout?></title>
+<link rel="stylesheet" type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/style.css" />
+<link rel="stylesheet" type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/csshorizontalmenu.css" />
+<script language="JavaScript" type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/calendar.js"></script>
+<script language="JavaScript" type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/csshorizontalmenu.js"></script>
+</head>
+<body>
+<?
+echo '<div class="horizontalcssmenu" style="float:left;"><ul id="cssmenu1">';
+If( $_SESSION['user']['id'] > 0 ) {
+	//if( !method_exists ( 'CommonComponent', 'generateMenu') ) require_once('app/controllers/components/Common.php');
+	echo CommonComponent::generateMenu();
+	//$cc = new CommonHelper();
+	//echo $cc->generateMenu1();
+}
+echo '</ul><br style="clear: left;" /></div>';
+?>
+<br><br>
+<?php echo $content_for_layout ?>
+</body>
+</html>

@@ -1,0 +1,1 @@
+<?php echo $html->selectTag('IvItem/iv_brand_id', $brands, $value) ?>

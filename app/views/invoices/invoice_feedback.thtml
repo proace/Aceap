@@ -1,0 +1,39 @@
+<div class="wrapper">
+<form action="<?php echo BASE_URL ?>/invoices/saveInvoiceFeedback" method="post">
+    <div class="top_nav">
+    <span class="customer_name"><?php echo $order['Customer']['first_name'] ?> <?php echo $order['Customer']['last_name'] ?></span> <span class="order_number"><?php echo $order['Order']['order_number'] ?></span><a href="#">more</a>
+    <?php echo $html->input('Invoice/id', array('type'=>'hidden', 'value'=>$invoice['Invoice']['id'])); ?>
+    <?php echo $html->input('Invoice/order_id', array('type'=>'hidden', 'value'=>$order['Order']['id'])); ?>
+    </div>    
+    <div class="section">
+		<ul>
+			<li><label>Order#:</label><span class="noedit"><?php echo $order['Order']['order_number'] ?></span></li>
+		</ul>             
+	</div> 
+	<div class="section close">
+        <ul>               
+            <li><label>Fname:</label><span class="info"><?php echo $order['Customer']['first_name'] ?></span></li>
+            <li><label>Lname:</label><span class="info"><?php echo $order['Customer']['last_name'] ?></span></li>
+            <li><label>Address:</label><span class="info"><?php echo $order['Customer']['address'] ?></span></li>
+            <li><label>City:</label><span class="info"><?php echo $order['Customer']['city'] ?></span></li>
+            <li><label>Postal:</label><span class="info"><?php echo $order['Customer']['postal_code'] ?></span></li>
+        </ul>
+	</div>    
+    <div class="section">
+    	<h1>Please Rate Us</h1>
+        <ul>
+            <li><label>Service</label><?php echo $html->selectTag('Invoice/feedback_price', $feedbackRatings, $invoice['Invoice']['feedback_service']);?></li>
+            <li><label>Price</label><?php echo $html->selectTag('Invoice/feedback_price', $feedbackRatings, $invoice['Invoice']['feedback_price']);?></li>
+            <li><label>Tech's Knowledge</label><?php echo $html->selectTag('Invoice/feedback_knowledge', $feedbackRatings, $invoice['Invoice']['feedback_knowledge']);?></li>            <li><label>Do you want our office to call you for quality assurance?</label><?php echo $html->selectTag('Invoice/feedback_callback', $yesOrNo, $invoice['Invoice']['feedback_callback']);?></li>
+            <li><label>Notes</label><?php echo $html->input('Invoice/feedback_notes', array('value'=>$invoice['Invoice']['feedback_notes'])); ?></li>
+        </ul>
+    </div>    
+    <div class="bottom_nav">        
+        <div class="right_arrow"><input type="submit" value="next"></div>
+        <div class="left_arrow"><input type="button" id="feedback" value="prev"></div>                        
+    </div>   
+</form>
+<pre>
+<?php //print_r($invoice); ?>
+</pre>
+</div>

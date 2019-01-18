@@ -1,0 +1,111 @@
+<script>
+function ChangeActive(id,elem_chk){
+  if (elem_chk.checked){
+		$.get("<?=BASE_URL;?>/orders/changeActive",
+			{item_id:id,is_active:1},
+			function(data){
+				//document.forms['viewform'].submit();
+			});
+	}
+	else{
+		$.get("<?=BASE_URL;?>/orders/changeActive",
+			{item_id:id,is_active:0},
+			function(data){
+				//document.forms['viewform'].submit();
+			});
+	}
+	elem_chk.closest('tr').remove();
+}
+</script>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform1">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+<table border="0" cellspacing="10" cellpadding="0">
+	<tr>
+		<td class="sectionTitle" colspan="2">Estimates</td>
+	</tr>
+	<tr>
+		<td>Date from: 
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			&nbsp;&nbsp;
+			Date to:
+			&nbsp;&nbsp;
+			<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			&nbsp;&nbsp;
+
+			Show hidden:&nbsp;<input type="checkbox" id="ShowInactive" <?php if ($ShowInactive) echo 'checked';?> name="ShowInactive"/>
+		</td>
+		<td>
+			<input type="submit" name="submit2" value="Update" class="buttons">
+		</td>		
+	</tr>
+	
+	<tr>
+		<td>
+			Booking Source:
+			<select name="booking_source">
+				<option value="">Select Source</option>
+				<? 
+				foreach($booking_sources as $k => $v) {
+					echo '<option value="'.$k.'"'.( $k == $booking_source_id ? ' selected' : '').'>'.$v.'</option>';
+				}
+				?>
+			</select>
+			&nbsp;&nbsp;  
+			Job Type:
+			<select name="job_type">
+				<option value="" >All</option>
+				<? 
+				foreach($job_types as $k => $v) {
+					echo '<option value="'.$k.'"'.( $k === $job_type_id ? ' selected' : '').'>'.$v.'</option>';
+				}
+				?>
+			</select>
+		</td>
+	</tr>
+
+
+	<tr>
+		
+	</tr>
+</table>
+</form>
+<p><b>Number of estimates: <?=count($items)?></b></p>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="900px">
+	<tr>
+		<th style='width:60px;'><a href="javascript:setOrder('order_number');">Ref #</a></th>
+		<th style='width:80px;'><a href="javascript:setOrder('booking_date');">Estimate Date</a></th>
+		<th style='width:80px;'><a href="javascript:setOrder('phone');">Customer Phone</a></th>
+		<th style='width:140px;'><a href="javascript:setOrder('agent_name');">Agent</a></th>
+        <th style='width:140px;'>Customer</th>
+        <th style='width:140px;'>City</th>
+        <th style='width:140px;'>Last Call History</th>
+		<th style='width:120px;'><a href="javascript:setOrder('order_type');">Job Type</a></th>		
+        <th width="10"><a href="javascript:setOrder('flagactive');">Hide</a></th>
+	</tr>
+<?php $r=1;
+	foreach ($items as $obj): 
+		$class = 'cell'.(++$r%2);
+		$timestamp = strtotime($obj['booking_date']);
+		$date = date('d-m-Y', $timestamp);
+		if ($fdetails) $extra = 'style="font-weight:bold;"';
+?>
+    <tr class="<?= $class ?>" style="cursor:pointer;">
+		<td onclick="document.location.href='<?=BASE_URL?>/orders/editBooking?order_id=<?=$obj['id']?>';">&nbsp;<?php echo $obj['order_number']; ?></td>
+		<td>&nbsp;<?php echo $date; ?></td>
+		<td>&nbsp;<?php echo $obj['phone']; ?></td>
+		<td>&nbsp;<?php echo $obj['agent_name']; ?></td>
+        <td>&nbsp;<?php echo $obj['customer_name']; ?></td>
+        <td>&nbsp;<?php echo $obj['city']; ?></td>
+        <td>&nbsp;<?php echo $obj['last_call_history']; ?></td>
+	    <td>&nbsp;<?php echo $obj['order_type']; ?></td>	    
+      	<td><input type="checkbox" <?php if ($obj['flagactive']) echo 'checked'; ?> onclick="ChangeActive(<?=$obj['id']?>,this)"/></td>
+    </tr>
+<?php endforeach; ?>
+</table>
+

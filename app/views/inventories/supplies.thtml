@@ -1,0 +1,191 @@
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+<table width="90%" border="0px" cellspacing="10" cellpadding="0">
+	<tr>
+		<td class="sectionTitle" >Purchased Items</td>
+		<td colspan="7">
+			Date from: &nbsp;&nbsp;
+      <input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			&nbsp;&nbsp;Date to: &nbsp;&nbsp;
+      <input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			&nbsp;&nbsp;
+			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_fdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+		</td>
+  </tr>
+	<tr>
+		<td align="left">
+			<input type="button" name="addnew" value="Purchase" onclick="document.location.href='<?=BASE_URL?>/inventories/editDoc?type=1&rurl=<?=urlencode('supplies?'.$_SERVER['QUERY_STRING'])?>'" />
+		</td>
+		<td colspan="7">
+			Supplier Name: <input type="text" name="search_supplier" style="margin-right:10px;" value="<?php echo $_GET['search_supplier'];?>"/>
+			Invoice #: <input type="text" name="search_invoice_number" value="<?php echo $_GET['search_invoice_number'];?>"/>
+		</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>
+			<?php
+				$checked_invoice_html = '';
+				$checked_refunds_html = '';
+				
+				//Invoice default settings
+				if ($_GET['search_invoice']){
+					if ($_GET['search_invoice'] == 'Invoices'){
+						$checked_invoice_html = 'checked="true"';
+					}
+				}elseif(!$_GET['search']){
+					$checked_invoice_html = 'checked="true"';
+				}
+				
+				//Refund default settings
+				if ($_GET['search_refunds']){
+					if ($_GET['search_refunds'] == 'Refunds'){
+						$checked_refunds_html = 'checked="true"';
+					}
+				}elseif(!$_GET['search']){
+					$checked_refunds_html = 'checked="true"';
+				}
+				
+				//Paid default settings
+				if ($_GET['search_paid']){
+					if ($_GET['search_paid'] == 'Paid'){
+						$checked_paid_html = 'checked="true"';
+					}
+				}elseif(!$_GET['search']){
+					$checked_paid_html = 'checked="true"';
+				}
+			?>
+			<input type ="checkbox" id="search_invoice" name="search_invoice" <?php echo $checked_invoice_html; ?> value="Invoices"/><label for="search_invoice">Invoices</label>
+			<input type ="checkbox" id="search_refunds" name="search_refunds" <?php echo $checked_refunds_html; ?> value="Refunds" style="margin-left:20px;"/><label for="search_refunds">Refunds</label>
+			<br /><input type ="checkbox" id="search_paid" name="search_paid" <?php echo $checked_paid_html; ?> value="Paid" /><label for="search_paid">Paid</label>
+			<input type ="submit" name="search" value="Search" style="margin-left:140px;"/>
+		</td>
+	</tr>
+</table> 	
+</form>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+    <tr>
+        <th width="200">Type</th>
+        <th width="200"><a href="javascript:setOrder('supplier_id');">Supplier</a></th>
+        <th width="200"><a href="javascript:setOrder('name');">Invoice #</a></th>
+        <th width="100"><a href="javascript:setOrder('docdate');">Date</a></th>
+        <th width="80"><a href="javascript:setOrder('qty');">Subtotal</a></th>
+        <th width="80"><a href="javascript:setOrder('qty');">Tax</a></th>
+        <th width="80"><a href="javascript:setOrder('qty');">Total</a></th>
+        <th width="100">Actions</th>
+    </tr>
+    <?php
+	$r=1;
+	$subtotal = 0;
+	$refund_subtotal = 0;
+	foreach ($documents as $obj) {
+		$class = 'cell0';
+		if (strpos($obj['invoice_type'], 'Refund') !== false) {
+			$refund_subtotal += $obj['total_price'];
+			$class = $class." refund";
+		}
+		else {
+			$subtotal += $obj['total_price'];
+		}
+		?>
+		<?php
+			$html_url = 'style="cursor:pointer;" onclick="document.location.href=\'' . BASE_URL .'/inventories/editDoc?invoice_id='.$obj['invoice_id'] .'&doc_id='. $obj['invoice_id'] .'&rurl=' .urlencode('supplies?'.$_SERVER['QUERY_STRING']) .'\'"';
+		?>
+		<tr id="r<?=$r?>" class="<?=$class?>">
+			<td><?php echo $obj['invoice_type']; ?></td>
+			<td <?php echo $html_url; ?> <?php echo $obj['original_invoice_id'] ? 'align="right"' : ''; ?>>&nbsp;<?php echo $obj['original_invoice_id'] ? 'Refund' : $obj['supplier_name']; ?></td>
+			<td <?php echo $html_url; ?>>&nbsp;<?php echo $obj['invoice_number']; ?></td>
+			<td <?php echo $html_url; ?>>&nbsp;<?php echo $obj['date']; ?></td>
+			<td <?php echo $html_url; ?>>&nbsp;<?php echo $obj['original_invoice_id'] ? '- ' : ''; ?>$<?php echo number_format($obj['total_price'], 2, '.', ','); ?></td>
+			<td >$<?php echo number_format($obj['total_price']*.12, 2, '.', ','); ?></td>
+			<td <?php echo $html_url; ?>>&nbsp;<?php echo $obj['original_invoice_id'] ? '- ' : ''; ?>$<?php echo number_format($obj['total_price']*1.12, 2, '.', ','); ?></td>
+			<td>
+				<?php
+				if (strpos($obj['invoice_type'], 'Refund') !== false) {
+					?>
+					&nbsp;
+					<?php
+				}
+				else {
+					?>
+					<input type="button" name="addnew" value="Refund" onclick="document.location.href='<?=BASE_URL?>/inventories/editDoc?invoice_id=<?php echo $obj['invoice_id']; ?>&type=5&rurl=<?php echo urlencode('supplies?'.$_SERVER['QUERY_STRING']); ?>'" />
+					<?php
+				}
+					if ($obj['status_id'] != 5 && $obj['invoice_type'] == 'Invoice'){?>
+						<input type="button" name="paid" value="Paid" onclick="document.location.href='<?=BASE_URL?>/inventories/supplies?id=<?php echo $obj['invoice_id']; ?>&status_id=5'"/>
+					<?php }
+				?>
+			</td>
+	    </tr>
+    <?
+	}
+    $combined = $subtotal - $refund_subtotal; ?>
+	
+	</table>
+	
+	
+	<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px; margin-top:5px;" width="100%">
+		<tr align="right">
+			<th></th>
+			<th>Subtotal</th>
+			<th>Tax</th>
+			<th colspan=2>Total</th>
+		</tr>
+		<tr align="right" class="<?php $class = 'cell'.(++$r%2); echo $class; ?>">
+			<td align="right">Purchases</td>
+			<td >$<?php echo number_format($subtotal, 2, '.', ','); ?></td>
+			<td >$<?php echo number_format($subtotal*.12, 2, '.', ','); ?></td>
+			<td colspan=2>$<?php echo number_format($subtotal*1.12, 2, '.', ','); ?></td>
+		</tr>
+		<tr align="right" class="<?php $class = 'cell'.(++$r%2); echo $class; ?>">
+			<td align="right">Refunds</td>
+			<td >- $<?php echo number_format($refund_subtotal, 2, '.', ','); ?></td>
+			<td >- $<?php echo number_format($refund_subtotal*.12, 2, '.', ','); ?></td>
+			<td colspan=2>- $<?php echo number_format($refund_subtotal*1.12, 2, '.', ','); ?></td>
+		</tr>
+		<tr align="right" class="<?php $class = 'cell'.(++$r%2); echo $class; ?>" style="font-weight:bold;">
+			<td align="right">Total Owing</td>
+			<td >$<?php echo number_format($combined, 2, '.', ','); ?></td>
+			<td >$<?php echo number_format($combined*.12, 2, '.', ','); ?></td>
+			<td colspan=2>$<?php echo number_format($combined*1.12, 2, '.', ','); ?></td>
+		</tr>
+	</table>
+	<?php //do+1 something to trigger an error for testing ?>
+<pre><?php print_r($documents) ?></pre>
+	<script>
+
+	$(function() {
+
+		$("#search_invoice").change(function() {
+	        if($(this).attr("checked"))
+	        {
+	            $('.cell0').not('.refund').show();
+	        }
+	        else
+	        {
+	            $('.cell0').not('.refund').hide();
+	        }
+	    });
+
+		$("#search_refunds").change(function() {
+	        if($(this).attr("checked"))
+	        {
+	            $('.refund').each(function() {
+	            	$(this).show();
+	            });
+	        }
+	        else
+	        {
+	            $('.refund').each(function() {
+	            	$(this).hide();
+	            });
+	        }
+	    });
+    });
+
+</script>

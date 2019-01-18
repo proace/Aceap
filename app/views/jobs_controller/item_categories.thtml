@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Item Categories</title>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript">
+$(function(){
+	$("#check_all1").click(function(){
+		if($(this).is(':checked')) {
+			$('.check_this1').attr('checked','checked');
+		} else {
+			$('.check_this1').removeAttr('checked');
+		}
+	});
+});
+</script>
+</head>
+
+<body>
+<form action="<?php echo BASE_URL ?>/jobs/saveItemCategories" method="post">
+<input type="hidden" name="job_type" value="<?php echo $job_type ?>" />
+<table border="1" width="100%">
+	<tr>    	
+        <th>Name</th>
+        <th>Include?<input type="checkbox" id="check_all1" /></th>        
+    </tr>
+    <?php foreach($categories as $id => $category) { ?>
+    <tr>
+    	<td><?php echo $category['name'] ?></td>       
+        <?php if($category['flag'] == 0) { ?>
+        <td style="text-align:center"><input type="checkbox" class="check_this1" name="data[Approval][<?php echo $id ?>]" value="<?php echo $job_type ?>" /></td>        
+        <?php } else { ?>
+        <td style="text-align:center"><input type="checkbox" class="check_this1" checked="checked" name="data[Approval][<?php echo $id ?>]" value="<?php echo $job_type ?>" /></td>
+        <?php } ?>        
+    </tr>
+    
+    <?php } ?>
+</table>
+<input type="submit" value="Save" />
+</form>
+</body>
+</html>

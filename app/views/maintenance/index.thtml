@@ -1,0 +1,130 @@
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.2.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	$(".edit_button").each(function(){
+		$(this).removeAttr("disabled");
+	});
+		
+	$(".delete_button").click(function(){		
+		var v = $(this).parents(".editrow").find("#MaintenanceName").val();		
+		if(confirm("Are you sure you want to delete " + v + "?")) {			
+			$(this).next("#MaintenanceDelete").val(1);			
+			return true;	
+		} else {
+			return false;	
+		}
+	});
+	
+	$(".edit_button").click(function(){	
+		$(this).parents(".datarow").hide();
+		$(this).parents(".datarow").next(".editrow").show();
+		$(".edit_button").each(function(){
+			$(this).attr("disabled", true);
+		});
+	});
+	
+	$(".cancel_button").click(function(){
+		$(this).parents(".editrow").hide();		
+		$(this).parents(".editrow").prev(".datarow").show();
+		$(".edit_button").each(function(){
+			$(this).removeAttr("disabled");
+		});
+	});
+	
+	$(".datarow:odd").addClass("cell1");
+});
+</script>
+<style>
+.editrow {
+	background-color:#99ffcc;
+	display:none;
+}
+
+tr>:first-child {
+	background-color:#888888;
+	border-style:none;
+}
+
+.results {
+	border:1px solid #cccccc;
+}
+
+</style>
+<div>
+<h1>Maintenance</h1>
+<?php if($message != "") { ?>
+<div style="border:2px solid #bedf5d;font-size:12px;padding:2px;padding-left:10px;background:#e5f2be"><?php echo $message; ?></div>
+<?php } ?>
+<form action="<?php echo BASE_URL ?>/maintenance/save" method="post">
+</form>
+<table class="results cell0" cellspacing="0">
+	<form action="<?php echo BASE_URL ?>/maintenance/save" method="post">
+    <tr class="datarow newrow">
+    	<td colspan="6"><input class="edit_button" type="button" value="Add" style="width:50px" /></td>
+    </tr>
+    <tr class="editrow" style="display:none;">
+    	<td></td>
+		<td><?php echo $html->input('Maintenance/name'); ?></td>
+        <td>
+        	<?php echo $html->input('Maintenance/table'); ?>
+		</td>
+        <td align="center">
+        	<?php echo $html->input('Maintenance/active',array("value"=>1, "type"=>"checkbox", "checked"=>true)); ?>
+        </td>        
+		<td>        
+		<input class="save_button" type="submit" value="Save" style="width:50px" />
+        <input class="cancel_button" type="button" value="Cancel" style="width:50px" />
+		</td>
+	</tr>	
+	<tr>  
+		<th>Id</th>  
+		<th>Name</th>
+		<th>Table</th>
+        <th>Active</th>
+		<th></th>
+	</tr>    
+    </form> 
+	<?php foreach ($maintenance as $main) { ?>
+    <form action="<?php echo BASE_URL ?>/maintenance/save" method="post">  
+	<tr class="datarow">
+		<td align="center">
+			<?php echo $html->input('Maintenance/id',array("value"=>$main['Maintenance']['id'], "type"=>"hidden")); ?>
+			<?php echo $main['Maintenance']['id']; ?>
+		</td>
+		<td><a href="<?php echo BASE_URL ?>/maintenance/grid/<?php echo $main['Maintenance']['id']; ?>"><?php echo $main['Maintenance']['name']; ?></a></td>
+		<td>
+        	<?php echo $html->input('Maintenance/table',array("value"=>$main['Maintenance']['table'], "type"=>"hidden")); ?>
+			<?php echo $main['Maintenance']['table']; ?>
+		</td>
+        <td align="center">
+        	<?php echo $html->input('Maintenance/active',array("value"=>1, "type"=>"checkbox", "checked"=>$main['Maintenance']['active']?true:false, "disabled"=>true)); ?>
+		</td>
+		<td>
+        <input class="edit_button" type="button" value="Edit" style="width:50px" />
+		</td>
+	</tr>
+    <tr class="editrow">
+		<td align="center">
+			<?php echo $html->input('Maintenance/id',array("value"=>$main['Maintenance']['id'], "type"=>"hidden")); ?>
+			<?php echo $main['Maintenance']['id']; ?>
+		</td>
+		<td><?php echo $html->input('Maintenance/name',array("value"=>$main['Maintenance']['name'])); ?></td>
+		<td>
+        	<?php echo $html->input('Maintenance/table',array("value"=>$main['Maintenance']['table'], "type"=>"hidden")); ?>
+			<?php echo $main['Maintenance']['table']; ?>
+		</td>
+        <td align="center">
+        	<?php echo $html->input('Maintenance/active',array("value"=>1, "type"=>"checkbox", "checked"=>$main['Maintenance']['active']?true:false)); ?>
+		</td>
+		<td>        
+		<input class="save_button" type="submit" value="Save" style="width:50px" />
+        <input class="cancel_button" type="button" value="Cancel" style="width:50px" />
+        <input class="delete_button" type="submit" value="X" style="width:20px" />
+        <?php echo $html->input('Maintenance/delete',array("value"=>0, "type"=>"hidden")); ?>
+        
+		</td>
+	</tr>
+    </form>
+	<?php } //end foreach maintenance ?>
+</table>
+</div>

@@ -1,0 +1,10 @@
+<!--name, commission_type_id, commission_item_id, commission_person_type_id-->
+<?php foreach($itemList as $key => $val) { ?>
+<a>
+<input type="hidden" class="name" value="<?php echo $val['name'] ?>" />
+<input type="hidden" class="commission_type_id" value="4" />
+<input type="hidden" class="commission_item_id" value="<?php echo $key ?>" />
+<input type="hidden" class="commission_person_type_id" value="2" />
+<span class="model"><?php echo $val['model'] ?></span><?php echo $val['name'] ?>
+</a>
+<?php } ?>

@@ -1,0 +1,95 @@
+<script>
+function ChangeActive(id,elem_chk){
+  if (elem_chk.checked){
+		$.get("<?=BASE_URL;?>/users/changeActive",
+			{item_id:id,is_active:1},
+			function(data){document.forms['viewform'].submit();});
+	}
+	else
+		$.get("<?=BASE_URL;?>/users/changeActive",
+			{item_id:id,is_active:0},
+			function(data){document.forms['viewform'].submit();});
+}
+
+function addDialerUser(id) {
+	$.get("<?=BASE_URL;?>/users/addDialerUser",
+		{id:id},
+		function(data){
+			if (data!='OK')
+				alert(data);
+			else
+				alert("User saved on the dialer");					
+		}
+	);	
+}
+
+</script>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+	<input type="hidden" name="action" value="view" >
+	<input type="hidden" name="order" value="<?=$_GET['order']?>">
+	<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+	<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+	<table border="0px" cellspacing="10" cellpadding="0">
+		<tr>
+			<td colspan=2 class="sectionTitle">Users</td>
+		</tr>
+		<tr>
+			<td colspan=2>
+				<input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/users/add'" class="buttons" />
+			</td>
+			<td>Role: </td>
+			<td>
+				<?php echo $html->selectTag('role', $Roles4Select, $role, $disable_roles);?>
+			</td>
+			<td>Show Inactive:&nbsp;<input type="checkbox" id="ShowInactive" <?php if ($ShowInactive) echo 'checked';?> name="ShowInactive" onchange="document.forms['viewform'].submit();"/></td>
+			<td align="left">
+				<input type="submit" name="submit2" id="submit2" value="Update" class="buttons">
+			</td>		
+		</tr>
+	</table>
+</form>
+
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
+    <tr>
+    	<th width="80px">Id</th>
+        <th width="80px"><a href="javascript:setOrder('username');">Username</a></th>
+        <th width="100px"><a href="javascript:setOrder('first_name');">First Name</a></th>
+        <th width="100px"><a href="javascript:setOrder('last_name');">Last Name</a></th>
+        <th><a href="javascript:setOrder('address');">Address</a></th>
+        <th width="80px"><a href="javascript:setOrder('city');">City</a></th>
+        <th width="100px"><a href="javascript:setOrder('phone');">Phone</a></th>
+        <th width="80px"><a href="javascript:setOrder('cell_phone');">Cell Phone</a></th>
+        <th width="100px"><a href="javascript:setOrder('email');">Email</a></th>
+        <th width="10px"><a href="javascript:setOrder('flagactive');">Active</a></th>
+        <?php if($role == 3) { ?>
+        <th>VICIDial</th>
+        <?php } ?>
+    </tr>
+	<?php $r=1;
+		foreach ($items as $obj):
+			$class = 'cell'.(++$r%2);
+	?>
+    <tr class="<?=$class?>">
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['id']?></td>
+        <td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['username']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['first_name']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['last_name']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['address']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['city']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['phone']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['cell_phone']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['email']?></td>
+      	<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'><input type="checkbox" <?php if ($obj['is_active']) echo 'checked'; ?> onclick="ChangeActive(<?=$obj['id']?>,this)"/></td>
+        <?php if($role == 3) { ?>
+        <td>
+        	<input type="hidden" class="user_id" value="<?=$obj['id']?>" />
+        	<input type="button" value="Add to dialer" onclick="addDialerUser(<?=$obj['id']?>)" />
+        </td>
+        <?php } ?>
+    </tr>
+    <?php endforeach; ?>
+</table>
+<?php echo $query ?>
+

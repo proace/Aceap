@@ -1,0 +1,22 @@
+<?php foreach($cust as $c) { ?>
+<div class="message">
+	<div class="header"><strong><?php echo $c['User']['first_name']?> <?php echo $c['User']['last_name']?></strong></div> 
+    <div class="footer">
+    	<span title="Landline"><?php echo $c['User']['phone']?></span>
+        <?php if($c['User']['cell_phone'] > 0) { ?>
+        <span title="Mobile"><?php echo $c['User']['cell_phone']?></span>
+        <?php } ?>
+    </div>   
+	<span class="txt"><?php echo $c['User']['address']?> <?php echo $c['User']['city']?></span>
+    <div><?php echo $c['User']['callback_note']?></div>
+    <?php if($c['User']['callback_date'] != '' && $c['User']['callback_date'] != '0000-00-00') { ?>
+    <div class="callback_date">Callback on <?php echo $c['User']['callback_date']?></div>
+    <?php } ?>
+	<div class="actions">    	
+        <a href="<?php echo BASE_URL ?>/orders/editBooking?order_id=<?php echo $c['User']['order_id']?>&customer_id=<?php echo $c['User']['id'] ?>" target="main_view">
+        View Client
+        </a>
+    </div> 
+    <div class="clear_this"></div>
+</div>
+<?php } ?>

@@ -1,0 +1,189 @@
+<script language="JavaScript" type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/meio.js"></script>
+<script>
+function openEdit(rowid){
+	$("#edit"+rowid).show();
+	$("#show"+rowid).hide();
+}
+function closeEdit(rowid){
+	$("#show"+rowid).show();
+	$("#edit"+rowid).hide();
+}
+function saveRow(rowid){
+	var params = {
+		rowid:rowid,
+		userid:'<?=$userid?>',
+		date:$("#date"+rowid).val(),
+		time_in:$("#time_in"+rowid).val(),
+		time_out:$("#time_out"+rowid).val(),
+		breaks:$("#breaks"+rowid).val(),
+		addition:$("#addition"+rowid).val(),
+		deduction:$("#deduction"+rowid).val(),
+		note:$("#note"+rowid).val(),
+		userid2:$("#userid2_"+rowid).val()
+	};
+	$.post("<?=BASE_URL;?>/payrolls/saveTransaction",params,
+		   function(data){document.titleform.submit();});
+}
+function deleteRow(rowid){
+	$.post("<?=BASE_URL;?>/payrolls/deleteTransaction",{rowid:rowid},
+		   function(data){document.titleform.submit();});
+}
+(function($){
+$(function(){
+$('input:text').setMask();
+}
+);
+})(jQuery);
+</script>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="titleform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="paginationList1" value="<?=$_GET['paginationList1']?>">
+
+<!-- TABLE :: FILTER -->
+<!-- *************** -->
+<table width="800">
+	<tr>
+		<td class="sectionTitle" colspan=3>Time Sheet</td>		
+	</tr>
+	<tr>
+		<td>
+			Pay period:&nbsp;
+			<select name="pay_period" onchange="document.titleform.submit();">
+				<option value="-1" <?=($pay_period<0?'selected':'')?>>-=Custom=-</option>
+			<?php foreach ($allPayPeriods as $v => $k) {
+				$selected = '';
+				if ($v == $pay_period) $selected = 'selected';?>
+				<option value="<?=$v?>" <?=$selected?>><?=$k?></option>
+			<?php } ?>
+			</select>
+		</td>
+		<td colspan=2>
+			Employee:&nbsp;			
+			<select name="userid" onchange="document.titleform.submit();">
+				<option value="-1" <?=(!$userid?'selected':'')?>>All Employees</option>
+			<?php foreach ($allUsers as $v => $k) {
+				$selected = '';
+				if ($v == $userid) $selected = 'selected';?>
+				<option value="<?=$v?>" <?=$selected?>><?=$k?></option>
+			<?php } ?>
+			
+			</select>
+		</td>
+		<td align="left">
+			<input type="submit" name="submit2" id="submit2" value="Update" class="buttons">
+		</td>			
+	</tr>
+	<tr>
+		<td style="<?=$disabled?>" colspan=2>Date from: 
+			&nbsp;&nbsp;
+			<input type="button" value="&lt;&lt;" class="buttons" onclick="document.titleform.ffromdate.value='<?=$prev_fdate?>'; document.titleform.ftodate.value='<?=$prev_fdate?>'; document.titleform.submit();" style="font-size: 8pt;">
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			&nbsp;&nbsp;Date to:&nbsp;&nbsp;
+			<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			&nbsp;&nbsp;
+			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.titleform.ffromdate.value='<?=$next_tdate?>'; document.titleform.ftodate.value='<?=$next_tdate?>'; document.titleform.submit();" style="font-size: 8pt;">
+		</td>
+	</tr>
+	<tr>
+		<td align="left">
+			<input type="button" onclick="openEdit(0);" value="Add Record" >
+		</td>			
+	</tr>
+</table> 	
+</form>
+
+<!-- TABLE :: RESULT -->
+<!-- *************** -->
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
+<tr>
+	<th rowspan=2 width="85">Date</th>
+	<th rowspan=2 width="100">First</th>
+    <th rowspan=2 width="100">Last</th>
+    <th rowspan=2 width="100">Day</th>
+	<th rowspan=2 width="70">Sign In</th>
+	<th rowspan=2 width="70">Sign Out</th>
+	<th rowspan=2 width="70">Gross Hrs</th>
+	<th rowspan=2 width="70">Breaks</th>
+	<th colspan=2>Adjustment</th>
+	<th rowspan=2 width="70">Net Hours</th>
+	<th rowspan=2 width="400">Note for Adjustment</th>
+	<th rowspan=2 width="100">Actions</th>
+</tr>
+<tr>
+	<th width="70">Add</th>
+	<th width="70">Deduct</th>
+</tr>
+<tr style="display:none;" id="edit0">
+	<td><input style="width: 85px; cursor: pointer;" readonly="1" type="text" id="date0" value="<?=date("d M Y")?>" onclick="scwShow(this,event);return false;"/></td>
+	<td colspan="2">
+    <select name="userid2_0">				
+			<?php foreach ($allUsers as $v => $k) {
+				$selected = '';
+				if ($v == $userid) $selected = 'selected';?>
+				<option value="<?=$v?>" <?=$selected?>><?=$k?></option>
+			<?php } ?>
+			
+			</select>
+    
+    </td>    
+    <td>&nbsp;</td>
+	<td><input style="width:100%" type="text" alt="time" id="time_in0" value="00:00"/></td>
+	<td><input style="width:100%" type="text" alt="time" id="time_out0" value="00:00"/></td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
+	<td><input style="width:100%" type="text" alt="time" id="additin0" value="00:00"/></td>
+	<td><input style="width:100%" type="text" alt="time" id="deduction0" value="00:00"/></td>
+	<td>&nbsp;</td>
+	<td><textarea style="width:100%" id="note0"> </textarea></td>
+	<td>
+		<a href="#" onclick="saveRow('0');return false;">[save]</a>
+		<a href="#" onclick="deleteRow('0');return false;">[cancel]</a>
+	</td>
+</tr>
+<?php $r=1;
+foreach ($items as $obj): 
+	$class = 'cell'.(++$r%2);
+?>
+<tr class="<?= $class ?>" id="show<?=$obj['id']?>">
+	<td><?=$obj['date']?>&nbsp;</td>
+    <td align="center"><?=$obj["first_name"]?>&nbsp;</td>
+	<td align="center"><?=$obj["last_name"]?>&nbsp;</td>
+	<td><?=date("l",strtotime($obj["date"]))?>&nbsp;</td>
+	<td align="center"><?=$obj["time_in"]?>&nbsp;</td>
+	<td align="center"><?=$obj["time_out"]?>&nbsp;</td>
+	<td align="center"><?=$obj["gross"]?>&nbsp;</td>
+	<td align="center"><?=$obj["breaks"]?>&nbsp;</td>
+	<td align="center"><?=$obj["addition"]?>&nbsp;</td>
+	<td align="center"><?=$obj["deduction"]?>&nbsp;</td>
+	<td align="center"><?=$obj["net"]?>&nbsp;</td>
+	<td><?=$obj["note"]?>&nbsp;</td>
+	<td>
+		<a href="#" onclick="openEdit('<?=$obj['id']?>'); return false;">[edit]</a>
+		<a href="#" onclick="deleteRow('<?=$obj['id']?>');return false;">[delete]</a>
+	</td>
+</tr>
+<tr style="display:none;" class="<?= $class ?>" id="edit<?=$obj['id']?>">
+	<input type="hidden" id="userid2_<?=$obj['id']?>" /> 
+	<td><input style="width: 85px; cursor: pointer;" readonly="1" type="text" id="date<?=$obj['id']?>" value="<?=$obj['date']?>" onclick="scwShow(this,event);return false;"/></td>
+    <td align="center"><?=$obj["first_name"]?>&nbsp;</td>
+	<td align="center"><?=$obj["last_name"]?>&nbsp;</td>
+	<td><?=date("l",strtotime($obj["date"]))?></td>
+	<td><input style="width:100%" type="text" alt="time" id="time_in<?=$obj['id']?>" value="<?=$obj["time_in"]?>"/></td>
+	<td><input style="width:100%" type="text" alt="time" id="time_out<?=$obj['id']?>" value="<?=$obj["time_out"]?>"/></td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
+	<td><input style="width:100%" type="text" alt="time" id="addition<?=$obj['id']?>" value="<?=$obj["addition"]?>"/></td>
+	<td><input style="width:100%" type="text" alt="time" id="deduction<?=$obj['id']?>" value="<?=$obj["deduction"]?>"/></td>
+	<td>&nbsp;</td>
+	<td><textarea style="width:100%" id="note<?=$obj['id']?>"><?=$obj["note"]?></textarea></td>
+	<td>
+		<a href="#" onclick="saveRow('<?=$obj['id']?>');return false;">[save]</a>
+		<a href="#" onclick="closeEdit('<?=$obj['id']?>');return false;">[cancel]</a>
+	</td>
+</tr>
+<?php endforeach; ?>
+</table>

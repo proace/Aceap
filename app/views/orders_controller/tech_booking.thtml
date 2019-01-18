@@ -1,0 +1,1391 @@
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/edit_help.js"></script>
+<script>
+//*** SET PAGE TITLE ***
+document.title += " :: Edit Booking";
+//**********************
+</script>
+
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.quicksearch.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/store_tree.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+
+<script language="JavaScript">
+var PrevState = <?=$this->data['Order']['order_status_id']?>;
+var CurState = <?=$this->data['Order']['order_status_id']?>;
+var CheckPrcCount=0;
+var item_type=0;
+var items_opend=-1;
+var total;
+var balance=0;
+var job_category='<?=$this->data['Type']['category_id']?>';
+
+
+function OpenJobsHistory(){
+$("#JobHistoryWorking").show();
+$.get("<?=BASE_URL;?>/orders/showCustomerJobs",
+			{customer_id:$('#CustomerId').val(),
+			 order_id:'<?=$html->tagValue("Order/id")?>',
+			 phone:'<?=$html->tagValue("Customer/phone")?>'},
+			function(data){
+        $("#JobHistory").html(data);
+				$('#JobHistory').show();
+				$('#OpenHistoryText').hide();
+				$('#CloseHistoryText').show();
+				$("#JobHistoryWorking").hide();
+			});
+}
+function CloseJobsHistory(){
+  $('#JobHistory').hide();
+  $('#OpenHistoryText').show();
+  $('#CloseHistoryText').hide();
+}
+function ShowAN(el){
+  if (($(el).val()>2)&&($(el).val()<6))	$("#auth_number").parent().show();
+	else $("#auth_number").parent().hide();
+}
+function JobTypeChange(){
+  jt=$('#OrderOrderTypeId').val();
+  if ((jt==9)||(jt==10))
+    $("#PreviousSection").show();
+  else
+    $("#PreviousSection").hide();
+  $.get("<?=BASE_URL;?>/jobs/getCategory", {job_type:jt}, function(data){job_category=data;OpenQuestions(0);})
+}
+function OpenQuestions(tt){
+	
+  jt=$('#OrderOrderTypeId').val();
+  if(jt) {
+  $('#QuestionsWorking'+tt).show();
+	//$.get("<?=BASE_URL;?>/orders/showQuestions",
+	<?php if($use_template_questions == 1) { ?>
+	$.get("<?=BASE_URL;?>/orders/showTemplateQuestions",
+	<?php } else { ?>	
+	$.get("<?=BASE_URL;?>/orders/showTabletQuestions",
+	<?php } ?>
+	      {order_id:'<?=$html->tagValue("Order/id")?>',job_type:jt,question_type:tt,customer_id:document.getElementById('CustomerId').value}, 
+		function(data){
+			$('#OpenQuestionsText').hide();
+			$('#CloseQuestionsText').show();
+			$('#JobDetails'+tt).html(data);
+			$('#JobDetails'+tt).show();
+			last_jt=jt;
+			$('#QuestionsWorking'+tt).hide();
+			checkText();
+		});
+  } else {
+		alert("Put job type first");  
+  }
+}
+function CloseQuestions(){
+  $('#JobDetails0').hide();
+  $('#JobDetails1').hide();
+  $('#OpenQuestionsText').show();
+  $('#CloseQuestionsText').hide();
+}
+function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, part_number){
+	$("#item_selector0").html("").hide();
+	$("#item_selector1").html("").hide();
+				var index=1*document.getElementById("NumberOfItems").value;
+			if (new_type==0) tbl = document.getElementById("CurrentItemsTable");
+			else  tbl = document.getElementById("CurrentItemsTableTech");
+					var lastRow = tbl.rows.length-1;
+					var row = tbl.insertRow(lastRow);
+					if (new_type==0) row.setAttribute("class", "booked");
+					else row.setAttribute("class", "extra");
+					row.setAttribute("id", "order_"+index);
+				bodyContent = $.ajax({
+							url: "<?=BASE_URL?>/orders/newItemHTML",
+							type: "GET",
+					data: ({index:index,
+							actions:true,
+							item_id:item_id,
+							name:item_name,
+							price:item_prc,
+							quantity:1,
+							category:new_category,
+							price_purchase:new_pp,
+							part_number:part_number,
+							item_class:new_type}),
+							dataType: "html",
+							async:false}).responseText;
+			$("#order_"+index).html(bodyContent);
+			index++;
+			document.getElementById("NumberOfItems").value=index;
+			TotalCalculation();
+}
+function removeItem(item_id){
+		document.getElementById("data[Order][BookingItem]["+item_id+"][quantity]").value="0";
+		$("#order_"+item_id).remove();
+		var index=1*document.getElementById("NumberOfItems").value;
+    document.getElementById("NumberOfItems").value=index-1;
+		TotalCalculation();
+}
+function showPayments(){
+  var id = $('#OrderId').val();
+	$.get("<?=BASE_URL;?>/payments/techPaymentsForJob",
+	      {order_id:id}, 
+		function(data){
+			$('#PaymentsDetails').html(data);
+		});
+}
+function SavePayment(){
+  var id = $('#OrderId').val();
+	var method = $("#method").val();
+	var amount = $("#amount").val();
+	var auth_number = $("#auth_number").val();
+	if (!method) {alert('A payment method should be selected!'); return;}
+	if ((method>2)&&(method<6)&&(!auth_number)) {alert('An authorization number is required!'); return;}
+ $.post("<?=BASE_URL;?>/payments/savePayment",
+				{order_id:id, method:method, amount:amount, payment_type:1, auth_number:auth_number},function(data){
+    $('#cancel_payment_link').click();
+		showPayments();
+  });
+}
+function ErasePayment(payment_id){
+  $.post("<?=BASE_URL;?>/payments/deletePayment",{payment_id:payment_id},function(data){
+    showPayments();
+  });
+}
+//*****************************
+//Added by Metodi : 2010-01-16
+//*****************************
+function ValidateFields(jobstatus)
+{       
+	var submitForm = true;
+	var errorMsg = "";
+	// 1. Check customer
+	var cust = $('#CustomerId').val();
+	if(jobstatus) document.getElementById('OrderOrderStatusId').value = jobstatus;
+	//alert(document.getElementById('OrderOrderStatusId').value);
+  if (0+cust<=0){
+    alert("Please, select a customer first!");
+		return;
+  }
+	// 2. Check payment method
+	var aaa = $('#OrderCustomerPaymentMethodId').val();
+  if (0+aaa<=0){
+    alert("Please, select a payment method!");
+		return;
+  }
+	var aaa = $('#OrderCustomerPaidAmount').val();
+  if (aaa==''){
+    alert("Please, enter a paid amount!");
+		return;
+  }
+	// 3. Check the job status
+<?php if (($common->getLoggedUserID()!=$this->data['Order']['booking_source_id'])
+				&&($common->getLoggedUserID()!=$this->data['Order']['booking_source2_id'])) { ?>
+	var aaa = $('#radiostatus:checked').val();
+  if (aaa==1){
+    alert("This job should be either DONE or CANCELED!");
+		return;
+  }
+	if (aaa==5){
+    var bbb = $('#OrderFactJobBegHour').val();
+    if (bbb==0){
+      alert("Please, fill out the `TIME IN` field first!");
+		  return;
+		}
+    var bbb = $('#OrderFactJobEndHour').val();
+    if (bbb==0){
+      alert("Please, fill out the `TIME OUT` field first!");
+		  return;
+		}
+		var bbb = $('#total_paid').val();
+    if (1*bbb<balance){
+      alert("Total paid amount must match the invoice total!");
+		  return;
+		}
+  }
+<?php }?>
+	// 4. Check questions
+	/*if(document.getElementById('DetailsTable')) {
+		NumOfItems=(document.getElementById('DetailsTable').rows.length-1)/2;
+		for(j=0; j<NumOfItems; j++)
+		{
+					aaa = document.getElementById('data[Order][OrdersQuestions]['+(1*j)+'][answers]').value;
+					
+					if (aaa=="") {
+					  submitForm = false;
+					errorMsg += "Please, answer ALL the questions before saving.\n";
+					  break;
+					}
+		}
+	}*/
+
+		// question validation for text type
+	$(".text_response").each(function(){
+		if($(this).val() == ''){
+			submitForm = false;
+			var respons = $(this).parent().prev().html();
+			errorMsg += "Please enter a Response text for this Questions\n"+respons+"\n";
+		}
+	});
+	
+	// question validation for drop down
+	$(".responses").each(function(){
+		if($(this).children("option:selected").val() == ''){
+			submitForm = false;
+			var respons = $(this).parent().prev().html();
+			errorMsg += "Please enter a Response text for this Questions\n"+respons+"\n";
+		}
+	});
+	
+	// 5. Check prices
+		var index=1*document.getElementById("NumberOfItems").value;
+
+	  if (index==0){
+					submitForm = false;
+					errorMsg += "Please add at least one item.\n";
+	  }
+	  
+	  var aa2 = $('#OrderJobTruck').val();
+  if (aa2 == ''){
+    alert("Please select a truck");
+		return;
+  }
+  	var is_installed = true;
+  	$('.is_installed').each(function(){
+		if($(this).val() == 0) {
+			is_installed = false;
+			return;
+		}		
+	});
+	
+	if(!is_installed) {
+		alert("Please indicate if the part was installed/not installed");
+		return;
+	}
+	
+	/*if($("#OrderTelemRating").val() == "" || $("#OrderOfficeRating").val() == "") {
+		alert("Please give a rating.\nBooking Rating: Rate the Source 1 of your job.\nOffice Rating: Rate the Admin who handled your job.");
+		return;	
+	}
+	
+	if($("#OrderTelemComment").val() == "" && $("#OrderTelemRating").val() == 1) {
+		alert("Please write a reason for the bad rating");
+		return;	
+	}
+	
+	if($("#OrderOfficeComment").val() == "" && $("#OrderOfficeRating").val() == 1) {
+		alert("Please write a reason for the bad rating");
+		return;	
+	}*/
+  
+	//****************
+  if(submitForm){
+		conflictCheck();
+	}
+	else
+	{
+		alert(errorMsg);
+	}
+}
+function conflictCheck()
+{  
+	var selectObj = document.getElementById('CustomerCity');
+	var customerCity = selectObj.innerHTML;
+	     
+	$.get("<?=BASE_URL;?>/orders/conflictCheck",
+		{jobstatus:document.getElementById('OrderOrderStatusId').value,
+		 customer_city:customerCity,
+		 job_date:$('#OrderJobDate').val(),
+		 job_truck:$('#OrderJobTruck').val(),
+		 job_from:$('#OrderJobTimeBegHour').val(),
+		 job_to:$('#OrderJobTimeEndHour').val(),
+		 order_id:'<?=$html->tagValue("Order/id")?>'
+		}, function(data){
+				if (data=='OK')
+				{
+								document.forms['editBookingform'].submit();
+				}
+				else
+								alert(data);
+	});
+}
+function TotalCalculation()
+{
+    subtotal = 0;
+    CheckPrcCount = 0;
+		$('#CurrentItemsTable').children('tbody').children('tr').each(function(i, el) {
+			qty = $(el).children('.quantity').children('input').val();
+			if (qty!=null){
+				prc = $(el).children('.price').children('input').val();
+				disc = $(el).children('.discount').children('input').val();
+				add = $(el).children('.addition').children('input').val();
+				if (prc=="") prc=0;
+				if (disc=="") disc=0;
+				if (add=="") add=0;
+				amount = parseFloat(prc) * qty - (1*disc) + (1*add);
+				subtotal += amount;
+				$(el).children('.amount').html('$'+amount);
+			}
+    });
+<?php
+if (($common->getLoggedUserID()==$this->data['Order']['job_technician1_id'])
+||($common->getLoggedUserID()==$this->data['Order']['job_technician2_id'])) { 
+?>
+		$('#CurrentItemsTableTech').children('tbody').children('tr').each(function(i, el) {
+			qty = $(el).children('.quantity').children('input').val();
+			if (qty!=null){
+				prc = $(el).children('.price').children('input').val();
+				disc = $(el).children('.discount').children('input').val();
+				add = $(el).children('.addition').children('input').val();
+				if (prc=="") prc=0;
+				if (disc=="") disc=0;
+				if (add=="") add=0;
+				amount = parseFloat(prc) * qty - (1*disc) + (1*add);
+				subtotal += amount;
+				$(el).children('.amount').html('$'+amount);
+			}
+    });
+<? } ?>
+    hst = 0;
+    if (subtotal>0) hst = subtotal*0.12;
+ 	  total = subtotal+hst;
+		total = total.toFixed(2);
+		
+    h = '<table class="total" cellspacing=0>';
+		h += '<tr><td align=right style="border-right:none;">Subtotal:</td><td align=right>'+subtotal.toFixed(2)+'</td></tr>';
+    h += '<tr><td align=right style="border-right:none;">HST:</td><td align=right>'+hst.toFixed(2)+'</td></tr>';
+		h += '<tr><td align=right style="border-right:none;">Total:</td><td align=right>'+total+'</td></tr>';
+		balance = total;
+
+    if (job_category==2){
+		if ($("#OrderCustomerDeposit").size()>0) deposit = $("#OrderCustomerDeposit").val();
+		else deposit="<?=$this->data['Order']['customer_deposit']?>";
+		balance = total-deposit;
+    h += '<tr><td align=right style="border-right:none;">Deposit:</td><td align=right>'
+		    + '<input name="data[Order][customer_deposit]" id="OrderCustomerDeposit" style="width: 45px;" value="'+deposit+'" onchange="TotalCalculation()"/></td></tr>';
+    if (deposit)
+  	  h += '<tr><td align=right style="border-right:none;">Balance:</td><td align=right>'+balance.toFixed(2)+'</td></tr>';
+		}
+
+		h += '</table>';
+  	$("#CurrentItemsTotal").html(h);
+}
+function StatusChange(element)
+{
+  CurState=element.value;
+	if (element.value==3) document.getElementById('divReason').style.display='block';
+	else document.getElementById('divReason').style.display='none';
+	if (PrevState==3)
+	{
+		if (PrevState!=element.value) document.getElementById('OrderNRebooked').checked=true;
+		else document.getElementById('OrderNRebooked').checked=false;
+	}
+	if ((element.value==5)&&('<?=$this->data['OrderType']['category_id']?>'==2)){
+    $("#PermitsSection").show();
+	}else{
+    $("#PermitsSection").hide();
+	}
+}
+function showAddItems(item_type)
+{
+	$("#item_selector0").html('').hide();
+	$("#item_selector1").html('').hide();
+	jt=$('#OrderOrderTypeId').val();
+	$("#item_selector"+item_type).html('<img src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>').show();
+	$.get("<?=BASE_URL?>/items/showPrices?order_id=<?php echo $_GET['order_id'] ?>&item_type="+item_type+"&job_type="+jt, {}, function(data){
+		$("#item_selector"+item_type).html("<button type='button' style='cursor:pointer;' onclick='$(\"#item_selector"+item_type+"\").html(\"\").hide();'>Close Section</button>"+data);
+	});
+	
+	
+}
+
+
+
+function showClients()
+{
+  var new_item = window.showModalDialog("<?=BASE_URL?>/users/showClients",'', 
+  "dialogWidth:400px; dialogHeight:400px; dialogLeft:200px; dialogTop:100px;");
+$('#OrderCustomerId').val(new_item[0]);
+$('#CustomerId').val(new_item[0]);
+$('#CustomerFirstName').html(new_item[1]);
+$('#CustomerLastName').html(new_item[2]);
+$('#CustomerAddress').html(new_item[3]);
+$('#CustomerCity').html(new_item[4]);
+$('#CustomerPostalCode').html(new_item[7]);
+}
+function showChangePrevious()
+{
+	phone=$('#CustomerPhone').val();
+  var new_item = window.showModalDialog("<?=BASE_URL?>/orders/getPreviousJobs?phone="+phone,'', 
+  "dialogWidth:400px; dialogHeight:400px; dialogLeft:100px; dialogTop:100px;");
+	if (new_item[0]){
+	  $("#OrderJobEstimateId").val(new_item[0]);
+	  $("#OrderBookingSourceId").val(new_item[1]);
+	  $("#OrderBookingSource2Id").val(new_item[2]);
+	  $("#OrderJobEstimateText").html(new_item[3]);
+	}
+}
+function CheckWithSchedule()
+{
+  var job_date = $('#OrderJobDate').val();
+  var new_item = window.showModalDialog("<?=BASE_URL?>/orders/scheduleView?schedule_mode=inside&ffromdate="+job_date,
+				'', "dialogWidth:1000px; dialogHeight:600px; dialogLeft:100px; dialogTop:100px;");
+  $('#OrderJobTruck').val(new_item[0]);
+  $('#OrderJobDate').val(new_item[1]);
+  $('#OrderJobTimeBegHour').val(new_item[2]);
+  $('#OrderJobTimeEndHour').val("");
+  $('#OrderJobTechnician1Id').val(new_item[3]);
+  $('#OrderJobTechnician2Id').val(new_item[4]);
+}
+
+function checkText() {
+	$(".text_response").each(function(){		
+		if($(this).val() == '') return;
+		var question_id = $(this).prev(".question_id").val();
+		var text_response = $(this).val();		
+		var response_id = 0;
+		
+		$(".q" + question_id).addClass("hide");
+		$(".q" + question_id).attr("disabled", "disabled");	
+				
+		
+		$(this).next(".response_codes").children(".code").each(function(){
+			var id = $(this).children(".id").val();
+			var operation_id = $(this).children(".operation_id").val();
+			var which_id = $(this).children(".which_id").val();
+			var value;
+			
+			if(which_id == 1) {
+				value = $(this).children(".value").val();
+			} else if(which_id == 2) {
+				var input = $(".rank" + $(this).children(".value").val());
+				if(input.is("select")) value = input.find('option:selected').text();
+				else value = input.val();
+			}			
+			
+			if(!isNaN(value)) value = parseInt(value);						
+			
+			switch(operation_id){
+				case '1':
+					if(text_response == value) {
+						
+						response_id = id;				
+						return false;
+					}
+				break;	
+				case '2':
+					if(text_response > value){						
+						response_id = id;
+						return false;
+					}
+				break;
+				case '3':
+					if(text_response >= value) {						
+						response_id = id;
+						return false;
+					}
+				break;
+				case '4':
+					if(text_response < value) {	
+										
+						response_id = id;
+						return false;
+					}
+				break;
+				case '5':
+					if(text_response <= value) {	
+											
+						response_id = id;
+						return false;
+					}
+				break;
+				case '6':
+					if(text_response != value) {
+						
+						response_id = id;
+						return false;
+					}
+				break;				
+			}
+			
+			response_id = 0;
+			
+		});
+		
+		$("#r" + response_id).removeClass("hide");
+		$("#r" + response_id).removeAttr("disabled", "disabled");
+	});	
+	
+	$(".suggestions").each(function(){
+		var response_id = $(this).prev(".response_id").val();
+		var suggestion_id = $(this).val();
+		$(".r" + response_id).addClass("hide");
+		$(".r" + response_id).attr("disabled", "disabled");
+		$("#s" + suggestion_id).removeClass("hide");
+		$("#s" + suggestion_id).removeAttr("disabled", "disabled");
+	});
+}
+
+$(document).ready(function(){
+  last_jt='<?=$this->data['Order']['order_type_id']?>';
+  <?php if (!isset($_GET['order_id'])&&isset($_GET['job_truck'])) {?>
+				showClients();
+  <?php }else if ((!isset($_GET['order_id']))&&(!isset($_GET['job_truck']))) {?>
+				OpenJobsHistory();
+  <?php }else{?>
+				TotalCalculation();
+				jt=$('#OrderOrderTypeId').val();
+				if ((jt==9)||(jt==10))
+					$("#PreviousSection").show();
+				else
+					$("#PreviousSection").hide();
+  <?php }?>
+	showPayments();
+	<?php if($this->data['Order']['telem_rating'] != 1) { ?>
+	$("#OrderTelemComment").hide();
+	<?php } ?>
+	<?php if($this->data['Order']['office_rating'] != 1) { ?>
+	$("#OrderOfficeComment").hide();
+	<?php } ?>
+	
+	$("#OrderTelemRating").change(function(){
+		if($(this).val() == 1) {
+			$("#OrderTelemComment").show();	
+		} else {
+			$("#OrderTelemComment").hide();	
+		}
+	});
+	
+	$("#OrderOfficeRating").change(function(){
+		if($(this).val() == 1) {
+			$("#OrderOfficeComment").show();	
+		} else {
+			$("#OrderOfficeComment").hide();	
+		}
+	});
+	
+	//
+	var test_server = "http://69.31.184.162:81/acesys/acetest/acesys-2.0/index.php/";
+	var live_server = "http://69.31.184.162:81/acesys/index.php/";
+	
+	var l = $(location).attr('href');
+
+	//if(l.indexOf("acesys-2.0") != -1) G_URL = test_server;
+	//else G_URL = live_server;
+
+	G_URL = "http://acecare.ca/acesys/index.php/";
+
+  //tree view for the items
+	storeTreeInitialize(); 
+	$('#closeBookedItems').hide();
+	$('#closeTechnicianSales').hide();
+	$('.loading_indicator').hide();	
+	$('#addBookedItems').click(function(){
+		$('#addBookedItemsList').click();	
+	});
+	
+	$('#addBookedItemsTree').click(function(){
+		G_URL = "http://acecare.ca/acesys/index.php/";
+		var url = G_URL + "iv_items/storeTree?mode=0";
+		$('#addBookedItems').hide();
+		$('#book_loading').show();
+		$('#closeBookedItems').hide();
+		$('#closeTechnicianSales').click();
+		$.get(url,
+			{},
+			function(data){
+				$('#book_loading').hide();
+				$('#closeBookedItems').show();
+				$('#item_selector0').show();
+				$('#item_selector1').html('');
+				$('#item_selector1').hide();
+				$('#item_selector0').html(data);
+				$('#tabs').tabs();
+				$(".all_node").click();			
+		});
+	});
+	
+	$('#addBookedItemsList').click(function(){
+		G_URL = "http://acecare.ca/acesys/index.php/";
+		var url = G_URL + "iv_items/storeList?mode=0";
+		
+		$('#addBookedItems').hide();
+		$('#book_loading').show();
+		$('#closeBookedItems').hide();
+		$('#closeTechnicianSales').click();
+		$.get(url,
+			{},
+			function(data){
+				$('#book_loading').hide();
+				$('#closeBookedItems').show();
+				$('#item_selector0').show();
+				$('#item_selector1').html('');
+				$('#item_selector1').hide();
+				$('#item_selector0').html(data);
+				$('#tabs').tabs();
+				$(".all_node").click();			
+		});
+	});
+	
+	$('#closeBookedItems').click(function(){
+		$('#item_selector0').hide();
+		$('#item_selector0').html('');
+		$('#closeBookedItems').hide();
+		$('#addBookedItems').show();
+	});
+	
+	$('#addTechnicianSales').click(function(){
+		$('#addTechnicianSalesList').click();
+	});
+	
+	$('#addTechnicianSalesTree').click(function(){
+		var url = G_URL + "iv_items/storeTree?mode=1";
+		$('#addTechnicianSales').hide();
+		$('#tech_loading').show();
+		$('#closeTechnicianSales').hide();
+		$('#closeBookedItems').click();
+		$.get(url,
+			{},
+			function(data){
+				$('#tech_loading').hide();
+				$('#closeTechnicianSales').show();
+				$('#item_selector1').show();
+				$('#item_selector0').html('');
+				$('#item_selector0').hide();
+				$('#item_selector1').html(data);
+				$('#tabs').tabs();
+				$('#tabs').tabs('select',7);
+				$(".all_node").click();			
+		});
+	});
+	
+	$('#addTechnicianSalesList').click(function(){
+		var url = G_URL + "iv_items/storeList?mode=1";
+		$('#addTechnicianSales').hide();
+		$('#tech_loading').show();
+		$('#closeTechnicianSales').hide();
+		$('#closeBookedItems').click();
+		$.get(url,
+			{},
+			function(data){
+				$('#tech_loading').hide();
+				$('#closeTechnicianSales').show();
+				$('#item_selector1').show();
+				$('#item_selector0').html('');
+				$('#item_selector0').hide();
+				$('#item_selector1').html(data);
+				$('#tabs').tabs();
+				$('#tabs').tabs('select',7);
+				$(".all_node").click();			
+		});
+	});
+	
+	$('#closeTechnicianSales').click(function(){
+		$('#item_selector1').hide();
+		$('#item_selector1').html('');
+		$('#closeTechnicianSales').hide();
+		$('#addTechnicianSales').show();	
+	});
+	
+	initializeQuestions();
+	
+});
+
+function initializeQuestions() {
+	$(".responses").live("change", function(){
+		var question_id = $(this).prev(".question_id").val();
+		var response_id = $(this).val();
+		$(".q" + question_id).addClass("hide");	
+		$(".q" + question_id).attr("disabled", "disabled");		
+		$("#r" + response_id).removeClass("hide");	
+		$("#r" + response_id).removeAttr("disabled", "disabled");	
+	});
+	
+	$(".suggestions").live("change", function(){
+		var response_id = $(this).prev(".response_id").val();
+		var suggestion_id = $(this).val();
+		$(".r" + response_id).addClass("hide");
+		$(".r" + response_id).attr("disabled", "disabled");
+		$("#s" + suggestion_id).removeClass("hide");
+		$("#s" + suggestion_id).removeAttr("disabled", "disabled");
+	});
+	
+	//--------text response-----------
+	
+	$(".text_response").live("change", function(){
+		
+		var question_id = $(this).prev(".question_id").val();
+		var text_response = $(this).val();		
+		var response_id = 0;
+		
+		$(".q" + question_id).addClass("hide");
+		$(".q" + question_id).attr("disabled", "disabled");	
+				
+		
+		$(this).next(".response_codes").children(".code").each(function(){
+			var id = $(this).children(".id").val();
+			var operation_id = $(this).children(".operation_id").val();
+			var which_id = $(this).children(".which_id").val();
+			var value;
+			
+			if(which_id == 1) {
+				value = $(this).children(".value").val();
+			} else if(which_id == 2) {
+				var input = $(".rank" + $(this).children(".value").val());
+				if(input.is("select")) value = input.find('option:selected').text();
+				else value = input.val();
+			}			
+			
+			if(!isNaN(value)) value = parseInt(value);						
+			
+			switch(operation_id){
+				case '1':
+					if(text_response == value) {
+						
+						response_id = id;				
+						return false;
+					}
+				break;	
+				case '2':
+					if(text_response > value){						
+						response_id = id;
+						return false;
+					}
+				break;
+				case '3':
+					if(text_response >= value) {						
+						response_id = id;
+						return false;
+					}
+				break;
+				case '4':
+					if(text_response < value) {	
+										
+						response_id = id;
+						return false;
+					}
+				break;
+				case '5':
+					if(text_response <= value) {	
+											
+						response_id = id;
+						return false;
+					}
+				break;
+				case '6':
+					if(text_response != value) {
+						
+						response_id = id;
+						return false;
+					}
+				break;				
+			}
+			
+			response_id = 0;
+			
+		});
+		
+		$("#r" + response_id).removeClass("hide");
+		$("#r" + response_id).removeAttr("disabled", "disabled");
+	});		
+}
+
+</script>
+<style>
+#notes_table {
+	border:1px solid #ffffff;
+	border-collapse:collapse;
+	
+}
+
+#previous_notes td {
+	padding:3px;
+}
+
+#previous_notes .odd_row {
+	background-color:#cccccc;	
+}
+
+.urgency_td {
+	width:20px;	
+}
+
+.message_td {
+	width:300px;
+}
+
+.hide {
+	display:none;	
+}
+
+select {
+	width:100px;
+}
+
+input[type=text] {
+	width:100px;	
+}
+
+</style>
+<form name="editBookingform" action="<?=BASE_URL;?>/orders/techBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post">
+<!-- This tag creates our form tag -->
+<input type="hidden" name="havetoprint" id="havetoprint" value="0"/>
+<input type="hidden" id="NumberOfItems" value="<?=$num_items;?>">
+				
+<table id="MainTable" width=90% heigth=90%>
+<tr style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
+<td width=260px style="text-align:left;vertical-align:top">
+    <? if ($this->data['Customer']['id']==0) {?><input type="button" value="Change customer" onclick="showClients()"/><? }?>
+		<div class="frame-wrap">
+        <div class="frame-header-left"></div>
+        <div class="frame-header-title">Customer's information</div>
+        <div class="frame-header-right"></div>
+        <div class="frame-body" style="clear: both;">
+            <?php echo $html->hidden('Customer/id')?>
+            <table>
+                <tr>
+                    <td align="right">First Name:</td>
+                    <td><b id="CustomerFirstName"><?=$this->data['Customer']['first_name']?></b></td>
+                </tr>
+                <tr>
+                    <td align="right">Last Name:</td>
+                    <td><b id="CustomerLastName"><?=$this->data['Customer']['last_name']?></b></td>
+                </tr>
+                <tr>
+                    <td align="right">Address:</td>
+                    <td>
+						<b id="CustomerAddress"><?=$this->data['Customer']['address']?></b>
+						<a href="<?=$HtmlAssist->getOrderGoogleMap($this->data['Customer'])?>" target="_blank"><img src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-globe.png" style="border: 0px; width: 15px; height: 15px; vertical-align: middle;"></a>
+					</td>
+                </tr>
+                <tr>
+                    <td align="right">City:</td>
+                    <td><b id="CustomerCity"><?=$this->data['Customer']['city']?></b>
+                    <?php foreach($cities_with_id as $key => $cid) { ?>
+                        <input type="hidden" id="<?php echo $cid['name'] ?>" value="<?php echo $key ?>" />
+                    <?php } ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">Postal Code:</td>
+                    <td><b id="CustomerPostalCode"><?=$this->data['Customer']['postal_code']?></b></td>
+                </tr>
+				<tr>
+				    <td colspan=2>Common notes:</td>
+				</tr>
+				<tr><td colspan=2>
+					<table class="historytable" width="100%" id="note_table" name="note_table">
+						<tr style="background: #9EE871;height:15px;">
+							<th>Date</th><th>Created By</th>
+						</tr>
+						<tr style="background: #9EE871;height:15px;">
+							<th colspan=2>Note</th>
+						</tr>
+						<tr><td colspan="2" style="background: black; height: 2px;"></td></tr>
+						<?php 
+							$counter = 0;
+							foreach ($customer_notes as $c_note)
+							{
+								$counter++;
+												
+								echo '<tr style="background-color:#F8F7F9;" height="20">';
+								echo "<td><b>".date('d-M-y H:i:s', strtotime($c_note['note_date']))."</b></td>";
+								echo "<td><b>".$c_note['created_by']."</b></td></tr>";
+								echo "<tr style='color:#0000b0;'><td colspan=2>".htmlspecialchars($c_note['note'])."</td>";
+								echo '</tr>';
+								echo "<tr><td colspan='2' style='background: #AAAAAA; height: 2px;'></td></tr>";
+							}
+						?>
+					</table>
+				</td></tr>
+				<tr><td colspan=2>
+					Common note: <br/>
+					<?php echo $html->textarea('txt_customer_note', array('rows' => 3, 'cols' => 35)); ?>
+				</td></tr>
+				<tr><td colspan=2>
+				  <tabale><tr>
+					<td><input type="button" value="Add Note" style="border-color: #72BF44 #72BF44 #72BF44 #72BF44;" onclick="javascript:AddCustomerNote();"/></td>
+					</tr></tabale>
+				</td></tr>
+            </table>
+        </div>
+    </div>
+</td>
+<td style="text-align:left;vertical-align:top">
+	<table id="tabA1" style="display:<?=$page1?>">
+		<tr><td>
+			<table cellspacing=0 cellpadding=0>
+				<tr>
+					<td class="special_section" id="OpenHistoryText" onclick="OpenJobsHistory()">
+						<u style="color:blue">Show history</u>
+						<img id="JobHistoryWorking" style="display:none" src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>
+					</td>
+					<td class="special_section" id="CloseHistoryText" onclick="CloseJobsHistory()" style="display:none">
+						<u style="color:blue">Hide history</u>
+					</td>
+					<td class="special_section" onclick="location.href='./techBooking?customer_id=<?=$this->data['Customer']['id']?>&order_id=0';">
+						<u style="color:blue">New booking</u>
+					</td>
+                    <td class="special_section" onclick="location.href='./techCustomerInterest?customer_id=<?=$this->data['Customer']['id']?>&order_id=0';">
+						<u style="color:blue">Customer Interest</u>
+					</td>
+					<td class="special_section" onclick="CheckWithSchedule()">
+						<u style="color:blue;cursor:pointer">Show Schedule</u>
+					</td>
+                    <td class="special_section" onclick="CheckWithTimeslot()">
+							  <u style="color:blue;cursor:pointer">Timeslots</u>
+				  </td>
+					<td class="special_section" onclick="$('#tabA4').toggle();">
+						<u style="color:blue;cursor:pointer">Feedback</u>
+					</td>
+                    <td class="special_section" onclick="window.open('<?=BASE_URL?>/orders/printView?id=<?=$this->data["Order"]["id"]?>');return false;">
+                    	<u style="color:blue;cursor:pointer">Print</u>
+                    </td>
+                    <!--<td class="special_section" onclick="window.open('<?=BASE_URL?>/orders/sendInvoiceToPrinter?order_id=<?=$this->data["Order"]["id"]?>');return false;">
+                    	<u style="color:blue;cursor:pointer">Print to Truck</u>
+                    </td>-->
+                    <?php if ($_SESSION['user']['role_id'] == 6) {?>
+                    <td class="special_section" onclick="window.open('<?=BASE_URL?>/orders/printBlank?job_type='+$('#OrderOrderTypeId').val());return false;">
+                    	<u style="color:blue;cursor:pointer">Print Blank</u>
+                    </td>
+                    <?php }?>
+                    	<!--<input type="button" value="Print" onclick="window.open('<?=BASE_URL?>/orders/printView?id=<?=$this->data["Order"]["id"]?>');return false;" class="buttons">
+				<?php if ($_SESSION['user']['role_id'] == 6) {?>
+				<input type="button" value="Print blank" onclick="window.open('<?=BASE_URL?>/orders/printBlank?job_type='+$('#OrderOrderTypeId').val());return false;" class="buttons">
+				<?php }?>-->
+                    
+				</tr>
+			</table>
+			<table id="JobHistory" class="special_section" style="display:none;" cellspacing=0 cellpadding=0>
+				<tr>
+				  <td style="clear: both;background:#FFFFEE;"></td>
+				</tr>
+			</table>
+		</td></tr>
+	<?php if (isset($_GET['order_id'])||isset($_GET['job_truck'])) {?>
+	<tr><td>
+    <div id="tabA4" style="display:none"><!-- Feedback -->
+		<div class="frame-wrap">
+			<div class="frame-header-left"></div>
+			<div class="frame-header-title">Feedback</div>
+			<div class="frame-header-right"></div>
+			<div class="frame-body" style="clear: both;width:500px;">
+			  <b>Did our Tech leave a sticker on your furnace or boiler?</b><br/>
+				<? echo ($this->data['Order']['feedback_sticker'] == '1' ? 'Yes' : 'No');?><br/><br/>
+			  <b>Did our Tech give his phone number for emergency?</b><br/>
+				<? echo ($this->data['Order']['feedback_number'] == '1' ? 'Yes' : 'No');?><br/><br/>
+				<b>Quality of our service:</b><br/>
+				<? echo $this->data['Order']['feedback_quality'];?><br/><br/>
+				<b>Notes:</b><br/><? echo $this->data['Order']['feedback_comment'];?>
+			</div><!--frame-body-->
+		</div><!--frame-wrap-->
+    </div>
+    <div class="frame-wrap">
+        <div class="frame-header-left"></div>
+        <div class="frame-header-title"><table width=100%><tr><td width=400px style="font: 12px Verdana">Scheduling</td><td style="text-align:right;font: 12px Verdana;color:#000088">Order # <?php echo $this->data['Order']['order_number'];?></td></tr></table></div>
+        <div class="frame-header-right"></div>
+        <div class="frame-body" style="clear: both;">
+            <?php echo $html->hidden('Order/id')?>
+            <?php echo $html->hidden('Order/customer_id')?>
+            <?php echo $html->hidden('Order/booking_date')?>
+            <table>
+                <tr>
+                    <td align="right">Job Date:</td>
+                    <td>
+                    <?php
+                    // Disables the job date control for telemarketers for the existing jobs
+                    $Enbl=true;
+                    if (($this->data['Order']['id'])&&
+                        (($this->data['Order']['order_status_id']==1)||
+                         ($this->data['Order']['order_status_id']==2)||
+                         ($this->data['Order']['order_status_id']==5)))
+                       $Enbl=false;
+                    if ($Enbl)
+                    {
+                          echo $html->input('Order/job_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;'));
+                          echo $html->tagErrorMsg('Order/job_date','Please enter in a correct date for this job.');
+                    }
+                    else
+                        echo $html->input('Order/job_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onkeydown' => 'return false;'));
+                    ?>
+                    </td>
+                    <td align="right">Schedule:</td>   
+                    <td>
+                    <?php echo $html->hourOptionTag('Order/job_time_beg', null, true); ?>
+                    &nbsp; to &nbsp;
+                    <?php echo $html->hourOptionTag('Order/job_time_end', null, true); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">Job Type:</td>
+                    <td>
+                    <?php 
+					if (($common->getLoggedUserID()!=$this->data['Order']['booking_source_id'])
+					  &&($common->getLoggedUserID()!=$this->data['Order']['booking_source2_id'])) 
+					{
+						echo $html->hidden('Order/order_type_id');
+						echo '<b>'.$job_types[$this->data['Order']['order_type_id']].'</b>';
+					}
+                    else
+						echo $html->selectTag('Order/order_type_id', $job_types, $this->data['Order']['order_type_id'],array("onchange" => "JobTypeChange()"));
+                   ?>
+                    </td>
+                    <td align="right">Truck #:</td>
+                    <td>
+                    <?php echo $html->selectTag('Order/job_truck', $job_trucks, ($this->params['url']['job_truck'] ? $this->params['url']['job_truck'] : $this->data['Order']['job_truck'])); ?>
+                    <?php echo $html->tagErrorMsg('Order/job_truck','Please enter the truck number.'); ?>
+                    </td>
+                </tr>
+                <tr id="PreviousSection" style="display:none">
+                    <td align="right">Previous job:</td>
+                    <td colspan=3>
+						<b id="OrderJobEstimateText"><?=$job_estimate_text;?></b>
+						<input type="hidden" name="data[Order][job_estimate_id]" id="OrderJobEstimateId" value="<?=$this->data['Order']['job_estimate_id'];?>"/>
+						<input type="button" value="Change" onclick="showChangePrevious()"/>
+					</td>
+                </tr>
+				<tr id="OpenQuestionsText" style="cursor:pointer;">
+					<td align=right onclick="OpenQuestions(0)">
+						<img id="QuestionsWorking0" style="display:none" src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>
+						<img src="<?=ROOT_URL?>/app/webroot/img/icon-sm-requested-bookings.png"/>
+					</td>
+					<td onclick="OpenQuestions(0)">Office questions section</td>
+					<?php $ttt = '';
+						if( ($common->getLoggedUserRoleID() == "3" ) || ($common->getLoggedUserRoleID() == "9" )) $ttt = 'display:none';?>
+					<td align=right onclick="OpenQuestions(1)" style="<?=$ttt?>">
+						<img id="QuestionsWorking1" style="display:none" src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>
+						<img src="<?=ROOT_URL?>/app/webroot/img/icon-sm-requested-bookings.png"/>
+					</td>
+					<td onclick="OpenQuestions(1)" style="<?=$ttt?>">Tech questions section</td>
+				</tr>
+				<tr class="special_section" id="CloseQuestionsText" onclick="CloseQuestions()" style="cursor:pointer;display:none">
+					<td align=right><img src="<?=ROOT_URL?>/app/webroot/img/icon-sm-requested-bookings.png"/></td>
+					<td colspan=4>Close questions section</td>
+				</tr>
+				<tr>
+					<td id="JobDetails0" colspan=5 style="cursor:pointer;display:none"><?=CurrentQuestionsTextOffice;?></td>
+				</tr>
+				<tr>
+					<td id="JobDetails1" colspan=5 style="cursor:pointer;display:none"><?=CurrentQuestionsTextTech;?></td>
+				</tr>
+                <tr>
+                    <td align="right">Source 1:</td>
+                    <td>
+                    <?php
+                        echo $html->selectTag('Order/booking_source_id', $booking_sources, $this->data['Order']['booking_source_id'], array('style' => 'display: none;'));
+                        echo '<b>'.$booking_sources[$this->data['Order']['booking_source_id']].'</b>';
+                    ?>
+                    </td>
+                    <td align="right">Tech 1:</td>
+                    <td>
+						<?
+						echo $html->hidden('Order/job_technician1_id');
+						echo '<b>'.$allTechnician[$this->data['Order']['job_technician1_id']].'</b>';
+						?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">Source 2:</td>
+                    <td>
+                    <?php echo $html->selectTag('Order/booking_source2_id', $booking_sources, $this->data['Order']['booking_source2_id']); ?>
+                    </td>
+                    <td align="right">Tech 2:</td>
+                    <td>
+						<?php
+						if ($common->getLoggedUserID() == $this->data['Order']['job_technician1_id']) {
+						  echo $html->selectTag('Order/job_technician2_id',$allTechnician,$technician2_id, array("onchange" => "TechHelpSel(this);"));
+						} else {
+						  echo $html->hidden('Order/job_technician2_id');
+						  echo '<b>'.$allTechnician[$this->data['Order']['job_technician2_id']].'</b>';
+						}?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">Verified by:</td>
+                    <td><?php echo '<b>'.$admins[$this->data['Order']['verified_by_id']].'</b>';?></td>
+                    <td align="right">Time in:</td>
+                    <td>
+                    <?php echo $html->hourOptionTag('Order/fact_job_beg', null, 1); ?>
+					:
+                    <?php echo $html->minuteOptionTag('Order/fact_job_beg', null, 0); ?>
+					</td>
+                </tr>
+                <tr>
+                    <td align="right">Confirmation:</td>
+                    <td>
+						<b><?=$sub_status[$this->data['Order']['order_substatus_id']]?></b>
+						<?php echo $html->hidden('Order/order_substatus_id'); ?>
+					</td>
+                    <td align="right">Time out:</td>
+					<td>
+                    <?php echo $html->hourOptionTag('Order/fact_job_end', null, 1); ?>
+										:
+                    <?php echo $html->minuteOptionTag('Order/fact_job_end', null, 0); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">Job status:</td>
+                    <td colspan=3><strong>
+					<?php  
+					switch ($this->data['Order']['order_status_id']) {
+						case 1:
+							echo "Booked";
+							break;
+						case 2:
+							echo "Rescheduled";
+							break;
+						case 3:
+							echo "Cancelled";
+							break;
+						case 5:
+							echo "Done";
+							break;
+						case 6:
+							echo "Customer Request";
+							break;
+						case 7:
+							echo "Customer Interest";
+							break;
+						default: 
+							echo "Unknown";
+					}					
+					?></strong>
+                    
+                    <input type="hidden" name="data[Order][order_status_id]" id="OrderOrderStatusId" value="<?php echo $this->data['Order']['order_status_id'];?>" />
+                    <!--
+						<input type="radio" id="radiostatus" name="data[Order][order_status_id]" value="1" <?=((!$this->data['Order']) || ($this->data['Order']['order_status_id']==1) ? 'checked' : '');?> onclick="StatusChange(this)">&nbsp;Booked&nbsp;&nbsp;
+						<input id="radiostatus" type="radio" name="data[Order][order_status_id]" value="5" <?=($this->data['Order']['order_status_id']==5 ? 'checked' : '');?> onclick="StatusChange(this)">&nbsp;Done&nbsp;&nbsp;
+						<input type="radio" id="radiostatus" name="data[Order][order_status_id]" value="3" <?=($this->data['Order']['order_status_id']==3 ? 'checked' : '');?> onclick="StatusChange(this)">&nbsp;<span style="color: red;">Cancelled</span>
+						<input type="radio" id="radiostatus" name="data[Order][order_status_id]" value="2" <?=($this->data['Order']['order_status_id']==2 ? 'checked' : '');?> onclick="StatusChange(this)">&nbsp;<span style="color: red;">Rescheduled</span>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan=2>
+                    <?php
+                    if (($this->data['Order']['order_status_id']=="3")||($this->data['Order']['order_status_id']=="4"))
+                          $ShowReason = 'block'; 
+                    else
+                          $ShowReason = 'none'; 
+                    ?>
+						<div id="divReason" style="display:<?=$ShowReason?>">
+							<br/>Reason for cancellation:<br/>
+							<?php echo $html->textarea('Order/sCancelReason', array('style' => 'width: 300px; heigth: 90px')); ?>
+						</div>
+                    </td>
+                </tr>
+                <tr>
+                	<td align="right">Insurable:</td>
+                	<td><?php echo $html->selectTag('Order/insurable',$yesOrNo, $this->data['Order']['insurable']);?>
+                    </td>
+                </tr>
+                <tr>
+                	<td align="right">Door Hanger:</td>
+                	<td><?php echo $this->data['Order']['is_door_hanger']==1?"Yes":"No"; ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan=3 id="CurrentItems" style="vertical-align:top">
+                    	<!--<input type="button" value="Add booked Items" onclick="showAddItems(0)" />-->
+                        <input type="button" value="Add booked Items" id="addBookedItems" />
+                        <div class="loading_indicator" id="book_loading"></div>
+                        <input type="button" value="Close Section" id="closeBookedItems" /> 
+                        <a id="addBookedItemsList" title="View Items in a List"></a>
+                        <a id="addBookedItemsTree" title="View Items in a Tree"></a>
+                        <div class="clear_this"></div>
+						<div id="item_selector0" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
+						<table>
+							<tr><td style="width:450px">
+								<table id="CurrentItemsTable" cellspacing=0 colspacing=0 class="inResultsBooking">
+								<?php if (($common->getLoggedUserID()==$this->data['Order']['booking_source_id'])
+										||($common->getLoggedUserID()==$this->data['Order']['booking_source2_id'])) { ?>
+									<!--<tr onclick="showAddItems(0)" style="cursor:hand;">-->
+                                    <tr>
+										<th align=left>Items<!--<input type="button" value="Add booked items"/>--></th>
+										<th style="width:30px">Qty</th>
+										<th style="width:50px">Price</th>
+										<th style="width:55px;color:red;">Disc</th>
+										<th style="width:55px">Add</th>
+										<th style="width:55px">Prch</th>
+										<th style="width:55px">Sum</th>
+										<th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
+										<th style="width:50px;background:#55bb55;color:white;">Tech add</th>
+										<th style="width:25px">Print</th>
+										<th style="width:25px">&nbsp;</th>
+									</tr>
+														<?php } else { ?>
+									<tr>
+										<th align=left>Booked items</th>
+										<th style="width:30px">Qty</th>
+										<th style="width:50px">Price</th>
+										<th style="width:55px;color:red;">Disc</th>
+										<th style="width:55px">Add</th>
+										<th style="width:55px">Prch</th>
+										<th style="width:55px">Sum</th>
+										<th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
+										<th style="width:50px;background:#55bb55;color:white;">Tech add</th>
+									</tr>
+														<?php }?>
+									<?php echo $booked_items; ?>												
+									<tr>
+										<td id="NewItems" class="newitem" colspan=7 style="display:none"></td>
+									</tr>
+								</table>
+							</td></tr>
+							<tr height=10px><td></td></tr>
+							<?php
+							if (($common->getLoggedUserID()==$this->data['Order']['job_technician1_id'])
+							  ||($common->getLoggedUserID()==$this->data['Order']['job_technician2_id'])) { 
+							?>
+							<tr><td>
+                            	<!--<input type="button" value="Add Technician Sales" onclick="showAddItems(1)" />-->
+                            	<input type="button" value="Add Technician Sales" id="addTechnicianSales" />
+                                <div class="loading_indicator" id="tech_loading"></div>
+                                <input type="button" value="Close Section" id="closeTechnicianSales" />
+                                <a id="addTechnicianSalesList" title="View Items in a List"></a>
+                                <a id="addTechnicianSalesTree" title="View Items in a Tree"></a>
+                                <div class="clear_this"></div>
+								<div id="item_selector1" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
+								<table id="CurrentItemsTableTech" cellspacing=0 colspacing=0 class="inResultsBooking">
+									<!--<tr onclick="showAddItems(1)" style="cursor:hand;background:#ffdddd">-->
+                                    <tr>
+										<th style="background:#ffdddd" align=left>Items</th>
+										<th style="width:30px;background:#ffdddd">Qty</th>
+										<th style="width:50px;background:#ffdddd">Price</th>
+										<th style="width:55px;background:#ffdddd;color:red;">Disc</th>
+										<th style="width:55px;background:#ffdddd">Add</th>
+										<th style="width:55px;background:#ffdddd">Prch</th>
+										<th style="width:55px;background:#ffdddd">Sum</th>
+										<th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
+										<th style="width:50px;background:#55bb55;color:white;">Tech add</th>
+										<th style="width:25px;background:#ffdddd">Print</th>
+										<th style="width:25px;background:#ffdddd">&nbsp;</th>
+									</tr>
+									<?php echo $tech_items; ?>												
+									<tr>
+										<td id="NewItemsTech" class="newitem" colspan=7 style="display:none"></td>
+									</tr>
+								</table>
+							</td></tr>
+							<?php
+							}
+							?>
+                            <tr>
+                            	<td>
+                                <div>
+                                    <strong>Notes:</strong><br />                           
+                                    <table id="notes_table">
+                                        <tbody id="previous_notes">
+                                            <?php foreach($notes as $note) { ?>
+                                            <tr class="<?php echo $note['row_class'] ?>">
+                                                <td class="note_type <?php echo $note['note_type_name'] ?>" title="<?php echo $note['author_name'] ?> <?php echo $note['note_date'] ?>"><?php echo $note['note_type_name'] ?></td>
+                                                <td class="note_urgency <?php echo $note['urgency_name'] ?>"><img src="<?php echo ROOT_URL ?>/app/webroot/img<?php echo $note['urgency_image'] ?>" title="<?php echo $note['urgency_name'] ?>" /></td>
+                                                <td class="note_message"><?php echo $note['message'] ?></td>                                    
+                                            </tr>                                    
+                                            <?php } //END foreach notes ?>
+                                        </tbody>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="2" class="urgency_td">
+                                                <select name="data[Note][urgency_id]"  id="NoteUrgencyId">
+                                                    <option value="1">Update</option>
+                                                    <option value="2">Issue</option>
+                                                    <option value="3">Solution</option>
+                                                </select>
+                                                </td>
+                                                <td class="message_td">                                        	
+                                                    <?php echo $html->textarea('Note/message', array('style' => "width:100%; height: 50px;")); ?>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>                        	
+                                </div>
+                                </td>
+                            </tr>
+							<!--<tr><td><b><u>Office Notes:</u></b><br/><div style="width:400px"><?php echo $this->data['Order']['job_notes_office']; ?></div></td></tr>							
+                            <tr>
+                            	<td colspan=4><b><u>Tech Notes:</u></b><?php echo $this->data['Order']['telemrating'] ?>
+                                	<br/>
+                                    Booking Rating: <?php echo $html->selectTag('Order/telem_rating',$feedbackRatings, $this->data['Order']['telem_rating']);?>
+                                    <?php echo $html->input('Order/telem_comment', array('style' => 'width: 250px;'));?>
+                                    <br/>
+                                    Office Rating: <?php echo $html->selectTag('Order/office_rating',$feedbackRatings, $this->data['Order']['office_rating']);?>
+                                    <?php echo $html->input('Order/office_comment', array('style' => 'width: 250px;'));?>
+                                    <br/>
+									<?php echo $html->textarea('Order/job_notes_technician', array('style' => "width:450px; height: 80px;")); ?>
+								</td>
+							</tr>-->
+						</table>
+                    </td>
+					<td style="vertical-align:top">
+						<table>
+							<tr><td id="CurrentItemsTotal" style="vertical-align:top"></td></tr>
+							<tr>
+								<td>Parts warranty:<br/>
+									<?php echo $html->input('Order/parts_warranty', array('style' => 'width: 85px; cursor: hand; cursor: pointer;'));?>
+								</td>
+							</tr>
+							<tr>
+								<td>Labor warranty:<br/>
+									<?php echo $html->input('Order/labor_warranty', array('style' => 'width: 85px; cursor: hand; cursor: pointer;'));?>
+								</td>
+							</tr>
+						</table>
+						<table id="PaymentsSection" class="special_section" width=100%>
+							<tr><td colspan=2>
+								<a id='add_payment_link' href='#'
+								onclick='$("#addnewform").show();$("#add_payment_link").hide();$("#cancel_payment_link").show();'>
+								Customer paid</a>
+								<a id='cancel_payment_link' href='#' style='display:none'
+								onclick='$("#addnewform").hide();$("#add_payment_link").show();$("#cancel_payment_link").hide();'>
+								Cancel</a>
+								<table id='addnewform' style='display:none'>
+									<tr>
+										<td>
+											<select id="method" onchange='ShowAN(this)'>
+											<?php
+											foreach ($payment_methods as $id => $name)
+												echo "<option value='$id'>$name</option>";
+											?>
+											</select>
+										</td>
+										<td><input style="width:85px" id="amount" value=""/></td>
+										<td style="display:none;">Auth #:<input style="width:85px;" id="auth_number" value=""/></td>
+										<td><input type='button' value='Save' onclick='SavePayment();'/></td>
+									</tr>
+								</table>
+							</td></tr>
+						    <tr><td colspan=2 id='PaymentsDetails'></td></tr>
+					    </table>
+					</td>
+                </tr>
+            </table>
+			<br/>
+			<div style="float: left; text-align: left;">
+				<br/>				
+				<!--<input type="button" value="Print" onclick="window.open('<?=BASE_URL?>/orders/printView?id=<?=$this->data["Order"]["id"]?>');return false;" class="buttons">
+				<?php if ($_SESSION['user']['role_id'] == 6) {?>
+				<input type="button" value="Print blank" onclick="window.open('<?=BASE_URL?>/orders/printBlank?job_type='+$('#OrderOrderTypeId').val());return false;" class="buttons">
+				<?php }?>-->
+				
+                <?php if($this->data['Order']['id'] != 0) {
+					echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(); return false;" ));
+					?>
+                                         	
+                	<input type="button" value="Done" onclick="ValidateFields(5);" class="buttons">
+                	<input type="button" value="Cancelled" onclick="ValidateFields(3);" class="buttons">
+                <?php } else {  
+					echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(); return false;" ));	
+				} ?>
+				&nbsp;&nbsp;&nbsp;<input type="button" value="Exit" onclick="history.go(-1);" class="buttons">
+			</div>
+		</div>
+	</div>
+</td></tr>
+<?php } ?>
+</table>
+</td>
+</tr>
+</table>
+<?php echo "Order ID: ".$this->data['Order']['id']?>
+<?php echo " Customer ID: ".$this->data['Customer']['id']?>
+<? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
+<?php //print_r($this->data['Order']) ?>
+</form>

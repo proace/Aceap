@@ -1,0 +1,50 @@
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<table border="0" cellspacing="10" cellpadding="0">
+	<tr>
+		<td class="sectionTitle" colspan="2">Customer Feedbacks</td>
+	</tr>
+	<tr >
+		<td>Date from: 
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			&nbsp;&nbsp;
+			Date to:
+			&nbsp;&nbsp;
+			<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">				
+		</td>
+		<td>
+			<input type="submit" name="submit2" value="Update" class="buttons">
+		</td>		
+	</tr>
+</table>
+</form>
+<p><b>Number of feedbacks: <?=count($results)?></b></p>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="900px">
+	<tr>
+		<th>Ref #</th>
+		<th>Customer</th>
+        <th>Phone</th>
+        <th>Type</th>
+        <th>Comment Date</th>
+	</tr>
+<?php $r=1;
+	foreach ($results as $obj): 
+		$class = 'cell'.(++$r%2);
+		if ($fdetails) $extra = 'style="font-weight:bold;"';
+?>
+    <tr class="<?= $class ?>">
+		<td>        
+        	<?php if(isset($obj['order_id'])) { ?>
+        	<a href="<?=BASE_URL?>/orders/editBooking?order_id=<?=$obj['order_id']?>"><?php echo $obj['order_number']; ?></a>
+        	<?php } else { ?>
+            <?php echo $obj['order_number']; ?>
+            <?php } ?>
+        </td>
+		<td>&nbsp;<a href="<?=BASE_URL?>/orders/editBooking?customer_id=<?=$obj['customer_id']?>"><?php echo $obj['customer_name']; ?></a></td>
+        <td>&nbsp;<?php echo $obj['customer_phone']; ?></td>
+		<td>&nbsp;<?php echo $obj['rating']==1?"Bad":""; ?><?php echo $obj['rating']==2?"Satisfactory":""; ?><?php echo $obj['rating']==3?"Excellent":""; ?></td>
+		<td>&nbsp;<?php echo $obj['comment_date']; ?></td>      
+    </tr>
+<?php endforeach; ?>
+</table>
+

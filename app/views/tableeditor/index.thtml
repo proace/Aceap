@@ -1,0 +1,89 @@
+<?
+error_reporting(1);
+?>
+<script>
+function setOrder(order){
+  f = document.forms.viewform;
+  f.currentPage.value = '';  
+  if(f.order.value == order){
+    if(f.sort.value == 'ASC')
+      f.sort.value = 'DESC';
+    else
+      f.sort.value = 'ASC';
+  }
+  else{
+    f.order.value = order;
+    f.sort.value = 'ASC';
+  }
+  f.submit();
+}
+function clearFilters(){
+	 f = document.forms.viewform;
+	 f.fserach.value = '';
+	 
+}
+</script>
+
+<form method="GET"  name="viewform">
+<input type="hidden" name="table" value="<?=$this->data['table']?>">
+<input type="hidden" name="order" value="<?=$this->data['order']?>">
+<input type="hidden" name="sort" value="<?=$this->data['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$this->data['currentPage']?>">
+</form>
+
+<?
+	$headdata = $common->getFriendlyName($this->data['table']);
+?>
+	<span class="sectionTitle"><?=$headdata['title']?><? if ($filter_title) print ": ".$filter_title; ?></span><br/>
+	<span><?=$headdata['desc']?></span><br/><br/>
+
+<table class="results" cellpadding="3" cellspacing="0" width="100%">
+<tr>
+<?
+$fielddata = array();
+foreach( $tableFields as $k => $v )
+{
+	if ($k == $filter_fld)
+		continue;
+		
+	$fielddata[$k] = $common->getFriendlyName($this->data['table'], $k);
+	echo '<th><a href="javascript:setOrder(\''.$fielddata[$k]['title'].'\')" title="'.$fielddata[$k]['desc'].'">'.$fielddata[$k]['title'].'</a>'.$this->data['s'.$k].'</th>';
+	//echo '<th><a href="javascript:setOrder(\''.$k.'\')">'.$k.'</a>'.$this->data['s'.$k].'</th>';
+}
+echo '<th>Action</th>';
+?>
+</tr>
+<? 
+$r=1;
+foreach ($tableValues as $k => $v ) {
+	echo '<tr class="'.'cell'.(++$r%2).'">';
+	foreach( $tableFields as $kk => $vv ) {
+		if ($kk == $filter_fld)
+			continue;
+		
+		if( $kk == 'id' ) {
+			echo '<th><a href="tableeditor/addedit?table='.$this->data['table'].'&currentPage='.$this->data['currentPage'].'&sort='.$this->data['sort']."&order=".$this->data['order'].'&id='.$v[$kk].'">'.$v[$kk].'</a>&nbsp;</th>';
+		} else {
+			echo '<td>'.($fielddata[$kk]['format'] ? sprintf($fielddata[$kk]['format'], $v[$kk]) : $v[$kk]).'&nbsp;</td>';
+		}
+	}
+	echo '<td><a href="tableeditor/addedit?table='.$this->data['table'].'&filter_fld='.$filter_fld.'&filter_val='.$filter_val.'&filter_fld2='.$filter_fld2.'&filter_val2='.$filter_val2.'&currentPage='.$this->data['currentPage'].'&sort='.$this->data['sort']."&order=".$this->data['order'].'&id='.$v['id'].'">[edit]</a>&nbsp;';
+	echo '<a href="tableeditor/del?table='.$this->data['table'].'&currentPage='.$this->data['currentPage'].'&sort='.$this->data['sort']."&order=".$this->data['order'].'&id='.$v['id'].($filter_fld ? "&filter_fld=".$filter_fld."&filter_val=".$filter_val : "").($filter_tbl ? "&filter_tbl=".$filter_tbl : "").'" onclick="if (confirm(\'Are you sure you want to delete this record?\')) { return true; } else { return false; }">[delete]</a>&nbsp;</td>';
+	echo '</tr>';
+} 
+?>
+  </form>
+</table>
+<table width="100%">
+<tr>
+<td width="100%" align="center"><?=$pagination?>&nbsp;</td>
+</tr>
+<tr>
+	<td align="right"><input type="button" name="addnew" value="Add new" onclick="document.location.href='tableeditor/addedit?table=<?=$this->data['table'].($filter_fld ? "&filter_fld=".$filter_fld."&filter_val=".$filter_val : "").($filter_fld2 ? "&filter_fld2=".$filter_fld2."&filter_val2=".$filter_val2 : "").($filter_tbl ? "&filter_tbl=".$filter_tbl : "")?>'" class="buttons" /></td>
+</tr>
+</table>
+<br/><br/>
+<br/><br/>
+<?
+//pr($this->data);
+?>

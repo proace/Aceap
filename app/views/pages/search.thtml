@@ -1,0 +1,367 @@
+	<script language="JavaScript">
+
+	function callbackSearch()
+	{
+		var current_role_id =  document.getElementById('current_role_id').value;
+		var sq_crit = document.getElementById("sq_crit").selectedIndex;
+		
+		if((current_role_id == 3 && sq_crit != 5) || (current_role_id == 6 && sq_crit != 5)){
+			callbackSource('one_today_callback');
+		}
+		else{
+			var now = new Date();
+			document.getElementById('sq_str').value = now.format("isoDate");
+			submitRequest();
+		}
+	}
+
+	function callbackSearchforzero(){
+		var now = new Date();
+		document.getElementById('sq_str').value = now.format("isoDate");
+		submitRequestforzero();
+	}
+
+	function prepFields(on)
+	{
+		if (on == "booking_source_id")
+		{
+			
+			document.getElementById('sq_str').style.display = 'none';
+			document.getElementById('booking_source_id').style.display = '';
+			document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+			document.getElementById('order_type_id').style.display = 'none';
+			document.getElementById('callresult').style.display = 'none';
+			document.getElementById('callback_agent_option_frontend').style.display = 'none';
+		}
+		else if (on == "Campaign_data")
+		{
+			document.getElementById("Campaign_source_id_frontend").selectedIndex = "0";
+			document.getElementById('sq_str').style.display = 'none';
+			document.getElementById('booking_source_id').style.display = 'none';
+			document.getElementById('Campaign_source_id_frontend').style.display = '';
+			document.getElementById('order_type_id').style.display = 'none';
+			document.getElementById('callresult').style.display = 'none';
+			document.getElementById('callback_agent_option_frontend').style.display = 'none';
+		}
+		else if (on == "order_type_id")
+		{
+			document.getElementById('sq_str').style.display = 'none';
+			document.getElementById('booking_source_id').style.display = 'none';
+			document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+			document.getElementById('order_type_id').style.display = '';
+			document.getElementById('callresult').style.display = 'none';
+			document.getElementById('callback_agent_option_frontend').style.display = 'none';
+		}
+		else if (on == "callresult")
+		{
+			document.getElementById('sq_str').style.display = 'none';
+			document.getElementById('booking_source_id').style.display = 'none';
+			document.getElementById('order_type_id').style.display = 'none';
+			document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+			document.getElementById('callback_agent_option_frontend').style.display = 'none';
+			document.getElementById('callresult').style.display = '';
+		}
+		else if (on == "callback_date_dropdown")
+		{
+			document.getElementById('callback_agent_option_frontend').style.display = '';
+			document.getElementById('sq_str').style.display = 'none';
+			document.getElementById('booking_source_id').style.display = 'none';
+			document.getElementById('order_type_id').style.display = 'none';
+			document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+			document.getElementById('callresult').style.display = 'none';
+		}
+		else
+		{
+
+			document.getElementById('callback_missed_call_dropdown').style.display = 'none';
+			document.getElementById('missed_callback_dates').style.display = 'none';
+
+			document.getElementById('sq_str').value = '';
+			document.getElementById('sq_str').style.display = '';
+			document.getElementById('callback_agent_option_frontend').style.display = 'none';
+			document.getElementById('booking_source_id').style.display = 'none';
+			document.getElementById('order_type_id').style.display = 'none';
+			document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+			document.getElementById('callresult').style.display = 'none';
+		}
+	}
+
+	function callbackSource(val)
+	{
+		document.getElementById('sq_str').value = val;
+		if(val == 'two_missing_callback')
+		{
+			document.getElementById('callback_missed_call_dropdown').style.display = '';
+			document.getElementById('booking_source_id').style.display = 'none';
+			document.getElementById('order_type_id').style.display = 'none';
+			document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+			document.getElementById('callresult').style.display = 'none';
+			document.getElementById('sq_str').value = '';
+			document.getElementById('sq_str').style.display = 'none';
+		}
+		else if(val == 'one_today_callback')
+		{
+			document.getElementById('sq_str').value = '';
+			document.getElementById('sq_str').style.display = '';
+			document.getElementById('callback_missed_call_dropdown').style.display = 'none';
+			document.getElementById('booking_source_id').style.display = 'none';
+			document.getElementById('order_type_id').style.display = 'none';
+			document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+			document.getElementById('callresult').style.display = 'none';
+
+			document.getElementById('missed_callback_dates').style.display = 'none';
+
+			document.getElementById('callback_agent_option_frontend').style.display = '';
+			document.getElementById("callback_agent_option_frontend").selectedIndex = 1;
+
+			var now = new Date();
+			document.getElementById('sq_str').value = now.format("isoDate");
+			submitRequest();
+		}
+		else{
+			document.getElementById('callback_missed_call_dropdown').style.display = 'none';
+			submitRequest();
+		}
+	}
+
+	function missed_callbackSource(val){
+		document.getElementById('sq_str').value = val;
+		if(val == 'all_missed_callback')
+		{
+			document.getElementById('missed_callback_dates').style.display = 'none';
+			submitRequest();
+		}
+		else{
+			document.getElementById('missed_callback_dates').style.display = '';
+		}
+	}
+
+	function submitRequest()
+	{
+		if(document.getElementById('sq_str').value == 'btw_missed_callback'){
+
+			var ffromdate = document.getElementById('ffromdate').value;
+			var ftodate = document.getElementById('ftodate').value;
+
+			if(ffromdate == '' && ftodate == ''){
+				var ffromdate_new = '';
+				var ftodate_new = '';
+			}
+			else if(ffromdate != '' && ftodate == ''){
+				var date1 = new Date(ffromdate);
+				var ffromdate_new = date1.toLocaleDateString();
+
+				var ftodate_new = '';
+			}
+			else if(ffromdate == '' && ftodate != ''){
+				var ffromdate_new = '';
+				
+				var date2 = new Date(ftodate);
+				var ftodate_new = date2.toLocaleDateString();
+			}
+			else{
+				var date1 = new Date(ffromdate);
+				var ffromdate_new = date1.toLocaleDateString();
+
+				var date2 = new Date(ftodate);
+				var ftodate_new = date2.toLocaleDateString();
+			}
+
+			var total_detes = ffromdate_new+'_'+ftodate_new;
+
+			document.getElementById('sq_str_missed_dates').value = total_detes;
+
+			parent.frames['frame_browser'].missing_callbacks_searchlist(document.getElementById('sq_crit').value, document.getElementById('sq_str').value, document.getElementById('sq_str_missed_dates').value);
+		}
+		else{
+			parent.frames['frame_browser'].searchList(document.getElementById('sq_crit').value, document.getElementById('sq_str').value);
+		}
+	}
+
+	/*function submitRequestforzero(){
+		parent.frames['frame_browser'].searchListforzero(document.getElementById('sq_crit').value, document.getElementById('sq_str').value);
+	}*/
+	
+	
+	var dateFormat = function () {
+	var	token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g,
+		timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g,
+		timezoneClip = /[^-+\dA-Z]/g,
+		pad = function (val, len) {
+			val = String(val);
+			len = len || 2;
+			while (val.length < len) val = "0" + val;
+			return val;
+		};
+
+	// Regexes and supporting functions are cached through closure
+	return function (date, mask, utc) {
+		var dF = dateFormat;
+
+		// You can't provide utc if you skip other args (use the "UTC:" mask prefix)
+		if (arguments.length == 1 && (typeof date == "string" || date instanceof String) && !/\d/.test(date)) {
+			mask = date;
+			date = undefined;
+		}
+
+		// Passing date through Date applies Date.parse, if necessary
+		date = date ? new Date(date) : new Date();
+		if (isNaN(date)) throw new SyntaxError("invalid date");
+
+		mask = String(dF.masks[mask] || mask || dF.masks["default"]);
+
+		// Allow setting the utc argument via the mask
+		if (mask.slice(0, 4) == "UTC:") {
+			mask = mask.slice(4);
+			utc = true;
+		}
+
+		var	_ = utc ? "getUTC" : "get",
+			d = date[_ + "Date"](),
+			D = date[_ + "Day"](),
+			m = date[_ + "Month"](),
+			y = date[_ + "FullYear"](),
+			H = date[_ + "Hours"](),
+			M = date[_ + "Minutes"](),
+			s = date[_ + "Seconds"](),
+			L = date[_ + "Milliseconds"](),
+			o = utc ? 0 : date.getTimezoneOffset(),
+			flags = {
+				d:    d,
+				dd:   pad(d),
+				ddd:  dF.i18n.dayNames[D],
+				dddd: dF.i18n.dayNames[D + 7],
+				m:    m + 1,
+				mm:   pad(m + 1),
+				mmm:  dF.i18n.monthNames[m],
+				mmmm: dF.i18n.monthNames[m + 12],
+				yy:   String(y).slice(2),
+				yyyy: y,
+				h:    H % 12 || 12,
+				hh:   pad(H % 12 || 12),
+				H:    H,
+				HH:   pad(H),
+				M:    M,
+				MM:   pad(M),
+				s:    s,
+				ss:   pad(s),
+				l:    pad(L, 3),
+				L:    pad(L > 99 ? Math.round(L / 10) : L),
+				t:    H < 12 ? "a"  : "p",
+				tt:   H < 12 ? "am" : "pm",
+				T:    H < 12 ? "A"  : "P",
+				TT:   H < 12 ? "AM" : "PM",
+				Z:    utc ? "UTC" : (String(date).match(timezone) || [""]).pop().replace(timezoneClip, ""),
+				o:    (o > 0 ? "-" : "+") + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
+				S:    ["th", "st", "nd", "rd"][d % 10 > 3 ? 0 : (d % 100 - d % 10 != 10) * d % 10]
+			};
+
+		return mask.replace(token, function ($0) {
+			return $0 in flags ? flags[$0] : $0.slice(1, $0.length - 1);
+		});
+	};
+}();
+
+// Some common format strings
+dateFormat.masks = {
+	"default":      "ddd mmm dd yyyy HH:MM:ss",
+	shortDate:      "m/d/yy",
+	mediumDate:     "mmm d, yyyy",
+	longDate:       "mmmm d, yyyy",
+	fullDate:       "dddd, mmmm d, yyyy",
+	shortTime:      "h:MM TT",
+	mediumTime:     "h:MM:ss TT",
+	longTime:       "h:MM:ss TT Z",
+	isoDate:        "yyyy-mm-dd",
+	isoTime:        "HH:MM:ss",
+	isoDateTime:    "yyyy-mm-dd'T'HH:MM:ss",
+	isoUtcDateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss'Z'"
+};
+
+// Internationalization strings
+dateFormat.i18n = {
+	dayNames: [
+		"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat",
+		"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+	],
+	monthNames: [
+		"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+		"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"
+	]
+};
+
+// For convenience...
+Date.prototype.format = function (mask, utc) {
+	return dateFormat(this, mask, utc);
+}
+
+	
+</script>
+<input type="hidden" id="hidden_flag_hotlist" name="hidden_flag_hotlist" value="not_select">
+<form id="searchform" onSubmit="submitRequest();return false;">
+<div id="searchbox" style="width: 99%; padding: 1px; text-align: center; background: #CCCCCC;">
+	<select name="sq_crit" id="sq_crit" style="width: 60px;" onchange="prepFields(this.value); if (this.value == 'callback_date' || this.value == 'Campaign_data') callbackSearch();">
+		<option value="REF">REF #</option>
+		<option value="phone">Phone</option>
+		<? if (($common->getLoggedUserRoleID() != "9")&&($common->getLoggedUserRoleID() != "3")) { ?>
+		<option value="postal_code">Postal</option>
+		<option value="city">City</option>
+		<option value="address_street">Street</option>
+		<? } ?>
+		<option value="last_name">L Name</option>
+		<option value="first_name">F Name</option>
+		<? if (($common->getLoggedUserRoleID() == "3") || ($common->getLoggedUserRoleID() == "6")) { ?>
+		<option id="callback_option_id" value="callback_date_dropdown">Callbacks</option>
+		<? } else{ ?>
+		<option id="callback_option_id" value="callback_date">Callbacks</option>
+		<? } if (($common->getLoggedUserRoleID() == "3")||($common->getLoggedUserRoleID() == "6")) { ?>
+		<option id="Campaign_source_id" value="Campaign_data">Campaign</option>
+		<? } ?>
+		<? if (($common->getLoggedUserRoleID() != "9")&&($common->getLoggedUserRoleID() != "3")) { ?>
+		<option value="booking_source_id">Source</option>
+		<option value="order_type_id">Job Type</option>
+		<option value="callresult">Call Result</option>
+		<option value="card_number">Card #</option>
+		<? } ?>
+	</select>
+      <?php echo
+      $html->selectTag('Order/booking_source_id', $booking_sources, null, 'style="width: 115px; display: none;" onchange="callbackSource(this.value);" id="booking_source_id"');
+      ?>
+      <?php echo
+      $html->selectTag('Order/order_type_id', $job_types, null, 'style="width: 115px; display: none;" onchange="callbackSource(this.value);" id="order_type_id"');
+      ?>
+      <?php echo
+      $html->selectTag('User/callresult', $call_results, null, 'style="width: 115px; display: none;" onchange="callbackSource(this.value);" id="callresult"');
+      ?>
+      <?php
+      $callback_agent_dropdown = array("one_today_callback" => "Today call back" , "two_missing_callback" => "Missed call backs");
+       echo
+      $html->selectTag('Order/callback_agent_id', $callback_agent_dropdown, null, 'style="width: 115px; display: none;" onchange="callbackSource(this.value);" id="callback_agent_option_frontend"');
+      ?>
+      <?php
+      $missed_call_dropdown = array("all_missed_callback" => "All" , "btw_missed_callback" => "Between dates");
+       echo
+      $html->selectTag('Order/missed_call_dropdown', $missed_call_dropdown, null, 'style="width: 115px; display: none;" onchange="missed_callbackSource(this.value);" id="callback_missed_call_dropdown"');
+      ?>
+      <div id='missed_callback_dates' style="display: none;">
+	      &nbsp;&nbsp;
+	      Date from: 
+	      &nbsp;&nbsp;
+		  <input type="text" id="ffromdate" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<? if ($fdate) echo $fdate; else echo ''; ?>">
+	      &nbsp;&nbsp;
+	      Date to:
+	      &nbsp;&nbsp;
+		  <input type="text" id="ftodate" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<? if ($tdate) echo $tdate; else echo ''; ?>">
+	  </div>
+      <?php 
+      echo
+      $html->selectTag('Order/campaign_id', $camp_list, null, 'style="width: 115px; display: none;" onchange="callbackSource(this.value);" id="Campaign_source_id_frontend"');
+      ?>
+	<input name="sq_str" id="sq_str" style="width: 115px;" />
+	<input type="button" id='submit_go' value="GO" style="width: 29px; font-weight: bold;" onclick="submitRequest();" />
+	<input type='hidden' name="sq_str_missed_dates" id="sq_str_missed_dates" value="" />
+	<input type='hidden' name="current_role" id="current_role_id" value="<?php echo $common->getLoggedUserRoleID();?>" />
+	<!-- input type="button" value="callback" style="width: 52px; font-size: 9px;" / -->
+</div>	
+</form>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>

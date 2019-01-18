@@ -1,0 +1,60 @@
+<script>
+//*** SET PAGE TITLE ***
+
+document.title += " :: My Account";
+
+//**********************
+</script>
+<br/><br/>
+<table width="50%" border="0" cellspacing="1" cellpadding="0">	
+	<tr>
+		<td class="sectionTitle" colspan="3">My Account</td>
+	</tr>
+	<tr><td colspan="3" >&nbsp;</td></tr>
+	<tr><td colspan="3">
+			<?php echo $html->link("New Appointment",'/orders/editBooking?customer_id='.$user_id,array("style"=>"font-weight:bold;color:black;background-color:#E0DFE3;padding:5px;width:150px;text-align:center;"))?></td>
+
+	</td></tr>
+	<tr><td colspan="3" >&nbsp;</td></tr>
+	<tr><td colspan="3" class="sectionSubTitle">Advantage Card:</td></tr>
+	<tr>
+		<td>&nbsp;</td>	
+		<td colspan="2">
+			<table cellspacing="0" cellpadding="0" border="0">
+			<tr><td>Number:</td><td><?=$this->data['User']['card_number']?></td></tr>
+			<tr><td>Credit:</td><td><?=$this->data['User']['credit']?></td></tr>
+			</table>
+		</td>
+	</tr>
+	<tr><td colspan="3" >&nbsp;</td></tr>
+	<tr><td colspan="3" class="sectionSubTitle">Next Appointment:</td></tr>	
+	<tr>
+		<td>&nbsp;</td>	
+		<td colspan="2"><?=$next_appointment?>&nbsp;</td>
+	</tr>
+	<tr><td colspan="3" >&nbsp;</td></tr>
+	<tr><td colspan="3" class="sectionSubTitle">Past Jobs:</td></tr>	
+	<tr><td colspan="3">
+		<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
+		<tr><th>ID:</td><th>Date</th><th>Amount</th></tr>
+		<? $r=0;
+		foreach( $pastJobs as $row ) {
+			$class = 'cell'.(++$r%2);
+			echo '<tr class="'.$class.'">
+							<td style="background-color:#CCCCCC;border-style: none;">'.$row['id'].'</td>
+							<td>'.strftime("%d/%m/%Y",$time->toUnix($row['job_date'])).'</td>
+							<td>'.$common->getPrice($row['sale_amount']).'</td>
+						</tr>';
+		}
+		?>
+		</table>	
+	</td></tr>
+</table>	
+
+
+<br/><br/><br/><br/><br/><br/>
+
+<?
+//pr($this->data);
+
+?>

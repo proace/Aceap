@@ -1,0 +1,118 @@
+<!--
+***************************************
+THIS FORM WAITING FOR THIS PARAMETERS:
+$_POST['workRecords']
+$_GET['user_id']
+***************************************
+-->
+<script>
+//*** SET PAGE TITLE ***
+
+document.title += " :: Pay Employee / Enter Payroll";
+
+//**********************
+</script>
+<script>
+	function OpenPage(surl)
+	{
+		location.href =surl;
+	}
+</script>
+
+<form method="POST" action="<?= $PHP_SELF?>" name="newPayroll">
+<input type="hidden" name="workRecords" value="<?=$_POST['workRecords']?>">
+
+
+<table width="100%" align="center" border="0" cellspacing="10" cellpadding="0"> 
+	<tr>
+		<td class="sectionTitle">Pay Employee / Enter Payroll</th>
+	</tr>
+</table>
+<br/>
+<?php //pr($this->data);?>
+<table border="0" cellspacing="0" cellpadding="5" class="results">
+	<tr>
+	  <td valign="top">Employee :</td>
+	  <td>
+			<?php
+				
+				$disabled = "";
+				$selectedUser = $this->data["Payroll"]["user_id"]; 	 
+				if(intval($_GET['user_id']) > 0)
+				{	
+					$disabled = "disabled='disabled'";
+					$selectedUser = intval($_GET['user_id']);
+				}
+			?>
+	  	<select name="data[Payroll][user_id]" style="width:250;" <?php echo $disabled; ?> >
+	  		<option value="0"></option>
+			<?php 
+	  	foreach ($users as $objItm):
+	  	?>
+	  	<option value="<?php echo $objItm['User']['id'];?>"
+	  	<?php
+	  		if($selectedUser == $objItm['User']['id'])
+	  		{
+	  			echo "selected='selected'";
+	  		}
+	  	?>>
+	  	<?php echo $objItm['User']['first_name']." ".$objItm['User']['last_name'];?></option>
+	  	<?php
+	  	endforeach;
+	  	?>	  		
+	  	</select>
+	  	<?php echo $html->hidden('Payroll/user_id'); ?>
+ 		 <font color="red"> <?php echo $html->tagErrorMsg('Payroll/user_id', 'Please select user.') ?></font>
+	  </td>
+	</tr>
+	<tr><td colspan="2">&nbsp;</td></tr>
+	<tr> 
+	  <td>Jobs:</td>
+	  <td><?php echo $this->data['Payroll']['jobs']; ?>
+		<?php echo $html->hidden('Payroll/jobs'); ?>
+	  </td>
+	</tr>			
+	<tr> 
+	  <td>Commission:</td>
+	  <td>$<?php echo $this->data['Payroll']['commission']; ?>
+		<?php echo $html->hidden('Payroll/commission'); ?>
+	  </td>
+	</tr>	
+	<tr> 
+	  <td>Hours Done:</td>
+	  <td><?php echo $this->data['Payroll']['hours']; ?>
+		<?php echo $html->hidden('Payroll/hours'); ?>
+	  </td>
+	</tr>
+	<tr> 
+	  <td>Rate / hour:</td>
+	  <td><?php echo ($this->data['Payroll']['rate']==0 ? 'N/A': '$'.$this->data['Payroll']['rate']); ?>
+		<?php echo $html->hidden('Payroll/rate'); ?>
+	  </td>
+	</tr>			
+	<tr><td colspan="2">&nbsp;</td></tr>
+	<tr> 
+	  <td>Bonus:</td>
+	  <td>$
+		<?php echo $html->input('Payroll/bonus'); ?>
+	  	<font color="red"><?php echo $html->tagErrorMsg('Payroll/bonus', 'Invalid bonus') ?></font>
+	  </td>
+	</tr>			
+	<tr> 
+	  <td>Date of Record:</td>
+	  <td>
+		<?php echo $html->dateTimeOptionTag('Payroll/date','DMY',none); ?>
+	  	<font color="red"><?php echo $html->tagErrorMsg('Payroll/date', 'Please enter date.') ?></font>
+	  </td>
+	</tr>	
+	<tr>
+		<td>&nbsp;</td>
+	  <td align="left" colspan="1">
+	  <input type="submit" name="submit1" value="Add Record" class="buttons">&nbsp;
+	  <input type="button" value="Cancel" onclick="javascript:OpenPage('view_payroll')" class="buttons">
+	  </td>
+	</tr>
+</table>
+</table>
+<br/><br/>
+</form>

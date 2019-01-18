@@ -1,0 +1,116 @@
+<script>
+var previous;
+function ShowTransactions(mid){
+	$('.details').hide();
+	if (previous==mid) {previous=0; return;}
+	previous = mid;
+	$('#details'+mid).show();
+  $.post("<?=BASE_URL;?>/payments/paymentTransactions",
+				 {payment_method_id:mid, payment_type_id:2},function(data){
+				$('#accdetails'+mid).html(data);});
+  $.post("<?=BASE_URL;?>/payments/paymentTransactions",
+				 {payment_method_id:mid, payment_type_id:1},function(data){
+				$('#techdetails'+mid).html(data);});
+}
+</script>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+<table width="90%" border="0px" cellspacing="10" cellpadding="0">
+	<tr>
+		<td class="sectionTitle">Payments summary</td>
+		<td rownum=2>
+      <input type="button" onclick="document.location.href='<?=BASE_URL?>/payments/index'" value="Payments View" class="buttons">
+				<table cellpadding=0 cellspacing=0 border=1>
+				<tr><th>&nbsp;</th><th>jobs</th><th>redo</th><th>followup</th><th>install</th></tr>
+				<tr>
+								<td><b>Booked:</b></td>
+								<td align=center><?=$other['booked']?></td>
+								<td align=center><?=$redo['booked']?></td>
+								<td align=center><?=$followup['booked']?></td>
+								<td align=center><?=$install['booked']?></td>
+				</tr>
+				<tr>
+								<td><b>Done:</b></td>
+								<td align=center><?=$other['done']?></td>
+								<td align=center><?=$redo['done']?></td>
+								<td align=center><?=$followup['done']?></td>
+								<td align=center><?=$install['done']?></td>
+				</tr>
+				<tr>
+								<td><b>Canceled:</b></td>
+								<td align=center><?=$other['canceled']?></td>
+								<td align=center><?=$redo['canceled']?></td>
+								<td align=center><?=$followup['canceled']?></td>
+								<td align=center><?=$install['canceled']?></td>
+				</tr>
+				</table>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Date from: &nbsp;&nbsp;
+      <input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			&nbsp;&nbsp;Date to: &nbsp;&nbsp;
+      <input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			&nbsp;&nbsp;
+			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_fdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+		  &nbsp;&nbsp;
+      <input type="submit" name="submit2" onclick="return SearchRecords();" id="submit2" value="Update" class="buttons">
+		</td>			
+	</tr>
+</table> 	
+</form>
+
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+    <tr>
+        <th rowspan=2 width="200px">Method of payment</th>
+        <th colspan=2 width="200px">Accountant</th>
+        <th colspan=2 width="200px">Tech</th>
+    </tr>
+    <tr>
+        <th width="100px">Number of jobs</th>
+        <th width="100px">Paid total</th>
+        <th width="100px">Paid total</th>
+        <th width="100px">Number of jobs</th>
+    </tr>
+		<?php $r=1;
+			foreach ($items as $obj) {
+				$class = 'cell'.(++$r%2);
+		?>
+    <tr id="r<?=$r?>" class="<?=$class?>">
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['payment_method']?></td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">
+						<a href="javascript:ShowTransactions(<?=$obj['payment_method_id']?>,2)">
+								&nbsp;<?=$obj['count_acc']?>
+				    </a>
+				</td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">
+						<a href="javascript:ShowTransactions(<?=$obj['payment_method_id']?>,2)">
+								<?=(1*$obj['paid_amount_acc']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['paid_amount_acc'])?>
+				    </a>
+				</td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">
+						<a href="javascript:ShowTransactions(<?=$obj['payment_method_id']?>,1)">
+								<?=(1*$obj['paid_amount_tech']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['paid_amount_tech'])?>
+				    </a>
+				</td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">
+						<a href="javascript:ShowTransactions(<?=$obj['payment_method_id']?>,1)">
+								&nbsp;<?=$obj['count_tech']?>
+				    </a>
+				</td>
+    <tr class="<?=$class?> details" style='display:none;text-align:right;' id='details<?=$obj['payment_method_id']?>'>
+				<td>&nbsp;</td>
+				<td colspan=2 id='accdetails<?=$obj['payment_method_id']?>'></td>
+				<td colspan=2 id='techdetails<?=$obj['payment_method_id']?>'></td>
+    </tr>
+    </tr>
+    <? } ?>
+</table>

@@ -1,0 +1,197 @@
+<?php if (!$disableEdit): ?>
+<script>
+function inlineEdit(attr){
+	var key = "cell"+attr.userid+attr.field;
+	$("#"+key+"View").hide();
+	$("#"+key+"Edit").show();
+	$("#"+key).focus();
+}
+function cancel(attr){
+	var key = "cell"+attr.userid+attr.field;
+	$("#"+key).val("");
+	$("#"+key+"Edit").hide();
+	$("#"+key+"View").show();
+}
+function changeField(attr){
+	if (<?=$pay_period?><=0) {
+		alert('Please, select a pay period, not a custom date interval!');
+		return;
+	}
+	var key = "cell"+attr.userid+attr.field;
+	var val = $("#"+key).val();
+	$.post("<?=BASE_URL;?>/payrolls/changePayrollField",
+		{userid:attr.userid,field:attr.field,payperiod:<?=$pay_period?>,value:val},
+		function(data){
+			document.viewform.submit();
+		}
+	);
+}
+</script>
+<style type="text/css">
+	a {
+		cursor: pointer;
+	}
+	.total td {
+		font-weight: bold;
+		line-height: 16px;
+		border-top:1px solid #9f9f9f;
+		border-right:none;
+		border-left:1px solid #9f9f9f;
+		color: black;
+	}
+</style>
+<?php endif; ?>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="paginationList1" value="<?=$_GET['paginationList1']?>">
+
+<!-- TABLE :: FILTER -->
+<!-- *************** -->
+<table width="800">
+	<tr>
+		<td class="sectionTitle" colspan=3>Payroll</td>
+	</tr>
+	<tr>
+		<td>
+			Pay period:&nbsp;
+			<select name="pay_period" onchange="document.viewform.submit();">				
+			<?php foreach ($allPayPeriods as $v => $k) {
+				$selected = '';
+				if ($v == $pay_period) $selected = 'selected';?>
+				<option value="<?=$v?>" <?=$selected?>><?=$k?></option>
+			<?php } ?>
+			</select>
+		</td>
+		<td style="<?=$disabled?>">Date from: 
+			&nbsp;&nbsp;
+			<input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_fdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			&nbsp;&nbsp;Date to:&nbsp;&nbsp;
+			<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			&nbsp;&nbsp;
+			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_tdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+		</td>
+		<td align="left">
+			<input type="submit" name="submit2" onclick="return SearchRecords();" id="submit2" value="Update" class="buttons">
+		</td>			
+	</tr>
+</table> 	
+
+</form>
+
+<!-- TABLE :: RESULT -->
+<!-- *************** -->
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
+<tr>
+	<th width="200"><a href="javascript:setOrder('employee_name')">Employee Name</a></th>
+	<th width="50"><a href="javascript:setOrder('hours')">Total Hours</a></th>
+    <th width="80" ><a href="javascript:setOrder('commission')">Commission</a></th>
+<?php if (!$disableEdit): ?>
+	<th width="50"><a href="javascript:setOrder('rate')">Rate</a></th>
+<?php endif; ?>	
+	<th width="80" ><a href="javascript:setOrder('wage')">Wage</a></th>    
+	<th width="80"><a href="javascript:setOrder('bonus')">Bonus</a></th>
+	<th width="80"><a href="javascript:setOrder('adj')">Adjustment</a></th>
+	<th width="80"><a href="javascript:setOrder('gross')">Gross pay</a></th>
+	<th width="80"><a href="javascript:setOrder('furnace')">Furnace, Boiler</a></th>
+	<th width="80"><a href="javascript:setOrder('airduct')">Airduct</a></th>
+    <th width="80"><a href="javascript:setOrder('airduct')">Estimate</a></th>
+    <th width="80"><a href="javascript:setOrder('carpet')">Carpet</a></th>
+    <th width="80"><a href="javascript:setOrder('hot_water_tank')">Hot Water Tank</a></th>
+    <th width="80"><a href="javascript:setOrder('fire_place')">Fire Place</a></th>
+	<!--<th width="80"><a href="javascript:setOrder('others')">Other</a></th>-->
+	<th width="80"><a href="javascript:setOrder('jobs_done')">Total Bookings Done</a></th>
+<?php if (!$disableEdit): ?>
+	<th width="80"><a href="javascript:setOrder('jobs_amount')">Total Amount of Booking</a></th>
+<?php endif; ?>
+</tr>
+<?php $r=1;
+$total = array();
+foreach ($items as $obj): 
+	$class = 'cell'.(++$r%2);
+	$id = "cell".$obj["id"];
+	$total["hours"] += $obj["hours"];
+	$total["rate"] += $obj["rate"];
+	$total["wage"] += $obj["wage"];
+	$total["commission"] += $obj["commission"];
+	$total["bonus"] += $obj["bonus"];
+	$total["adj"] += $obj["adj"];
+	$total["gross"] += $obj["gross"];
+	$total["furnace"] += $obj["furnace"];
+	$total["airduct"] += $obj["airduct"];
+	$total["estimate"] += $obj["estimate"];
+	$total["carpet"] += $obj["carpet"];
+	$total["hot_water_tank"] += $obj["hot_water_tank"];
+	$total["fire_place"] += $obj["fire_place"];
+	$total["others"] += $obj["others"];
+	$total["jobs_done"] += $obj["jobs_done"];
+	$total["jobs_amount"] += $obj["jobs_amount"];
+?>
+<tr class="<?= $class ?>">
+	<td><a href="<?=BASE_URL?>/payrolls/time_sheet?userid=<?=$obj['id']?>&pay_period=<?=$pay_period?>"><?=$obj["employee"]; ?>&nbsp;</a></td>
+	<td align="right"><?=$obj["hours"] ?>&nbsp;</td>
+    <td align="right"><?=$HtmlAssist->prPrice($obj["commission"])?>&nbsp;</td>
+<?php if (!$disableEdit): ?>
+	<td align="right"><?=$HtmlAssist->prPrice($obj["rate"]) ?>&nbsp;</td>
+	<td align="right"><?=$HtmlAssist->prPrice($obj["wage"]) ?>&nbsp;</td>
+<?php endif; ?>
+	
+<?php foreach (array('bonus','adj') as $field): ?>
+<?php 	$attr = "{userid:{$obj['id']},field:'$field'}"; ?>
+<?php 	$sid = $id.$field; ?>
+	<td align="right">
+		<a id="<?=$sid?>View" onclick="inlineEdit(<?=$attr?>);return false;"><?=$HtmlAssist->prPrice($obj[$field])?>&nbsp;</a>
+		<div id="<?=$sid?>Edit" style="display:none;">
+			<input style="width:60px;" id="<?=$sid?>" onchange="changeField(<?=$attr?>)" type="text" value=""/><br/>
+			<a onclick="changeField(<?=$attr?>);return false;">Save</a>
+			&nbsp;
+			<a onclick="cancel(<?=$attr?>);return false;">Cancel</a>
+		</div>
+	</td>
+<?php endforeach; ?>
+	<td align="right"><?=$HtmlAssist->prPrice($obj["gross"]) ?>&nbsp;</td>
+	<td align="right"><?=$obj["furnace"] ?>&nbsp;</td>
+	<td align="right"><?=$obj["airduct"] ?>&nbsp;</td>
+    <td align="right"><?=$obj["estimate"] ?>&nbsp;</td>
+    <td align="right"><?=$obj["carpet"] ?>&nbsp;</td>
+    <td align="right"><?=$obj["hot_water_tank"] ?>&nbsp;</td>
+    <td align="right"><?=$obj["fire_place"] ?>&nbsp;</td>
+	<!--<td align="right"><?=$obj["others"] ?>&nbsp;</td>-->
+	<td align="right"><?=$obj["jobs_done"] - $obj["estimate"] - $obj["carpet"] ?>&nbsp;</td>
+<?php if (!$disableEdit): ?>
+	<td align="right"><?=$HtmlAssist->prPrice($obj["jobs_amount"]) ?>&nbsp;</td>
+<?php endif; ?>
+</tr>
+<?php endforeach; ?>
+<tr class="total">
+	<td align="right"><b>Total:</b></td>
+	<td align="right"><?=$total["hours"] ?>&nbsp;</td>
+<?php if (!$disableEdit): ?>
+	<td align="right"><?=$HtmlAssist->prPrice($total["commission"]) ?>&nbsp;</td>
+	<td align="right"><?=$HtmlAssist->prPrice($total["rate"]) ?>&nbsp;</td>
+    
+	<td align="right"><?=$HtmlAssist->prPrice($total["wage"]) ?>&nbsp;</td>
+<?php endif; ?>
+	<td align="right"><?=$HtmlAssist->prPrice($total["bonus"]) ?>&nbsp;</td>
+	<td align="right"><?=$HtmlAssist->prPrice($total["adj"]) ?>&nbsp;</td>
+	<td align="right"><?=$HtmlAssist->prPrice($total["gross"]) ?>&nbsp;</td>
+	<td align="right"><?=$total["furnace"] ?>&nbsp;</td>
+	<td align="right"><?=$total["airduct"] ?>&nbsp;</td>
+    <td align="right"><?=$total["estimate"] ?>&nbsp;</td>
+    <td align="right"><?=$total["carpet"] ?>&nbsp;</td>
+    <td align="right"><?=$total["hot_water_tank"] ?>&nbsp;</td>
+    <td align="right"><?=$total["fire_place"] ?>&nbsp;</td>
+	<!--<td align="right"><?=$total["others"] ?>&nbsp;</td>-->
+	<td align="right"><?=$total["jobs_done"] - $total["estimate"] - $total["carpet"] ?>&nbsp;</td>
+<?php if (!$disableEdit): ?>
+	<td align="right"><?=$HtmlAssist->prPrice($total["jobs_amount"]) ?>&nbsp;</td>
+<?php endif; ?>
+</tr>
+</table>
+<pre>
+<?php //echo print_r($fdate) ?>
+</pre>

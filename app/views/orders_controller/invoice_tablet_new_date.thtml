@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>New Booking</title>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_new_booking.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/eff_calculator.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.21.custom.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
+</head>
+
+<body>
+<ul id="nav">
+    <li><a id="jobs_link" class="buttons"><div>Jobs</div></a></li>   
+    <li><a href="<?php echo BASE_URL;?>/pages/main" id="home_link" class="buttons"><div>ACESYS</div></a></li>    
+    <li><a id="calc_link" class="buttons"><div>Eff Calculator</div></a></li>
+</ul>
+<div id="invoice">	
+	<ul id="job_list">
+    	<?php foreach($jobs as $job) { ?>
+        <?php if($job['Order']['order_status_id'] == 5) $url = BASE_URL."/orders/invoiceTabletPrint?order_id=".$job['Order']['id'] ?>
+        <?php if($job['Order']['order_status_id'] == 3) $url = "#" ?>
+        <?php if($job['Order']['order_status_id'] == 1) $url = BASE_URL."/orders/invoiceTabletOverview?order_id=".$job['Order']['id'] ?>
+    	<li>
+        <a href="<?php echo $url;?>" class="job status<?php echo $job['Order']['order_status_id'] ?>">
+        	<span><?php echo $job['Customer']['first_name'] ?> <?php echo $job['Customer']['last_name'] ?> <?php echo $job['Order']['job_time_beg'] ?> <?php echo $job['Order']['job_time_end'] ?></span>            
+            <div><?php echo $job['Order']['order_number'] ?></div>
+        </a>        
+        </li>                
+        <?php } ?>
+        <?php foreach($estimate_jobs as $job) { ?> 
+        <?php $url = BASE_URL."/orders/invoiceTabletPrint?order_id=".$job['id'] ?>        
+    	<li>
+        <a href="<?php echo $url;?>" class="job status<?php echo $job['order_status_id'] ?>">
+        	<span><?php echo $job['first_name'] ?> <?php echo $job['last_name'] ?></span>            
+            <div><?php echo $job['order_number'] ?></div>
+        </a>        
+        </li>                
+        <?php } ?>
+    </ul>
+    <?php foreach($estimate_jobs as $job) { ?>    
+    <?php if($job['id'] == $order_id) { ?>
+    <div class="header">
+    <h1>Booking and Estimates - #<?php echo $job['order_number'] ?> - <?php echo $job['order_type_name'] ?></h1>
+    <h2><?php echo $job['first_name'] ?> <?php echo $job['last_name'] ?> <?php echo $job['customer_phone'] ?></h2>
+    <p><a href="<?php echo $HtmlAssist->getOrderGoogleMap($job)?>" target="_blank">
+		<?php echo $job['address'] ?> <?php echo $job['city'] ?> <?php echo $job['postal_code'] ?>
+        </a>
+    </p>    
+    <form id="newdate_form" action="<?php echo BASE_URL ?>/orders/saveInvoiceTabletNewDate" method="post">
+        <input type="hidden" id="CustomerCity" value="<?php echo $job['city'] ?>" />
+        <input type="hidden" id="job_type_id" value="<?php echo $job['job_type_id'] ?>" />
+        <input type="hidden" name="order_id" id="InvoiceOrderId" value="<?php echo $order_id ?>" />
+        <?php foreach($cities_with_id as $key => $cid) { ?>
+            <input type="hidden" id="<?php echo $cid['name'] ?>" value="<?php echo $key ?>" />
+        <?php } ?>
+        </div>
+        <?php } ?>
+        <?php } ?>
+        <!--<h3>Job Type <?php echo $html->selectTag('Booking/order_type_id', $job_types); ?></h3>    -->
+        <h3>        	
+            <span class="route" id="schedule_display">Set a Date?</span>
+            &nbsp;&nbsp;     	          
+            <input type="button" class="next_submit" id="load_timeslots" value="Yes" style="width:100px;height:50px" />
+            &nbsp;&nbsp;
+            <input type="button" class="next_submit" id="skip_to_questions" value="No" style="width:100px;height:50px" />
+            <span id="loading_timeslots">LOADING SCHEDULE...</span>
+            <input type="hidden" id="close_timeslots" value="Close" />
+        </h3>
+        <div id="timeslot_div"></div>
+        <div id="slot_confirmations"></div>
+        <input type="hidden" id="Order2JobDate" name="job_date" />
+        <input type="hidden" id="Order2JobTruck" name="job_truck" />
+        <input type="hidden" id="Order2JobTimeBeg" name="job_time_beg" />
+        <input type="hidden" id="Order2JobTimeEnd" name="job_time_end" />
+        <input type="hidden" id="Order2JobTechnician1Id" name="job_tech_1" />
+        <input type="hidden" id="Order2JobTechnician2Id" name="job_tech_2" />
+        <!--<div class="next_div">
+        	<input type="submit" class="next_submit" value="Save Timeslot" />            
+            <input type="button" class="next_submit" id="skip_to_questions" value="Skip to Questions" />            
+        </div>-->
+    </form>
+</div>
+</body>
+<pre><?php //print_r($estimate_jobs) ?></pre>
+</html>

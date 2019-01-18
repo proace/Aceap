@@ -1,0 +1,37 @@
+<?
+//echo $common->getLoggedUserRoleID(); die;
+ if ($common->getLoggedUserRoleID() == 10) { 
+	header('Location: '.ROOT_URL.'/training/start_page_2.html');
+echo "&nbsp";
+	} elseif ($common->getLoggedUserRoleID() == 12) { 
+	header('Location: '.ROOT_URL.'/training/start_page_tech.html');
+echo "&nbsp";
+	} else {
+?>
+<frameset rows = "85, *" frameBorder="1">
+  <frame src="<?=BASE_URL;?>/pages/topbar" scrolling="no" name="topbar" id="topbar" />
+  <? if ($common->getLoggedUserRoleID() == 1 or $common->getLoggedUserRoleID() == 2) { ?>
+	<frame src="<?=BASE_URL;?>/commissions/calculateCommissions" name="main_view" id="main_view" />
+  <? } elseif ($common->getLoggedUserRoleID() == 5) { ?>
+	<frame src="<?=BASE_URL;?>/inventories/index" name="main_view" id="main_view" />
+  <? } else { ?>
+  <frameset cols = "230, *" frameBorder="1">
+	<frameset rows = "23, *" frameBorder="0">
+		<frame src="<?=BASE_URL;?>/pages/search" name="frame_search" id="frame_search" />
+        <?php if ($common->getLoggedUserRoleID() == 6) { ?>
+		<frameset rows = "*, 200" frameBorder="1">
+			<frame src="<?=BASE_URL;?>/pages/browser" name="frame_browser" id="frame_browser" />
+			<frame src="<?=BASE_URL;?>/messages/index" name="frame_reminder" id="frame_reminder" />
+		</frameset>
+        <?php } else { ?>
+        <frameset rows = "*, 80" frameBorder="1">
+			<frame src="<?=BASE_URL;?>/pages/browser" name="frame_browser" id="frame_browser" />
+			<frame src="<?=BASE_URL;?>/messages/index" name="frame_reminder" id="frame_reminder" />
+		</frameset>
+        <?php } ?>
+	</frameset>
+	<frame src="<?=BASE_URL;?>/orders/scheduleView" name="main_view" id="main_view" />
+  </frameset>
+  <? } ?>
+</frameset><noframes></noframes>
+<? } ?>

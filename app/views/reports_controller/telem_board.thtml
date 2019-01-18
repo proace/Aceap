@@ -1,0 +1,411 @@
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />	
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+
+<script type="text/javascript">
+<!--
+//setTimeout("change()", 30000);
+function change() {
+	window.open('<?=BASE_URL;?>/reports/graphDone', '_self'); 	
+}
+function updateClock ( )
+{
+  var currentTime = new Date ( );
+
+  var currentHours = currentTime.getHours ( );
+  var currentMinutes = currentTime.getMinutes ( );
+  var currentSeconds = currentTime.getSeconds ( );
+
+  // Pad the minutes and seconds with leading zeros, if required
+  currentMinutes = ( currentMinutes < 10 ? "0" : "" ) + currentMinutes;
+  currentSeconds = ( currentSeconds < 10 ? "0" : "" ) + currentSeconds;
+
+  // Choose either "AM" or "PM" as appropriate
+  var timeOfDay = ( currentHours < 12 ) ? "AM" : "PM";
+
+  // Convert the hours component to 12-hour format if needed
+  currentHours = ( currentHours > 12 ) ? currentHours - 12 : currentHours;
+
+  // Convert an hours component of "0" to "12"
+  currentHours = ( currentHours == 0 ) ? 12 : currentHours;
+
+  // Compose the string for display
+  var currentTimeString = currentHours + ":" + currentMinutes + ":" + currentSeconds + " " + timeOfDay;
+
+  // Update the time display
+  document.getElementById("clock").firstChild.nodeValue = currentTimeString;
+}
+function sendMsg(el){
+	var txt = $(el).val();
+	$.post("<?=BASE_URL;?>/reports/sendMsg", {text:txt});  
+}
+function saveGoal(){
+	var goal = $("#newGoal").val();
+	$(el).html(goal);
+	$.post("<?=BASE_URL;?>/reports/setGoal", {goal:goal,userid:userid}, function(){
+		$("#dialog").dialog('close');
+	});  
+}
+function saveQuota(){
+	var quota = $("#newQuota").val();
+	$(el).html(quota);
+	$.post("<?=BASE_URL;?>/reports/setQuota", {quota:quota,userid:userid}, function(){
+		$("#dialog2").dialog('close');
+	});  
+}
+
+function saveDisp(d){
+	$.post("<?=BASE_URL;?>/reports/changeDisplayMode", {disp:d}, function(){
+		//window.open('<?=BASE_URL;?>/reports/telem_board', '_self');
+	});
+	
+}
+
+
+
+var userid = 0;
+var el;
+function ChangeGoal(ell){
+	el = ell;
+	$("#dialog").dialog({ height: 100, width: 250,  modal: true, position:['center',150] });
+}
+function ChangeQuota(ell){
+	el = ell;
+	$("#dialog2").dialog({ height: 100, width: 250,  modal: true, position:['center',150] });
+}
+$(document).ready(function(){updateClock();setInterval('updateClock()', 1000 );setInterval('document.viewform.submit();', 60000 );});
+
+function saveGroup(o){
+	var s=o; 
+	window.open('http://192.168.2.150/acesys/framework1.3/index.php/groups/saveGroup/?uid=' + s, '_self');
+}
+
+function saveLeader(o){
+	var s=o; 
+	window.open('http://192.168.2.150/acesys/framework1.3/index.php/groups/saveLeader/?uid=' + s, '_self');
+}
+
+function numberAlert() {
+	//$(".pending").toggle();	
+	//if($(".pending").html() < 3) $(this).toggle();
+	$(".pending").each(function(){
+		if($(this).html() < 3) $(this).toggle();
+	});
+}
+
+$(document).ready(function(){
+	var temp = 0;
+	var tempSub = 0;
+	<?php foreach($groups as $group) { ?>
+	$(".group<?php echo $group['id'] ?>").each(function(){
+		if($(this).val() > 0) {
+			tempSub += parseInt($(this).val());
+		}
+	});
+	$(".display.group<?php echo $group['id'] ?>").html(tempSub);
+	temp = 0;
+	tempSub = 0;
+	<?php } ?>	
+	
+	<?php foreach($items as $user) { ?>
+	$(".user<?php echo $user['id'] ?>").each(function(){
+		if($(this).val() > 0) {
+			tempSub += parseInt($(this).val());
+		}
+	});
+	$(".donetotal<?php echo $user['id'] ?>").html(tempSub);
+	temp = 0;
+	tempSub = 0;
+	<?php } ?>
+});
+// -->
+</script>
+<style>
+.results th {border-bottom: 1px solid #6c6c6c;background-color:#800000; color:white;border:2px outset white;font-size: small;}
+.regular {font-weight:bold;}
+</style>
+<div id="dialog" title="Goal Setting" style="display:none;vertical-align:middle;text-align:center;">
+  Goal:&nbsp;<input id="newGoal" type="text" />&nbsp;<input type="button" value="Save" onclick="saveGoal();"/>
+</div>
+<div id="dialog2" title="Quota Setting" style="display:none;vertical-align:middle;text-align:center;">
+  Quota:&nbsp;<input id="newQuota" type="text" />&nbsp;<input type="button" value="Save" onclick="saveQuota();"/>
+</div>
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform" id="viewform">
+	<input type="hidden" name="action" value="view" >
+	<input type="hidden" name="order" value="<?=$_GET['order']?>">
+	<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+	
+	<table width="1100px" border="0" cellspacing="3" cellpadding="0">
+	<tr>
+		<td class="sectionTitle">Call Center Board</td>
+		<td style="color:#000000; font-weight:bold; text-align:left; font-size: large;">
+			&nbsp;<?=date("M, d")?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="clock">&nbsp;</span>
+		</td>
+		<td width=10% style="color:#000000; font-weight:bold; text-align:center;">
+			Today
+		</td>
+		<td width=10% style="color:#000000; font-weight:bold; text-align:center;">
+			Pay Period
+		</td>			
+	</tr>
+	<tr>
+		<td>
+			<?php  if (($_SESSION['user']['role_id'] != 3)&&($_SESSION['user']['role_id'] != 9)): ?>
+			Pay period:&nbsp;
+			<select name="pay_period" onchange="document.viewform.submit();">
+			<?php foreach ($allPayPeriods as $v => $k) {
+				$selected = '';
+				if ($v == $pay_period) $selected = 'selected';?>
+				<option value="<?=$v?>" <?=$selected?>><?=$k?></option>
+			<?php } ?>
+			</select>
+			<?php else: ?>
+			&nbsp;
+			<?php endif; ?>
+			<!--&nbsp;&nbsp;&nbsp;
+			<input type="submit" name="submit2" id="submit2" value="Update" class="buttons">-->
+		</td>			
+		<td style="text-align:left;">
+			<?php  if (($_SESSION['user']['role_id'] != 3)&&($_SESSION['user']['role_id'] != 9)): ?>
+			<textarea id="msg" name="msg" rows=2 cols=80 onkeyup="sendMsg(this)"><?=$msg?></textarea>
+			<?php else: ?>
+			<span style="color:#800000; font-weight:bold; text-align:center; font-size: large;"><?=$msg?></span>
+			<?php endif; ?>
+		</td>			
+		<td width=10% style="color:#800000; font-weight:bold; text-align:center; font-size: xx-large;">
+			<?=$today_total - $today_unconfirmed ?>
+		</td>			
+		<td width=10% style="color:#800000; font-weight:bold; text-align:center; font-size: xx-large;">
+			<?=$total?>
+		</td>			
+	</tr>
+	</table>
+</form>
+<?php  if (($_SESSION['user']['role_id'] != 3)&&($_SESSION['user']['role_id'] != 9)) { ?>
+	<?php if($disp == 0) { ?>
+    <input type="checkbox" id="toggle-button" checked="checked" onclick="saveDisp(1); window.open('<?=BASE_URL;?>/reports/telem_board', '_self');" />
+    <?php } else {?>
+    <input type="checkbox" id="toggle-button" onclick="saveDisp(0); window.open('<?=BASE_URL;?>/reports/telem_board', '_self');" />    
+    <?php } ?>
+    Show/hide Teams
+<?php } ?>
+<table class="results" cellpadding="0" cellspacing="0" style="border-style: solid;border-width:1px;">
+    <tr style="height:25px;">
+    	<?php if($disp == 0) { ?>
+        <th width="30">Team</th>
+        <th width="30">Done</th>
+        <?php } ?>
+        <th width="150">Name</th>
+		<!--<th width="50">Booked</th>-->
+<?php	$brd = "";
+	foreach ($dates as $cur): ?>
+        <th width="42"><?=$cur?></th>
+<?php	$brd = "border-left: 1px solid #bfbfbf;";
+	endforeach; ?>
+        <!--<th width="50">Prev.</th>-->
+ 		<!--<th width="50">Cancel</th>-->
+        <th width="50" style="background-color:#008c00;">Done</th>
+        <th width="50" style="color:#000000;background-color:#fffd9f;">To Go</th>
+        <th width="50" style="background-color:#ffcc00;">Quota</th>
+        <th width="50" style="background-color:#6699ff;">Goal</th>
+		<!--
+        <th width="50">Hrs</th>
+		<th width="50">H/Job</th>
+        -->
+    </tr>
+<?php
+	$total = array();
+	foreach ($items as $obj):
+		$class = 'cell0';
+		$togo = $obj['goal']-$obj['done'];
+?>
+    <tr class="<?= $class ?>" style="height:35px;">
+    <?php if($disp == 0) { ?>
+    	<td align="center" style="border:2px outset #d0d0ce;font-size: small;font-weight:bold;">
+		<?php if($obj['gleaderid'] == $obj['id']) { ?>     
+        <?php echo $obj['gname']; ?>
+        <?php } ?>
+        </td>
+        <td align="center" style="border:2px outset #d0d0ce;font-size: small;font-weight:bold;color:green;">
+		<?php if($obj['gleaderid'] == $obj['id']) { ?>     
+        <span class="display group<?php echo $obj['gid'] ?>"></span>
+        <?php } ?>
+        </td>
+	<?php } ?>
+    <?php if($disp == 0) { ?>
+    	<?php if($obj['gleaderid'] == $obj['id']) { ?>
+        	<td align="left" style="background-color:#<?php echo $obj['lead_color'] ?>;color:#<?php echo $obj['lead_text'] ?>;border:2px outset #d0d0ce;font-size: small; font-weight:bold; font-style: italic;">
+        <?php } else { ?>
+        	<td align="left" style="background-color:#<?php echo $obj['team_color'] ?>;color:#<?php echo $obj['team_text'] ?>;border:2px outset #d0d0ce;font-size: small; font-weight:bold; font-style: italic;">
+        <?php } ?>
+    <?php } else { ?>
+    	<td align="left" style="border:2px outset #d0d0ce;font-size: small; font-weight:bold; font-style: italic;">
+    <?php } ?>    	
+        <?php echo $obj['name'];?>
+        </td>
+		
+<?php foreach ($dates as $cur => $v): ?>
+<?php
+		$bg = "background-color:#d7ffd7;";
+		
+		if ($obj[$cur]['pending']<=0) $bg="";
+		elseif ($obj[$cur]['pending']>=8) $bg="background-color:#ff0000;";
+		elseif ($obj[$cur]['pending']>=4) $bg="background-color:#ffcc00;";
+		elseif ($obj[$cur]['pending']>=3) $bg="background-color:#ffcccc;";
+		
+		$total[$cur] += $obj[$cur]['valid_booking'];
+		$total_unconfirmed[$cur] += $obj[$cur]['recording_unconfirmed'];
+		$temptotal[$cur] += ($obj[$cur]['booked']-$obj[$cur]['recording_unconfirmed']-$obj[$cur]['valid_booking']<=0)?'&nbsp;':$obj[$cur]['booked']-$obj[$cur]['recording_unconfirmed']-$obj[$cur]['valid_booking'];
+		
+		$total_bg = "background-color:#008c00;color:#ffffff;";		
+		if ($obj['done']>=20) $total_bg="background-color:#fa5201;color:#ffffff;";
+?>
+		<td class="regular" align="center" style="border:2px outset #c7fcad;<?=$bg?>;padding:0px;margin:0px;">
+			<table cellpadding=0 cellspacing=0 width=100% style="background: transparent;">
+				<tr>
+					<td colspan=4 style="color:#999999;font-size:medium;text-align:center;background: transparent;border:none;">
+                    	<!--<?=($obj[$cur]['booked']-$obj[$cur]['recording_unconfirmed']<=0)?'&nbsp;':$obj[$cur]['booked']-$obj[$cur]['recording_unconfirmed']?>
+                        <sup style="color:#999999"><?=($obj[$cur]['recording_unconfirmed']<=0)?'&nbsp;':$obj[$cur]['recording_unconfirmed']?></sup>-->                        						
+						<?php echo ($obj[$cur]['valid_booking']-$obj[$cur]['recording_unconfirmed']==0)?'&nbsp;':$obj[$cur]['valid_booking']-$obj[$cur]['recording_unconfirmed']?>
+                        <!--<sup style="color:#90F">
+                        <?=($obj[$cur]['booked']-$obj[$cur]['recording_unconfirmed']-$obj[$cur]['valid_booking']<=0)?'&nbsp;':$obj[$cur]['booked']-$obj[$cur]['recording_unconfirmed']-$obj[$cur]['valid_booking']?>
+                        <?=($obj[$cur]['booked']-$obj[$cur]['recording_unconfirmed']-$obj[$cur]['valid_booking']<=0)?'&nbsp;':$obj[$cur]['booked']-$obj[$cur]['recording_unconfirmed']-$obj[$cur]['valid_booking']?>
+                        </sup>-->
+                        <sup style="color:#000000;font-weight:bold"><?=($obj[$cur]['recording_unconfirmed']<=0)?'&nbsp;':$obj[$cur]['recording_unconfirmed']?></sup>
+					</td>
+				</tr>
+				<tr>
+					<!--<td class="pending" style="width:14px;background: transparent;text-align:center;border:none;color:black;">
+					<?=($obj[$cur]['pending']==0)?'&nbsp;':$obj[$cur]['pending']?></td>
+                    <td style="width:14px;background: transparent;text-align:center;border:none;color:blue;">
+					<?php echo ($obj[$cur]['rescheduled']==0)?'&nbsp;':$obj[$cur]['rescheduled']?>
+                    <?php //echo ($obj[$cur]['valid_booking']==0)?'&nbsp;':$obj[$cur]['valid_booking']?></td>
+					<td style="width:14px;background: transparent;text-align:center;border:none;color:red;">
+					<?=($obj[$cur]['cancelled']==0)?'&nbsp;':$obj[$cur]['cancelled']?></td>-->
+					<td style="width:14px;background: transparent;text-align:center;border:none;color:green;display:none">
+                    <input type="hidden" class="done group<?php echo $obj['gid']; ?> user<?php echo $obj['id']; ?>" value="<?=($obj[$cur]['done']==0)?0:$obj[$cur]['done']?>" />
+					<?=($obj[$cur]['done']==0)?'&nbsp;':$obj[$cur]['done']?></td>
+				</tr>
+			</table>
+		</td>
+<?php endforeach; ?>
+		<!--<td align="center" style=""><?=($obj['previous']['booked']==0)?'&nbsp;':$obj['previous']['booked']?></td>-->
+		<!--<td align="center" style="font-weight:bold;font-size:larger;color:#800000;border:2px outset #d0d0ce;"><?=($obj['cancelled']==0)?'&nbsp;':$obj['cancelled']?></td>        -->
+		<td align="center" style="<?=$total_bg?>border:2px outset #008c00;font-weight:bold;font-size:larger;">
+		<?php //echo ($obj['done']==0)?'&nbsp;':$obj['done']?><span class="donetotal<?php echo $obj['id'] ?>"></span></td>        
+		<td align="center" style="background-color:#fffd9f;color:black;font-weight:bold;font-size:larger;border:3px outset #ffff15;"><?=($togo<=0)?'&nbsp;':$togo?></td>
+		<td align="center" style="background-color:#ffcc00;border:2px outset #205a03;font-weight:bold;color:white;font-size:larger;">
+			<?php if (($common->getLoggedUserRoleID() == "6") or ($common->getLoggedUserRoleID() == "13")): ?>
+			<a href="#" onclick="userid = <?=$obj['id']?>;ChangeQuota(this);return false;">
+			<?php endif; ?>
+			<?php echo $obj['quota']?>
+			<?php if (($common->getLoggedUserRoleID() == "6") or ($common->getLoggedUserRoleID() == "13")): ?>
+			</a>
+			<?php endif; ?>
+		</td>
+        <td align="center" style="background-color:#6699ff;border:2px outset #205a03;font-weight:bold;color:white;font-size:larger;">
+			<?php if (($common->getLoggedUserRoleID() == "6") or ($common->getLoggedUserRoleID() == "13")): ?>
+			<a href="#" onclick="userid = <?=$obj['id']?>;ChangeGoal(this);return false;">
+			<?php endif; ?>
+			<?=($obj['goal']==0)?'&nbsp;':$obj['goal']?>
+			<?php if (($common->getLoggedUserRoleID() == "6") or ($common->getLoggedUserRoleID() == "13")): ?>
+			</a>
+			<?php endif; ?>
+		</td>
+        <!--
+	    <td align="center" style=""><?=($obj['hours_total']==0)?'&nbsp;':$obj['hours_total']?></td>
+	    <td align="center" style=""><?=(round($obj['hours_total']/($obj['booked_today']),1)==0)?'&nbsp;':round($obj['hours_total']/($obj['booked_today']),1)?></td>
+        -->
+    </tr>
+<?php endforeach; ?>
+    <tr class="total" style="height:35px;">
+    	<?php if($disp == 0) { ?>
+    	<td></td>       
+		<td></td>
+        <?php } ?>
+        <td align="left" style="border:2px outset #d0d0ce;font-size: small; font-weight:bold; font-style: italic;"><b>Total</b></td>
+<?php foreach ($dates as $cur => $v): ?>
+<?php $total_bg = "background-color:#008c00;color:#ffffff;"; ?>
+		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">
+			<table cellpadding=0 cellspacing=0 width=100% style="background: transparent;">
+				<tr>
+					<td colspan=3 style="color:#999999;font-size:medium;text-align:center;background: transparent;border:none;">
+						<?=($total[$cur]-$total_unconfirmed[$cur]==0)?'&nbsp;':$total[$cur]-$total_unconfirmed[$cur]?><sup style="color:#000000;font-weight:bold;"><?=($total_unconfirmed[$cur]==0)?'&nbsp;':$total_unconfirmed[$cur]?></sup>
+					</td>
+				</tr>
+			</table>
+		</td>
+<?php endforeach; ?>
+		
+		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
+		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
+		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
+		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
+        <!--
+		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
+        <td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
+        -->
+    </tr>
+</table>
+<p>Estimates, Carpet Service, and Repairs not included.</p>
+<table style="font-family:Arial, Helvetica, sans-serif; font-size:90%;border:1px solid #666666">
+	<tr>
+    	<td style="color:#999999; width:20px; text-align:center;">#
+        </td>
+        <td style="width:100px">Unconfirmed Recording
+        </td>        
+    </tr>
+    <!--<tr>
+    	<td style="color:#90F; width:20px; text-align:center;">#
+        </td>
+        <td style="width:100px">Job date more than <?php echo $diff_limit ?> days
+        </td>        
+    </tr>
+	<tr>
+    	<td style="color:black; width:20px; text-align:center;">#
+        </td>
+        <td>Pending
+        </td>        
+    </tr>
+    <tr>
+    	<td style="color:blue; text-align:center;">#
+        </td>
+        <td>Rescheduled
+        </td>        
+    </tr>
+    <tr>
+    	<td style="color:red; text-align:center;">#
+        </td>
+        <td>Cancelled
+        </td>
+    </tr>
+    <tr>
+    	<td style="color:green; text-align:center;">#
+        </td>
+        <td>Done
+        </td>
+    </tr>-->
+    <tr>
+    	<td style="background-color:#d7ffd7;">&nbsp;
+        </td>
+        <td>1+ Pending
+        </td>
+    </tr>
+    <tr>
+    	<td style="background-color:#ffcccc;">&nbsp;
+        </td>
+        <td>3+ Pending
+        </td>
+    </tr>
+    <tr>
+    	<td style="background-color:#ffcc00;">&nbsp;
+        </td>
+        <td>4+ Pending
+        </td>
+    </tr>
+    <tr>
+    	<td style="background-color:#ff0000;">&nbsp;
+        </td>
+        <td>8+ Pending
+        </td>
+    </tr>    
+</table>

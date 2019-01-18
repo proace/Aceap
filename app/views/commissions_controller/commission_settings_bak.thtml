@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Commission Settings</title>
+<style>
+body {
+	margin:0;
+	padding:0;
+	font-family:Arial, Helvetica, sans-serif;	
+	font-size:80%;
+}
+
+.generic {
+	background-color:#cccccc;	
+}
+
+.tech {
+	background-color:#d8e4bc;	
+}
+
+.source {
+	background-color:#daeef3;	
+}
+
+input[type=text] {
+	text-align:right;
+	width:45px;	
+}
+
+table
+{
+    border-collapse: collapse; /* 'cellspacing' equivalent */
+	border:1px solid #cccccc;
+	background-color:#555555;
+	width:250px;
+}
+
+table td, table th
+{
+    padding: 3px;
+}
+
+th {
+	color:#ffffff;
+}
+
+.right {
+	text-align:right;	
+}
+
+</style>
+</head>
+
+<body>
+
+<form action="<?php echo BASE_URL ?>/commissions/saveCommissionSettings/<?php echo $user_id ?>" method="post">
+<?php echo $html->input('iv_category_settings/iv_category_id',array("value"=>$iv_category_id, "type"=>"hidden")); ?>
+<table>
+	<tr>
+    	<th></th>
+        <th>Alone</th>
+        <th>w/Tech</th>
+        <th></th>
+    </tr>
+    <?php foreach($types as $type) { ?>
+    <tr class="<?php echo $type['class'] ?>">
+    	<td><?php echo $type['name'] ?></td>
+        <td class="right"><input type="text" name="data[Settings][<?php echo $type['id'] ?>][alone_value]" value="<?php echo $type['alone_value'] ?>" /></td>
+        <td class="right"><input type="text" name="data[Settings][<?php echo $type['id'] ?>][with_value]" value="<?php echo $type['with_value'] ?>" /></td>
+        <td>
+        <?php if($type['value_type'] == 0) { echo '$'; ?>
+        <?php } else { echo '%'; } ?>
+        </td>
+    </tr> 
+    <?php } ?>  
+</table>
+<div class="right"><input type="submit" value="Save" /></div>
+</form>
+</body>	
+</html>

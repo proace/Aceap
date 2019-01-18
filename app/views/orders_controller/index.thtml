@@ -1,0 +1,674 @@
+<script>
+//*** SET PAGE TITLE ***
+document.title += " :: Job List";
+//**********************
+</script>
+
+<script>
+function setOrder(order){
+  f = document.forms.viewform;
+  f.currentPage.value = '';  
+  if(f.order.value == order){
+    if(f.sort.value == 'ASC')
+      f.sort.value = 'DESC';
+    else
+      f.sort.value = 'ASC';
+  }
+  else{
+    f.order.value = order;
+    f.sort.value = 'ASC';
+  }
+  f.submit();
+}
+
+function ShowHideOfficeNote(jobId)
+{
+	var divId = "office_note_"+jobId;
+	var hiddenId = "office_note_shown_"+jobId;
+	
+	var divIdObj = document.getElementById(divId);
+	var hiddenIdObj = document.getElementById(hiddenId);
+	
+	if(divIdObj!=null && hiddenIdObj!=null)
+	{
+		if(hiddenIdObj.value == "0")
+		{//Show it
+			hiddenIdObj.value = "1";
+			divIdObj.style.display = "block";
+		}
+		else
+		{//Hide it
+			hiddenIdObj.value = "0";
+			divIdObj.style.display = "none";
+		}
+	}
+}
+</script>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+<input type="hidden" name="pp_view" value="<?=$_GET['pp_view']?>">
+<input type="hidden" id="newSearch" name="newSearch" value="1" />
+
+<table width="800">
+
+<tr>
+
+<td>
+
+<table width="400" align="left" border="0" cellspacing="3" cellpadding="0">	
+
+	<tr style="padding-bottom:20px;">
+
+		<td class="sectionTitle" colspan="3" >
+			<nobr><?=$subtitle ?></nobr>
+		</td>
+
+	</tr>
+
+	<? if ($show_op_payperiod) { ?>
+
+	<tr>
+
+		<td style="white-space: nowrap;">Pay Period:</td>
+		<td colspan="2">
+		<input type="text" name="fpayperiod" style="width:100px" readonly="1" value="<?=$_GET['fpayperiod']?>">
+		<a href="#" onclick="showCalendar('fpayperiod','viewform')">set</a>
+		</td>
+
+	</tr>
+
+	<? } ?>
+
+	<tr>
+
+	<? if ($show_op_date) { ?>
+
+	    <td valign="middle" style="white-space: nowrap; height: 55px;">Date Scheduled:</td>
+	    <td>from<br/><input type="text" name="ffromdate" style="width:100px" value="<?=$_GET['ffromdate']?>">
+	      <a href="#" onclick="showCalendar('ffromdate','viewform')">set</a>&nbsp;&nbsp;</td>
+			<td>to<br/><input type="text" name="ftodate" style="width:100px" value="<?=$_GET['ftodate']?>">
+	      <a href="#" onclick="showCalendar('ftodate','viewform')">set</a>
+	    </td>
+
+	<? } ?>
+
+	<? if ($show_op_status) { ?>
+
+		<td>Status:</td>
+
+		<td colspan="2">
+
+		<? echo $html->selectTag('Order/order_status_id', $job_statuses, $forder_status_id, $disabled); ?>
+
+		</td>
+
+	<? } ?>
+
+		<?if ($show_op_order_type) { ?>
+	
+		<td>
+
+		<span <? if ( $common->getLoggedUserRoleID() == 3 ) print 'style="display: none;"'; ?>>Job Type:</span></td>
+
+		<td colspan="2">
+
+		<select name="forder_type_id" <? if ( $common->getLoggedUserRoleID() == 3 ) print 'style="display: none;"'; ?>>
+
+		<option value=""></option>
+
+		<? 
+
+		foreach($job_types as $k => $v) {
+
+			echo '<option value="'.$k.'"'.( $k == $_GET['forder_type_id'] ? ' selected' : '').'>'.$v.'</option>';
+
+		}
+
+		?>
+
+		</select>
+
+		</td>
+
+		<? } ?>
+
+	</tr>
+
+	<tr>
+
+	<? if ($show_op_booking_date) { ?>
+
+	    <td valign="middle" style="white-space: nowrap; height: 55px;">Date Booked:</td>
+
+	    <td>from<br/><input type="text" name="ffromdatebooking" style="width:100px" value="<?=$_GET['ffromdatebooking']?>">
+
+	      <a href="#" onclick="showCalendar('ffromdatebooking','viewform')">set</a>&nbsp;&nbsp;</td>
+
+		<td>to<br/><input type="text" name="ftodatebooking" style="width:100px" value="<?=$_GET['ftodatebooking']?>">
+
+	      <a href="#" onclick="showCalendar('ftodatebooking','viewform')">set</a>
+
+	    </td>
+		<? } ?>
+		
+		<td>Order #:</td>
+		<td colspan="2">
+		<input type="text" name="fordernumber" value="<?=$_GET['fordernumber']?>" size="15">
+		</td>
+
+		<? if ($show_op_booker) { ?>
+		
+		<td><span <? if ( $common->getLoggedUserRoleID() == 3 || $common->getLoggedUserRoleID() == 9) print 'style="display: none;"'; ?>>Booked By:</span></td>
+
+		<td colspan="2">
+
+		<select name="booker_id" <? if ( $common->getLoggedUserRoleID() == 3 || $common->getLoggedUserRoleID() == 9) print 'style="display: none;"'; ?>>
+
+		<option value=""></option>
+
+		<? 
+
+		foreach($booking_sources as $k => $v) {
+
+			echo '<option value="'.$k.'"'.( $k == $_GET['booker_id'] ? ' selected' : '').'>'.$v.'</option>';
+
+		}
+
+		?>
+
+		</select>
+		
+		</td>	
+		
+		<? } ?>
+
+		<?if ($show_op_source) { ?>
+
+		<td><span <? if ( $common->getLoggedUserRoleID() == 3 || $common->getLoggedUserRoleID() == 9) print 'style="display: none;"'; ?>>Source:</span></td>
+
+		<td colspan="2">
+
+		<select name="fsource_id" <? if ( $common->getLoggedUserRoleID() == 3 || $common->getLoggedUserRoleID() == 9) print 'style="display: none;"'; ?>>
+
+		<option value=""></option>
+
+		<? 
+
+		foreach($booking_sources as $k => $v) {
+
+			echo '<option value="'.$k.'"'.( $k == $_GET['fsource_id'] ? ' selected' : '').'>'.$v.'</option>';
+
+		}
+
+		?>
+
+		</select>
+
+		</td>
+
+		<? } ?>
+
+		<?if ($show_op_tech) { ?>
+
+		<td>Technician:</td>
+
+		<td colspan="2">
+
+		<select name="tech_id">
+
+		<option value=""></option>
+
+		<? 
+
+		foreach($allTechnician as $k => $v) {
+
+			echo '<option value="'.$k.'"'.( $k == $_GET['tech_id'] ? ' selected' : '').'>'.$v.'</option>';
+
+		}
+
+		?>
+
+		</select>
+
+		</td>
+
+		<? } ?>
+	</tr>
+
+	<tr>
+	
+		<? if ($show_op_name) { ?>
+
+		<td style="white-space: nowrap;">Name:</td>
+
+		<td colspan="2">
+
+		<input type="text" name="fname" value="<?=$_GET['fname']?>" size="15">
+
+		</td>
+
+		<? } ?>
+
+		<? if ($show_op_phoneaddress) { ?>
+
+		<td>Address:</td>
+		<td colspan="2">
+		<input type="text" name="faddress" value="<?=$_GET['faddress']?>" size="15">
+		</td>
+		<td>Phone:</td>
+		<td colspan="2">
+			<input type="text" name="fphone" value="<?=$_GET['fphone']?>" size="15">
+		</td>
+
+		<? } ?>
+	
+		<?if ($show_op_closer) { ?>
+
+		<td>Closer:</td>
+
+		<td colspan="2">
+
+		<select name="closer_id">
+
+		<option value=""></option>
+
+		<?
+
+		foreach($booking_sources as $k => $v) {
+
+			echo '<option value="'.$k.'"'.( $k == $_GET['closer_id'] ? ' selected' : '').'>'.$v.'</option>';
+
+		}
+
+		?>
+
+		</select>
+
+		</td>
+
+		<? } ?>
+		
+
+		<!-- ? if (($show_op_date) || ($show_op_payperiod) || ($show_op_phoneaddress) || ($show_op_name)) { ? -->
+		
+		
+	
+		<td colspan="10" align="right">
+	
+			<input type="submit" name="submit2" value="Update &gt;&gt;" class="buttons" onclick="document.getElementById('newSearch').value=1;">
+			
+		</td>
+
+	</tr>
+
+</table>
+
+</td>
+
+</tr>
+
+</table>
+
+	<!-- PRINT BUTTON -->
+	<input type="button" value="Print" onclick="window.open(document.location.href+'&print=1');">
+
+
+
+	<input type="hidden" name="view_mode" value="<?=$_GET['view_mode'] ?>" />
+
+ 	</form>
+
+
+<?=$html->formTag('/payrolls/add_payroll'); ?>
+<table border=0>
+
+<?
+print "<tr><td>";
+print "Total Records:</td><td><b>";
+print $total_rows;
+print "</b></td></tr>";
+
+if ( $show_total_commission)
+{
+	print "<tr><td>";
+	print "Total Commission:</td><td><b>";
+	print $HtmlAssist->prPrice($total_comm);
+	print "</b></td></tr>";
+}
+
+if ( $show_total_amounts )
+{
+	print "<tr><td>Total Booking: </td><td><b>";
+	print $HtmlAssist->prPrice($total_booking);
+	print "</b></td></tr>";
+	print "<tr><td>";
+	print "Total Sales (Total of Totals): </td><td><b>";
+	print $HtmlAssist->prPrice($total_sales);
+	print "</b></td></tr>";
+}
+?>
+</table>
+<p></p>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+
+    <tr>
+
+        <td style="background-color:#CCCCCC;border-style: none;"><a href="javascript:setOrder('sdate')" style="color:black;"><b>Date</b></a><?=$sdate?></td>
+
+        <?=( $show_timeslots ? '<th>Timeslot</th>' : '')?>
+
+        <? if ($show_id) { ?> <th><a href="javascript:setOrder('sid')">REF #</a><?=$sid?></th> <? } ?>
+		
+        <? if ($show_job_type) { ?> <th>Type</th> <? } ?>
+
+	<? if ($show_customer_last) { ?> <th><a href="javascript:setOrder('scustomerlast')">Last Name</a><?=$scustomerlast?></th> <? } ?>
+
+	<? if ($show_customer_first) { ?> <th><a href="javascript:setOrder('scustomerfirst')">First Name</a><?=$scustomerfirst?></th> <? } ?>
+
+	<? if ($show_customer_address) { ?> <th>Address</th> <? } ?>
+
+        <th><a href="javascript:setOrder('scity')">City</a><?=$scity?></th>
+	<? if ($show_customer_phone) { ?><th>Phone</th><? } ?>
+
+	<? if (0 && $show_customer_rating) { ?> <th><a href="javascript:setOrder('scrating')">Cust. Rating</a><?=$scrating?></th> <? } ?>
+
+      <? if ($show_bookedby) { ?> <th><a href="javascript:setOrder('sbookingby')">Booked By</a><?=$sbookingby?></th> <? } ?>
+
+	<? if ($show_techs) { ?> 
+
+        <th><a href="javascript:setOrder('stech1')">Tech 1</a><?=$stech1?></th>
+
+	<? } ?>
+
+        <? if ($show_commission_1) { ?> <th>Commission (1)</th> <? } ?>
+
+	<? if ($show_techs) { ?> 
+
+        <th><a href="javascript:setOrder('stech2')">Tech 2</a><?=$stech2?></th>
+
+	<? } ?>
+
+        <? if ($show_commission_2) { ?> <th>Commission (2)</th> <? } ?>
+
+        <? if ($show_commission_booking) { ?> <th>Commission (Book)</th> <? } ?>
+
+        <? if ($show_commission_closer) { ?> <th>Commission (Closer)</th> <? } ?>
+
+        <? if ($show_hours_done) { ?> <th>Hours Done</th> <? } ?>
+
+        <?=( $show_itemcategories ? '<th>Booking</th>' : '')?>
+
+        <? if ($show_booking_amount) { ?> <th>Booking Amount</th><? } ?>
+        <? if ($show_sales_amount) { ?> <th>Total Amount</th> <? } ?>
+	<? if ($show_office_note) { ?><th>Office Note</th><? } ?>
+
+        <? if ($show_status) { ?> <th><a href="javascript:setOrder('sstatus')">Status</a><?=$sstatus?></th> <? } ?>
+
+        <!-- <? if ($show_cancellation) { ?> <th>Cancellation Rate</th> <? } ?> -->
+
+        <? if ($show_paid) { ?> <th>Paid</th> <? } ?>
+
+        <? if ($show_source) { ?> <th>Source</th> <? } ?>
+		<th>2009</th><th>2010</th><th>2011</th>
+        <? if ($show_closer) { ?> <th>Closer</th> <? } ?>
+
+        <?=($show_callback ? '<th>Call Back Date</th>'		 : '') ?>
+
+    </tr>
+
+		<?php foreach ($orders as $obj): 
+
+		$class = 'cell'.(++$r%2);
+
+		?>
+
+    <tr class="<?= $class ?>">
+
+      <td style="background-color:#CCCCCC;border-style: none;"><nobr><b><?php echo  date('M d, y', strtotime($obj['Order']['job_date'])) ?></b></nobr></td>
+
+       <?=( $show_timeslots ? '<td>'.date('ga', strtotime($obj['Order']['job_time_beg'])).' - '.date('ga', strtotime($obj['Order']['job_time_end'])).'</td>' : '')?>
+
+      <? if ($show_id) { ?>
+	     <td>
+		    <? if (( $common->getLoggedUserRoleID() == 6 )||( $common->getLoggedUserID() == $obj['Order']['booking_source_id'] )) {
+				echo "<a href=\"".$html->url("/orders/editBooking?order_id=".$obj['Order']['id']."&rurl=".urlencode($this->params['controller'].'/'.$this->params['action'].'/?'.$_SERVER['QUERY_STRING']))."\">";
+				if ($obj['Order']['order_number']) echo $obj['Order']['order_number']; else echo 'no #';
+				echo "</a>";
+			} else {
+				echo $obj['Order']['order_number'];
+			} 
+			?>
+	     </td>
+	  <? } ?>
+
+      <? if ($show_job_type) { ?> <td><?php echo $job_types[$obj['Order']['order_type_id']]; ?></td> <? } ?>
+	  
+      <? if ($show_customer_last) { ?> <td><?php echo $obj['Customer']['last_name']; ?></td> <? } ?>
+
+      <? if ($show_customer_first) { ?> <td><?php echo $obj['Customer']['first_name']; ?></td> <? } ?>
+
+      <? if ($show_customer_address) { ?>
+
+			<td>
+
+				<a href="<?=$HtmlAssist->getOrderGoogleMap($obj['Customer']);?>" target="_blank"><img src="<?=ROOT_URL;?>/app/webroot/img/icon-vsm-globe.png" style="border: 0px; width: 15px; height: 15px; vertical-align: middle;">&nbsp;<?php echo $obj['Customer']['address']; ?></a>
+
+				<?
+
+				if ($this->params['url']['view_mode'] == 'current_day')
+
+				{
+
+					//only display link to directions here
+
+					//echo '&nbsp;<a href="'.$HtmlAssist->getOrderGoogleMap($obj['Customer']).'" target="_blank">Map</a>';
+
+				}
+
+				?>
+
+			</td> <? } ?>
+
+      <td><?php echo $obj['Customer']['city']; ?></td>
+	<? if ($show_customer_phone) { ?> 
+
+	  <td><?php
+
+			echo $Common->displayPhone($obj['Customer']['phone']);
+
+			if ($obj['Customer']['cell_phone'])
+
+				echo "<br/>".$Common->displayPhone($obj['Customer']['cell_phone']);
+
+		?></td>
+	<? } ?>
+
+      <? if (0 && $show_customer_rating) { ?> <td>&nbsp;<?php echo $obj['Order']['customer_rating']; ?></td> <? } ?>
+
+      <? if ($show_bookedby) { ?> <td><?php echo $obj['Telemarketer']['first_name'].'&nbsp;'.$obj['Telemarketer']['last_name']; ?></td> <? } ?>
+
+      <? if ($show_techs) { ?> 
+
+      <td><?php echo $html->link($obj['Technician1']['first_name'].' '.$obj['Technician1']['last_name'], "/payrolls/add_workdone?user_id=".$obj['Technician1']['id']."&date=".$obj['Order']['job_date']); ?></td>
+
+      <? } ?>
+
+      <? if ($show_commission_1) {
+            print "<td>";
+
+            if ( ($_GET['tech_id'] == "") || (($_GET['tech_id'] != "") && ($_GET['tech_id'] == $obj['WorkRecord1']['user_id'])) )
+                    print $HtmlAssist->prPrice($obj['WorkRecord1']['commission']);
+
+            print "</td>";
+      } ?>
+
+      <? if ($show_techs) { ?> 
+
+      <td><?php echo $html->link($obj['Technician2']['first_name'].' '.$obj['Technician2']['last_name'], "/payrolls/add_workdone?user_id=".$obj['Technician2']['id']."&date=".$obj['Order']['job_date']); ?></td>
+
+      <? } ?>
+
+      <? if ($show_commission_2) {
+            print "<td>";
+
+            if ( ($_GET['tech_id'] == "") || (($_GET['tech_id'] != "") && ($_GET['tech_id'] == $obj['WorkRecord2']['user_id'])) )
+                    print $HtmlAssist->prPrice($obj['WorkRecord2']['commission']);
+
+            print "</td>";
+      } ?>
+
+
+      <? if ($show_commission_booking) { 
+            print "<td>";
+
+            if ( ($_GET['tech_id'] == "") || (($_GET['tech_id'] != "") && ($_GET['tech_id'] == $obj['WorkRecordSource']['user_id'])) )
+                    print $HtmlAssist->prPrice($obj['WorkRecordSource']['commission']);
+
+            print "</td>";
+	} ?>
+
+      <? if ($show_commission_closer) { 
+            print "<td>";
+
+            if ( (($_GET['tech_id'] == "") || (($_GET['tech_id'] != "") && ($_GET['tech_id'] == $obj['WorkRecordCloser']['user_id'])) )
+			|| (($_GET['closer_id'] == "") || (($_GET['closer_id'] != "") && ($_GET['closer_id'] == $obj['WorkRecordCloser']['user_id'])) ) )
+                    print $HtmlAssist->prPrice($obj['WorkRecordCloser']['commission']);
+
+            print "</td>";
+	} ?>
+
+<!--  <td><?php //strftime("%H",$time->toUnix($obj['WorkRecord1']['finish_time'])) //echo (($time->toUnix($obj['WorkRecord1']['finish_time'])-$time->toUnix($obj['WorkRecord1']['start_time']-($obj['WorkRecord1']['break_time']!=""?$time->toUnix($obj['WorkRecord1']['break_time']):0)))/3600)+(($time->toUnix($obj['WorkRecord2']['finish_time'])-$time->toUnix($obj['WorkRecord2']['start_time'])-($obj['WorkRecord2']['break_time']!=""?$time->toUnix($obj['WorkRecord2']['break_time']):0))/3600) ?></td> -->
+
+			<? if ($show_hours_done) { ?> <td><?php echo ((((intval(substr($obj['WorkRecord1']['finish_time'],0,2))*60) +intval(substr($obj['WorkRecord1']['finish_time'],3,2)))-((intval(substr($obj['WorkRecord1']['start_time'],0,2))*60) +intval(substr($obj['WorkRecord1']['start_time'],3,2))))/ 60) ?></td> <? } ?>
+
+		<?	if($show_itemcategories)
+
+			{
+
+				echo '<td><table class="inResultsBooking">';
+
+					echo $HtmlAssist->tableOrderItems($obj,'BookingItem');
+
+				echo '</table></td>';
+
+			}
+
+		?>
+
+	<?
+			$totals = $Common->getOrderTotal($obj['Order']['id']);
+		if ($show_booking_amount) {
+	?>
+		<td align=center><?php //echo $HtmlAssist->prPrice($totals['total'][0]);?><?php echo $HtmlAssist->prPrice($subtotal[$obj['Order']['id']]['booking']) ?></td>
+	<? } ?>
+	<? if ($show_sales_amount) { ?>
+		<td align=center><?php //echo $HtmlAssist->prPrice($totals['total'][1]); ?><?php echo $HtmlAssist->prPrice($subtotal[$obj['Order']['id']]['sales']) ?></td>
+	<? } ?>
+
+      <? if ($show_office_note) { ?>
+		<td>
+			<?php echo $obj['Order']['job_notes_office']; ?>&nbsp;
+		</td>
+      <? } ?>
+
+      <? if ($show_status) { ?> <td><?php echo $obj['Status']['name'].($show_substatus && $obj['Substatus']['id'] > 0 ? '<br>('.$obj['Substatus']['name'].')' : '' ); ?></td> <? } ?>
+
+      <!-- <? if ($show_cancellation) { ?> <td>TODO</td> <? } ?> -->
+
+      <? if ($show_paid) { ?> <td style="text-align: center;">
+
+      
+
+		<? if ($obj['WorkRecord2']['paid']) { ?>
+
+		<span class="inactive">paid</span>
+
+		<? } else { ?>
+
+		<input type="checkbox" name="workRecords[]" value="<?=$obj['WorkRecord1']['id'].'###'.$obj['WorkRecord2']['id']?>" > pay     </td>
+
+		<? } ?>
+
+		<? } ?>
+
+		 <? if ($show_source) { echo '<td>'.$booking_sources[$obj['Order']['booking_source_id']].'&nbsp;</td>'; } ?>
+		 <td><?php echo $job_count[$obj['Order']['customer_id']]['2009_jobs'] ?></td>
+         <td><?php echo $job_count[$obj['Order']['customer_id']]['2010_jobs'] ?></td>
+         <td><?php echo $job_count[$obj['Order']['customer_id']]['2011_jobs'] ?></td>
+		 <? if ($show_closer) { echo '<td>'.$booking_sources[$obj['Order']['booking_closer_id']].'&nbsp;</td>'; } ?>
+
+		 <? if ($show_callback) { echo '<td>'.$obj['Order']['callback_time'].'&nbsp;</td>'; } ?>
+
+    </tr>
+
+    <?php endforeach; ?>
+
+    <tr>
+
+    	<td colspan="16" align="right"><? if ($show_paid) { ?> <input type="submit" name="submit2" value="Do Payroll" class="buttons"> <? } ?></td>
+
+    </tr>
+
+  </form>
+
+</table>
+
+<br/>
+
+<table border=0>
+<?
+print "<tr><td>";
+print "Total Records:</td><td><b>";
+print $total_rows;
+print "</b></td></tr>";
+
+if ( $show_total_commission )
+{
+	print "<tr><td>";
+	print "Total Commission:</td><td><b>";
+	print $HtmlAssist->prPrice($total_comm);
+	print "</b></td></tr>";
+}
+
+if ( $show_total_amounts )
+{
+	print "<tr><td>Total Booking: </td><td><b>";
+	print $HtmlAssist->prPrice($total_booking);
+	print "</b></td></tr>";
+	print "<tr><td>";
+	print "Total Sales (Total of Totals): </td><td><b>";
+	print $HtmlAssist->prPrice($total_sales);
+	print "</b></td></tr>";
+}
+?>
+</table>
+
+<table width="100%">
+
+<tr>
+
+<td align="center"><?=$pagination?>&nbsp;</td>
+
+</tr>
+
+</table>
+<br/><br/><br/><br/><br/>
+<script language="JavaScript">
+	if (document.location.href.indexOf('print=1') != -1)
+		window.print();
+</script>
+
+<?php
+
+//$oo = $orders[3];
+
+//pr($common->getOrderedItemCategories($oo,$item_categories));
+
+//pr($oo);
+
+?>
+

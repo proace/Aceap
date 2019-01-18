@@ -1,0 +1,55 @@
+<div class="wrapper">
+    <form action="<?php echo BASE_URL ?>/invoices/saveInvoiceDetails" method="post">
+        <div class="top_nav">
+        <span class="customer_name"><?php echo $order['Customer']['first_name'] ?> <?php echo $order['Customer']['last_name'] ?></span> <span class="order_number"><?php echo $order['Order']['order_number'] ?></span><a href="#">more</a>
+        <?php echo $html->input('Invoice/id', array('type'=>'hidden', 'value'=>$invoice['Invoice']['id'])); ?>
+        <?php echo $html->input('Invoice/order_id', array('type'=>'hidden', 'value'=>$order['Order']['id'])); ?>
+        </div>   
+        <div class="section">
+        	<ul>
+            	<li><label>Order#:</label><span class="noedit"><?php echo $order['Order']['order_number'] ?></span></li>
+            </ul>             
+        </div>
+        <div class="section">
+            <ul>
+                <li><label>Fname:</label><span class="noedit"><?php echo $order['Customer']['first_name'] ?></span></li>
+                <li><label>Lname:</label><span class="noedit"><?php echo $order['Customer']['last_name'] ?></span></li>
+                <li><label>Address:</label><span class="noedit"><?php echo $order['Customer']['address'] ?></span></li>
+                <li><label>City:</label><span class="noedit"><?php echo $order['Customer']['city'] ?></span></li>
+                <li><label>Postal:</label><span class="noedit"><?php echo $order['Customer']['postal_code'] ?></span></li>
+            </ul>
+        </div>
+        <div class="section">
+            <ul>
+                <li><label>Time In:</label>
+                    <?php $begin = explode(":", $order['Order']['fact_job_beg']); ?>
+                    <?php echo $html->hourOptionTag('Order/fact_job_beg', null, 1, $begin[0]); ?>
+                    :
+                    <?php echo $html->minuteOptionTag('Order/fact_job_beg', null, $begin[1], null, null, false); ?>
+                </li>                                
+            </ul>
+        </div>
+      
+        <div class="section">
+            <ul>
+            <?php foreach($order['OrdersQuestions'] as $question) { ?> 
+            <?php if($question['question'] != "48 hrs notice:") { ?>       
+                <li><label> <?php echo $question['question'] ?></label><span class="noedit"><?php echo $question['local_answer'] ?></span></li>            
+            <?php } ?>
+            <?php } ?>
+            </ul>
+        </div>
+           
+        <div class="bottom_nav">        
+            <div class="right_arrow"><input type="submit" value="next"></div>
+            <div class="left_arrow"><input type="button" id="details" value="prev"></div>                        
+        </div>
+       
+    </form>
+    <pre>
+    <?php //print_r($order); ?>
+    </pre>
+</div>
+ 
+
+	

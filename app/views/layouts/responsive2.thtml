@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title><?php echo $title_for_layout?> - acesys</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <!-- Bootstrap 3.3.2 -->
+    <link href="http://acecare.ca/responsive2/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <!-- Font Awesome Icons -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <!-- Ionicons -->
+    <link href="http://code.ionicframework.com/ionicons/2.0.0/css/ionicons.min.css" rel="stylesheet" type="text/css" />
+    <!-- Theme style -->
+    <link href="http://acecare.ca/responsive2/dist/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+         folder instead of downloading all of them to reduce the load. -->
+    <link href="http://acecare.ca/responsive2/dist/css/skins/_all-skins.min.css" rel="stylesheet" type="text/css" />
+
+    <link href="http://acecare.ca/responsive2/plugins/datepicker/datepicker3.css" rel="stylesheet" type="text/css" />
+
+    <link href="http://acecare.ca/responsive2/plugins/daterangepicker/daterangepicker-bs3.css" rel="stylesheet" type="text/css" />
+    <!-- iCheck for checkboxes and radio inputs -->
+    <link href="http://acecare.ca/responsive2/plugins/iCheck/all.css" rel="stylesheet" type="text/css" />
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- jQuery 2.1.3 -->
+    <script src="http://acecare.ca/responsive2/plugins/jQuery/jQuery-2.1.3.min.js"></script>
+    <!-- Bootstrap 3.3.2 JS -->
+    <script src="http://acecare.ca/responsive2/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+    <!-- SlimScroll -->
+    <script src="http://acecare.ca/responsive2/plugins/slimScroll/jquery.slimscroll.min.js" type="text/javascript"></script>
+    <!-- FastClick -->
+    <script src='http://acecare.ca/responsive2/plugins/fastclick/fastclick.min.js'></script>
+    <!-- AdminLTE App -->
+    <script src="http://acecare.ca/responsive2/dist/js/app.min.js" type="text/javascript"></script>
+    <!-- DatePicker -->
+    <script src='http://acecare.ca/responsive2/plugins/datepicker/bootstrap-datepicker.js'></script>
+    <!-- date-range-picker -->
+    <script src="http://acecare.ca/responsive2/plugins/daterangepicker/daterangepicker.js" type="text/javascript"></script>
+    <!-- DATA TABLES SCRIPT -->
+    <script src="http://acecare.ca/responsive2/plugins/datatables/jquery.dataTables.js" type="text/javascript"></script>
+    <script src="http://acecare.ca/responsive2/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>
+    <!-- iCheck 1.0.1 -->
+    <script src="http://acecare.ca/responsive2/plugins/iCheck/icheck.min.js" type="text/javascript"></script>
+    <script
+            src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+            integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+            crossorigin="anonymous"></script>
+   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script>
+	$(function(){
+		$('.input-group.date').datepicker({
+			format: "yyyy-mm-dd",
+			todayHighlight: true
+		});
+		$('.datepicker').datepicker({
+			format: "yyyy-mm-dd",
+			todayHighlight: true
+		});
+		$('input.date-range').daterangepicker({format: "'YYYY-MM-DD'"});
+		$('input[type="checkbox"].minimal, input[type="radio"].minimal').iCheck({
+          	checkboxClass: 'icheckbox_minimal-blue',
+          	radioClass: 'iradio_minimal-blue'
+        });
+	});
+    </script>
+    <style>
+    .center {
+		text-align:center;
+	}
+	.bg-booked {
+		background-color:#E6EBFA;
+		color:black;
+	}
+	.bg-done {
+		background-color:#E6FFE6;
+		color:black;
+	}
+	.bg-lyear {
+		background-color:#6666CC;
+		color:white;
+	}
+	.bg-cancelled {
+		background-color:#FFE6E6;
+		color:black;
+	}
+	.bg-callback {
+		background-color:#d8e9e8;
+		color:black;
+	}
+	.bg-notin {
+		background-color:#f7f7b5;
+		color:black;
+	}
+	.bg-dnc {
+		background-color:#AD3333;
+		color:#F9F;
+	}
+	.bg-noeng, bg-wrong, bg-nis {
+		background-color:#E0E0EB;
+		color:black;
+	}
+	.bg-ans, .bg-busy {
+		background-color:#eeeeef;
+		color:#555555;
+	}
+    </style>
+  </head>
+  <?php
+  $home_link = "http://acecare.ca/acetest/index.php/pages/main";
+  ?>
+  <body class="skin-black">
+    <!-- Site wrapper -->
+    <div class="wrapper">
+
+      <header class="main-header">
+    <!--    <a href="http://acecare.ca/responsive2/index2.html" class="logo">  -->
+        <a href="<?=$home_link?>" class="logo"><b>ACE</b>System</a>
+        <!-- Header Navbar: style can be found in header.less -->
+        <nav class="navbar navbar-static-top" role="navigation">
+          <!-- Sidebar toggle button-->
+          <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <div class="navbar-custom-menu">
+            <ul class="nav navbar-nav">
+             <!-----Jack---show only on hotlist page------>
+           <?php if($_SERVER['PATH_INFO'] == '/calls/hotlist') { ?>
+              <li class="header_buttons" ><a href="javascript:void(0)" class="auto  btn-block">Pause</a></li>
+             <li class="header_buttons" ><a href="javascript:void(0)" class="manual  btn-block <?php if($_GET['t']==1)echo 'active';
+               ?>"> Manual</a></li> 
+            <li class="header_buttons" ><a href="javascript:void(0)" class="auto  btn-block">Auto</a></li>
+<?php } ?>
+             
+
+
+             <!----------->
+              <!-- Messages: style can be found in dropdown.less-->
+              <?php if(false) { ?>
+              <li class="dropdown messages-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-envelope-o"></i>
+                  <span class="label label-success">4</span>
+                </a>
+                <ul class="dropdown-menu">
+
+                  <li class="header">You have 4 messages</li>
+                  <li>
+                    <!-- inner menu: contains the actual data -->
+                    <ul class="menu">
+                      <li><!-- start message -->
+                        <a href="#">
+                          <div class="pull-left">
+                            <img src="http://acecare.ca/responsive2/dist/img/NoPhoto_user.png" class="img-circle" alt="User Image"/>
+                          </div>
+                          <h4>
+                            Support Team
+                            <small><i class="fa fa-clock-o"></i> 5 mins</small>
+                          </h4>
+                          <p>Why not buy a new awesome theme?</p>
+                        </a>
+                      </li><!-- end message -->
+                    </ul>
+                  </li>
+                  <li class="footer"><a href="#">See All Messages</a></li>
+                </ul>
+              </li>
+              <?php } ?>
+              <!-- Notifications: style can be found in dropdown.less -->
+              <!--<li class="dropdown notifications-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-bell-o"></i>
+                  <span class="label label-warning">10</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li class="header">You have 10 notifications</li>
+                  <li>
+                    <ul class="menu">
+                      <li>
+                        <a href="#">
+                          <i class="fa fa-users text-aqua"></i> 5 new members joined today
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="footer"><a href="#">View all</a></li>
+                </ul>
+              </li>-->
+              <!-- Tasks: style can be found in dropdown.less -->
+              <!--<li class="dropdown tasks-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-flag-o"></i>
+                  <span class="label label-danger">9</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li class="header">You have 9 tasks</li>
+                  <li>
+                    <ul class="menu">
+                      <li>
+                        <a href="#">
+                          <h3>
+                            Design some buttons
+                            <small class="pull-right">20%</small>
+                          </h3>
+                          <div class="progress xs">
+                            <div class="progress-bar progress-bar-aqua" style="width: 20%" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                              <span class="sr-only">20% Complete</span>
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="footer">
+                    <a href="#">View all tasks</a>
+                  </li>
+                </ul>
+              </li>-->
+              <!-- User Account: style can be found in dropdown.less -->
+              <li class="dropdown user user-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <img src="http://acecare.ca/responsive2/dist/img/NoPhoto_user.png" class="user-image" alt="User Image"/>
+                  <span class="hidden-xs"><?php echo $_SESSION['user']['name'] ?></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <!-- User image -->
+                  <li class="user-header">
+                    <img src="http://acecare.ca/responsive2/dist/img/NoPhoto_user.png" class="img-circle" alt="User Image" />
+                    <p>
+                      <?php echo $_SESSION['user']['name'] ?>
+                      <!--<small>Member since Nov. 2012</small>-->
+                    </p>
+                  </li>
+                  <!-- Menu Body -->
+                  <?php if(false) { ?>
+                  <li class="user-body">
+                    <div class="col-xs-4 text-center">
+                      <a href="#">Followers</a>
+                    </div>
+                    <div class="col-xs-4 text-center">
+                      <a href="#">Sales</a>
+                    </div>
+                    <div class="col-xs-4 text-center">
+                      <a href="#">Friends</a>
+                    </div>
+                  </li>
+                  <?php } ?>
+                  <!-- Menu Footer-->
+                  <li class="user-footer">
+                    <?php if(false) { ?>
+                    <div class="pull-left">
+                      <a href="#" class="btn btn-default btn-flat">Profile</a>
+                    </div>
+                    <?php } ?>
+                    <div class="pull-left">
+                      <i>ace.<?php echo $_SESSION['user']['id'] ?></i>
+                    </div>
+                    <div class="pull-right">
+                      <a href="<?php echo BASE_URL?>/login/logout" class="btn btn-default btn-flat">Sign out</a>
+                    </div>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </header>
+
+      <!-- =============================================== -->
+
+      <!-- Left side column. contains the sidebar -->
+      <aside class="main-sidebar">
+        <!-- sidebar: style can be found in sidebar.less -->
+        <section class="sidebar">
+          <!-- Sidebar user panel -->
+          <div class="user-panel">
+            <div class="pull-left image">
+              <img src="http://acecare.ca/responsive2/dist/img/NoPhoto_user.png" class="img-circle" alt="User Image" />
+            </div>
+            <div class="pull-left info">
+              <p><?php echo $_SESSION['user']['name'] ?></p>
+
+              <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+            </div>
+          </div>
+          <!-- search form -->
+          <form action="hotlisteditor" method="get" class="sidebar-form">
+            <?php if(true) { ?>
+            <?php if(!isset($_SESSION['sidebar-menu']['admin'])) { ?>
+			<?php } else { ?>
+            <div class="input-group">
+              <input type="text" name="p" class="form-control" placeholder="Phone #"/>
+              <span class="input-group-btn">
+                <button type='submit' name='seach' id='search-btn' class="btn btn-flat"><i class="fa fa-search"></i></button>
+              </span>
+            </div>
+            <?php } ?>
+            <?php } ?>
+          </form>
+          <!-- /.search form -->
+          <!-- sidebar menu: : style can be found in sidebar.less -->
+          <ul class="sidebar-menu">
+            <?php if(!isset($_SESSION['sidebar-menu']['admin'])) { ?>
+            <li class="treeview">
+            <a href="<?php echo BASE_URL?>/calls/search">
+              	<i class="fa fa-search ?>"></i> <span>Search</span></i>
+            </a>
+
+            <a href="<?php echo BASE_URL?>/calls/callbacks">
+              	<i class="fa fa-flag ?>"></i> <span>Callbacks</span></i>
+            </a>
+            </li>
+            <?php } ?>
+            <?php if(isset($_SESSION['sidebar-menu'])) foreach($_SESSION['sidebar-menu'] as $menu) { ?>
+            <?php //if(!empty($menu['submenu']) || isset($menu['link'])) { ?>
+            <li class="treeview">
+              <?php if(isset($menu['link'])) { ?>
+              <a href="<?php echo BASE_URL.$menu['link'] ?>"  >
+              	<i class="fa fa-<?php echo $menu['icon'] ?>"></i> <span><?php echo ucfirst($menu['text']) ?></span></i>
+              </a>
+			  <?php } else { ?>
+              <a href="#">
+              	<i class="fa fa-<?php echo $menu['icon'] ?>"></i> <span><?php echo ucfirst($menu['text']) ?></span> <i class="fa fa-angle-left pull-right"></i>
+              </a>
+			  <?php } ?>
+
+              <ul class="treeview-menu">
+              	<?php foreach($menu['submenu'] as $m) { ?>
+                <li><a href="<?php echo BASE_URL?><?php echo $m['link'] ?>" title="<?php echo $m['text'] ?>"><i class="fa fa-<?php echo $m['icon'] ?>"></i> <?php echo substr($m['text'], 0, 25) ?><?php echo strlen($m['text'])>25?"...":"" ?></a>
+
+                </li>
+                <?php } ?>
+              </ul>
+            </li>
+            <?php //} ?>
+            <?php } ?>
+
+<!-------------------For Importing------------------------------------->
+ <?php /*if(isset($_SESSION['sidebar-menu'])) foreach($_SESSION['sidebar-menu'] as $menu) { ?>
+            <?php if((!empty($menu['submenu']) || isset($menu['link'])) && strtolower($menu['text'])=='ace list') { ?>
+            <li class="treeview">
+              <?php if(isset($menu['link'])) { ?>
+              <a href="<?php echo BASE_URL.$menu['link'] ?>">
+              	<i class="fa fa-<?php echo $menu['icon'] ?>"></i> <span><?php echo ucfirst($menu['text']).' Import'; ?></span></i>
+              </a>
+			  <?php } else { ?>
+              <a href="#">
+              	<i class="fa fa-<?php echo $menu['icon'] ?>"></i> <span><?php echo ucfirst($menu['text']).' Import'; ?></span> <i class="fa fa-angle-left pull-right"></i>
+              </a>
+			  <?php } ?>
+
+              <ul class="treeview-menu">
+              	<?php  foreach($menu['submenu'] as $m) {   
+                    $link=str_replace('hotlist','importleads',$m['link']);    ?>
+                <li><a href="<?php echo BASE_URL?><?php echo $link ?>" title="<?php echo $m['text'] ?>"><i class="fa fa-<?php echo $m['icon'] ?>"></i> <?php echo substr($m['text'], 0, 25) ?><?php echo strlen($m['text'])>25?"...":"" ?></a>
+
+                </li>
+                <?php } ?>
+              </ul>
+            </li>
+            <?php } ?>
+            <?php } */?>
+
+
+
+
+<!---------------------------------------------------------------------->
+            <!--
+            <li class="treeview">
+              <a href="#">
+                <i class="fa fa-share"></i> <span>Multilevel</span>
+                <i class="fa fa-angle-left pull-right"></i>
+              </a>
+              <ul class="treeview-menu">
+                <li><a href="#"><i class="fa fa-circle-o"></i> Level One</a></li>
+                <li>
+                  <a href="#"><i class="fa fa-circle-o"></i> Level One <i class="fa fa-angle-left pull-right"></i></a>
+                  <ul class="treeview-menu">
+                    <li><a href="#"><i class="fa fa-circle-o"></i> Level Two</a></li>
+                    <li>
+                      <a href="#"><i class="fa fa-circle-o"></i> Level Two <i class="fa fa-angle-left pull-right"></i></a>
+                      <ul class="treeview-menu">
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Level Three</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Level Three</a></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li><a href="#"><i class="fa fa-circle-o"></i> Level One</a></li>
+              </ul>
+            </li>
+            -->
+          </ul>
+        </section>
+        <!-- /.sidebar -->
+      </aside>
+
+      <!-- =============================================== -->
+
+      <!-- Content Wrapper. Contains page content -->
+      <div class="content-wrapper">
+        <?php echo $content_for_layout?>
+      </div><!-- /.content-wrapper -->
+
+      <footer class="main-footer">
+        <div class="pull-right hidden-xs">
+          <b>Version</b> 2.0
+        </div>
+        <strong>Copyright &copy; 2014-<?php echo date("Y"); ?> <a href="http://acecare.ca" target="_new">ACE</a>.</strong> All rights reserved.
+      </footer>
+    </div><!-- ./wrapper -->
+
+
+  </body>
+</html>
+
+<style>
+li.header_buttons a.active, li.header_buttons a.active:active, li.header_buttons a.active:focus,
+ .header_buttons.btn-block.active:hover{
+    background-color: #00a65a!important;
+    border-color: #008d4c;
+    color:#fff;
+}
+</style>

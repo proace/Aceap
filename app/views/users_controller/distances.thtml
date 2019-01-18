@@ -1,0 +1,107 @@
+<h3>Customers</h3>
+
+<form method="post" action="<?=BASE_URL?>/users/distances" name="csform">
+	City: 
+	<select id="city_select" name="city">
+		<?php foreach ($cities as $v): ?>
+		<option value="<?=$v?>" <?=($v==$city ? 'selected' : '')?>><?=$v?></option>
+		<?php endforeach; ?>
+	</select>
+	&nbsp;&nbsp;
+	Postal code: 
+	<input type="text" name="postal_code" value="<?=$postal_code?>" size="6" />
+	&nbsp;&nbsp;
+	Last Job Date from:
+	&nbsp;&nbsp;
+	<input type="text" name="from" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$from?>">
+	&nbsp;&nbsp;
+	to:
+	&nbsp;&nbsp;
+	<input type="text" name="to" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$to?>">
+&nbsp;&nbsp;
+	Job Type
+	<select id="job_types_select" name="job_type">
+		<option value="">All</option>
+		<?php foreach ($job_types as $v): ?>
+		<option value="<?=$v['id']?>" <?=($v['id']==$job_type ? 'selected' : '')?>><?=$v['name']?></option>
+		<?php endforeach; ?>
+	</select>
+	<input type="submit" name="submit2" value="Submit" class="buttons" />
+</form>
+Number of customers found: <?=$rows_count?><br />
+<?php
+	$fields=array(
+		'name'=>'Name',
+		'phone'=>'Phone',
+		'cell_phone'=>'Cel. Phone',
+		'address'=>'Address',
+		'city'=>'City',
+		'postal_code'=>'Postal Code',
+		'job_date'=>'Job Date',
+		'job_type'=>'Job Type',
+		'distance'=>'Distance (meters)',
+		'h'=>'History',
+		'r'=>'Result'
+		);
+	if ($pages_count>1) {
+		$pages='<div style="font-size:14px; margin:10px 0">Pages: ';
+		$url=BASE_URL.'/users/distances/';
+		if ($page_number>1) $pages.='<a href="'.$url.($page_number-1).'">&lt;&lt;</a>&nbsp; ';
+		$pstart=max($page_number-10,1);
+		for ($i=$pstart; $i<=$pages_count; $i++) {
+			if ($i==$page_number)
+				$pages.='&nbsp;<b>'.$i.'</b>&nbsp; ';
+			else
+				$pages.='&nbsp;<a href="'.$url.$i.'">'.$i.'</a>&nbsp; ';
+			if ($i-$pstart>19) {
+				$pages.='&nbsp;...&nbsp; &nbsp;<a href="'.$url.$pages_count.'">'.$pages_count.'</a>&nbsp; ';
+				break;
+			}
+		}
+		if ($page_number<$pages_count) $pages.='&nbsp;<a href="'.$url.($page_number+1).'">&gt;&gt;</a>';
+		$pages.='</div>';
+	}
+	else $pages='';
+	echo $pages;
+
+?>
+<style>tr:hover td{background-color:#eec}</style>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+	<tr>
+		<?php foreach ($fields as $f=>$v): ?>
+		<th><?=$v?></th>
+		<?php endforeach; ?>
+	</tr>
+<?php $r=1;
+	//foreach ($items as $zone){
+	//var_dump($ppage,$page_number, $rows_count);
+	for ($i=( $ppage*($page_number-1) ); $i<min( ($ppage*$page_number), $rows_count); $i++ ){
+		$obj=&$items[$i];
+		//$dist=$zone['distance'];
+		//foreach ($zone['rows'] as $obj){
+			$class = 'cell'.(++$r%2);
+	?>
+		<tr class="<?= $class ?>">
+			<td><?=$obj['first_name'].' '.$obj['last_name']?> &nbsp;</td>
+			<td><?=$obj['phone']?> &nbsp;</td>
+			<td><?=$obj['cell_phone']?> &nbsp;</td>
+			<td><?=$obj['address']?> &nbsp;</td>
+			<td><?=$obj['city']?> &nbsp;</td>
+			<td><?=$obj['postal_code']?> &nbsp;</td>
+			<td><?=$obj['job_date']?> &nbsp;</td>
+			<td><?=$obj['name']?> &nbsp;</td>
+			<td><?=isset($obj['distance'])? $obj['distance'] : 0?></td>
+			<td><a href="<?=BASE_URL?>/orders/editBooking?customer_id=<?=$obj['id']?>">Show history</a></td>
+			<td><select onchange="location.href='<?=BASE_URL?>/orders/editBooking?customer_id=<?=$obj['id']?>&'+value">
+					<option value="">Choose action</option>
+					<option value="order_id=0">Book</option>
+					<option value="action_type=callback">Call back</option>
+					<option value="action_type=comeback">Come back</option>
+					<option value="action_type=dnc">Do Not Call</option>
+				</select>
+				</td>
+		</tr>
+<?php
+	} ?>
+</table>
+<?=$pages?>

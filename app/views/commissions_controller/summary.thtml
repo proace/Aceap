@@ -1,0 +1,155 @@
+<style type="text/css">
+	.inactive{
+		color: #868686 !important;
+	}
+	.active{
+		font-weight:bold;
+	}
+	.notready{
+		color: #f80e01 !important;
+	}
+	td.inactive.notready{
+		color: #ffaaa6 !important;
+	}
+	.results th{
+		color:black;
+		border-left:1px solid #9f9f9f;
+		border-bottom:1px solid #9f9f9f;
+	}
+</style>
+<script>
+function finalAdjust(period_id,tech_id,element){
+	val = element.value;
+	$.get("<?=BASE_URL;?>/commissions/finalAdjust",
+		{period_id:period_id,
+		 tech_id:tech_id,
+ 		 adjustment:val},
+	  function(data){document.forms['viewform'].submit();});
+}
+</script>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform" id="viewform">
+	<input type="hidden" name="action" value="view" >
+	<input type="hidden" name="order" value="<?=$_GET['order']?>">
+	<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+	<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+	<input type="hidden" name="comm_oper" id="comm_oper" value="<?=$comm_oper?>" /> <!--edit;cancel;save -->
+	<input type="hidden" name="techId" id="techId" value="<?=$techid?>" />
+	<input type="hidden" name="selected_job" id="selected_job" value="<?=$selected_job?>" />
+	<input type="hidden" name="selected_commission_type" id="selected_commission_type" value="<?=$selected_commission_type?>" />
+<table width="800">
+	<tr>
+		<td class="sectionTitle" colspan=3>Commissions Summary</td>
+	</tr>
+	<tr>
+		<td>
+			Pay period:&nbsp;
+			<select name="pay_period" onchange="document.viewform.submit();">
+				<option value="-1" <?=($pay_period<0?'selected':'')?>>-=Custom=-</option>
+			<?php foreach ($allPayPeriods as $v => $k) {
+				$selected = '';
+				if ($v == $pay_period) $selected = 'selected';?>
+				<option value="<?=$v?>" <?=$selected?>><?=$k?></option>
+			<?php } ?>
+			</select>
+		</td>
+		<td style="<?=$disabled?>">Date from: 
+			&nbsp;&nbsp;
+			<input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_fdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			&nbsp;&nbsp;Date to:&nbsp;&nbsp;
+			<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			&nbsp;&nbsp;
+			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_tdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+		</td>
+		<td align="left">
+			<input type="submit" name="submit2" onclick="return SearchRecords();" id="submit2" value="Update" class="buttons">
+		</td>			
+	</tr>
+</table> 	
+ 	</form>
+<!--<div style="overflow: auto; height: 390px;">-->
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
+    <tr style="height:25px;">
+        <th rowspan=2 width="200" style="background-color:#ffffff;">Tech</th>
+        <th rowspan=2 width="60" style="background-color:#80ff80;">Booking Comm</th>
+        <th colspan=2 width="60" style="background-color:#53ffff;">Sales Comm</th>
+        <th rowspan=2 width="60" style="background-color:#c0c0c0;">Time Comm</th>
+<!--				<th colspan=2 width="60" style="background-color:#ff7d7d;">Deductions</th>  -->
+				<th rowspan=2 width="60" style="background-color:#ff7d7d;">Redo</th>
+        <th rowspan=2 width="60" style="background-color:#ffff80;">Jobs Adj.</th>
+        <th rowspan=2 width="60" style="background-color:#ffff80;">Total Comm</th>
+        <th rowspan=2 width="60" style="background-color:#ffff80;">Approved Comm</th>
+        <th rowspan=2 style="background-color:#ffff80;<?=$disabled2?>">Final Adj.</th>
+        <th rowspan=2 style="background-color:#ffff80;<?=$disabled2?>">Total</th>
+    </tr>
+    <tr style="height:25px;">
+        <th width="60" style="background-color:#53ffff;">jobs</th>
+        <th width="60" style="background-color:#53ffff;">appli ances</th>
+<!--				<th width="50" style="background-color:#ff7d7d;">Redo</th>
+				<th width="50" style="background-color:#ff7d7d;">Helper</th> -->
+    </tr>		
+<?php
+	$r = 1;
+	$booking_sum = 0;
+	$sales_job_sum = 0;
+	$sales_appl_sum = 0;
+	$time_sum = 0;
+	$redo_penalty_sum = 0;
+	$helper_ded_sum = 0;
+	$adjustment_sum = 0;
+	$total_sum = 0;
+	$approved_sum = 0;
+	foreach ($summary as $obj):
+		$class = 'cell'.(++$r%2);
+		$comm_calculated_class='color:red;';
+		if($obj['user_commissions_saved'] == 1){
+			$comm_calculated_class='color:green;';
+		}
+		$booking_sum += $obj['booking_comm'];
+		$sales_job_sum += $obj['sales_job_comm'];
+		$sales_appl_sum += $obj['sales_appl_comm'];
+		$time_sum += $obj['time_comm'];
+		$redo_penalty_sum += $obj['redo_penalty'];
+		$helper_ded_sum += $obj['helper_ded'];
+		$adjustment_sum += $obj['adjustment'];
+		$total_sum += $obj['total_comm'];
+		$approved_sum += $obj['approuved'];
+		$final_adj_sum += $obj['final_adj'];
+		$final_total_sum += $obj['approuved']+$obj['final_adj'];
+?>
+    <tr class="<?= $class ?>">
+        <td><a href="<?=BASE_URL?>/commissions/techSummary?ffromdate=<?=$fdate?>&ftodate=<?=$tdate?>&ftechid=<?=$obj['id'];?>"><?=$obj['name'];?></a></td>
+		<td align="right"><?=($obj['booking_comm']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['booking_comm'])?></td>
+		<td align="right"><?=($obj['sales_job_comm']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['sales_job_comm'])?></td>
+		<td align="right"><?=($obj['sales_appl_comm']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['sales_appl_comm'])?></td>        
+		<td align="right"><?=($obj['time_comm']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['time_comm']) ?></td>        
+		<td align="right"><?=($obj['redo_penalty']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['redo_penalty'])?></td>
+<!--				<td align="right"><?=($obj['helper_ded']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['helper_ded'])?></td> -->
+		<td align="right"><?=($obj['adjustment']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['adjustment'])?></td>
+		<td align="right"><?=($obj['total_comm']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['total_comm']) ?></td>
+		<td align="right"><?=($obj['approuved']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['approuved']) ?></td>
+		<td align="right" style="<?=$disabled2?>">
+			<input style="width:60px;" type="text" value="<?=$obj['final_adj']?>" onchange="finalAdjust('<?=$pay_period?>','<?=$obj['id']?>',this)">
+			<a href="#">Save</a>
+		</td>
+		<td align="right" style="<?=$disabled2?>"><b><?=(($obj['approuved']+$obj['final_adj'])==0)?'&nbsp;':$HtmlAssist->prPrice($obj['approuved']+$obj['final_adj']) ?></b></td>
+    </tr>
+<?php endforeach; ?>
+    <tr>
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b>Total:</b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b><?=$HtmlAssist->prPrice($booking_sum);?></b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b><?=$HtmlAssist->prPrice($sales_job_sum);?></b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b><?=$HtmlAssist->prPrice($sales_appl_sum);?></b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b><?=$HtmlAssist->prPrice($time_sum);?></b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b><?=$HtmlAssist->prPrice($redo_penalty_sum);?></b></td>
+<!--				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?=$HtmlAssist->prPrice($helper_ded_sum);?></b></td>-->
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b><?=$HtmlAssist->prPrice($adjustment_sum);?></b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b><?=$HtmlAssist->prPrice($total_sum);?></b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b><?=$HtmlAssist->prPrice($approved_sum);?></b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f;<?=$disabled2?>"><b><?=$HtmlAssist->prPrice($final_adj_sum);?></b></td>
+		<td align="right" colspan=2 style="border-top:1px solid #9f9f9f;<?=$disabled2?>"><b><?=$HtmlAssist->prPrice($final_total_sum);?></b></td>
+    </tr>
+</table>
+<!--</div>	-->

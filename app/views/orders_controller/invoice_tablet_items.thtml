@@ -1,0 +1,390 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Invoice</title>
+<!--<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+<meta name="apple-mobile-web-app-capable" content="yes">-->
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_items7.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/eff_calculator.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.21.custom.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
+
+
+</head>
+
+<body>
+<ul id="nav">	
+    <li><a id="jobs_link" class="buttons"><div>Jobs</div></a></li>
+    <li><a href="<?php echo BASE_URL;?>/pages/main" id="home_link" class="buttons"><div>ACESYS</div></a></li>
+    <li><a id="calc_link" class="buttons"><div>Eff Calculator</div></a></li>
+</ul>
+
+<div id="invoice">
+	<div id="items_container" style="display:none"><div id="loading_text">LOADING ITEMS...</div></div>
+	<ul id="job_list">
+    	<?php foreach($jobs as $job) { ?>
+        <?php if($job['Order']['order_status_id'] == 5) $url = BASE_URL."/orders/invoiceTabletPrint?order_id=".$job['Order']['id'] ?>
+        <?php if($job['Order']['order_status_id'] == 3) $url = "#" ?>
+        <?php if($job['Order']['order_status_id'] == 1) $url = BASE_URL."/orders/invoiceTabletOverview?order_id=".$job['Order']['id'] ?>
+    	<li>
+        <a href="<?php echo $url;?>" class="job status<?php echo $job['Order']['order_status_id'] ?>">
+        	<span><?php echo $job['Customer']['first_name'] ?> <?php echo $job['Customer']['last_name'] ?> <?php echo $job['Customer']['address_street'].', '.$job['Customer']['state'].', '.$job['Customer']['city']; ?><?php echo $job['Order']['job_time_beg'] ?> <?php echo $job['Order']['job_time_end'] ?></span>            
+            <div><?php echo $job['Order']['order_number'] ?></div>
+        </a>        
+        </li>                
+        <?php } ?>
+    </ul> 
+    <?php $job = $this_job; ?>
+    <?php if($job['Order']['id'] == $order_id) { ?>
+    <input type="hidden" id="job_type" value="<?php echo $job['Order']['order_type_id'] ?>" />
+    <input type="hidden" id="order_status" value="<?php echo $job['Order']['order_status_id'] ?>" />
+    <div class="header">
+    <h1>#<?php echo $job['Order']['order_number'] ?> - <?php echo $job['Type']['name'] ?></h1>
+   <table>
+        <tr>
+            <td>Firs name:</td>
+            <td><?php echo $job['Customer']['first_name'] ?></td>
+        </tr>
+        <tr>
+            <td>Last name:</td>
+            <td><?php echo $job['Customer']['last_name'] ?></td>
+        </tr>
+        <tr>
+            <td>Email:</td>
+            <td><?php echo $job['Customer']['email'] ?></td>
+        </tr>
+        <tr>
+            <td>Unit number:</td>
+            <td><?php echo $job['Customer']['address_unit'] ?></td>
+        </tr>
+        <tr>
+            <td>Street number:</td>
+            <td><?php echo $job['Customer']['address_street_number'] ?></td>
+        </tr>
+        <tr>
+            <td>Street name:</td>
+            <td><?php echo $job['Customer']['address_street'] ?></td>
+        </tr>
+        <tr>
+            <td>City:</td>
+            <td><?php echo $job['Customer']['city'] ?></td>
+        </tr>
+        <tr>
+            <td>Postal code:</td>
+            <td><?php echo $job['Customer']['postal_code'] ?></td>
+        </tr>
+        <tr>
+            <td>Phone number:</td>
+            <td><?php echo $job['Customer']['phone'] ?></td>
+        </tr>
+    </table>
+    <p><a href="<?php echo $HtmlAssist->getOrderGoogleMap($job['Customer'])?>" target="_blank">
+		<?php echo $job['Customer']['address'] ?> <?php echo $job['Customer']['city'] ?> <?php echo $job['Customer']['postal_code'] ?>
+        </a>
+    </p>
+    </div>
+    <div id="items_div">
+    <form id="items_form" action="<?php echo BASE_URL ?>/orders/saveInvoiceTabletItems" method="post">    
+        <?php echo $html->input('Invoice/order_id', array('type'=>'hidden', 'value'=>$job['Order']['id'])); ?>
+         <?php echo $html->input('Invoice/order_status_id', array('type'=>'hidden', 'value'=>$job['Order']['order_status_id'])); ?>
+        <?php echo $html->input('Invoice/order_type_id', array('type'=>'hidden', 'value'=>$job['Order']['order_type_id'])); ?>
+        <?php echo $html->input('Invoice/customer_id', array('type'=>'hidden', 'value'=>$job['Order']['customer_id'])); ?> 
+        <?php echo $html->input('Invoice/phone', array('type'=>'hidden', 'value'=>$job['Customer']['phone'])); ?>
+        <?php echo $html->input('Invoice/has_booking', array('type'=>'hidden', 'id'=>'has_booking', 'value'=>0)); ?>
+        <?php echo $html->input('Invoice/city_id', array('type'=>'hidden', 'id'=>'city_id', 'value'=>$city_id)); ?>
+        <div class="order_div">            
+        <h3>#<?php echo $job['Order']['order_number'] ?> - <?php echo $job['Type']['name'] ?></h3>
+        <table class="item_table office">
+        	<tr>
+            	<th class="item_name"></th>
+                <th>Discount</th>
+                <th>Payable</th>                
+            </tr>
+            
+        	<?php foreach($job['BookingItem'] as $item) { ?>
+            <tbody>
+            <?php if($item['class'] == 0) { ?>
+        	<tr>
+            	<td class="left"><?php echo $item['name'] ?></td>
+                <td class="right"><?php echo $item['discount'] ?></td>                                
+                <td class="right"><?php echo ($item['price'] * $item['quantity']) - $item['discount'] + $item['addition'] ?>
+                <input type="hidden" class="current_office_cost" value="<?php echo ($item['price'] * $item['quantity']) - $item['discount'] + $item['addition'] ?>" />
+                </td>
+            </tr>
+            <?php } ?>
+            </tbody>            
+            <?php } ?>
+        </table>
+        
+        <h3>New Requirements</h3>
+        <?php //print_r($job_type_id) ?>
+        <div class="item_tabs">
+        	
+            
+            	<!--<input type="button" value="Service" class="items_button service_tab" />
+                <input type="button" value="Furnace" class="items_button furnace_tab" />
+                <input type="button" value="Boiler" class="items_button boiler_tab" />
+                <input type="button" value="Hot Water" class="items_button hotwater_tab" />
+                <input type="button" value="Split" class="items_button split_tab" />
+                <input type="button" value="Fireplace" class="items_button fireplace_tab" />
+                <input type="button" value="Accessories" class="items_button accessories_tab" />
+                <input type="button" value="Parts" class="items_button parts_tab" />
+                <input type="button" value="Permit" class="items_button permit_tab" />
+                <input type="button" value="Heat Pumps" class="items_button heatpumps_tab" />-->            
+            	<?php foreach($job_type_id as $jid => $jobtype) { ?>
+                	<input type="button" value="<?php echo $jobtype ?>" class="items_button tab<?php echo $jid ?>" />
+                <?php } ?>                
+                
+                <input type="button" value="Purchase from supplier" class="" id="add_supplier_item" />
+                
+        </div>
+        <table class="item_table tech">
+        	<tr>
+            	<th class="item_name"></th>
+                <th>Installed/Done</th>
+                <th>Discount</th>                
+                <th>Quantity</th>
+                <th>Payable</th> 
+                <th></th>              
+            </tr>
+            <tbody id="item_details">
+        	<?php foreach($job['BookingItem'] as $item) { ?>            
+            <?php if($item['class'] == 1) { ?>
+        	<tr class="item_detail">
+            	<td class="left"><?php echo $item['name'] ?>
+                	<input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][name]" value="<?php echo $item['name'] ?>" />
+                    <input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][price_purchase]" value="<?php echo $item['price_purchase'] ?>" />
+                	<input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][item_category_id]" value="<?php echo $item['item_category_id'] ?>" />              		<input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][addition]" value="<?php echo $item['addition'] ?>" />
+                </td>
+                <td class="center">                	
+                	<!--<select class="installed" name="data[BookingItem][<?php echo $item['item_id'] ?>][installed]">
+                    	<option value="0" <?php echo $item['installed']==0?"selected":""; ?>></option>
+                        <option value="2" <?php echo $item['installed']==2?"selected":""; ?>>No</option>
+						<option value="1" <?php echo $item['installed']==1?"selected":""; ?>>Yes</option>
+                    </select>-->
+                    <input type="hidden" "name="data[BookingItem][<?php echo $item['item_id'] ?>][installed]" value="1" />Yes
+                </td>
+                <td class="center">
+                	<input type="text" class="discount_presets" name="data[BookingItem][<?php echo $item['item_id'] ?>][discount]" value="<?php echo $item['discount'] ?>" />                	
+                    <!--<select class="discount_presets" name="data[BookingItem][<?php echo $item['item_id'] ?>][discount]">
+                    	<option value="<?php echo $item['discount'] ?>"><?php echo $item['discount'] ?></option>
+                        <option value="<?php echo $item['price']*0.05 ?>"><?php echo number_format(round($item['price']*0.05,2), 2, '.', '') ?>(5%)</option>
+						<option value="<?php echo $item['price']*0.10 ?>"><?php echo number_format(round($item['price']*0.10,2), 2, '.', '') ?>(10%)</option>
+                    </select>-->
+                </td>
+                <td class="center">
+                	<select class="quantity_presets" name="data[BookingItem][<?php echo $item['item_id'] ?>][quantity]">
+                    	<?php for($i = 1; $i < 11; $i++) { ?>
+                    	<option value="<?php echo $i ?>" <?php echo $item['quantity']==$i?"selected":"" ?>><?php echo $i ?></option>
+                        <?php } ?>           	
+                    </select>
+                	<!--<input type="text" name="data[BookingItem][<?php echo $item['item_id'] ?>][quantity]" value="<?php echo $item['quantity'] ?>" />-->
+                </td>
+                <td class="center">
+                	<input type="hidden" class="base_price" name="data[BookingItem][<?php echo $item['item_id'] ?>][price]" value="<?php echo $item['price'] ?>" />
+                	<input type="text" class="price_payable" value="0" />
+                </td>
+                <td><input type="button" value=" X " class="delete_button" /></td>
+            </tr>            
+            <?php } ?>            
+            <?php } ?>             
+            </tbody>
+        </table>        
+        <div class="right">Sub Total: <input type="text" class="right" id="current_subtotal" name="data[Order][subtotal]" value="0" readonly="readonly" /></div>
+        <div class="right">GST: <input type="text" class="right" id="current_tax" name="data[Order][subtotal]" value="0" readonly="readonly" /></div>
+        <div class="right">Total: <input type="text" class="right" id="current_total" name="data[Order][total]" value="0" readonly="readonly" /></div>
+        <div class="right">Deposit: <input type="text" class="right" id="current_deposit" name="data[Order][deposit]" value="<?php echo $job['Order']['customer_deposit']==""?"0":$job['Order']['customer_deposit'] ?>" /></div>   
+        <div class="right">Balance: <input type="text" class="right" id="current_balance" name="data[Order][balance]" value="0" /></div>   
+        <br />        
+        <div class="right" id="payment_box">
+        	<div class="center" id="payment_details">
+        	</div>
+            <div class="clear_this"></div>
+        	<div>Paid by: <?php echo $html->selectTag('Payment/payment_method_id', $payment_methods); ?></div>
+        	<div>Auth#: <input type="text" class="right" id="auth_number" name="data[Payment][auth_number]" value="" /></div>
+        	<div>Amount: <input type="text" class="right" id="paid_by_amount" name="data[Payment][amount]" value="0" /></div>
+            <div><input type="button" value="Add Payment" id="save_payment" /></div>
+        </div>
+        
+        </div><!--END of order_div-->
+        <div class="order_div">
+        <?php if($last_order['Order']['order_number'] != "") { ?>
+        <?php echo $html->input('Order2/id', array('type'=>'hidden', 'value'=>$last_order['Order']['id'])); ?>        
+        <input type="hidden" id="saved_booking" name="saved_booking" value="1" />
+        <div class="float_right"><input type="button" id="delete_attached" value="DELETE" /><input type="hidden" name="data[delete_this]" id="delete_this" value="0" /></div>
+        
+        <h3>#<?php echo $last_order['Order']['order_number'] ?> - <?php echo $last_order['Type']['name'] ?></h3>
+        <h4>Schedule:
+        	<?php if(isset($last_order['Order']['job_date'])) { ?>
+            	<span class="route" id="schedule_display"><?php echo $last_order['Order']['job_date'] ?> between 
+				<?php echo $last_order['Order']['job_time_beg'] ?> and
+                <?php echo $last_order['Order']['job_time_end'] ?>
+                </span>  
+            <?php } else { ?>
+            	<span class="route" id="schedule_display">Not set</span>  
+            <?php } ?>        	          
+            <input type="button" id="load_timeslots" value="Change" />
+            <span id="loading_timeslots">LOADING SCHEDULE...</span>
+            <input type="button" id="close_timeslots" value="Close" />            
+        </h4>
+        <div id="slot_confirmations"></div>
+        <div id="timeslot_div"></div>
+        
+        <?php echo $html->input('Order2/job_date', array('type'=>'hidden', 'value'=>$last_order['Order']['job_date'])); ?>
+        <?php echo $html->input('Order2/job_time_beg', array('type'=>'hidden', 'value'=>$last_order['Order']['job_time_beg'])); ?>
+        <?php echo $html->input('Order2/job_time_end', array('type'=>'hidden', 'value'=>$last_order['Order']['job_time_end'])); ?>
+        <?php echo $html->input('Order2/job_truck', array('type'=>'hidden', 'value'=>$last_order['Order']['job_truck'])); ?>
+        <?php echo $html->input('Order2/job_technician1_id', array('type'=>'hidden', 'value'=>$last_order['Order']['job_technician1_id'])); ?>
+        <?php echo $html->input('Order2/job_technician2_id', array('type'=>'hidden', 'value'=>$last_order['Order']['job_technician2_id'])); ?>
+        
+        <div class="item_tabs">
+            <input type="button" value="Service" class="new_booking_items service_tab" />
+            <input type="button" value="Furnace" class="new_booking_items furnace_tab" />
+            <input type="button" value="Boiler" class="new_booking_items boiler_tab" />
+            <input type="button" value="Hot Water" class="new_booking_items hotwater_tab" />
+            <input type="button" value="Split" class="new_booking_items split_tab" />
+            <input type="button" value="Fireplace" class="new_booking_items fireplace_tab" />
+            <input type="button" value="Accessories" class="new_booking_items accessories_tab" />
+            <input type="button" value="Parts" class="new_booking_items parts_tab" />
+            <input type="button" value="Permit" class="new_booking_items permit_tab" />
+            <input type="button" value="Heat Pumps" class="new_booking_items heatpumps_tab" />
+        </div>
+        <table class="item_table technew">
+        	<tr>
+        		<th class="item_name"></th>
+                <th>Installed/Done</th>
+                <th>Discount</th>                
+                <th>Quantity</th>
+                <th>Payable</th> 
+                <th></th> 
+            </tr>
+            <tbody id="booking_item_details">
+            <tr class="booking_item_detail">
+            	<?php foreach($last_order['BookingItem'] as $item) { ?>            
+            	<?php if($item['class'] == 0) { ?>
+            	<td class="left"><?php echo $item['name'] ?>
+                	<input type="hidden" name="data[BookingItem2][<?php echo $item['item_id'] ?>][name]" value="<?php echo $item['name'] ?>" />
+                    <input type="hidden" name="data[BookingItem2][<?php echo $item['item_id'] ?>][price_purchase]" value="<?php echo $item['price_purchase'] ?>" />
+                	<input type="hidden" name="data[BookingItem2][<?php echo $item['item_id'] ?>][item_category_id]" value="<?php echo $item['item_category_id'] ?>" />              		<input type="hidden" name="data[BookingItem2][<?php echo $item['item_id'] ?>][addition]" value="<?php echo $item['addition'] ?>" />
+                </td>
+                <td class="center">                	
+                	<select class="installed" name="data[BookingItem2][<?php echo $item['item_id'] ?>][installed]">
+                    	<option value="0" <?php echo $item['installed']==0?"selected":""; ?>></option>
+                        <option value="2" <?php echo $item['installed']==2?"selected":""; ?>>No</option>
+						<option value="1" <?php echo $item['installed']==1?"selected":""; ?>>Yes</option>
+                    </select>
+                </td>
+                <td class="center">                	
+                    <select class="discount_presets" name="data[BookingItem2][<?php echo $item['item_id'] ?>][discount]">
+                    	<option value="<?php echo $item['discount'] ?>"><?php echo $item['discount'] ?></option>
+                        <option value="<?php echo $item['price']*0.05 ?>"><?php echo number_format(round($item['price']*0.05,2), 2, '.', '') ?>(5%)</option>
+						<option value="<?php echo $item['price']*0.10 ?>"><?php echo number_format(round($item['price']*0.10,2), 2, '.', '') ?>(10%)</option>
+                    </select>
+                </td>
+                <td class="center">
+                	<select class="quantity_presets" name="data[BookingItem2][<?php echo $item['item_id'] ?>][quantity]">
+                    	<?php for($i = 1; $i < 11; $i++) { ?>
+                    	<option value="<?php echo $i ?>" <?php echo $item['quantity']==$i?"selected":"" ?>><?php echo $i ?></option>
+                        <?php } ?>           	
+                    </select>                	
+                </td>
+                <td class="center">
+                	<input type="hidden" class="base_price" name="data[BookingItem2][<?php echo $item['item_id'] ?>][price]" value="<?php echo $item['price'] ?>" />
+                	<input type="text" class="price_payable" value="0" />
+                </td>
+                <td><input type="button" value=" X " class="delete_button" /></td>
+            </tr>
+                <?php } ?>            
+            	<?php } ?>            
+            </tbody>
+        </table>
+        <div class="right">Sub Total: <input type="text" class="right" id="new_subtotal" name="data[Order2][subtotal]" value="0" readonly="readonly" /></div>
+        <div class="right">HST: <input type="text" class="right" id="new_tax" name="data[Order2][subtotal]" value="0" readonly="readonly" /></div>
+        <div class="right">Total: <input type="text" class="right" id="new_total" name="data[Order2][total]" value="0" readonly="readonly" /></div>
+        <div class="right">Deposit: <input type="text" class="right" id="new_deposit" name="data[Order2][deposit]" value="" readonly="readonly" /></div>   
+        <div class="right">Balance: <input type="text" class="right" id="new_balance" name="data[Order2][balance]" value="0" readonly="readonly" /></div>
+        
+        <?php } else { ?>
+        <div id="new_bookind_div">
+        <input type="hidden" id="saved_booking" value="0" />
+        <input type="hidden" name="data[delete_this]" id="delete_this" value="0" />
+        <h3>New Booking</h3>
+        <div><strong>Job Type:</strong> <?php echo $html->selectTag('Booking/order_type_id', $job_types, $booking['Order']['order_type_id']); ?></div>      
+        </div>
+        <?php } ?>
+        </div><!--END of order_div-->
+        
+        
+        <div class="next_div">
+        	<!--<input type="button" id="compute_values" value="compute" />-->
+        	<input type="button" class="next_submit" id="test_required" value="Save" />
+        </div>
+    </form>    
+    </div>
+    <?php } ?>
+	
+    <!--<pre><?php //print_r($jobs) ?></pre>-->
+</div>
+
+<div id="calc_dialog">
+<table>
+	<tr>
+    	<td>
+        	<h3>Yearly Cost</h3>
+        	<table>
+            	<tr>
+                	<td colspan="3"><div class="number_display" id="cost">0</div></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="7" class="calc_digits"></td>
+                    <td><input type="button" value="8" class="calc_digits"></td>
+                    <td><input type="button" value="9" class="calc_digits"></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="4" class="calc_digits"></td>
+                    <td><input type="button" value="5" class="calc_digits"></td>
+                    <td><input type="button" value="6" class="calc_digits"></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="1" class="calc_digits"></td>
+                    <td><input type="button" value="2" class="calc_digits"></td>
+                    <td><input type="button" value="3" class="calc_digits"></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="0" class="calc_digits"></td>
+                    <!--<td><input type="button" value="." class="calc_dot"></td>-->
+                    <td colspan="2" class="right"><input type="button" value="clear" class="calc_clear"></td>
+                </tr>
+            </table>
+            <h3>Old Furnace %</h3>
+        	<table>
+            	<tr>
+                	<td><div class="number_display" id="old_eff">0</div></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="60" class="calc_percent"></td>
+                </tr>
+                <tr>
+                    <td><input type="button" value="70" class="calc_percent"></td>
+                </tr>
+                <tr>
+                    <td><input type="button" value="80" class="calc_percent"></td>
+                </tr>
+                                
+            </table>
+        </td>
+        <td style="position:relative">
+        	<div id="old_scale">Old:<span id="old_cost"></span></div>
+            <div id="new1_scale">92:<span id="new1_cost"></span></div>
+            <div id="new2_scale">95:<span id="new2_cost"></span></div>
+        </td>
+    </tr>
+</table>
+</div>
+<?php echo $query ?>
+</body>
+</html>

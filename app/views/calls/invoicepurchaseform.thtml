@@ -1,0 +1,505 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1> Purchase <small></small> </h1>
+  <ol class="breadcrumb">
+    <li><a href="<?php echo $home_link ?>"><i class="fa fa-home"></i> Home</a></li>
+    <li>Inventory</li>
+    <li class="active">Purchase</li>
+  </ol>
+</section>
+<script>
+var g_counter = 1;
+$(function(){
+	$("#allitems").on("blur", ".item_sku", function(){
+		//sku_blur($(this));
+		//console.log($(this));
+	});
+	
+	$("#allitems").on("blur", ".item_qty", function(){
+		//qty_blur($(this));
+		//console.log($(this));
+	});
+	
+	$(".add-item").click(function(e) {
+            addItem($(this));
+        });
+        
+	$(".add-blank-item").click(function() {
+            addBlankItem();
+        });
+        $( "#purchase_date" ).datepicker("option", "dateFormat", 'yy-mm-dd')
+                .datepicker('setDate', '<?php echo $purchase['purchase_date'] ?>');;
+        
+	$('#allitems').on("click", ".delete-item", function(e) {
+		console.log("click delete");
+        $(this).parents("tr.item_row").remove();
+    });
+	
+	<?php foreach($purchase_items as $item) { 
+                
+            $options = "<option selected='selected' value='Warehouse'>Warehouse</option>";
+            foreach($allTechnician as $uid => $uname)  {
+                if ($item['item_location']==$uname) {
+                    $options .= "<option selected='selected' value='$uname'>".$uname."</option>";
+                } else {   
+                    $options .= "<option value='$uname'>".$uname."</option>";
+                }
+            }
+        ?>        
+	addItemFields("<?php echo $item['item_sku']?>","<?php echo htmlspecialchars($item['item_description'])?>","<?php echo $item['item_cost']?>","<?php echo $item['item_quantity']?>","<?php echo $options?>");
+	calculateTotal();
+        <?php } ?>
+	
+});
+
+function calculateTotal() {
+    t = 0;
+    $.each($('.item_cost'), function(index, e) {
+        el = $(this).parent("td").prev("td").find(".item_qty");
+        t = t + Number($(this).val())*el.val();
+    });
+    $("#purchase_cost").val(t.toFixed(2));
+    $("#purchase_tax").val((t*0.12).toFixed(2));
+    $("#purchase_gst_tax").val((t*0.07).toFixed(2));
+    $("#purchase_pst_tax").val((t*0.05).toFixed(2));
+    $("#purchase_total_cost").val((t*1.12).toFixed(2));
+}
+
+function updateSKU(obj) {    
+    var s = $(obj).val();    
+    n = s.indexOf("SKU:");    
+    $(obj).val(s.substring(0,n));
+    var el = $(obj).parent("td").prev("td").find(".item_sku");
+    el.val(s.substring(n+4));
+}
+
+function sku_blur(o) {
+	var des = o.parents(".item_row").children("td").children(".item_name");
+	des.val("test");	
+	text = '<?php 
+	echo str_replace("\n", "",str_replace("\r", "", trim('
+		<tr class="item_row">
+			<td><input class="form-control pull-right item_sku" name="items[{}][item_sku]" type="text" /></td>
+			<td><input class="form-control pull-right item_name" name="items[{}][item_description]" type="text" /></td>
+			<td><input class="form-control pull-right item_qty" name="items[{}][item_quantity]" type="text" /></td>
+			<td><input class="form-control pull-right item_cost" name="items[{}][item_cost]" type="text" /></td>
+		</tr>
+	')));
+	
+	?>';
+	text = text.replace(/{}/g, g_counter++);
+	$("#allitems").append(text);
+	
+	if(sku.val() != "") {
+		//sta.html("Searching...");
+		$.getJSON("items/search_manual_count", {
+			sku: sku.val()
+		}).done(function(data) {	
+			sta.html("Not found");			
+			$.each(data, function(i, item) {					
+				if(item.item_sales_description != "") {
+					sta.html("");						
+					lsc.html(item.last_counted);
+					cnt.html(item.last_count);
+					qb.html(item.itemcount_qb);
+					dis.html(item.discrepancy);
+					des.html(item.item_sales_description);
+					use.html(item.user_name);
+				} else {
+					sta.html("Not found");
+					lsc.html("");
+					cnt.html("");
+					qb.html("");
+					dis.html("");
+					des.html("");
+					use.html("");
+				}					
+			});							
+		});
+		
+		$.post("https://xrm.vantechs.com/7/qb/items/search_real_count", {
+			sku: sku.val()
+		}).done(function(data) {
+			liv.html(data);												
+		});
+		
+	}
+}
+
+function addItemFields(item_sku,item_name,item_cost,item_quantity,item_location) {
+	text = '<?php 
+	echo str_replace("\n", "",str_replace("\r", "", trim('
+		<tr class="item_row" id="row{}">
+			<td><input class="form-control pull-right item_sku" name="items[{}][item_sku]" type="text" value="{item_sku}" /></td>
+			<td><input class="form-control pull-right item_name" name="items[{}][item_description]" type="text" value="{item_name}" id="{item_id}" onchange="updateSKU(this);" /></td>
+			<td><input class="form-control pull-right item_qty" name="items[{}][item_quantity]" type="text" value="{item_quantity}" onchange="calculateTotal();" /></td>
+			<td><input class="form-control pull-right item_cost" name="items[{}][item_cost]" type="text" value="{item_cost}" onchange="calculateTotal();" /></td>
+			<td>
+                            <select autocomplete="off" class="form-control" name="items[{}][item_location]">
+                                options   
+                            </select>
+                        </td>
+                        <td><a class="btn btn-xs btn-primary delete-item" id="delete{}"><i class="fa fa-times"></i></a></td>
+		</tr>
+	')));
+	?>';
+	text = text.replace(/{}/g, g_counter);
+	text = text.replace("{item_sku}", item_sku);
+	text = text.replace("{item_name}", item_name);	
+	text = text.replace("{item_cost}", item_cost);
+	text = text.replace("{item_quantity}", item_quantity);
+        text = text.replace("{item_id}", "id_"+g_counter);
+        
+        text = text.replace("options", item_location);
+	
+	$("#allitems").append(text);
+	
+        var names = [
+            <?php foreach($items as $item) {?>        
+            "<?php echo htmlentities($item['name'].'  SKU:'.$item['sku']) ?>".replace(/&quot;/g, '\"'),
+        <?php } ?>
+        ];
+       
+	$("#id_"+g_counter).autocomplete({
+            source: names
+        });
+	
+	g_counter++;
+}
+
+function addItem(o) {
+	text = '<?php 
+	echo str_replace("\n", "",str_replace("\r", "", trim('
+		<tr class="item_row" id="row{}">
+			<td><input class="form-control pull-right item_sku" name="items[{}][item_sku]" type="text" value="{item_sku}" /></td>
+			<td><input class="form-control pull-right item_name" name="items[{}][item_description]" type="text" value="{item_name}" id="{item_id}" onchange="updateSKU(this);" /></td>
+			<td><input class="form-control pull-right item_qty" name="items[{}][item_quantity]" type="text" value="{item_quantity}" onchange="calculateTotal();" /></td>
+			<td><input class="form-control pull-right item_cost" name="items[{}][item_cost]" type="text" value="{item_cost}" onchange="calculateTotal();" /></td>
+                        <td>
+                            <select autocomplete="off" class="form-control" name="items[{}][item_location]">
+                                options        
+                            </select>
+                        </td>
+			<td><a class="btn btn-xs btn-primary delete-item" id="delete{}"><i class="fa fa-times"></i></a></td>                      
+		</tr>
+	')));
+	?>';
+	text = text.replace(/{}/g, g_counter);
+	text = text.replace("{item_sku}", o.attr("sku"));
+	text = text.replace("{item_name}", escapeHtml(o.attr("item_name")));	
+	text = text.replace("{item_cost}", o.attr("supplier_price"));
+	text = text.replace("{item_quantity}", 1);
+        
+        
+        <?php
+            $options = "<option selected='selected' value='Warehouse'>Warehouse</option>";
+            foreach($allTechnician as $uid => $uname)  {
+                $options .= "<option value='$uname'>".$uname."</option>";      
+            }
+        ?>
+        text = text.replace("options", "<?php echo $options; ?>");
+	text = text.replace("{item_id}", "id_"+g_counter);
+         
+	$("#allitems").append(text);
+        
+        var names = [
+            <?php foreach($items as $item) {?>        
+            "<?php echo htmlentities($item['name'].'  SKU:'.$item['sku']) ?>".replace(/&quot;/g, '\"'),
+        <?php } ?>
+        ];
+       
+	$("#id_"+g_counter).autocomplete({
+            source: names
+        });
+        
+	g_counter++;
+}
+
+function addBlankItem() {
+	text = '<?php 
+	echo str_replace("\n", "",str_replace("\r", "", trim('
+            <tr class="item_row" id="row{}">
+                <td><input class="form-control pull-right item_sku" name="items[{}][item_sku]" type="text" value="{item_sku}" /></td>
+                <td><input class="form-control pull-right item_name" name="items[{}][item_description]" type="text" value="{item_name}" id="{item_id}" onchange="updateSKU(this);" /></td>
+                <td><input class="form-control pull-right item_qty" name="items[{}][item_quantity]" type="text" value="{item_quantity}" onchange="calculateTotal();" /></td>
+                <td><input class="form-control pull-right item_cost" name="items[{}][item_cost]" type="text" value="{item_cost}" onchange="calculateTotal();" /></td>
+                <td>
+                    <select autocomplete="off" class="form-control" name="items[{}][item_location]">
+                        options        
+                    </select>
+                </td>
+                <td><a class="btn btn-xs btn-primary delete-item" id="delete{}"><i class="fa fa-times"></i></a></td>                      
+            </tr>
+	')));
+	?>';
+	text = text.replace(/{}/g, g_counter);
+	text = text.replace("{item_sku}", "");
+	text = text.replace("{item_name}", "");	
+	text = text.replace("{item_cost}", "");
+	text = text.replace("{item_quantity}", 1);        
+        
+        <?php
+            $options = "<option selected='selected' value='Warehouse'>Warehouse</option>";
+            foreach($allTechnician as $uid => $uname)  {
+                $options .= "<option value='$uname'>".$uname."</option>";      
+            }
+        ?>
+        text = text.replace("options", "<?php echo $options; ?>");
+	text = text.replace("{item_id}", "id_"+g_counter);
+         
+	$("#allitems").append(text);
+        
+        var names = [
+            <?php foreach($items as $item) {?>        
+            "<?php echo htmlentities($item['name'].'  SKU:'.$item['sku']); ?>".replace(/&quot;/g, '\"'),
+        <?php } ?>
+        ];
+       
+	$("#id_"+g_counter).autocomplete({
+            source: names
+        });
+	g_counter++;
+}
+
+function escapeHtml(text) {
+  return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+}
+
+</script>
+
+<script type="text/javascript">
+$(function () {        
+  $("#example1").dataTable();
+});
+</script>
+<!-- Main content -->
+<section class="content">
+  <div class="row">
+  	<div class="col-md-6" style="display:none">
+      <div class="box">
+        <div class="box-header">
+          <h3 class="box-title">Inventory Items</h3>
+        </div><!-- /.box-header -->
+        
+        <div class="box-body">
+          <table id="example1" class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Supplier</th>
+                <th>SKU</th>
+                <th>Price</th>
+                <th></th>                        
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach($items as $item) { ?>
+              <tr>
+                <td><?php echo $item['name'] ?></td>
+                <td><?php echo $item['category_name'] ?></td>
+                <td><?php echo $item['supplier_name'] ?></td>
+                <td><?php echo $item['sku'] ?></td>
+                <td><?php echo $item['supplier_price'] ?></td>
+                <td><button name="btn-add" class="btn btn-xs btn-primary add-item" sku="<?php echo $item['sku'] ?>" item_name="<?php echo htmlspecialchars($item['name']) ?>" supplier_price="<?php echo $item['supplier_price'] ?>"><i class="fa fa-arrow-right"></i></button></td>                        
+              </tr>
+              <?php } ?>                      
+            <tfoot>
+              <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Supplier</th>
+                <th>SKU</th>
+                <th></th>                        
+              </tr>
+            </tfoot>
+          </table>
+        </div><!-- /.box-body -->
+      </div><!-- /.box -->
+    </div>
+  	<div class="col-md-6" style="width:100%">
+      <!-- general form elements -->
+      <div class="box box-primary">
+        <div class="box-header">
+          <h3 class="box-title">Purchase Invoice</h3>
+        </div><!-- /.box-header -->
+        <div class="box-footer">
+            <button class="btn btn-primary add-blank-item" name="btn-save" value="1">Add New</button>
+        </div>
+        <!-- form start -->
+		<?php
+          $agents = array(
+          '231277' => "Agent 1",
+          '44874' => "Agent 2",
+          '231296' => "Agent 3",
+          '231297' => "Agent 4",
+          
+          '44851' => "Ali (ACE)",
+          '226792' => "Roy (ACE)",
+          '231267' => "B Plumber (ACE)",
+          '231254' => "GG (ACE)",
+          '229528' => "Brizzi (ACE)"
+          );
+        ?>
+        <form role="form" method="post">
+        <div class="box-body">
+          <div class="row">                      
+              <div class="col-xs-3">
+                  <label for="list_name">Invoice</label>
+                  <input type="text" class="form-control" name="purchase_invoice" id="purchase_invoice" value="<?php echo $purchase['purchase_invoice'] ?>">
+              </div>  
+              <div class="col-xs-3">
+                  <label for="list_name">Date</label>
+                  <input type="text" class="form-control datepicker" name="purchase_date" id="purchase_date" value="<?php echo $purchase['purchase_date'] ?>">
+              </div>            
+              <div class="col-xs-3">
+                  <div class="form-group">
+                  <label for="list_name">Type</label>
+                  <?php 
+				  $types = array(
+				  	"1" => "Purchase",
+					"2" => "Refund",
+					"3" => "Return",
+					"4" => "Warranty",
+					"5" => "Adjustment",
+					"6" => "Transfer",
+					"0" => "Void",
+
+					
+				  );				  
+				  ?>
+                  <select autocomplete="off" class="form-control" name="purchase_type">
+                  <?php foreach($types as $tid => $val)  { ?>
+                  	  <?php if($purchase['purchase_type'] == $tid) { ?>
+                  	  <option selected="selected" value="<?php echo $tid ?>"><?php echo $val ?></option>
+                      <?php } else { ?>
+                      <option value="<?php echo $tid ?>"><?php echo $val ?></option>
+                      <?php } ?>
+                  <?php } ?>                                     
+                  </select>                    
+                  </div>
+              </div>
+              
+          </div>
+          <div class="row">                      
+              
+          </div>
+          <!--
+          <div class="row">                      
+              <div class="col-xs-6">
+                  <label for="list_name">Cheque/Tracking#</label>
+                  <input type="text" class="form-control" name="purchase_cheque" id="purchase_cheque" value="<?php echo $purchase['purchase_cheque'] ?>">
+              </div>
+              <div class="col-xs-6">
+              </div>
+          </div>
+          -->
+          <br />
+          <div class="row">
+          	<div class="col-xs-12">
+          	<div class="form-group">
+              <label for="list_name">Supplier</label>
+              <a class="btn btn-primary btn-xs btn-edit"><i class="fa fa-pencil"></i></a><a class="btn btn-primary btn-xs btn-cancel" style="display:none;">Cancel</a>
+              <input type="hidden" class="form-control" name="supplier_id" id="supplier_id" value="<?php echo $purchase['supplier_id'] ?>">
+            </div>
+            <div class="form-group">
+            	<table id="suppliers">
+                	<?php foreach($suppliers as $supplier) { ?>
+                	<tr class="sup-row" id="supplier_<?php echo $supplier['id'] ?>" style="display:none;">
+                    	<td style="padding-right:10px;"><?php echo $supplier['name'] ?></td>
+                        <td style="padding-right:10px;"><?php echo $supplier['phone'] ?></td>
+                        <td style="padding-right:10px;"><?php echo $supplier['address'] ?></td> 
+                        <td><a class="btn btn-primary btn-xs btn-select" v="<?php echo $supplier['id'] ?>" style="display:none;">Select</a></td>                       
+                    </tr>
+                    <?php } ?>
+                </table>            
+            </div>
+            <script>
+            $(function(){
+				$("#supplier_<?php echo $purchase['supplier_id'] ?>").show();
+				$(".btn-select").click(function(){
+					$(".btn-edit").show();
+					$(".btn-cancel").hide();
+					$(".btn-select").hide();
+					$("#supplier_id").val($(this).attr("v"));
+					$(".sup-row").hide();
+					$("#supplier_" + $("#supplier_id").val()).show();
+				});
+				$(".btn-edit").click(function(){
+					$(".btn-edit").hide();
+					$(".btn-cancel").show();
+					$(".btn-select").show();
+					$(".sup-row").show();
+				});
+				$(".btn-cancel").click(function(){
+					$(".btn-edit").show();
+					$(".btn-cancel").hide();
+					$(".btn-select").hide();
+					$(".sup-row").hide();
+					$("#supplier_" + $("#supplier_id").val()).show();
+				});
+			});
+            </script>
+            </div>
+          </div>
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+              	<th style="width:100px;">SKU</th>
+                <th>Name</th>
+                <th style="width:100px;">Qty</th>
+                <th style="width:100px;">Unit Price</th>                
+                <th style="width:180px;">Location</th>
+                <th style="width:50px;"></th>
+              </tr>
+            </thead>
+            <tbody id="allitems">
+            	<!--
+                <tr class="item_row">
+                    <input name="items[0][item_sku]" type="hidden" /></td>
+                    <td><input class="form-control pull-right item_name" name="items[0][item_name]" type="text" /></td>
+                    <td><input class="form-control pull-right item_qty" name="items[0][item_qty]" type="text" /></td>
+                    <td><input class="form-control pull-right item_cost" name="items[0][item_cost]" type="text" /></td>
+                    <td><a class="btn btn-xs btn-primary delete-item"><i class="fa fa-times"></i></a></td>
+                </tr>
+                -->
+                
+            </tbody>
+          </table>
+             
+          <div class="row">
+              <div class="col-xs-3">
+                  <label for="list_name">Invoice Cost</label>
+                  <input type="text" class="form-control" name="purchase_cost" id="purchase_cost" value="<?php echo $purchase['purchase_cost'] ?>">
+              </div>
+              <div class="col-xs-3">
+                  <label for="list_name">Invoice GST</label>
+                  <input type="text" class="form-control" name="purchase_gst_tax" id="purchase_gst_tax" value="<?php echo $purchase['purchase_tax'] ?>">
+              </div>
+               <div class="col-xs-3">
+                  <label for="list_name">Invoice PST</label>
+                  <input type="text" class="form-control" name="purchase_pst_tax" id="purchase_pst_tax" value="<?php echo $purchase['purchase_tax'] ?>">
+              </div>
+              <div class="col-xs-3">
+                  <label for="list_name">Invoice Total Cost</label>
+                  <input type="text" class="form-control" name="purchase_total_cost" id="purchase_total_cost" value="">
+              </div>
+              <div class="col-xs-6">
+              </div>
+          </div>
+          <div class="box-footer" style="height:48px;">
+           	<button type="submit" class="btn btn-primary" style="float:right" name="btn-save" value="1">Save</button>
+          </div>  
+          <input type="hidden" class="form-control" name="purchase_tax" id="purchase_tax" value="">
+        </div><!-- /.box-body -->
+        </form>
+      </div><!-- /.box -->      
+    </div><!-- end col -->
+  </div>
+</section>
+<!-- /.content --> 

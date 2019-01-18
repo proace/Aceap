@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Feedback</title>
+<style>
+body {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:80%;	
+}
+
+table {
+	background-color:#999999;
+	border:1px solid #333333;
+	border-collapse:collapse;
+	width:100%;	
+}
+
+td {
+	border: 1px solid #333333;
+	padding:3px;	
+}
+
+#text_comment {
+	width:250px;
+	height:150px;	
+}
+
+#comment_type {
+	width:150px;	
+}
+
+#order_number {
+	width:50px;	
+}
+
+</style>
+</head>
+
+<body>
+<?php if(count($customer) > 1) { ?>
+	<a href="<?=BASE_URL?>/orders/onlineCustomerFeedback">Input another HK</a><br />
+    <br />
+    <img src="<?php echo ROOT_URL ?>/app/webroot/img/reference_location.png" />
+	<p><em>Reference number in blue, HK in red.</em></p>
+	<div><strong>HK:</strong> <?php echo $history_key; ?></div>
+    <div><strong>Name:</strong> <?php echo $customer['first_name']; ?> <?php echo $customer['last_name']; ?></div>
+    <div><strong>Address:</strong> <?php echo $customer['address']; ?> <?php echo $customer['city']; ?></div>
+    <div><strong>Phone:</strong> <?php echo $customer['phone']; ?></div>
+    <br />
+    <form action="<?=BASE_URL?>/orders/onlineSaveCustomerFeedback" method="post">
+    <label><strong>REF#:</strong> </label><input type="text" name="order_number" id="order_number" />
+    <br />
+    <select name="comment_type" id="comment_type">
+    	<option value="1">Comment</option>
+        <option value="2">Complaint</option>
+    </select>
+    <br />
+    <select name="rating" id="rating">
+    	<option value="3">Excellent</option>
+        <option value="2">Satisfactory</option>
+        <option value="1">Bad</option>
+    </select>
+    <br />
+    <input type="hidden" name="customer_id" value="<?php echo $customer['id']; ?>" />
+    <textarea wrap="hard" name="text_comment" id="text_comment"></textarea>
+    <br />
+    <input type="submit" />
+    </form>
+<?php } else { ?>
+<form action="<?=BASE_URL?>/orders/onlineCustomerFeedback" method="post">
+<p>If you have any comments or suggestions about the job that we did or about the company in general, please use your History Key (HK) found on the top right corner of your invoice:</p>
+<img src="<?php echo ROOT_URL ?>/app/webroot/img/reference_location.png" />
+<p><em>Reference number in blue, HK in red.</em></p>
+<input type="text" name="history_key" id="history_key" /><input type="submit" value="Submit" />
+</form>
+<?php }?>
+
+</body>
+</html>
+

@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Edit <?php echo $category ?> Settings</title>
+</head>
+
+<body>
+<form action="<?php echo BASE_URL ?>/iv_category_settings/save" method="post">
+<?php echo $html->input('iv_category_settings/iv_category_id',array("value"=>$iv_category_id, "type"=>"hidden")); ?>
+<input type="hidden" name="data[Settings][category_id]" value="<?php echo $iv_category_id ?>" />
+<table>
+	<tr>
+    	<th>Field</th>
+        <th>Alias</th>
+        <th>Order</th>
+    </tr>
+    <?php $field_count = 7; ?>
+	<tr>
+    	<td>Category</td>
+        <td>Category</td>
+        <td>0<input type="hidden" class="order_field" value="0" /></td>
+    </tr>
+    <tr>
+    	<td>Description 1</td>
+        <td><input type="text" name="data[Settings][description1][alias]" value="<?php echo $settings['description1']['alias'] ?>" />
+        <input type="hidden" name="data[Settings][description1][name]" value="description1" /></td>
+        <td>
+        	<select class="order_field" name="data[Settings][description1][order]">
+            	<option value="-1">X</option>
+                <?php for($i = 0; $i < $field_count; $i++) { ?>
+                <option value="<?php echo $i + 1?>" <?php echo $settings['description1']['order']==($i + 1)?'selected':'' ?>><?php echo $i + 1?></option>
+                <?php } ?>
+            </select>
+        </td>
+    </tr>
+    <tr>
+    	<td>Description 2</td>
+        <td><input type="text" name="data[Settings][description2][alias]" value="<?php echo $settings['description2']['alias'] ?>" />
+        <input type="hidden" name="data[Settings][description2][name]" value="description2" /></td>
+        <td>
+        	<select class="order_field" name="data[Settings][description2][order]">
+            	<option value="-1">X</option>
+                <?php for($i = 0; $i < $field_count; $i++) { ?>
+                <option value="<?php echo $i + 1?>" <?php echo $settings['description2']['order']==($i + 1)?'selected':'' ?>><?php echo $i + 1?></option>
+                <?php } ?>
+            </select>
+        </td>
+    </tr>
+    <tr>
+    	<td>Efficiency</td>
+        <td><input type="text" name="data[Settings][efficiency][alias]" value="<?php echo $settings['efficiency']['alias'] ?>" />
+        <input type="hidden" name="data[Settings][efficiency][name]" value="efficiency" /></td>
+        <td>
+        	<select class="order_field" name="data[Settings][efficiency][order]">
+            	<option value="-1">X</option>
+                <?php for($i = 0; $i < $field_count; $i++) { ?>
+                <option value="<?php echo $i + 1?>" <?php echo $settings['efficiency']['order']==($i + 1)?'selected':'' ?>><?php echo $i + 1?></option>
+                <?php } ?>
+            </select>
+        </td>
+    </tr>
+    <tr>
+    	<td>Model</td>
+        <td><input type="text" name="data[Settings][model][alias]" value="<?php echo $settings['model']['alias'] ?>" />
+        <input type="hidden" name="data[Settings][model][name]" value="model" /></td>
+        <td>
+        	<select class="order_field" name="data[Settings][model][order]">
+            	<option value="-1">X</option>
+                <?php for($i = 0; $i < $field_count; $i++) { ?>
+                <option value="<?php echo $i + 1?>" <?php echo $settings['model']['order']==($i + 1)?'selected':'' ?>><?php echo $i + 1?></option>
+                <?php } ?>
+            </select>
+        </td>
+    </tr>
+    <tr>
+    	<td>Supplier Price</td>
+        <td><input type="text" name="data[Settings][supplier_price][alias]" value="<?php echo $settings['supplier_price']['alias'] ?>" />
+        <input type="hidden" name="data[Settings][supplier_price][name]" value="supplier_price" /></td>
+        <td>
+        	<select class="order_field" name="data[Settings][supplier_price][order]">
+            	<option value="-1">X</option>
+                <?php for($i = 0; $i < $field_count; $i++) { ?>
+                <option value="<?php echo $i + 1?>" <?php echo $settings['supplier_price']['order']==($i + 1)?'selected':'' ?>><?php echo $i + 1?></option>
+                <?php } ?>
+            </select>
+        </td>
+    </tr>
+    <tr>
+    	<td>Selling Price</td>
+        <td><input type="text" name="data[Settings][selling_price][alias]" value="<?php echo $settings['selling_price']['alias'] ?>" />
+        <input type="hidden" name="data[Settings][selling_price][name]" value="selling_price" /></td>
+        <td>
+        	<select class="order_field" name="data[Settings][selling_price][order]">
+            	<option value="-1">X</option>
+                <?php for($i = 0; $i < $field_count; $i++) { ?>
+                <option value="<?php echo $i + 1?>" <?php echo $settings['selling_price']['order']==($i + 1)?'selected':'' ?>><?php echo $i + 1?></option>
+                <?php } ?>
+            </select>
+        </td>
+    </tr>
+    <tr>
+    	<td>Brand</td>
+        <td><input type="text" name="data[Settings][brand_id][alias]" value="<?php echo $settings['brand_id']['alias'] ?>" />
+        <input type="hidden" name="data[Settings][brand_id][name]" value="brand" /></td>
+        <td>
+        	<select class="order_field" name="data[Settings][brand_id][order]">
+            	<option value="-1">X</option>
+                <?php for($i = 0; $i < $field_count; $i++) { ?>
+                <option value="<?php echo $i + 1?>" <?php echo $settings['brand_id']['order']==($i + 1)?'selected':'' ?>><?php echo $i + 1?></option>
+                <?php } ?>
+            </select>
+        </td>
+    </tr>
+    <tr>
+    	<td>Supplier</td>
+        <td><input type="text" name="data[Settings][supplier_id][alias]" value="<?php echo $settings['supplier_id']['alias'] ?>" />
+        <input type="hidden" name="data[Settings][supplier_id][name]" value="supplier" /></td>
+        <td>
+        	<select class="order_field" name="data[Settings][supplier_id][order]">
+            	<option value="-1">X</option>
+                <?php for($i = 0; $i < $field_count; $i++) { ?>
+                <option value="<?php echo $i + 1?>" <?php echo $settings['supplier_id']['order']==($i + 1)?'selected':'' ?>><?php echo $i + 1?></option>
+                <?php } ?>
+            </select>
+        </td>
+    </tr>
+    <tr>
+    	<td>Active</td>
+        <td><input type="text" name="data[Settings][active][alias]" value="<?php echo $settings['active']['alias'] ?>" />
+        <input type="hidden" name="data[Settings][active][name]" value="active_name" /></td>
+        <td>
+        	<select class="order_field" name="data[Settings][active][order]">
+            	<option value="-1">X</option>
+                <?php for($i = 0; $i < $field_count; $i++) { ?>
+                <option value="<?php echo $i + 1?>" <?php echo $settings['active']['order']==($i + 1)?'selected':'' ?>><?php echo $i + 1?></option>
+                <?php } ?>
+            </select>
+        </td>
+    </tr>
+</table>
+<input type="submit" value="Save" />
+</form>
+</body>
+</html>

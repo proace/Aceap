@@ -1,0 +1,381 @@
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/modal_dialog/ajax.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/modal_dialog/ajax-dynamic-content.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/modal_dialog/modal-message.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/modal_dialog/jquery-1.4.2.min.js"></script>
+
+<script>
+document.title += " :: Clients";
+
+function setOrder(order){
+  f = document.forms.viewform;
+  f.currentPage.value = '';  
+  if(f.order.value == order){
+    if(f.sort.value == 'ASC')
+      f.sort.value = 'DESC';
+    else
+      f.sort.value = 'ASC';
+  }
+  else{
+    f.order.value = order;
+    f.sort.value = 'ASC';
+  }
+  f.submit();
+}
+function clearFilters(){
+	 f = document.forms.viewform;
+	 f.fserach.value = '';
+	 
+}
+
+function ChangeCallResult1(objCallResult){
+ var value = objCallResult.value; //0_1_2 - 0_type; 1-order_id,2-customer_id
+ value_arr = value.split("_");
+ t=document.getElementById("callResult_"+value_arr[2]);
+ t.value=value; 
+ ChangeCallResult(t);
+}
+
+function OpenFeedbackPage(orderId){
+  //window.open('<? echo ROOT_URL?>/index.php/orders/feedbacks_add?id='+customerId);
+  top.frames['main_view'].location.href = '<? echo ROOT_URL?>/index.php/orders/feedbacks_add?id='+orderId;
+}
+function OpenOfficeNotesPage(customerId){
+  //window.open('<? echo ROOT_URL?>/index.php/orders/customer_notes?customer_id='+customerId);
+  top.frames['main_view'].location.href = '<? echo ROOT_URL?>/index.php/orders/customer_notes?customer_id='+customerId;
+}
+function OpenCustomerHistoryPage(orderId){
+  //window.open('<? echo ROOT_URL?>/index.php/orders/customer_history?order_id='+orderId);
+  top.frames['main_view'].location.href = '<? echo ROOT_URL?>/index.php/orders/customer_history?order_id='+orderId;
+}
+
+/**
+ * DHTML date validation script for dd/mm/yyyy. Courtesy of SmartWebby.com (http://www.smartwebby.com/dhtml/)
+ */
+// Declaring valid date character, minimum year and maximum year
+var dtCh= "/";
+var minYear=1900;
+var maxYear=2100;
+
+function isInteger(s){
+	var i;
+    for (i = 0; i < s.length; i++){   
+        // Check that current character is number.
+        var c = s.charAt(i);
+        if (((c < "0") || (c > "9"))) return false;
+    }
+    // All characters are numbers.
+    return true;
+}
+
+function stripCharsInBag(s, bag){
+	var i;
+    var returnString = "";
+    // Search through string's characters one by one.
+    // If character is not in bag, append to returnString.
+    for (i = 0; i < s.length; i++){   
+        var c = s.charAt(i);
+        if (bag.indexOf(c) == -1) returnString += c;
+    }
+    return returnString;
+}
+
+function daysInFebruary (year){
+	// February has 29 days in any year evenly divisible by four,
+    // EXCEPT for centurial years which are not also divisible by 400.
+    return (((year % 4 == 0) && ( (!(year % 100 == 0)) || (year % 400 == 0))) ? 29 : 28 );
+}
+function DaysArray(n) {
+	for (var i = 1; i <= n; i++) {
+		this[i] = 31
+		if (i==4 || i==6 || i==9 || i==11) {this[i] = 30}
+		if (i==2) {this[i] = 29}
+   } 
+   return this
+}
+
+function isDate(dtStr){
+	var daysInMonth = DaysArray(12)
+	var pos1=dtStr.indexOf(dtCh)
+	var pos2=dtStr.indexOf(dtCh,pos1+1)
+	var strDay=dtStr.substring(0,pos1)
+	var strMonth=dtStr.substring(pos1+1,pos2)
+	var strYear=dtStr.substring(pos2+1)
+	strYr=strYear
+	if (strDay.charAt(0)=="0" && strDay.length>1) strDay=strDay.substring(1)
+	if (strMonth.charAt(0)=="0" && strMonth.length>1) strMonth=strMonth.substring(1)
+	for (var i = 1; i <= 3; i++) {
+		if (strYr.charAt(0)=="0" && strYr.length>1) strYr=strYr.substring(1)
+	}
+	month=parseInt(strMonth)
+	day=parseInt(strDay)
+	year=parseInt(strYr)
+	if (pos1==-1 || pos2==-1){
+		alert("The date format should be : dd/mm/yyyy")
+		return false
+	}
+	if (strMonth.length<1 || month<1 || month>12){
+		alert("Please enter a valid month")
+		return false
+	}
+	if (strDay.length<1 || day<1 || day>31 || (month==2 && day>daysInFebruary(year)) || day > daysInMonth[month]){
+		alert("Please enter a valid day")
+		return false
+	}
+	if (strYear.length != 4 || year==0 || year<minYear || year>maxYear){
+		alert("Please enter a valid 4 digit year between "+minYear+" and "+maxYear)
+		return false
+	}
+	if (dtStr.indexOf(dtCh,pos2+1)!=-1 || isInteger(stripCharsInBag(dtStr, dtCh))==false){
+		alert("Please enter a valid date")
+		return false
+	}
+return true
+}
+
+function ValidateForm(){
+	//var dt=document.frmSample.txtDate
+	//if (isDate(dt.value)==false){
+	//	dt.focus()
+	//	return false
+	//}
+    //return true
+ }
+</script>
+
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+<table width="800">
+<tr>
+<td>
+	<table width="90%" border="0px" cellspacing="10" cellpadding="0">
+		<tr>
+			<td class="sectionTitle" colspan="7">Clients</td>
+		</tr>
+		<tr>
+			<td><nobr>Date from:</nobr> </td>
+			<td>
+				<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			</td>
+			<td>Date to: </td>
+			<td>
+				<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			</td>
+			<td></td>
+			<td></td>
+			<td></td>		
+		</tr>
+		<tr>
+			<td>City: </td>
+			<td><input type="text" name="fcity" value="<?=$city?>"></td>
+			<td>Job Type: </td>
+			<td>
+			<select id="fjobtype" name="fjobtype">
+				<option value="0"></option>
+				<?
+				foreach($jobtypes as $type){
+					$selected = "";
+					if($type['OrderType']['id'] == $jobtype){
+						$selected = 'selected="selected"';
+					}
+					echo '<option value="'.$type['OrderType']['id'].'" '.$selected.'>'.$type['OrderType']['name'].'</option>';
+				}
+				?>
+			</select> 
+			</td>
+			<td colspan="5">&nbsp;</td>
+		</tr>		
+		<?
+			if( $common->getLoggedUserRoleID() == "6" ){ //ADMINISTRATOR
+				?>
+			<tr>
+				<td><nobr>Telem name: </nobr></td>
+				<td>
+					<select id="ftelem" name="ftelem">
+						<option value="0"></option>
+						<?
+						foreach($allTelems as $telem){
+							$selected = "";
+							if($telem['id'] == $telem_id){
+								$selected = 'selected="selected"';
+							}
+							echo '<option value="'.$telem['id'].'" '.$selected.'>'.$telem['name'].'</option>';
+						}
+						?>
+					</select> 
+				</td>
+				<td colspan="5">&nbsp;</td>
+			</tr>
+				<?
+			}
+		?>
+		<tr>
+			<td colspan="7" align="left">
+				<input type="submit" name="submit2" id="submit2" value="Update" class="buttons">
+			</td>		
+		</tr>
+		</table>
+	</td>
+	</tr>
+	</table> 	
+</td>
+</tr>
+</table>
+</form>
+
+<p><h3>Show only last job per customer, with entered job date</h3></p>
+<p>
+<table width="520" border="0">
+<tr>
+	<td width="185"><b>Number of call made:</b></td>
+	<td width="75" align="right"><?=$number_of_call_made?></td>
+	<td width="30">&nbsp;</td>
+	<td><b>Number of sales:</b></td>
+	<td align="right"><?=$number_of_sales?></td>
+</tr>
+<tr>
+	<td><b>Number of call back:</b></td>
+	<td align="right"><?=$number_of_call_back?></td>
+	<td width="30">&nbsp;</td>
+	<td><b>Number of do not call or(dnc):</b></td>
+	<td align="right"><?=$number_of_dnc?></td>
+</tr>	
+</table>
+</p>
+<table><tr><td width="70%">
+<p><b>Total records:</b> <?=$recordsCount?></p></td>
+</tr></table>
+
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+    <tr>
+        <td  width="50" style="background-color:#CCCCCC;border-style: none;"><b><u>Job Id</b></u></td>
+        <th width="80"><a href="javascript:setOrder('slastcall_date');">Call date</a> <?echo $slastcall_date?></th>
+        <th width="20" style="display:none;">&nbsp;</th>
+        <th width="180">Name</th>
+        
+        <th width="100">Phone number</th>
+        <th>Address</th>
+        <th width="120"><a href="javascript:setOrder('scity');">City</a> <?echo $scity?></th>
+        <th width="90"><a href="javascript:setOrder('sjob_date');">Date job done</a> <?echo $sjob_date?></th>
+        <th width="80"><a href="javascript:setOrder('sjob_type');">Job type</a> <?echo $sjob_type?></th>
+        <th width="110">Source</th>
+        <th width="60">Feedback</th>
+        <th width="80">Office note</th> 
+        <th width="80">Cust. history</th>
+        <th width="80">Price paid</th>               
+        <th width="90"><a href="javascript:setOrder('scallback_date');">Callback date <?echo $scallback_date?></th>               
+        <th width="100">Call result</th>
+    </tr>
+<?php $r=1;
+	foreach ($orders as $obj): 
+	$class = 'cell'.(++$r%2);
+?>
+    <tr id="r<?php echo $r?>" <? echo ($obj['customer_callback_result'] == 2) ? 'style="background-color:red;"' : 'class="'.$class.'"' //2=Do not call?> >
+      	<td class="firstcol" style="background-color:#CCCCCC;border-style: none;">&nbsp;<?php echo $html->link($obj['id'],'/orders/editBooking?order_id='.$obj['id']); ?></td>
+      	<td>&nbsp;<?php echo ($obj['customer_lastcall_date'] != '' && $obj['customer_lastcall_date'] != '0000-00-00') ? date("Y-m-d",strtotime($obj['customer_lastcall_date'])) : ''; ?></td>
+      	<td style="display:none;"><input type="checkbox" onclick="javascript:ChangeCallResult(this);" value="5_<?echo $obj['id'].'_'.$obj['customer_id']?>" <?echo (date("d/m/Y",strtotime($obj['customer_callback_date'])) == date('d/m/Y')) ? "checked='checked'" : "" ?>/></td>
+      	<td>&nbsp;<?php echo $obj['customer_name']; ?></td>
+      	<td><input type="hidden" id="l<?php echo $r?>" value="<?php echo $obj['customer_phone'].'@'.$obj['customer_name'].'@'.$obj['id'].'_'.$obj['customer_id']?>">
+		  <a id="link<?php echo $r?>" onClick = "javascript:DialLink(<?php echo $r?>)"><?php echo $common->displayPhone($obj['customer_phone']); ?></a></td>
+      	<td>&nbsp;<?php echo $obj['customer_address']; ?></td>
+      	<td>&nbsp;<?php echo $obj['customer_city']; ?></td>
+      	<td>&nbsp;<?php echo ($obj['job_date'] != '' && $obj['job_date'] != '0000-00-00') ? date("M/d/Y",strtotime($obj['job_date'])) : ''; ?></td>
+      	<td align="center"><?php echo $obj['order_type_name']; ?>&nbsp;</td>
+		<td>&nbsp;<?php echo $obj['customer_telemarketer']; ?></td>
+      	<td align="center"><?php echo $obj['has_feedback']==1 ? '<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-edit.png" alt="View feedback" onclick=\'javascript:OpenFeedbackPage('.$obj['id'].');\' style="cursor:pointer;"/>' : '&nbsp;'; ?></td>
+     	<td align="center"><?php echo '<img src="'.ROOT_URL.'/app/webroot/img/icon-sm-notes.png" alt="View customer notes" width="22" height="22" onclick=\'javascript:OpenOfficeNotesPage('.$obj['customer_id'].');\' style="cursor:pointer;"/>'; ?></td>
+     	<td align="center"><?php echo '<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-edit.png" alt="View customer history" onclick=\'javascript:OpenCustomerHistoryPage('.$obj['id'].');\' style="cursor:pointer;"/>'; ?></td>
+ 
+      	<td align="right"><?php echo $obj['customer_paid_amount']; ?>&nbsp;</td>
+      	<td align="center"><?php echo $obj['customer_callback_date']; ?>&nbsp;</td>
+      	<td align="center"><?php echo $obj['customer_call_result']; ?>&nbsp;</td>
+    </tr>
+    <?php endforeach; ?>
+</table>
+
+<script>var nNumOnPage=<?php echo $r; ?></script>
+
+<p><b>Total records:</b> <?=$recordsCount?></p>
+<p>
+<table width="520" border="0">
+<tr>
+	<td width="185"><b>Number of call made:</b></td>
+	<td width="75" align="right"><?=$number_of_call_made?></td>
+	<td width="30">&nbsp;</td>
+	<td><b>Number of sales:</b></td>
+	<td align="right"><?=$number_of_sales?></td>
+</tr>
+<tr>
+	<td><b>Number of call back:</b></td>
+	<td align="right"><?=$number_of_call_back?></td>
+	<td width="30">&nbsp;</td>
+	<td><b>Number of do not call or(dnc):</b></td>
+	<td align="right"><?=$number_of_dnc?></td>
+</tr>	
+</table>
+</p>
+<table width="100%">
+<tr>
+	<td width="100%" align="center">
+		<?php echo $html->link('<<','/orders/clients?page='.$previousPage.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'&ffromdate='.$fdate.'&ftodate='.$tdate.'&fjobtype='.$jobtype.'&fcity='.$city.'&ftelem='.$telem_id.'&ffilteritems='.$filteritems) ?>
+		&nbsp;
+		<?php echo $html->link('>>','/orders/clients?page='.$nextPage.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'&ffromdate='.$fdate.'&ftodate='.$tdate.'&fjobtype='.$jobtype.'&fcity='.$city.'&ftelem='.$telem_id.'&ffilteritems='.$filteritems) ?>
+	</td>
+</tr>
+</table>
+
+<script type="text/javascript">
+messageObj = new DHTML_modalMessage();	// We only create one object of this class
+messageObj.setShadowOffset(5);	// Large shadow
+
+
+function displayMessage(url)
+{
+	
+	messageObj.setSource(url);
+	messageObj.setCssClassMessageBox(false);
+	messageObj.setSize(400,200);
+	messageObj.setShadowDivVisible(true);	// Enable shadow for these boxes
+	messageObj.display();
+}
+
+function displayCallbackMessage(messageContent,cssClass)
+{
+	
+	messageObj.setHtmlContent(messageContent);
+	messageObj.setSize(400,350);
+	messageObj.setCssClassMessageBox(cssClass);
+	messageObj.setSource(false);	// no html source since we want to use a static message here.
+	messageObj.setShadowDivVisible(true);	// Disable shadow for these boxes	
+	messageObj.display();
+}
+
+function displayStaticMessage(messageContent,cssClass)
+{
+	messageObj.setHtmlContent(messageContent);
+	messageObj.setSize(300,150);
+	messageObj.setCssClassMessageBox(cssClass);
+	messageObj.setSource(false);	// no html source since we want to use a static message here.
+	messageObj.setShadowDivVisible(false);	// Disable shadow for these boxes	
+	messageObj.display();
+	
+}
+
+function closeMessage()
+{
+	messageObj.close();
+	if (AutoDial==1) HangUp();
+}
+function closeMessage1(customerId)
+{
+	messageObj.close();
+	document.getElementById("callResult_"+customerId)[0].selected = "1";
+	if (AutoDial==1) HangUp();
+}
+
+</script>

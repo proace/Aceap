@@ -1,0 +1,60 @@
+<!-- This tag creates our form tag -->
+<form method="post" action="<?php echo $html->url('/users/exportCustomers')?>" onsubmit="return checkForm(this);">
+<script>
+function checkForm(f) {
+	var list = f['user_fields[]'];
+	checked=false;
+	//alert(list);
+	for (var i = 0; i < list.length; i++) {
+		if (list[i].checked) {
+			checked=true;
+			break;
+		}
+	}
+	if (!checked) {
+		list = f['job_fields[]'];
+		for (var i = 0; i < list.length; i++) {
+			if (list[i].checked) {
+				checked=true;
+				break;
+			}
+		}
+	}
+	if (!checked) {
+		document.getElementById('fields').style.color="red";
+		alert('Please select at least one field!');
+	}
+	return checked;
+}
+</script>
+<table cellpadding="10" cellspacing="0">
+<tr>
+	<td>
+		<b id="fields">Fields:</b><br />
+			<? 
+			foreach($user_fields as $k => $v) {
+				echo '<input type="checkbox" name="user_fields[]" value="'.$k.'" id="user_fields-'.$k.'" /> <label for="user_fields-'.$k.'">'.$v.'</label><br />';
+			}
+			foreach($job_fields as $k => $v) {
+				echo '<input type="checkbox" name="job_fields[]" value="'.$k.'" id="job_fields-'.$k.'" /> <label for="job_fields-'.$k.'">'.$v.'</label><br />';
+			}
+			?>
+	</td>
+	<td valign="top">
+		<b>Last Job Date</b><br />
+		<p>from: 
+			&nbsp;&nbsp;
+			<input type="text" name="fromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="01 Jan 2008">
+			&nbsp;&nbsp;
+			to:
+			&nbsp;&nbsp;
+			<input type="text" name="todate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=date('d M Y')?>"></p>
+		<p><b>Select only:</b><br/ >
+			<input type="checkbox" name="dnc" value="dnc" id="dnc" onchange="if (checked) document.getElementById('notdnc').checked=false" /> <label for="dnc"> DNC</label><br/>
+			<input type="checkbox" name="dnc" value="notdnc" id="notdnc" onchange="if (checked) document.getElementById('dnc').checked=false" /> <label for="dnc"> NOT DNC</label></p>
+		<input type="hidden" name="delimiter" value="," />
+		<p><?php echo $html->submit('Submit','style="float:right"')?></p>
+	</td>
+</tr>
+</table>
+</form>

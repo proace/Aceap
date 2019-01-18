@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>History</title>
+<style>
+body {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:80%;	
+}
+
+table {
+	background-color:#999999;
+	border:1px solid #333333;
+	border-collapse:collapse;
+	width:100%;	
+}
+
+td {
+	border: 1px solid #333333;
+	padding:3px;	
+}
+</style>
+</head>
+
+<body>
+<form action="<?=BASE_URL?>/orders/onlineHistoryAjax" method="post">
+<input type="text" name="history_key" id="history_key" /><input type="submit" value="Check History" />
+</form>
+<?php if(count($customer) > 1) { ?>
+    <div>Name: <?php echo $customer['first_name']; ?> <?php echo $customer['last_name']; ?></div>
+    <div>Address: <?php echo $customer['address']; ?> <?php echo $customer['city']; ?></div>
+    <div>Phone: <?php echo $customer['phone']; ?></div>
+    <br />
+    <?php foreach($orders as $order) { ?>
+    <div class="order_slip">
+    <div><strong><?php echo $order['job_date_name'] ?></strong></div>
+    <div>REF#<strong><?php echo $order['order_number'] ?></strong> - <em><?php echo $order['order_type_name'] ?></em></div>
+    <table>
+        <tr>
+            <th>Item</th>
+            <th>Cost</th>
+        </tr>
+        <?php foreach($items as $item) { ?>
+            <?php if($item['order_id'] == $order['id']) { ?>
+            <tr>
+                <td><?php echo $item['name'] ?></td>
+                <td align="right"><?php echo $item['price'] ?></td>
+            </tr>
+            <?php } ?>
+        <?php } ?>
+    </table>
+    </div>
+    <br />
+    <?php } ?>
+<?php } ?>
+
+</body>
+</html>
+

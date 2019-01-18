@@ -1,0 +1,138 @@
+<h3>Customers</h3>
+
+<form method="post" action="<?=BASE_URL?>/customers/canvassers" name="csform">
+	Street: 
+	<input type="text" name="address_street" value="<?=$address_street?>" size="20" />
+	&nbsp;&nbsp;
+	Street number: 
+	<input type="text" name="address_street_number" value="<?=$address_street_number?>" size="6" />
+	&nbsp;&nbsp;
+	City: 
+	<select id="city_select" name="city">
+		<?php foreach ($cities as $v): ?>
+		<option value="<?=$v?>" <?=($v==$city ? 'selected' : '')?>><?=$v?></option>
+		<?php endforeach; ?>
+	</select>
+	&nbsp;&nbsp;
+	Postal code: 
+	<input type="text" name="postal_code" value="<?=$postal_code?>" size="6" />
+
+	<br>
+	Last Job Date from:
+	&nbsp;&nbsp;
+	<input type="text" name="from" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$from?>">
+	&nbsp;&nbsp;
+	to:
+	&nbsp;&nbsp;
+	<input type="text" name="to" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$to?>">
+&nbsp;&nbsp;
+	Job Type
+	<select id="job_types_select" name="job_type">
+		<option value="">All</option>
+		<?php foreach ($job_types as $v): ?>
+		<option value="<?=$v['id']?>" <?=($v['id']==$job_type ? 'selected' : '')?>><?=$v['name']?></option>
+		<?php endforeach; ?>
+	</select>
+
+	<?php if ($is_admin) : ?>
+		<br>
+		Next event from:
+		&nbsp;&nbsp;
+		<input type="text" name="nfrom" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;margin-left: 16px;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$nfrom?>">
+		&nbsp;&nbsp;
+		to:
+		&nbsp;&nbsp;
+		<input type="text" name="nto" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$nto?>">
+		&nbsp;&nbsp;
+		Select:	
+		<select id="dnc" name="dnc" style="margin-left: 14px;">
+			<option value="">Both DNC and NOT DNC</option>
+			<option value="dnc" <?=($dnc=='dnc'? 'selected' : '')?> >Only DNC</option>
+			<option value="notdnc" <?=($dnc=='notdnc'? 'selected' : '')?> >Only NOT DNC</option>
+		</select>
+	<?php endif; ?>
+
+	<input type="submit" name="submit2" value="Submit" class="buttons" style="margin-left:16px"/><br clear="all">
+
+</form>
+Number of customers found: <?=$rows_count?><br />
+<?php
+	$fields=array(
+		'name'=>'Name',
+		'phone'=>'Phone',
+		'cell_phone'=>'Cel. Phone',
+		'address'=>'Address',
+		'city'=>'City',
+		'postal_code'=>'Postal Code',
+		'job_date'=>'Job Date',
+		'job_type'=>'Job Type',
+		'call_result'=>'Last call result',
+		'next_event'=>'Next event',
+		'h'=>'History',
+		'r'=>'Result'
+		);
+	if ($pages_count>1) {
+		$pages='<div style="font-size:14px; margin:10px 0">Pages: ';
+		$url=BASE_URL.'/customers/canvassers/';
+		if ($page_number>1) $pages.='<a href="'.$url.($page_number-1).'">&lt;&lt;</a>&nbsp; ';
+		$pstart=max($page_number-10,1);
+		for ($i=$pstart; $i<=$pages_count; $i++) {
+			if ($i==$page_number)
+				$pages.='&nbsp;<b>'.$i.'</b>&nbsp; ';
+			else
+				$pages.='&nbsp;<a href="'.$url.$i.'">'.$i.'</a>&nbsp; ';
+			if ($i-$pstart>19) {
+				$pages.='&nbsp;...&nbsp; &nbsp;<a href="'.$url.$pages_count.'">'.$pages_count.'</a>&nbsp; ';
+				break;
+			}
+		}
+		if ($page_number<$pages_count) $pages.='&nbsp;<a href="'.$url.($page_number+1).'">&gt;&gt;</a>';
+		$pages.='</div>';
+	}
+	else $pages='';
+	echo $pages;
+
+?>
+<style>tr:hover td{background-color:#eec}</style>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+	<tr>
+		<?php foreach ($fields as $f=>$v) { if ($is_admin || $f!='next_event') { ?>
+		<th><?=$v?></th>
+		<?php } } ?>
+	</tr>
+<?php $r=0;
+	//foreach ($items as $zone){
+	//var_dump($ppage,$page_number, $rows_count);
+	for ($i=( $ppage*($page_number-1) ); $i<min( ($ppage*$page_number), $rows_count); $i++ ){
+		$obj=&$items[$i];
+		//$dist=$zone['distance'];
+		//foreach ($zone['rows'] as $obj){
+			$class = 'cell'.(++$r%2);
+	?>
+		<tr class="<?= $class ?>">
+			<td><?=$obj['first_name'].' '.$obj['last_name']?> &nbsp;</td>
+			<td><?=$obj['phone']?> &nbsp;</td>
+			<td><?=$obj['cell_phone']?> &nbsp;</td>
+			<td><?=$obj['address']?> <a href="<?=$HtmlAssist->getOrderGoogleMap($obj)?>" target="_blank"><img src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-globe.png" style="border: 0px; width: 15px; height: 15px; vertical-align: middle;"></a></td>
+			<td><?=$obj['city']?> &nbsp;</td>
+			<td><?=$obj['postal_code']?> &nbsp;</td>
+			<td><?=$obj['job_date']?> &nbsp;</td>
+			<td><?=$obj['name']?> &nbsp;</td>
+			<td><?=$obj['call_result']?> &nbsp;</td>
+			<?php if ($is_admin) : ?>
+			<td><?=$obj['next_event']?> &nbsp;</td>
+			<?php endif; ?>
+			<td><a href="<?=BASE_URL?>/orders/editBooking?customer_id=<?=$obj['id']?>">Show history</a></td>
+			<td><select onchange="location.href='<?=BASE_URL?>/orders/editBooking?customer_id=<?=$obj['id']?>&redirect='+location.href+'&'+value">
+					<option value="">Choose action</option>
+					<option value="order_id=0">Book</option>
+					<option value="action_type=callback">Call back</option>
+					<option value="action_type=comeback">Come back</option>
+					<option value="action_type=dnc">Do Not Call</option>
+				</select>
+				</td>
+		</tr>
+<?php
+	} ?>
+</table>
+<?=$pages?>

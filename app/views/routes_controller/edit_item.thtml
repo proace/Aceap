@@ -1,0 +1,116 @@
+<link rel="Stylesheet" type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/jpicker-1.1.6.min.css" />
+<link rel="Stylesheet" type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/jPicker.css" />
+<script src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.4.min.js" type="text/javascript"></script>
+<script src="<?=ROOT_URL;?>/app/webroot/js/jpicker-1.1.6.min.js" type="text/javascript"></script>
+<script type="text/javascript">        
+  $(document).ready(
+    function()
+    {
+      $('#InventoryLocationColor').jPicker();
+    });
+</script>
+<script>
+//*** SET PAGE TITLE ***
+document.title += " :: Edit Route";
+//**********************
+</script>
+
+
+
+<form name="editItemForm" action="<?=BASE_URL;?>/routes/saveItem" method="post">
+<?php echo $html->hidden('InventoryLocation/id')?>
+<div class="frame-wrap" style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title">Route information</div>
+		<div class="frame-header-right"></div>
+		<div class="frame-body" style="clear: both;">
+				<table>
+						<tr>
+								<td align="right">Route name:</td>
+								<td colspan=2>
+								<?php echo$html->input('InventoryLocation/name', array('style' => 'width: 200px;')); ?>
+                                <?php echo$html->input('InventoryLocation/abbreviation', array('style' => 'width: 50px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Route type:</td>
+								<td colspan=2>
+								<?php echo $html->selectTag('InventoryLocation/route_type', $allTypes, $this->data['InventoryLocation']['route_type']);?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Truck number:</td>
+								<td colspan=2>
+								<?php echo$html->input('InventoryLocation/truck_number', array('style' => 'width: 200px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Route number:</td>
+								<td colspan=2>
+								<?php echo$html->input('InventoryLocation/route_number', array('style' => 'width: 200px;')); ?>
+								</td>
+						</tr>
+
+						<tr>
+								<td align="right">Order number:</td>
+								<td colspan=2>
+								<?php echo$html->input('InventoryLocation/order_id', array('style' => 'width: 200px;')); ?>
+								</td>
+						</tr>
+                        <tr>
+								<td align="right">Trackem Id:</td>
+								<td colspan=2>
+                                <?php echo $html->selectTag('InventoryLocation/trackem_id', $trackemGPS);?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">&nbsp</td>
+								<td align="left"><b>Tech 1</b></td>
+								<td align="left"><b>Tech 2</b></td>
+						</tr>
+						<tr>
+								<td align="right"><b>Monday</b></td>
+								<td><?php echo $html->selectTag('InventoryLocation/tech1_day1', $allTechnicians, $this->data['InventoryLocation']['tech1_day1']);?></td>
+								<td><?php echo $html->selectTag('InventoryLocation/tech2_day1', $allTechnicians, $this->data['InventoryLocation']['tech2_day1']);?></td>
+						</tr>
+						<tr>
+								<td align="right"><b>Tuesday</b></td>
+								<td><?php echo $html->selectTag('InventoryLocation/tech1_day2', $allTechnicians, $this->data['InventoryLocation']['tech1_day2']);?></td>
+								<td><?php echo $html->selectTag('InventoryLocation/tech2_day2', $allTechnicians, $this->data['InventoryLocation']['tech2_day2']);?></td>
+						</tr>
+						<tr>
+								<td align="right"><b>Wednesday</b></td>
+								<td><?php echo $html->selectTag('InventoryLocation/tech1_day3', $allTechnicians, $this->data['InventoryLocation']['tech1_day3']);?></td>
+								<td><?php echo $html->selectTag('InventoryLocation/tech2_day3', $allTechnicians, $this->data['InventoryLocation']['tech2_day3']);?></td>
+						</tr>
+						<tr>
+								<td align="right"><b>Thursday</b></td>
+								<td><?php echo $html->selectTag('InventoryLocation/tech1_day4', $allTechnicians, $this->data['InventoryLocation']['tech1_day4']);?></td>
+								<td><?php echo $html->selectTag('InventoryLocation/tech2_day4', $allTechnicians, $this->data['InventoryLocation']['tech2_day4']);?></td>
+						</tr>
+						<tr>
+								<td align="right"><b>Friday</b></td>
+								<td><?php echo $html->selectTag('InventoryLocation/tech1_day5', $allTechnicians, $this->data['InventoryLocation']['tech1_day5']);?></td>
+								<td><?php echo $html->selectTag('InventoryLocation/tech2_day5', $allTechnicians, $this->data['InventoryLocation']['tech2_day5']);?></td>
+						</tr>
+						<tr>
+								<td align="right"><b>Saturday</b></td>
+								<td><?php echo $html->selectTag('InventoryLocation/tech1_day6', $allTechnicians, $this->data['InventoryLocation']['tech1_day6']);?></td>
+								<td><?php echo $html->selectTag('InventoryLocation/tech2_day6', $allTechnicians, $this->data['InventoryLocation']['tech2_day6']);?></td>
+						</tr>
+						<tr>
+								<td align="right">Color for the Schedule:</td>
+								<td colspan=2>
+								<?php echo$html->input('InventoryLocation/color', array('style' => 'width: 100px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td style="text-align:right" colspan=2>
+												<?php echo $html->submit("Save", array("class" => "buttons"));?>
+												<input type="button" value="Exit" onclick="history.go(-1);" class="buttons">
+								</td>
+						</tr>
+				</table>
+		</div>
+</div>
+</form>

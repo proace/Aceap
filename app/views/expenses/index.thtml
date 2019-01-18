@@ -1,0 +1,146 @@
+<script>
+//*** SET PAGE TITLE ***
+
+document.title += " :: Expenses";
+
+//**********************
+</script>
+
+<script>
+function setInventoryChange(order){
+  f = document.forms.viewform;
+  f.paginationList1.value = '';  
+
+   if(f.order.value == order){
+    if(f.sort.value == 'ASC')
+      f.sort.value = 'DESC';
+    else
+      f.sort.value = 'ASC';
+  }
+  else{
+    f.order.value = order;
+    f.sort.value = 'ASC';
+  }
+  f.submit();
+}
+</script>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="paginationList1" value="<?=$_GET['paginationList1']?>">
+<input type="hidden" name="locationID" value="<?=$_GET['locationID']?>" >
+
+<table width="800">
+<tr>
+<td>
+<table width="60%" align="left" border="0" cellspacing="10" cellpadding="0"> 
+	<tr>
+		<td class="sectionTitle" colspan="4">Expenses</td>
+	</tr>
+	<tr>
+    <td valign="middle"><nobr>Date Period:</nobr></td>
+		<td>
+    	from:<br/><input type="text" name="fromdate" style="width:100px" readonly="1" value="<?=$_GET['fromdate']?>">
+      <a href="#" onclick="showCalendar('fromdate','viewform')">set</a>&nbsp;&nbsp;
+    </td>
+    <td>  
+      to:<br/><input type="text" name="todate" style="width:100px" readonly="1" value="<?=$_GET['todate']?>">
+      <a href="#" onclick="showCalendar('todate','viewform')">set</a>
+    </td>
+    <td>&nbsp;</td>
+    <td>
+  Item:
+  <select name="item_id" style="width:250;">
+  	<option value="0">----choose item----</option>
+  	<?php
+
+	$cat = -1;
+  	foreach ($items as $objItm):
+
+	if ($cat != $objItm['ItemCategory']['id'])
+	{
+		$cat = $objItm['ItemCategory']['id'];
+		print "<option value=\"0\">".strtoupper($objItm['ItemCategory']['name'])."</option>";
+
+	}
+  	?>
+  	<option value="<?php echo $objItm['Item']['id'];?>"
+  	<?php
+  		if($_GET['item_id'] == $objItm['Item']['id'])
+  		{
+  			echo "selected='selected'";
+  		}
+  	?>>
+  	<?php echo "&nbsp;&nbsp;&nbsp;&nbsp;".$objItm['Item']['name'];?></option>
+  	<?php
+  	endforeach;
+  	?>
+  </select> 
+     </td>
+    <td>&nbsp;</td>
+    <td>
+	Supplier: <input type="text" name="supplier" value="<?=$_GET['supplier'];?>" />
+    </td>
+	</tr>
+	<tr>
+		<td colspan="7" align="right"><input type="submit" name="submit2" value="Update" class="buttons"></td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+</td>
+</tr>
+</table>
+
+<br/>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+<tr>
+	<td width="150" style="background-color:#CCCCCC;border-style: none;"><a href="javascript:setInventoryChange('name')" style="color:black;"><b>Name</b></a><?=$name?></td>
+	<th width="100"><a href="javascript:setInventoryChange('amount')">Amount</a><?=$amount?></th>
+	<th><a href="javascript:setInventoryChange('date')">Date Purchased</a><?=$date?></th>
+	<th ><a href="javascript:setInventoryChange('supplier')">Supplier</a><?=$supplier?></th>
+	<th ><a href="javascript:setInventoryChange('qty')">Quantity Purchased</a><?=$qty?></th>
+	<th ><a href="javascript:setInventoryChange('invoice')">Invoice #</a><?=$invoice?></th>
+	<th ><a href="javascript:setInventoryChange('location')">Target Location</a><?=$location?></th>
+</tr>
+	
+	<?php $r=1;
+//pr($expenses);
+
+	foreach ($expenses as $obj): 
+	$class = 'cell'.(++$r%2);
+	?>
+	<tr class="<?= $class ?>">
+	<td style="background-color:#CCCCCC;border-style: none;">
+	<?php 
+		if($obj["Expense"]["item_id"] == 0)
+		{
+			echo $obj["Expense"]["note"];
+			
+		}
+		else {
+			echo $obj["Item"]["name"];
+		}
+	?>	
+
+	</td>
+	<td align="right">$<?php echo $obj["Expense"]["amount"] ?></td>
+	<td><?php echo  strftime("%Y-%m-%d",$time->toUnix($obj['Expense']['date']))?></td>
+	<td><?php echo $obj["Expense"]["supplier"] ?></td>
+	<td  align="right"><?php echo $obj["Expense"]["qty"] ?></td>
+	<td align="right"><?php echo $obj["Expense"]["invoiceNo"] ?></td>
+	<td>&nbsp;<?php echo $obj["InventoryChange"]['InventoryLocationDestination']["name"] ?></td>
+	
+	</tr>
+	<?
+	endforeach;
+	?>
+</table>
+<table width="100%">
+<tr>
+<td align="left"><?=$pagination?>&nbsp;</td>
+</tr>
+</table>
+<br/><br/>
+</form>

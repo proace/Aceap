@@ -1,0 +1,90 @@
+html, body {
+	padding:0;
+	margin:0;
+	background-color:#000000;
+	font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+	color:#cc6633;	
+}
+
+h1 {
+	font-size:100%;	
+	margin:0;
+	padding:2px;
+	background-color:#333333;
+}
+
+ul.buttons {
+	margin:0;
+	padding:0;	
+}
+
+ul.buttons li {
+	display:block;
+	float:left;
+}
+
+a {
+	display:block;
+	width:80px;
+	height:65px;
+	text-align:center;
+	vertical-align:bottom;
+	font-size:80%;
+	margin:3px;
+	line-height:9em;
+}
+
+a:link, a:visited {
+	color:#F90;
+	text-decoration:none;	
+}
+
+a:hover, a:active {
+	color:#F90;
+	text-decoration:none;	
+}
+
+#jobs {
+	background:transparent url("../img/icon-lg-trucks.png") no-repeat top center;	
+}
+
+#summary {
+	background:transparent url("../img/icon-lg-all-bookings.png") no-repeat top center;	
+}
+
+#schedule {
+	background:transparent url("../img/icon-lg-schedule.png") no-repeat top center;	
+}
+
+#feedbacks {
+	background:transparent url("../img/icon-lg-feedbacks.png") no-repeat top center;	
+}
+
+#commission {
+	background:transparent url("../img/icon-lg-price.png") no-repeat top center;	
+}
+
+#days_off {
+	background:transparent url("../img/icon-lg-technician.png") no-repeat top center;	
+}
+
+#inventory {
+	background:transparent url("../img/icon-lg-inventory-moves.png") no-repeat top center;	
+}
+
+#part_requests {
+	background:transparent url("../img/icon-lg-inventory-moves.png") no-repeat top center;	
+}
+
+#suppliers {
+	background:transparent url("../img/icon-lg-technician.png") no-repeat top center;	
+}
+
+#logout {
+	background:transparent url("../img/icon-lg-logout.png") no-repeat top center;	
+}
+
+.clear_this {
+	clear:both;	
+}
+

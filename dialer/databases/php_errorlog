@@ -1,0 +1,139 @@
+[06-Apr-2018 02:18:20] PHP Parse error:  syntax error, unexpected T_CONSTANT_ENCAPSED_STRING in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 15
+[06-Apr-2018 02:43:50] PHP Notice:  Undefined variable: pdo in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 24
+[06-Apr-2018 02:43:50] PHP Fatal error:  Call to a member function query() on a non-object in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 24
+[06-Apr-2018 02:44:05] PHP Notice:  Undefined variable: pdo in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 24
+[06-Apr-2018 02:44:05] PHP Fatal error:  Call to a member function query() on a non-object in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 24
+[06-Apr-2018 02:45:02] PHP Fatal error:  Call to undefined method PDOStatement::fetch_array() in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 26
+[06-Apr-2018 02:45:04] PHP Fatal error:  Call to undefined method PDOStatement::fetch_array() in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 26
+[06-Apr-2018 02:45:14] PHP Fatal error:  Call to undefined method PDOStatement::fetch_assoc() in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 26
+[06-Apr-2018 02:45:16] PHP Fatal error:  Call to undefined method PDOStatement::fetch_assoc() in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 26
+[06-Apr-2018 02:45:58] PHP Fatal error:  Call to undefined method PDOStatement::fetch_assoc() in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 26
+[06-Apr-2018 02:45:59] PHP Notice:  Undefined index:  action in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 6
+[06-Apr-2018 02:46:22] PHP Fatal error:  Call to undefined method PDOStatement::fetch_assoc() in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 26
+[06-Apr-2018 02:46:24] PHP Fatal error:  Call to undefined method PDOStatement::fetch_assoc() in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 26
+[06-Apr-2018 02:46:25] PHP Fatal error:  Call to undefined method PDOStatement::fetch_assoc() in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 26
+[06-Apr-2018 02:57:15] PHP Parse error:  syntax error, unexpected T_CONSTANT_ENCAPSED_STRING in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 29
+[06-Apr-2018 02:57:16] PHP Parse error:  syntax error, unexpected T_CONSTANT_ENCAPSED_STRING in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 29
+[06-Apr-2018 03:42:26] PHP Notice:  Undefined index:  action in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 6
+[06-Apr-2018 03:42:54] PHP Notice:  Undefined index:  action in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 6
+[06-Apr-2018 03:42:56] PHP Parse error:  syntax error, unexpected T_ELSE in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 62
+[06-Apr-2018 03:43:24] PHP Notice:  Undefined index:  action in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 6
+[06-Apr-2018 03:43:28] PHP Notice:  Undefined index:  action in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 6
+[06-Apr-2018 03:43:44] PHP Notice:  Undefined index:  import in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 54
+[06-Apr-2018 03:44:43] PHP Notice:  Undefined index:  import in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 54
+[06-Apr-2018 03:45:36] PHP Notice:  Undefined index:  import in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 54
+[06-Apr-2018 04:00:20] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42S22]: Column not found: 1054 Unknown column 'customer_homephone' in 'field list'' in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php:75
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(75): PDO->exec('insert into  di...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(9): import_leads()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 75
+[06-Apr-2018 04:03:39] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42S22]: Column not found: 1054 Unknown column 'customer_address' in 'field list'' in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php:75
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(75): PDO->exec('insert into  cu...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(9): import_leads()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 75
+[06-Apr-2018 04:56:02] PHP Notice:  Undefined index:  action in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 6
+[06-Apr-2018 04:58:57] PHP Notice:  Undefined variable: pdo in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 103
+[06-Apr-2018 04:58:57] PHP Fatal error:  Call to a member function query() on a non-object in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 103
+[06-Apr-2018 04:59:24] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42S22]: Column not found: 1054 Unknown column 'b.customer_city' in 'where clause'' in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php:103
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(103): PDO->query('SELECT a.*,b.ca...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(10): export_leads()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 103
+[06-Apr-2018 06:06:18] PHP Notice:  Undefined index:  action in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php on line 6
+[06-Apr-2018 06:08:39] PHP Notice:  Undefined index:  disposition in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php on line 15
+[06-Apr-2018 06:08:39] PHP Notice:  Undefined index:  cust_id in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php on line 16
+[06-Apr-2018 06:08:39] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'where clause'' in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php:18
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php(18): PDO->exec('update customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php(7): update_customer()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php on line 18
+[06-Apr-2018 06:10:16] PHP Notice:  Undefined index:  cust_id in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php on line 16
+[06-Apr-2018 06:10:16] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'where clause'' in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php:18
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php(18): PDO->exec('update customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php(7): update_customer()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php on line 18
+[06-Apr-2018 06:11:42] PHP Notice:  Undefined index:  cust_id in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php on line 16
+[06-Apr-2018 06:11:42] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'where clause'' in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php:18
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php(18): PDO->exec('update customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php(7): update_customer()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php on line 18
+[06-Apr-2018 06:12:54] PHP Notice:  Undefined index:  cust_id in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php on line 16
+[06-Apr-2018 06:12:54] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'where clause'' in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php:18
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php(18): PDO->exec('update customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php(7): update_customer()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php on line 18
+[06-Apr-2018 06:15:31] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'where clause'' in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php:18
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php(18): PDO->exec('update customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php(7): update_customer()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php on line 18
+[06-Apr-2018 06:16:18] PHP Notice:  Undefined variable: cust_id in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php on line 21
+[06-Apr-2018 07:35:02] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'where customer_city='ABBOTSFORD'' at line 2' in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php:144
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(144): PDO->query('SELECT customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(12): get_disposition_count()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 144
+[06-Apr-2018 07:36:11] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'where customer_city='ABBOTSFORD'' at line 2' in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php:144
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(144): PDO->query('SELECT customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(12): get_disposition_count()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 144
+[06-Apr-2018 07:36:51] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'where customer_city='ABBOTSFORD'' at line 2' in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php:144
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(144): PDO->query('SELECT customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(12): get_disposition_count()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 144
+[06-Apr-2018 07:36:54] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'where customer_city='BURNABY'' at line 2' in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php:144
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(144): PDO->query('SELECT customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(12): get_disposition_count()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 144
+[06-Apr-2018 07:37:00] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'where customer_city='ABBOTSFORD'' at line 2' in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php:144
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(144): PDO->query('SELECT customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(12): get_disposition_count()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 144
+[06-Apr-2018 07:37:51] PHP Notice:  Undefined index:  city in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 142
+[06-Apr-2018 07:37:51] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'where customer_city=''' at line 2' in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php:144
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(144): PDO->query('SELECT customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(12): get_disposition_count()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 144
+[06-Apr-2018 07:38:08] PHP Notice:  Undefined index:  city in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 142
+[06-Apr-2018 07:38:08] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'where customer_city=''' at line 2' in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php:144
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(144): PDO->query('SELECT customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(12): get_disposition_count()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 144
+[06-Apr-2018 07:38:10] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'where customer_city='ABBOTSFORD'' at line 2' in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php:145
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(145): PDO->query('SELECT customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(12): get_disposition_count()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 145
+[06-Apr-2018 07:38:59] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'where customer_city='ABBOTSFORD'' at line 2' in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php:147
+Stack trace:
+#0 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(147): PDO->query('SELECT customer...')
+#1 /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php(12): get_disposition_count()
+#2 {main}
+  thrown in /home/acecare7/public_html/acesys/dialer/dialer/databases/custom_functions.php on line 147
+[06-Apr-2018 10:09:22] PHP Notice:  Undefined variable: _SESSION in /home/acecare7/public_html/acesys/dialer/dialer/databases/agent_custom_functions.php on line 17

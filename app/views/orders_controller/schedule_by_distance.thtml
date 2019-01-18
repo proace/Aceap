@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Schedule by Distance</title>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.16.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/schedule_by_distance.js"></script>
+
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.16.custom.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/schedule_by_distance.css" />
+</head>
+
+<body>
+<form name="schedule_by_distance_form" action="<?=BASE_URL;?>/orders/scheduleByDistance" method="post">
+<div class="options_container">
+	<!--<label>Date</label>
+    <span class="set_span">
+        <input type="button" value="<<" class="previous_date" /><input type="hidden" id="prevdate" value="<?php echo $prevdate ?>" />
+        <input type="text" id="date_picker" name="date_picker" value="<?php echo $date_picker ?>" />
+        <input type="button" value=">>" class="next_date" /><input type="hidden" id="nextdate" value="<?php echo $nextdate ?>" />
+    </span>-->
+    <label>Jobs</label>
+    <span class="set_span">
+        <input type="checkbox" id="furnaces_show" name="furnaces_show" value="1" checked="checked" />Furnaces
+        <input type="checkbox" id="airducts_show" name="airducts_show" value="1" checked="checked" />Airducts
+        <input type="checkbox" id="installations_show" name="installations_show" value="1" checked="checked" />Installations
+    </span>
+</div>
+<h2>Week 1</h2>
+<table id="all_table" class="schedule_table">
+    <tr>
+        <td class="hour_label heading" rowspan="2"><div style="width:100px;">Hour</div></td>
+        <?php foreach($dates1 as $i => $date) { ?>
+        <td class="heading day_spanner" colspan="<?php echo count($furnaceslots) + count($airductslots) + count($installationslots) ?>">
+		<?php echo $date['day'] ?> <?php echo $date['week'] ?>
+        </td>
+        <td class="separator_slot"></td>
+		<?php } ?>
+    </tr>
+    <tr>
+    	<?php foreach($dates1 as $i => $date) { ?>
+			<?php foreach($furnaceslots as $key => $fslot) { ?>
+            <td class="furnace_slots heading"><?php echo $fslot['abbreviation'] ?></td>
+            <?php } ?>
+            <?php foreach($airductslots as $key => $aslot) { ?>
+            <td class="airduct_slots heading"><?php echo $aslot['abbreviation'] ?></td>
+            <?php } ?>
+            <?php foreach($installationslots as $key => $islot) { ?>
+            <td class="installation_slots heading"><?php echo $islot['abbreviation'] ?></td>            
+            <?php } ?>
+            <td class="separator_slot"></td>
+        <?php } ?>
+    </tr>
+    <?php $has_label = false; ?>
+    <?php foreach($hourslots as $hid => $hour) { ?>
+    <tr>    	
+        <?php foreach($dates1 as $i => $date) { ?>
+        	<?php if(!$has_label) { ?>
+            <td class="hour_label"><?php echo $hour['name'] ?></td>
+            <?php $has_label = true; ?>
+            <?php } ?>
+            <?php foreach($furnaceslots as $key => $fslot) { ?>
+            <?php if(isset($scheduleslots1[$i][$hid][$key])) { ?>
+            <td class="furnace_slots blocked_slot">
+            	<div style="width:25px;height:25px;color:#fff;"><?php echo $scheduleslots1[$i][$hid]["d".$key] ?></div>
+			<?php } else { ?>
+            <td class="furnace_slots open_slot">
+            	<input type="button" class="slot_button" value=" " />
+            <?php } ?>
+            </td>
+            <?php } ?>
+            <?php foreach($airductslots as $key => $fslot) { ?>
+            <?php if(isset($scheduleslots1[$i][$hid][$key])) { ?>
+            <td class="airduct_slots blocked_slot">
+            	<div style="width:25px;height:25px;color:#fff;"><?php echo $scheduleslots1[$i][$hid]["d".$key] ?></div>
+			<?php } else { ?>
+            <td class="airduct_slots open_slot">
+            	<input type="button" class="slot_button" value=" " />
+            <?php } ?>
+            </td>
+            <?php } ?>
+            <?php foreach($installationslots as $key => $fslot) { ?>
+            <?php if(isset($scheduleslots1[$i][$hid][$key])) { ?>
+            <td class="installation_slots blocked_slot">
+            	<div style="width:25px;height:25px;color:#fff;"><?php echo $scheduleslots1[$i][$hid]["d".$key] ?></div>
+			<?php } else { ?>
+            <td class="installation_slots open_slot">
+            	<input type="button" class="slot_button" value=" " />
+            <?php } ?>
+			<?php //echo $scheduleslots1[$i][$hid][$key] ?></td>
+            <?php } ?>
+            <td class="separator_slot"></td>
+        <?php } ?>
+        	
+        <?php $has_label = false; ?>
+    </tr>
+    <?php } ?>
+</table>
+<?php if($weeks > 1) { ?>
+<h2>Week 2</h2>
+<table id="all_table" class="schedule_table">
+    <tr>
+        <td class="hour_label heading" rowspan="2"><div style="width:100px;">Hour</div></td>
+        <?php foreach($dates2 as $i => $date) { ?>
+        <td class="heading day_spanner" colspan="<?php echo count($furnaceslots) + count($airductslots) + count($installationslots) ?>">
+		<?php echo $date['day'] ?> <?php echo $date['week'] ?>
+        </td>
+        <td class="separator_slot"></td>
+		<?php } ?>
+    </tr>
+    <tr>
+    	<?php foreach($dates2 as $i => $date) { ?>
+			<?php foreach($furnaceslots as $key => $fslot) { ?>
+            <td class="furnace_slots heading"><?php echo $fslot['abbreviation'] ?></td>
+            <?php } ?>
+            <?php foreach($airductslots as $key => $aslot) { ?>
+            <td class="airduct_slots heading"><?php echo $aslot['abbreviation'] ?></td>
+            <?php } ?>
+            <?php foreach($installationslots as $key => $islot) { ?>
+            <td class="installation_slots heading"><?php echo $islot['abbreviation'] ?></td>            
+            <?php } ?>
+            <td class="separator_slot"></td>
+        <?php } ?>
+    </tr>
+    <?php $has_label = false; ?>
+    <?php foreach($hourslots as $hid => $hour) { ?>
+    <tr>    	
+        <?php foreach($dates2 as $i => $date) { ?>
+        	<?php if(!$has_label) { ?>
+            <td class="hour_label"><?php echo $hour['name'] ?></td>
+            <?php $has_label = true; ?>
+            <?php } ?>
+            <?php foreach($furnaceslots as $key => $fslot) { ?>
+            <?php if(isset($scheduleslots2[$i][$hid][$key])) { ?>
+            <td class="furnace_slots blocked_slot">
+            	<div style="width:25px;height:25px;color:#fff;"><?php echo $scheduleslots2[$i][$hid]["d".$key] ?></div>
+			<?php } else { ?>
+            <td class="furnace_slots open_slot">
+            	<input type="button" class="slot_button" value=" " />
+            <?php } ?>
+            	<input type="hidden" class="" />
+            </td>
+            <?php } ?>
+            <?php foreach($airductslots as $key => $fslot) { ?>
+            <?php if(isset($scheduleslots2[$i][$hid][$key])) { ?>
+            <td class="airduct_slots blocked_slot">
+            	<div style="width:25px;height:25px;color:#fff;"><?php echo $scheduleslots2[$i][$hid]["d".$key] ?></div>
+			<?php } else { ?>
+            <td class="airduct_slots open_slot">
+            	<input type="button" class="slot_button" value=" " />
+            <?php } ?>
+            </td>
+            <?php } ?>
+            <?php foreach($installationslots as $key => $fslot) { ?>
+            <?php if(isset($scheduleslots2[$i][$hid][$key])) { ?>
+            <td class="installation_slots blocked_slot">
+            	<div style="width:25px;height:25px;color:#fff;"><?php echo $scheduleslots2[$i][$hid]["d".$key] ?></div>
+			<?php } else { ?>
+            <td class="installation_slots open_slot">
+            	<input type="button" class="slot_button" value=" " />
+            <?php } ?>
+			<?php echo $scheduleslots2[$i][$hid][$key] ?>
+            </td>
+            <?php } ?>
+            <td class="separator_slot"></td>
+        <?php } ?>
+        	
+        <?php $has_label = false; ?>
+    </tr>
+    <?php } ?>
+</table>
+<?php } ?>
+</form>
+<pre><?php print_r($scheduleslots1) ?></pre>
+<pre><?php print_r($scheduleslots2) ?></pre>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<?php
+session_start();
+$_SESSION['admin_id']=$_SESSION['user']['id'];
+$_SESSION['admin_name']=$_SESSION['user']['name'];
+$_SESSION['admin_email']=$_SESSION['user']['email'];
+if($_SESSION['user']['id']=='' )
+{
+$logged_in=0;
+
+}
+else 
+$logged_in=1;
+
+?>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+	
+<link href="/acesys/adminchat/admincss.css" rel="stylesheet">
+<!------ Include the above in your HEAD tag ---------->
+
+<script src="https://use.fontawesome.com/45e03a14ce.js"></script>
+<style>
+  #user_loader{
+    display:none;
+  }
+  #user_loader.open{
+     background:url(/acesys/adminchat/chat_loader.gif);
+      position: ABSOLUTE;    
+      background-position: center ;   
+      width: 100%;    
+      z-index: 9999;    
+      display: block;
+      height: 380px;
+       background-repeat:no-repeat;
+    opacity: .5!important;
+}
+#delete_user{
+display:none;
+}
+</style>
+<script>
+$(document).ready(function(e){
+	$.ajaxSetup({
+		cache: false
+	});
+	
+	setInterval( function(){ 
+		    show_refresh_chat(); 
+		  
+		    }, 2000 );
+   setInterval( function(){   
+		   getonline_users(<?php echo $_SESSION['admin_id'];?>);
+		    }, 4000 );
+});
+
+</script>
+
+<div class="main_section">
+   <div class="container">
+      <div class="chat_container">
+         <div class="col-xs-6 chat_sidebar">
+    	 <div class="row">
+            <div id="custom-search-input">
+               <div class="input-group col-md-12">
+                  <input type="text" class="  search-query form-control" placeholder="Conversation" />
+                  <button class="btn btn-danger" type="button">
+                  <span class=" glyphicon glyphicon-search"></span>
+                  </button>
+               </div>
+            </div>
+            <div class="dropdown all_conversation">
+               <button class="dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+               <i class="fa fa-weixin" aria-hidden="true"></i>
+               All Users
+              <!-- <span class="caret pull-right"></span>-->
+               </button>
+            
+            </div>
+            <div class="member_list" >
+<div id="user_loader" class="">
+
+</div>
+     
+               <ul class="list-unstyled" id="onlineusers">
+                  
+               </ul>
+            </div></div>
+         </div>
+         <!--chat_sidebar-->
+		 
+		 
+         <div class="col-xs-6 message_section">
+		 <div class="row">
+		 <div class="new_message_head">
+		 <div class=""><button id="username_heading" class="pull-left">
+                       <i class="fa fa-plus-square-o" aria-hidden="true"></i> </button> 
+<a href="javascript:void(0)"  userid="" id="delete_user" class="pull-right"><i class="fa fa-close"></i> </a></div>
+		 
+		
+		 </div><!--new_message_head-->
+		 
+		 <div class="chat_area">
+		 <ul class="list-unstyled" id="chatlogs">
+		
+		 
+		 </ul>
+		 </div><!--chat_area-->
+          <div class="message_write">
+			  <input type="hidden" name="session_id" value="<?php echo $_SESSION['chat_id'];?>">
+    	 <textarea class="form-control" name="message" placeholder="type a message"></textarea>
+		 <div class="clearfix"></div>
+		 <div class="chat_bottom">
+			<!-- <a href="#" class="pull-left upload_btn">
+				 <i class="fa fa-cloud-upload" aria-hidden="true"></i>
+             Add Files</a>-->
+ <a href="javascript:void(0)" class="pull-right btn btn-success" onclick="submitChat()">
+ Send</a></div>
+		 </div>
+		 </div>
+         </div> <!--message_section-->
+      </div>
+      
+     
+      
+   </div>
+</div>
+<script>
+var is_scrolled=false;
+
+function showchat(user_id,session_id,username,rowid){
+	$('#onlineusers li.active').removeClass('active');
+	$('#onlineusers li[rowid="'+rowid+'"]').addClass('active');
+	$.ajax({
+                async: false,
+		url:'/acesys/adminchat/custom_functions.php',
+		data:{user_id:user_id,session_id:session_id,action:'show_admin_chat',user_logged_id:'<?php echo $logged_in;?>'},
+		success:function(result){ 
+			$('input[name="session_id"]').val(session_id);
+			//$('#show_user_chat').html(result);
+                        $('#delete_user').attr('userid',user_id);
+                        $('#delete_user').show();
+			$('#chatlogs').html(result);
+                        $(".chat_area").animate({ scrollTop: $('.chat_area').prop("scrollHeight")}, 1000);
+			$('#username_heading').html('<i class="fa fa-plus-square-o" aria-hidden="true"></i> '+username);
+                       
+		}
+		
+		});
+}
+function submitChat(){
+	//var user_id=$('#savechat').attr('userid');
+	var message=$('textarea[name="message"]').val();
+	var session_id=$('input[name="session_id"]').val();
+	
+	if(message != '' && session_id != ''){
+	$.ajax({
+                async: false,
+		url:'/acesys/adminchat/custom_functions.php',
+		data:{user_id:0,session_id:session_id,message:message,admin_id:<?php echo $_SESSION['admin_id'];?>,action:'savechat'},
+		success:function(result){
+			$('textarea[name="message"]').val('');
+			//$('#chatlogs').html(result);
+			//$('#show_user_chat').html(result);
+			$('#chatlogs').html(result);
+			$(".chat_area").animate({ scrollTop: $('.chat_area').prop("scrollHeight")}, 1000);
+		}
+		
+		});
+	
+	}
+}
+function show_refresh_chat(){ 
+	var session_id = $('input[name="session_id"]').val();        
+	if(session_id !=0){
+    $.ajax({
+    async: false,
+    url:"/acesys/adminchat/custom_functions.php", 
+    data:{session_id: session_id,action:'show_admin_chat',user_logged_id:'<?php echo $logged_in;?>'}, 
+    success:function(result){
+if(result == '1')
+{
+$('#chatlogs').html("You are not allowed to access");
+}
+else{        
+     $('#chatlogs').html(result);
+     //$('.chat_area').scrollTop($('.chat_area')[0].scrollHeight);
+     console.log('is_scrolled=='+is_scrolled);
+    if(is_scrolled == false) $(".chat_area").animate({ scrollTop: $('.chat_area').prop("scrollHeight")}, 1000);
+	 }
+}
+   });
+}
+}
+function getonline_users(admin_id){ 
+if(admin_id != '' || admin_id != 0){
+	$.ajax({
+    async: false,
+    url:"/acesys/adminchat/custom_functions.php", 
+    data:{admin_id:admin_id,action:'getonline_users',user_logged_id:'<?php echo $logged_in;?>'}, 
+    success:function(result){ 
+		     $('#onlineusers').html(result);
+		     //var unread=$('#unread_msg').val();
+		     //if(unread !=0) $('#total_unread_msg').html(unread);
+		    // else  $('#total_unread_msg').html('');
+	 }
+   });
+}
+}
+
+function delete_user(user_id){ 
+$('#user_loader').addClass('open');
+var divheight=$('#onlineusers').prop("scrollHeight");
+$('#user_loader.open').css('height',divheight);
+//clearInterval(user_interval);
+   $.ajax({
+    async: false,
+    url:"/acesys/adminchat/custom_functions.php", 
+    data:{user_id:user_id,action:'delete_user',user_logged_id:'<?php echo $logged_in;?>'}, 
+    success:function(result){
+                
+		$('#user_loader').removeClass('open'); 
+                $('#username_heading').html(' <i class="fa fa-plus-square-o" aria-hidden="true"></i>'); 
+                $('#delete_user').hide();  
+                $('#chatlogs').html('');
+                //user_interval; 
+	 }
+   });
+}
+
+
+$(document).ready(function(){
+       var userid = localStorage.getItem("open_user");
+        
+	getonline_users(<?php echo $_SESSION['admin_id'];?>);
+          if(userid !='') {
+            setTimeout(function(){$('#onlineusers li a[userid="'+userid+'"]').trigger('click')},200);
+        }
+});
+
+$(document).ready(function(){
+   $.ajax({
+    async: false,
+    url:"/acesys/adminchat/custom_functions.php", 
+    data:{admin_id:<?php echo $_SESSION['admin_id'];?>,admin_name:'<?php echo $_SESSION['admin_name'];?>',action:'insert_update_admin',user_logged_id:'<?php echo $logged_in;?>'}, 
+    success:function(result){
+		 
+	 }
+   });
+});
+
+$(document).ready(function(){
+	$('textarea[name="message"]').keypress(function (e) {
+  if (e.which == 13) {
+        submitChat();
+    return false;    
+  }
+});
+});
+
+$(document).ready(function(){
+$(".chat_area").bind('scroll mousedown wheel DOMMouseScroll mousewheel keyup', function(e){
+    if ( e.which > 0 || e.type == "mousedown" || e.type == "mousewheel"){
+          is_scrolled = true;
+ }
+});
+
+
+
+
+
+
+
+
+$('#delete_user').click(function(){
+    var user_id= $(this).attr('userid');
+    delete_user(user_id);
+
+ });
+});
+
+</script>

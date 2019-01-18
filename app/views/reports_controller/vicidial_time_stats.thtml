@@ -1,0 +1,72 @@
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+<table border="0" cellspacing="10" cellpadding="0">
+	<tr>
+		<td class="sectionTitle" colspan="2">Agent Time Statistics</td>
+	</tr>
+	<tr >
+		<td>Date from: 
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			&nbsp;&nbsp;
+			Date to:
+			&nbsp;&nbsp;
+			<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			&nbsp;&nbsp;
+			<!--<nobr>Telemarketers:</nobr>	
+			<select name="ftelemid">
+				<option value="">-=All=-</option>
+				<?php 
+				foreach($allTelemarketers as $k => $v) {
+					echo '<option value="'.$k.'"'.( $k == $telemid ? ' selected' : '').'>'.$v.'</option>';
+				}
+				?>
+			</select>-->			
+		</td>
+        <!--<td>
+        	<select name="disposition">
+            <option value="">-=All=-</option>
+            <?php
+            	foreach($vicidialStatuses as $status) {
+					echo '<option value="'.$status['status'].'"'.( $status['status'] == $disposition ? ' selected' : '').'>'.$status['status_name'].'</option>';
+				}
+			?>
+            </select>
+        </td>-->
+		<td>
+			<input type="submit" name="submit2" value="Update" class="buttons">
+		</td>		
+	</tr>
+</table>
+</form>
+
+<p><b>Number of results: <?=count($records)?></b></p>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="900px">
+	<tr>
+    	<th>Name</th>
+        <th>Talk</th>
+        <th>Wait</th>
+        <th>Disposition</th>
+        <th>Pause</th>
+        <th>Dead</th>
+        <th>Total (Talk + Wait)</th>
+    </tr>
+<?php $r=1;
+	foreach($records as $id => $record) { 
+		$class = 'cell'.(++$r%2);
+?>
+    <tr class="<?= $class ?>">
+    	<td><?php echo $record['name'] ?></td>
+        <td><?php echo $record['talk'] ?></td>
+        <td><?php echo $record['wait'] ?></td>
+        <td><?php echo $record['dispo'] ?></td>
+        <td><?php echo $record['pause'] ?></td>
+        <td><?php echo $record['dead'] ?></td>
+        <td><?php echo $record['total'] ?></td>
+    </tr>
+<?php } ?>
+</table>

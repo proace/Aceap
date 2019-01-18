@@ -1,0 +1,124 @@
+<link type="text/css" href="<?php echo ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />	
+<script type="text/javascript" src="<?php echo ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+
+<script type="text/javascript">
+<!--
+
+
+function hideall(name) {
+	var t = document.getElementsByName(name);
+	for(i = 0; i < t.length; i++) 
+		t[i].style.display = 'none';		
+}
+
+function saveGroup(o) {
+	var s=o; 
+	window.open('<?php echo BASE_URL ?>/groups/saveGroup/?uid=' + s, '_self');
+}
+
+function addGroup(name) {
+	window.open('<?php echo BASE_URL ?>/groups/addGroup/?name=' + name, '_self');
+}
+
+function editGroup(id, name) {
+	window.open('<?php echo BASE_URL ?>/groups/editGroup/?uid=' + id + '&name=' + name, '_self');
+}
+
+function saveLeader(id) {
+	window.open('<?php echo BASE_URL ?>/groups/saveLeader/?uid=' + id, '_self');
+}
+
+function deleteGroup(name, id) {
+	var r = confirm("Are you sure you want to delete the group " + name + "?");
+	if(r) window.open('<?php echo BASE_URL ?>/groups/deleteGroup/?uid=' + id, '_self');
+}
+
+// -->
+</script>
+<style>
+.results th {border-bottom: 1px solid #6c6c6c;background-color:#800000; color:white;border:2px outset white;font-size: small;}
+.regular {font-weight:bold;}
+</style>
+<h1>Call Center Groups</h1>
+<h2 style="margin-bottom:2px;">Add New Group</h2>
+<?php echo BASE_URL ?>
+<table>
+    <tr>
+        <td><input type="text" name="groupName" id="groupName" />
+        </td>
+        <td><input type="button" onclick="addGroup(document.getElementById('groupName').value)" value="Save" />
+    </tr>
+</table>
+<?php foreach ($groups as $group) {?>
+	<h2 style="margin-bottom:2px;"><?php echo $group['name'] ?></h2>            
+	<table id="edit<?php echo $group['id']?>" name="edit" style="display:none">
+		<tr>
+			<td><input type="text" name="groupNameChange<?php echo $group['id']?>" id="groupNameChange<?php echo $group['id']?>" value="<?php echo $group['name']?>" />
+			</td>
+			<td><input type="button" onclick="editGroup('<?php echo $group['id']?>', document.getElementById('groupNameChange<?php echo $group['id']?>').value)" value="Update" />
+		</tr>
+	</table>         
+	<div style="margin-bottom:10px;">
+	<input type="button" value="Edit Group Name" onclick="hideall('edit'); document.getElementById('edit<?php echo $group['id']?>').style.display = 'block';" />
+	<input type="button" value="Delete Group" onclick="deleteGroup('<?php echo $group['name']?>', '<?php echo $group['id']?>')" />
+	
+	</div>
+	<table class="results" cellpadding="0" cellspacing="0" style="border-style: solid;border-width:1px;">
+		<tr style="height:25px;">
+			<th width="150">Leader</th>
+            <th>
+            <select style="width:20px">
+				<option></option>                        
+				<?php foreach($items as $member) { ?>
+                	<?php if($group['id'] == $member['gid']) {?>						
+                    	<option onclick="window.open('<?php echo BASE_URL ?>/groups/saveLeader/?uid=<?php echo $member['gid'];?>|<?php echo $member['id'];?>', '_self');"><?php echo $member['first_name'].' '.$member['last_name'];?></option>                                                
+                	<?php } //end if  ?>
+				<?php } //end foreach  ?>
+			</select>
+            </th><!--
+            <input type="button" value="Reset Team Leader" onclick="window.open('<?php echo BASE_URL ?>/groups/saveLeader/?uid=<?php echo $group['id'] ?>|0', '_self');" />-->
+            
+			<th width="150">Member</th>
+			<th>
+			<select style="width:20px">
+				<option></option>                        
+				<?php foreach($items as $item2) { ?>
+				<?php if($item2['gid'] == null) { ?>
+				<option onclick="window.open('<?php echo BASE_URL ?>/groups/saveGroup/?uid=<?php echo $group['id'] ?>|<?php echo $item2['id'] ?>','_self');"><?php echo $item2['first_name'].' '.$item2['last_name'];?></option>                        
+				<?php } //end if  ?>
+
+				<?php } //end foreach  ?>
+			</select>
+			<!--
+			<input type="button" value="    Add Member    " onclick="hideall('free'); document.getElementById('free<?php echo $group['id']?>').style.display = 'block';" />-->
+			</th>
+		</tr>
+    
+    <?php $i = 0; ?>
+	<?php foreach ($items as $item) {?>
+	<?php if($group['id'] == $item['gid']) {?>  
+	<?php $class = 'cell0'; ?>
+		<tr class="<?php echo $class ?>" style="height:35px;">
+        	<?php if($i++ == 0) { ?>
+            <?php $name = ''; ?>
+			<?php foreach ($items as $leader) {?>
+                <?php if($item['gleaderid'] == $leader['id']) { ?>
+                <?php $name = $leader['first_name'].' '.$leader['last_name']; ?>
+                <?php } ?> 
+            <?php } ?>
+			<td colspan="2" rowspan="<?php echo count($items); ?>" align="center" style="border:2px outset #d0d0ce;font-size: small;">
+            <?php echo $name; ?>          
+			</td>            			
+			<?php } ?>
+			<td align="left" style="border:2px outset #d0d0ce;font-size: small; font-weight:bold; font-style: italic;"><?php echo $item['first_name'].' '.$item['last_name'];?></td>
+			<td align="center"><input type="button" value="X" style="width:20px" onclick="window.open('<?php echo BASE_URL ?>/groups/saveGroup/?uid=0|<?php echo $item['id'] ?>', '_self');" />
+			</td>
+	   </tr>
+	<?php } //end if?>         
+	<?php } //end foreach items?>                
+	</table>
+<?php } //end foreach groups?>
+        
+        
+
+

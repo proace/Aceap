@@ -1,0 +1,54 @@
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.tablesorter.min.js"></script>
+<script>
+$(document).ready(function() 
+    { 
+        $("#sortableTable").tablesorter(); 
+    } 
+); 
+</script>
+
+<div>
+
+<form method="GET" name="viewform">
+<table>
+	<tr>
+    	<td></td>
+        <td></td>
+    	<td align="right">
+    	<td align="center"><input type="text" name="ffromdate" id="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+        </td>
+        <td><input type="text" name="ftodate" id="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+        </td>
+    </tr>
+</table>
+<table id="sortableTable" class="tablesorter" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">	
+    <thead style="background-color:#999999">
+	<tr>
+    	<th>id</th>
+    	<th>Ref #</th>
+        <th>Tech 1</th>
+        <th>Tach 2</th>
+        <th>Job Date</th>
+        <th>Status</th>
+        <th>Filter</th>      
+    </tr>
+    </thead>
+    <tbody> 
+<?php $r = 0; ?>
+<?php foreach($customers as $customer) { ?>
+	<tr class="<?php echo 'cell'.($r++%2) ?>" style="height:25px">
+    	<td><a href="<?php echo BASE_URL ?>/orders/editBooking?order_id=<?php echo $customer['id'] ?>"><?php echo $customer['id'] ?></a></td>    
+        <td><?php echo $customer['order_number'] ?></td>   
+        <td><?php echo $customer['tech1'] ?></td>
+        <td><?php echo $customer['tech2'] ?></td>
+        <td><?php echo $customer['job_date'] ?></td>
+        <td><?php echo $customer['status'] ?></td>
+        <td><?php echo $customer['filter'] ?></td>
+    </tr>
+<?php } ?>
+	</a
+  	></tbody>
+</table>
+</form>
+</div>

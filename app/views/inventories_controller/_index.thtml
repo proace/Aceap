@@ -1,0 +1,70 @@
+<script>
+function adjustItem(id, item_id, location_id, old_qty)
+{
+	var r = prompt("Please enter the new quantity:", old_qty);
+	if (r != null && r != "")
+	{
+		qty = parseInt(r);
+		if (!isNaN(qty))
+			document.location.href = './adjustItem?id='+id+'&item_id='+item_id+'&location_id='+location_id+'&old_qty='+old_qty+'&qty='+qty+'&rurl=<?=urlencode($this->params['controller'].'/'.$this->params['action'].'/?'.$_SERVER['QUERY_STRING']);?>';
+		else
+			alert("You did not enter a valid number - please try again.");
+	}
+}
+</script>
+
+<table width="100%" align="center" border="0" cellspacing="10" cellpadding="0"> 
+<tr>
+<td class="sectionTitle">Inventory Status</td>
+<td>Search by name:</td>
+<td><input type="text" id="ItemSearchString" onkeyup="SearchFilter2(this,'.item_name_td')"/></td>
+<td>Search by part #:</td>
+<td colspan=3><input type="text" id="NumberSearchString" onkeyup="SearchFilter2(this,'.part_number_td')"/></td>
+<td align="left">
+	<input type="button" name="addnew" value="Setup" onclick="document.location.href='<?=BASE_URL?>/inventories/edit_setup'" />
+</td>
+</tr>
+</table>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="paginationList3" value="<?=$_GET['paginationList3']?>">
+
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+				<tr>
+						<th>Default</th>
+						<th width=100px>Item</th>
+						<th width=100px>Part #</th>
+				<?php
+								foreach ($locations as $cur_loc)
+								{
+												echo "<th>$cur_loc</th>";
+								}
+				?>
+				</tr>
+<?php
+				foreach ($items as $cur_item)
+				{
+								$r=1;
+								$class = 'cell'.(++$r%2);
+?>
+				<tr id="r<?=$r?>" class="<?=$class?>">
+				<td class="item_name_td" style="display:none"><?php echo strtoupper($cur_item['name']);?></td>
+				<td class="part_number_td" style="display:none"><?php echo strtoupper($cur_item['part_number']);?></td>
+						<td style='text-align: center;'><?=($cur_item['default'])?$cur_item['default']:'&nbsp;'?></td>
+						<td style='text-align: left;width:100px;'><?=$cur_item['name']?></td>
+						<td style='text-align: left;width:100px;'>&nbsp;<?=$cur_item['part_number']?></td>
+				<?php
+								foreach ($locations as $cur_loc => $v)
+								{
+												$qty = '&nbsp;';
+												if ($cur_item[$cur_loc]) $qty = $cur_item[$cur_loc];
+												if ($qty<0) $color='red'; else $color = 'black';
+												echo "<td style='text-align: center;color:$color'>$qty</td>";
+								}
+				?>
+				</tr>
+<?php }?>
+</table>

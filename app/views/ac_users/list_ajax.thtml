@@ -1,0 +1,12 @@
+<?php foreach($users as $user) { ?>
+<div id="tabs-<?php echo $user['AcUser']['id'] ?>" class="tabs">
+    <ul class="parent">
+        <li><a href="#" title="More" class="all_node link_branch tab-<?php echo $category['IvCategory']['id'] ?>">All
+            <input type="hidden" class="criteria" value='{"level":"0","category_id":"<?php echo $category['IvCategory']['id'] ?>"}' />
+            <input type="hidden" class="path" value='branch' />
+        </a>
+        <ul></ul>
+        </li>
+    </ul>        
+</div>
+<?php } ?> 

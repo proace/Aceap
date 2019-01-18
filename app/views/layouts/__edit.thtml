@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<?php
+if ((isset($this->params['url']['logout'])) && ( $this->params['url']['logout'] == "1" ))
+{
+	unset($_SESSION['user']);
+	unset($_SESSION['menuWarehouse']);
+	unset($_SESSION['menuTech']);
+	unset($_SESSION['menuTele']);
+	unset($_SESSION['secureFilters']);
+
+	session_start();
+
+	$this->controller->redirect("login");
+}
+?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>ACE</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	
+	<link rel="stylesheet" type="text/css" media="print" href="<?=ROOT_URL;?>/app/webroot/css/style_print.css" />
+    <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/style.css" />
+    <link rel="stylesheet" type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/menu_style.css" type="text/css"/>
+    <link rel="stylesheet" type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/jquery.jgrowl.css" type="text/css"/>
+    
+	<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
+	<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+    <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+	<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.simplymodal.js"></script>
+	<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.ui.all.js"></script>
+	<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.jgrowl.js"></script>    
+	<!--[if lt IE 7.]>
+	<script defer type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/pngfix.js"></script>
+	<![endif]-->
+    <?php echo $scripts_for_layout ?>
+</head>
+<body>	
+	<?php
+    if( $_SESSION['user']['id'] > 0 ) {
+                    $linkPrefix = "";
+                    $aMenu = $topbarmenu->getMenuItems();						
+                    $tabs = $aMenu['tabs'];
+                    $menu = $aMenu['content'];
+                    $on_off = "menuOver";
+                    $idx = 0;
+                                    
+                    foreach ($tabs as $tab) //for headers
+                    {
+                                    $header[] = $tab;
+                    }
+                    $u = BASE_URL;
+    
+    ?>
+    <div>
+        <ul class="menu">
+        <?php foreach ($menu as $tab) { ?>
+            <li class="top"><a href="#" class="top_link"><span><?php echo $header[$idx++]; ?></span></a>
+                <ul class="sub">
+                <?php foreach ($tab as $tbi) { ?>
+                <?php
+                $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+                $url = $linkPrefix.$tbi['url'];
+                $tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
+                $onclick = "";
+                if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
+                ?>
+                <li><a href="<?php echo $url; ?>"><?php echo $tbi['name']; ?></a></li>
+                
+                <?php } ?>
+                </ul>
+            </li>
+        <?php } ?>
+        </ul>
+    </div>		
+    <?php } ?>
+    
+	<div class="wrapper">
+		<!-- HEADER SECTION -->
+		<!-- END HEADER SECTION -->
+		<div class="cont_main">
+			<?php echo $content_for_layout?>
+		</div>
+		<!-- FOOTER SECTION -->
+		<!-- END FOOTER SECTION -->
+		<div style="clear: both;"></div>
+	</div>
+</body>
+</html>

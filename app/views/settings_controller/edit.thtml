@@ -1,0 +1,33 @@
+<!-- This tag creates our form tag -->
+<?php echo $html->formTag('/settings/edit/' . $html->tagValue('Setting/title')); ?>
+<?php echo $html->hidden ('Setting/id', array("value",$html->tagValue('Setting/id'))); ?>
+<?php echo $html->hidden ('Setting/title', array("value",$html->tagValue('Setting/title'))); ?>
+<? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
+
+<table width="800">
+<tr>
+<td>
+<table width="600" align="left" border="0" cellspacing="1" cellpadding="0">	
+	<tr style="padding-bottom:20px;">
+		<td class="sectionTitle" colspan="4"></td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td valign=top>Value:</td><td><?php echo $html->textarea('Setting/valuetxt', array("style" => "width: 600px; height: 400px;")); ?>
+	      <?php echo $html->tagErrorMsg('Setting/valuetxt', 'Please enter a value for this setting.') ?>
+		<br/>
+		<input type="submit" name="submit" value="Save" class="buttons">
+		</td>
+		<td></td><td></td>
+	</tr>
+</table>
+</td>
+</tr>
+</table>
+</form>
+<?
+//pr($this->data['Role']);
+
+?>

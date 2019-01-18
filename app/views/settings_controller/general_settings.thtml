@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Untitled Document</title>
+</head>
+
+<body><h1>General Settings</h1>
+<?php echo $html->formTag('/settings/saveGeneralSettings'); ?>
+<table>
+<?php foreach($settings as $key => $setting) { ?>
+<tr>
+	<td><?php echo $setting['name'] ?></td>
+    <td>
+    	<textarea name="data[Setting][<?php echo $key ?>]" wrap="hard"  style="width: 100px; height: 25px;" id="Setting<?php echo $key ?>"><?php echo $setting['valuetxt'] ?></textarea>
+	</td>    
+</tr>
+<?php } ?>
+</table>
+<input type="submit" name="submit" value="Save" />
+</form>
+</body>
+</html>

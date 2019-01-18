@@ -1,0 +1,105 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1> Inventory Items <small></small> </h1>
+  <ol class="breadcrumb">
+    <li><a href="<?php echo $home_link ?>"><i class="fa fa-home"></i> Home</a></li>
+    <li>Inventory</li>
+    <li class="active">Inventory Items</li>
+  </ol>
+</section>
+
+<!-- Main content -->
+<section class="content">
+  <div class="row">
+  	<div class="col-md-12">
+      <!-- general form elements -->
+      <div class="box box-primary">
+        <div class="box-header">
+          <h3 class="box-title"> </h3>
+        </div><!-- /.box-header -->
+        <!-- form start -->
+          <?php
+		  	$agents = array(
+		  	'231277' => "Agent 1",
+			'44874' => "Agent 2",
+			'231296' => "Agent 3",
+			'231297' => "Agent 4",
+			
+			'44851' => "Ali (ACE)",
+			'226792' => "Roy (ACE)",
+			'231267' => "B Plumber (ACE)",
+			'231254' => "GG (ACE)",
+			'229528' => "Brizzi (ACE)"
+			);
+		  ?>
+                   
+            <div class="box-body">
+              <form method="post"> 
+              <div class="row">
+                 <div class="col-xs-4">                      
+                  <div class="form-group">                  
+                    <label>SKU: </label>
+                    <div class="input-group">
+                      <div class="input-group-addon">
+                        <i class="fa fa-cubes"></i>
+                      </div>
+                      <input type="text" class="form-control pull-right " name="sku_search" value="<?php echo $sku_search ?>">
+                    </div><!-- /.input group -->
+                  </div>
+                 </div>
+                 <div class="col-xs-2">
+                  <div class="form-group">
+                      <label style="visibility:hidden">Submit</label>
+                      <div class="input-group">
+                          <button type="submit" class="btn btn-primary" name="btn-filter" value="1">Submit</button>
+                      </div>                    
+                  </div>
+                 </div>
+                 <div class="col-xs-2">
+                  <div class="form-group">
+                      <label style="visibility:hidden">Create New</label>
+                      <div class="input-group">
+                      	  <a class="btn btn-primary" href="inventoryitem?i=0">Create New</a>                          
+                      </div>                    
+                  </div>
+                 </div>
+              </div>
+              </form>
+              <form method="post"> 
+              	<table class="table table-bordered">
+                  <tr>   
+                  	  <th style="width:200px;">ID</th>      
+                      <th style="width:200px;">SKU</th>  
+                      <th style="width:400px;">Name</th>    
+                      <th>Cost</th>   
+                      <th>Price</th>                       
+                      <th></th>                          
+                  </tr>                  
+                  <?php foreach($items as $item)  { ?> 
+                  <tr>
+                  	<td><?php echo $item['item_id'] ?></td>
+                  	<td><?php echo $item['item_sku'] ?></td>
+                    <td><?php echo $item['item_name'] ?></td>
+                    <td><?php echo $item['item_cost'] ?></td>
+                    <td><?php echo $item['item_price'] ?></td>
+                    <td>
+                    	<a class="btn btn-primary" href="inventoryitem?i=<?php echo $item['item_id'] ?>">Edit</button></a>
+                    </td>
+                  </tr>
+                  <?php } ?>                                 
+                </table>
+                <!--<pre><?php //print_r($query) ?></pre>-->
+                            
+              </form>                        
+            </div>
+           
+            <!-- /.box-body -->
+            <div class="box-footer">
+                <!--<button type="submit" class="btn btn-primary" name="callback_access" value="1">Submit</button>-->
+          	</div>
+      	
+      </div><!-- /.box -->      
+    </div><!-- end col -->
+  </div>
+</section>
+<!-- /.content --> 

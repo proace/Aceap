@@ -1,0 +1,51 @@
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/visualize.css" rel="stylesheet" />
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/visualize-dark" rel="stylesheet" />
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.4.min.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/visualize.jQuery.js"></script>
+<script>
+$(function(){
+	$('table').visualize({type: 'bar', height: '400px', parseDirection:'y', colors:['#cccccc', '#ff0000', '#55cc55']});
+	//$('table').visualize({type: 'bar', width: '420px'});
+	//$('table').visualize({type: 'area', width: '420px'});
+	//$('table').visualize({type: 'line', width: '420px'});
+});
+setTimeout("change()", 30000);
+function change() {
+	window.open('<?=BASE_URL;?>/reports/telem_board', '_self'); 	
+}
+</script>
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform" id="viewform">
+<?php  if (($_SESSION['user']['role_id'] != 3)&&($_SESSION['user']['role_id'] != 9)): ?>
+Pay period:&nbsp;
+<select name="pay_period" onchange="document.viewform.submit();">
+<?php foreach ($allPayPeriods as $v => $k) {
+    $selected = '';
+    if ($v == $pay_period) $selected = 'selected';?>
+    <option value="<?=$v?>" <?=$selected?>><?=$k?></option>
+<?php } ?>
+</select>
+<?php else: ?>
+&nbsp;
+<?php endif; ?>
+<table style="display:none;" width="90%">
+	<caption>Booking Statistics</caption>
+	<thead>
+		<tr>
+			<td></td>
+			<th scope="col">Booked</th>
+			<th scope="col">Cancelled</th>
+			<th scope="col">Done</th>
+		</tr>
+	</thead>
+	<tbody>
+    	<?php foreach($graph as $g) { ?>
+		<tr>
+			<th scope="row"><?php echo $g['name'] ?></th>
+			<td><?php echo $g['booked'] ?></td>
+			<td><?php echo $g['cancelled'] ?></td>
+            <td><?php echo $g['done'] ?></td>
+		</tr>
+        <?php } ?>
+	</tbody>
+</table>
+</form>

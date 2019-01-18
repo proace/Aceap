@@ -1,0 +1,15 @@
+<?php if(count($timeslots) > 0) { ?>
+<select name="OrderTimeslot" id="OrderTimeslot" class="required">
+	<option value="">-Choose time-</option>
+	<?php foreach($timeslots as $timeslot) { ?>
+	<option value="<?php echo $timeslot['id'] ?>-<?php echo $timeslot['truck'] ?>"><?php echo $timeslot['name'] ?></option>
+	<?php } ?>
+</select>
+<?php } else { ?>
+	<?php if($city == '') { ?>
+    <em>Please fill in the <strong>CITY</strong></em>
+    <?php } else { ?>
+	<em>There are no available<br>timeslots on <strong><?php echo $date ?></strong>.
+	<br>Please call <strong>604-293-3770</strong><br />for more details.</em>
+    <?php } ?>
+<?php } ?>

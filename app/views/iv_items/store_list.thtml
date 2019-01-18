@@ -1,0 +1,82 @@
+<div id="page_store_list">
+	<pre><?php //print_r($categories_old) ?></pre>
+    <div id="tabs">
+        <ul>    	
+            <?php foreach($categories_old as $category) { ?>
+            <li><a href="#tabs-<?php echo $category['IvCategory']['id'] ?>"><?php echo $category['IvCategory']['name'] ?></a>
+            </li>
+            <?php } ?>
+            <li><a href="#tabs-1001">Purchase from supplier</a>
+            </li>
+        </ul>
+        <div id="list_filter"><input type="text" id="filter_name" /> <a id="link_filter_name">Search</a></div>
+        <div id="spacer"></div>
+        <?php foreach($categories_old as $category) { ?>
+        <div id="tabs-<?php echo $category['IvCategory']['id'] ?>" class="tabs">
+        	<table class="list clear_this">
+                <tr>
+                    <th>Name</th>
+                    <th><?php echo $aliases['model']['alias']==''?'Model':$aliases['model']['alias'] ?></th>         
+                    <th><?php echo $aliases['regular_price']['alias']==''?'Regular Price':$aliases['regular_price']['alias'] ?></th>
+                    <th><?php echo $aliases['selling_price']['alias']==''?'Selling Price':$aliases['selling_price']['alias'] ?></th>
+                </tr>
+                <tbody>
+                <?php $i = 0; ?>
+                <?php foreach($items as $item) { ?>
+                <?php if($item['category_id'] == $category['IvCategory']['id']) { ?>
+                <tr class="<?php echo $i++%2==0?'odd':'even' ?> item"><input type="hidden" class="id" value="<?php echo $item['id'] ?>" />
+                    <input type="hidden" class="item_active" value="<?php echo $item['active'] ?>" />
+                    <input type="hidden" class="item_category_id" value="<?php echo $item['category_id'] ?>" />
+                    <input type="hidden" class="item_id" value="<?php echo $item['id'] ?>" />
+                    <input type="hidden" class="item_name" value="<?php echo $item['name'] ?>" />
+                    <input type="hidden" class="item_model" value="<?php echo $item['model'] ?>" />
+                    <input type="hidden" class="item_regular_price" value="<?php echo $item['regular_price'] ?>" />
+                    <input type="hidden" class="item_selling_price" value="<?php echo $item['selling_price'] ?>" />
+                    <input type="hidden" class="item_supplier_price" value="<?php echo $item['supplier_price'] ?>" />
+                    <input type="hidden" class="item_efficiency" value="<?php echo $item['efficiency'] ?>" />
+                    <input type="hidden" class="item_brand_id" value="<?php echo $item['brand_id'] ?>" />
+                    <input type="hidden" class="item_supplier_id" value="<?php echo $item['supplier_id'] ?>" />
+                    <input type="hidden" class="item_description1" value="<?php echo $item['description1'] ?>" />
+                    <input type="hidden" class="item_description2" value="<?php echo $item['description2'] ?>" />
+                    <input type="hidden" class="item_mode" value="<?php echo $mode ?>" />
+                    <td class="left"><?php echo $item['name'] ?></td>
+                    <td class="right"><?php echo $item['model'] ?></td>                    
+                    <td class="right"><?php echo $item['regular_price'] ?></td>
+                    <td class="right"><?php echo $item['selling_price'] ?></td>
+                </tr>
+                <?php } //END of if ?>
+                <?php } //END of foreach ?>
+                </tbody>
+            </table>                    
+        </div>
+        <?php } ?>
+        <div id="tabs-1001" class="tabs">
+        	<table>
+            	<tr>
+                	<td>Part Name</td>
+                    <td><input type="text" /></td>
+                </tr>
+            	<tr>
+                	<td>Model</td>
+                    <td><input type="text" /></td>
+                </tr>
+                <tr>
+                	<td>Brand</td>
+                    <td><input type="text" /></td>
+                </tr>
+                <tr>
+                	<td>Supplier</td>
+                    <td><input type="text" /></td>
+                </tr>
+                <tr>
+                	<td>Date</td>
+                    <td><input type="text" /></td>
+                </tr>
+                <tr>
+                	<td></td>
+                    <td><input type="button" value="Save part PO" /></td>
+                </tr>                                
+            </table>                    
+        </div>  
+    </div>
+</div>

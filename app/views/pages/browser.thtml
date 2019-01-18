@@ -1,0 +1,159 @@
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+
+<script language="JavaScript" type="text/javascript">
+	var last_sq_crit, last_sq_str, last_dates;
+	var lpp = 1000;	//lines per page
+	var maxpage = 1;
+	 function searchList (sq_crit,sq_str,page) {
+		//TODO:Make system work with pages, not limits, remove limit logic from PHP
+		if (typeof(page) == 'undefined')
+			page = 1;
+
+		limit = ((page-1)*lpp) + "," + (page*lpp);	
+	 
+		//Cache search parameters for adding later entries where necessary
+		if (!sq_crit)
+			sq_crit = last_sq_crit;
+		else
+		{
+			last_sq_crit = sq_crit;
+			maxpage = 1;
+		}
+		if (!sq_str)
+			sq_str = last_sq_str;
+		else
+		{
+			last_sq_str = sq_str;
+			maxpage = 1;
+		}
+		//alert("requested page "+page+"\nmaxpage "+maxpage+"\nlimit "+limit);
+		divID = document.getElementById('listbox');
+		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&add=0&curpage='+page,
+				function(data){divID.innerHTML=data;});
+			//new Ajax.Updater(divID,, {asynchronous:true, evalScripts:true, requestHeaders:['X-Update', 'listbox']});
+	}
+
+	function missing_callbacks_searchlist (sq_crit,sq_str,sq_dates,page) {
+		//TODO:Make system work with pages, not limits, remove limit logic from PHP
+		if (typeof(page) == 'undefined')
+			page = 1;
+
+		limit = ((page-1)*lpp) + "," + (page*lpp);	
+	 
+		//Cache search parameters for adding later entries where necessary
+		if (!sq_crit)
+			sq_crit = last_sq_crit;
+		else
+		{
+			last_sq_crit = sq_crit;
+			maxpage = 1;
+		}
+		if (!sq_str)
+			sq_str = last_sq_str;
+		else
+		{
+			last_sq_str = sq_str;
+			maxpage = 1;
+		}
+		if (!sq_dates)
+			sq_dates = last_dates;
+		else
+		{
+			last_dates = sq_dates;
+			maxpage = 1;
+		}
+		//alert("requested page "+page+"\nmaxpage "+maxpage+"\nlimit "+limit);
+		divID = document.getElementById('listbox');
+		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&sq_dates='+sq_dates+'&add=0&curpage='+page,
+				function(data){divID.innerHTML=data;});
+			//new Ajax.Updater(divID,, {asynchronous:true, evalScripts:true, requestHeaders:['X-Update', 'listbox']});
+	}
+
+	function searchListforzero (sq_crit,sq_str,page) {
+		//TODO:Make system work with pages, not limits, remove limit logic from PHP
+		var zero_val = 'zero';
+
+		if (typeof(page) == 'undefined')
+			page = 1;
+
+		limit = ((page-1)*lpp) + "," + (page*lpp);	
+	 
+		//Cache search parameters for adding later entries where necessary
+		if (!sq_crit)
+			sq_crit = last_sq_crit;
+		else
+		{
+			last_sq_crit = sq_crit;
+			maxpage = 1;
+		}
+		if (!sq_str)
+			sq_str = last_sq_str;
+		else
+		{
+			last_sq_str = sq_str;
+			maxpage = 1;
+		}
+		//alert("requested page "+page+"\nmaxpage "+maxpage+"\nlimit "+limit);
+		divID = document.getElementById('listbox');
+		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&add=0&curpage='+page+'&zero_val='+zero_val,
+				function(data){divID.innerHTML=data;console.log(data);});
+			//new Ajax.Updater(divID,, {asynchronous:true, evalScripts:true, requestHeaders:['X-Update', 'listbox']});
+	}
+	
+	function gup( url, name )
+	{
+		  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+		  var regexS = "[\\?&]"+name+"=([^&#]*)";
+		  var regex = new RegExp( regexS );
+		  var results = regex.exec( url );
+		  if( results == null )
+		    return "";
+		  else
+		    return results[1];
+	}
+	
+	function elementClick(el, job_date, job_id, userid, firstname, lastname, address_unit, address_street_number, address_street, city, postalcode, phone, cellphone, email, callback_date, lastcall_date, callresult, callback_note, telemarketer_id)
+	{
+		$('.browser_item').css({'border-top':'none'}).css({'border-bottom':'1px solid #CCCCCC','background-color':''});
+		$('#listbox .dcell').css({'background-color':''});
+		$('.reminder_flag_class').css({'background-color':'#FFDDDD'});
+		$('.browser_item').removeClass("active_user");
+		el.css({'border-bottom':'2px solid #0000FF'}).css({'border-top':'2px solid #0000FF','background-color':'#A5FD5D'});
+		el.css({'border-bottom':'2px solid #0000FF'}).css({'border-top':'2px solid #0000FF'});
+		el.addClass("active_user");
+		if (job_id)
+			parent.frames['main_view'].document.location.href='<?=BASE_URL;?>/orders/editBooking?order_id='+job_id;
+		else 
+		if ((parent.frames['main_view'].document.getElementById('OrderCustomerId')) && (parent.frames['main_view'].document.getElementById('OrderId').value == '') && (gup(parent.frames['main_view'].document.location.href, 'customer_id') == ''))
+		{
+			//Set values
+			parent.frames['main_view'].document.getElementById('OrderCustomerId').value = userid;
+			parent.frames['main_view'].document.getElementById('CustomerId').value = userid;
+			parent.frames['main_view'].document.getElementById('CustomerFirstName').value = firstname;
+			parent.frames['main_view'].document.getElementById('CustomerLastName').value = lastname;
+			parent.frames['main_view'].document.getElementById('CustomerAddressUnit').value = address_unit;
+			parent.frames['main_view'].document.getElementById('CustomerAddressStreetNumber').value = address_street_number;
+			parent.frames['main_view'].document.getElementById('CustomerAddressStreet').value = address_street;
+			parent.frames['main_view'].document.getElementById('CustomerCity').value = city;
+			parent.frames['main_view'].document.getElementById('CustomerPostalCode').value = postalcode;
+			parent.frames['main_view'].document.getElementById('CustomerPhone').value = phone;
+			parent.frames['main_view'].document.getElementById('CustomerCellPhone').value = cellphone;
+			parent.frames['main_view'].document.getElementById('emailinput').value = email;		//CustomerEmail
+			
+			//not needed - done automatically on change: parent.frames['main_view'].document.existingCustomerCheck();
+		}
+		else
+		{
+			<? if (($common->getLoggedUserRoleID()=="3")||($common->getLoggedUserRoleID()=="9")) { ?>
+			parent.frames['main_view'].document.location.href='<?=BASE_URL;?>/orders/editBooking?action_type=callback&hotlist=1&agent_select=1&customer_id='+userid;
+			<? }else{ ?>
+			parent.frames['main_view'].document.location.href='<?=BASE_URL;?>/orders/editBooking?hotlist=1&admin_select=1&customer_id='+userid;
+			<? } ?>
+		}
+	}
+
+</script>
+
+<div id="listbox" style="float: left;">
+
+</div>

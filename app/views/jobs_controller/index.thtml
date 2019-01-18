@@ -1,0 +1,132 @@
+<script>
+function ChangeActive(id,elem_chk){
+  if (elem_chk.checked){
+		$.get("<?=BASE_URL;?>/jobs/changeActive",
+			{item_id:id,is_active:1},
+			function(data){document.forms['viewform'].submit();});
+	}
+	else
+		$.get("<?=BASE_URL;?>/jobs/changeActive",
+			{item_id:id,is_active:0},
+			function(data){document.forms['viewform'].submit();});
+}
+
+function showItemCategories(id) {
+	var url = "<?=BASE_URL?>/jobs/itemCategories";
+	url += "?id=" + id;
+
+	var option = "dialogWidth:450px;dialogHeight:450px;dialogLeft:300px;dialogTop:200px;status:off;scroll:off;resizable:off;";
+	
+	var answer = window.showModalDialog(url,'', option);
+}
+
+function showScheduleDisplay(id) {
+	var url = "<?=BASE_URL?>/jobs/scheduleDisplay";
+	url += "?id=" + id;
+
+	var option = "dialogWidth:450px;dialogHeight:450px;dialogLeft:300px;dialogTop:200px;status:off;scroll:off;resizable:off;";
+	
+	var answer = window.showModalDialog(url,'', option);
+}
+
+</script>
+<style>
+.question_button {
+	background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/text_page.png) no-repeat center #666;
+	border:1px solid #999;
+	border-radius:5px;
+	width:25px;
+	height:25px;
+}
+
+.timeslot_button {
+	background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/calendar.png) no-repeat center #666;
+	border:1px solid #999;
+	border-radius:5px;
+	width:25px;
+	height:25px;
+}
+
+.item_category_button {
+	background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/tree.png) no-repeat center #666;
+	border:1px solid #999;
+	border-radius:5px;
+	width:25px;
+	height:25px;
+}
+</style>
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+<table width="90%" border="0px" cellspacing="10" cellpadding="0">
+	<tr>
+		<td class="sectionTitle" colspan="7">Job types</td>
+	</tr>
+	<tr>
+		<td align="left">
+			<input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/jobs/editItem'" />
+		</td>
+		<td>Show Inactive:&nbsp;<input type="checkbox" id="ShowInactive" <?php if ($ShowInactive) echo 'checked';?> name="ShowInactive" onchange="document.forms['viewform'].submit();"/></td>
+	</tr>
+</table> 	
+</form>
+
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+    <tr>
+        <th width="50"><b>ID</b></td>
+        <th width="90"><b>Estimate templet</b></td>
+        <th width="100"><a href="javascript:setOrder('category_id');">Category</a></th>
+        <th><a href="javascript:setOrder('name');">Name</a></th>
+        <th width="10"><a href="javascript:setOrder('flagactive');">Active</a></th>
+   </tr>
+		<?php $r=1;
+			foreach ($items as $obj) {
+				$class = 'cell'.(++$r%2);
+		?>
+    <tr id="r<?=$r?>" class="<?=$class?>">
+      	<!--<td class="firstcol">&nbsp;<a href="<?=BASE_URL?>/jobs/editItem?item_id=<?=$obj['id']?>"><?=$obj['id']?></a></td>-->        
+        <td class="firstcol">&nbsp;<a href="<?=BASE_URL?>/jobs/editQuestionsTemplate?item_id=<?=$obj['id']?>"><?=$obj['id']?></a></td>
+        <td>
+        	<input type="button" title="Edit questions template" class="question_button" value="" onclick='window.open("<?=BASE_URL?>/jobs/editQuestionsTemplate?item_id=<?=$obj['id']?>", "_self")' />            
+            <input type="button" title="Edit item template" class="item_category_button" value="" onclick='window.open("<?=BASE_URL?>/jobs/editTemplate?item_id=<?=$obj['id']?>", "_self")' />
+        </td>
+      	<td>&nbsp;<?php echo $jobcategories[$obj['category_id']]; ?></td>
+      	<td>&nbsp;<?php echo $obj['name']; ?></td>
+      	<td><input type="checkbox" <?php if ($obj['flagactive']) echo 'checked'; ?> onclick="ChangeActive(<?=$obj['id']?>,this)"/></td>
+    </tr>
+    <? } ?>
+</table>
+<div>
+<br />
+<br />
+<form method="post" action="jobs/copyJobtype?action=copy" name="copyform">
+Copy 
+<select name="jobtype_id">
+    <?php foreach($items as $item) { ?>
+    <option value="<?php echo $item['id']; ?>"><?php echo $item['name']; ?></option>
+    <?php } ?>
+</select>
+to the new job type 
+<input type="text" name="jobtype_name" />
+<input type="submit" value="Submit" />
+</form>
+
+<form method="post" action="jobs/copyJobtype?action=copyquestions" name="copyform">
+Copy questions from
+<select name="jobtype_id_from">
+    <?php foreach($items as $item) { ?>
+    <option value="<?php echo $item['id']; ?>"><?php echo $item['name']; ?></option>
+    <?php } ?>
+</select>
+to
+<select name="jobtype_id_to">
+    <?php foreach($items as $item) { ?>
+    <option value="<?php echo $item['id']; ?>"><?php echo $item['name']; ?></option>
+    <?php } ?>
+</select>
+<input type="submit" value="Submit" />
+</form>
+</div>

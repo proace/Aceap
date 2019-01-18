@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Edit Invoice Questions</title>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/edit_invoice_questions.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/edit_invoice_questions.css" />
+
+<script type="text/javascript">
+var G_URL;
+$(function() {
+	var test_server = "http://69.31.184.162:81/acesys/acetest/acesys-2.0/index.php/";
+	var live_server = "http://69.31.184.162:81/acesys/index.php/";
+	
+	var l = $(location).attr('href');
+
+	if(l.indexOf("acesys-2.0") != -1) G_URL = test_server;
+	else G_URL = live_server;
+	
+	$(".answers").live("click", function(){
+		var id = $(this).parents("tr").find(".id").val();
+		alert(id);
+	});
+	
+});
+
+function showAnswers(order_id)
+{
+	var url = G_URL + "orders/player";
+		
+	var option = "dialogWidth:450px;dialogHeight:130px;dialogLeft:300px;dialogTop:200px;status:off;scroll:off;resizable:off;";
+	
+	var answer = window.showModalDialog(url,'', option);
+}
+</script>
+
+<style>
+.question {
+	width:300px;	
+}
+
+#OrderOrderTypeId {
+	width:300px;	
+}
+
+.answers {
+	width:100px;	
+}
+</style>
+</head>
+<body>
+<h1>Invoice Questions</h1>
+<form id="questions_form" action="<?php echo BASE_URL ?>/orders/saveInvoiceQuestions" method="post">
+<?php echo $html->selectTag('Order/order_type_id', $job_types, $order_type_id); ?>
+<table>
+	<?php foreach($questions as $id => $question) { ?>
+	<tr>
+    	<td><input type="text" class="question" value="<?php echo $question['question'] ?>" />
+        	<input type="hidden" class="id" value="<?php echo $id ?>" />
+            <input type="hidden" class="rank" value="<?php echo $rank ?>" />
+        </td>
+        <td>
+        	<?php if($question['answer_count'] > 0) { ?>
+        	<input type="button" class="answers" value="Dropdown (<?php echo $question['answer_count']?>)" />
+            <?php } else { ?>
+            <input type="button" class="answers" value="Text" />
+            <?php } ?>
+        </td>
+    </tr>
+   	<?php } ?>
+</table>
+
+</form>
+</body>
+</html>

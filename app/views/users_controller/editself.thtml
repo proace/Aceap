@@ -1,0 +1,68 @@
+<!-- This tag creates our form tag -->
+<?php echo $html->formTag('/users/editself/' . $html->tagValue('User/id')); ?>
+<?php echo $html->hidden ('User/id', array("value",$html->tagValue('User/id'))); ?>
+<? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
+
+<table align="left" border="0" cellspacing="1" cellpadding="0">	
+	<tr style="padding-bottom:20px;">
+		<td class="sectionTitle" colspan="4"><?=$subtitle ?></td>
+	</tr>
+	
+	<tr>
+		<td colspan="4" class="sectionTitle">Login Information:</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Username:</td><td colspan="3"><?php echo $html->input('User/username');?></td>		
+	</tr>
+    <tr>
+		<td>Password:</td><td><?php echo $html->password('User/password');?></td>
+		<td>Confirm Password:</td><td><?php echo $html->password('User/password2');?><?php echo $html->tagErrorMsg('User/password','Password does not match') ?></td>
+	</tr>
+	
+	<input type="hidden" name="view_mode" value="<?=$view_mode;?>" />
+	<tr>
+		<td>&nbsp;</td>
+		<td colspan="2" align="left"><br/>
+		  <input type="submit" name="submit" value="Submit" class="buttons">&nbsp;
+		  <input type="button" value="Cancel" onclick="javascript:history.go(-1);" class="buttons">
+		</td>
+		<td colspan="1">&nbsp;</td>
+	</tr>
+    <tr>
+          <td><strong>Portfolio</strong></td>        
+    </tr>
+    <tr>
+          <td><img src="<?php echo $data['User']['binary_picture'] ?>" /></td>        
+    </tr>
+    <tr>
+    	<td>About</td>
+        <td align="left" width="200px"><?php echo $data['User']['about'] ?></td>
+    </tr>
+    <tr>
+    	<td>Qualifications</td>
+        <td colspan="3" align="left" width="200px"><?php echo $data['User']['qualifications'] ?></td>
+    </tr>
+    <tr>
+    	<td>Experience</td>
+        <td colspan="3" align="left" width="200px"><?php echo $data['User']['experience'] ?></td>
+    </tr>
+    <tr>
+    	<td>Skills</td>
+        <td colspan="3" align="left" width="200px"><?php echo $data['User']['skills'] ?></td>
+    </tr>
+    <tr>
+    	<td>Goals</td>
+        <td colspan="3" align="left" width="200px"><?php echo $data['User']['goals'] ?></td>
+    </tr>
+    <tr>
+    	<td>Hobbies</td>
+        <td colspan="3" align="left" width="200px"><?php echo $data['User']['hobbies'] ?></td>
+    </tr>
+</table>
+
+<pre>
+<?php //print_r($data) ?>
+</pre>

@@ -1,0 +1,93 @@
+<div class="wrapper">
+<form action="<?php echo BASE_URL ?>/orders/saveInvoice" method="post">
+    <div class="top_nav">
+    <span class="customer_name"><?php echo $order['Customer']['first_name'] ?> <?php echo $order['Customer']['last_name'] ?></span> <span class="order_number"><?php echo $order['Order']['order_number'] ?></span><a href="#">more</a>
+    <?php echo $html->input('Invoice/id', array('type'=>'hidden', 'value'=>$invoice['Invoice']['id'])); ?>
+    <?php echo $html->input('Invoice/order_id', array('type'=>'hidden', 'value'=>$order['Order']['id'])); ?>
+    </div>    
+    <div class="section">
+        <ul>
+            <li><label>Order#:</label><span class="info"><?php echo $order['Order']['order_number'] ?></span></li>
+            <li><label>Fname:</label><span class="info"><?php echo $order['Customer']['first_name'] ?></span></li>
+            <li><label>Lname:</label><span class="info"><?php echo $order['Customer']['last_name'] ?></span></li>
+            <li><label>Address:</label><span class="info"><?php echo $order['Customer']['address'] ?></span></li>
+            <li><label>City:</label><span class="info"><?php echo $order['Customer']['city'] ?></span></li>
+            <li><label>Postal:</label><span class="info"><?php echo $order['Customer']['postal_code'] ?></span></li>
+        </ul>
+    </div>
+    <div class="section">
+        <ul>
+            <li><label>Time In:</label>
+            	<?php $begin = explode(":", $order['Order']['fact_job_beg']); ?>
+				<?php echo $html->hourOptionTag('Order/fact_job_beg', null, 1, $begin[0]); ?>
+                :
+            	<?php echo $html->minuteOptionTag('Order/fact_job_beg', null, $begin[1], null, null, false); ?>
+            </li>
+            <li><label>Time Out:</label>
+            	<?php $end = explode(":", $order['Order']['fact_job_end']); ?>
+				<?php echo $html->hourOptionTag('Order/fact_job_end', null, 1, $end[0]); ?>
+                :
+                <?php echo $html->minuteOptionTag('Order/fact_job_end', null, $end[1], null, null, false); ?>       
+            </li>                                 
+        </ul>
+    </div>
+    <div class="section">
+        <ul>
+            <li><label>Location of furnace:</label><?php echo $html->input('Invoice/furnace_location', array('value'=>$invoice['Invoice']['furnace_location'])); ?></li>
+            <li><label>Main Concern:</label><?php echo $html->input('Invoice/concern', array('value'=>$invoice['Invoice']['concern'])); ?></li>
+            <li><label>Last Service Done:</label><?php echo $html->input('Invoice/last_service_done', array('value'=>$invoice['Invoice']['last_service_done'])); ?></li>            
+        </ul>
+    </div>
+    <div class="section">
+        <ul>
+            <li><label>Make</label><?php echo $html->input('Invoice/furnace_make', array('value'=>$invoice['Invoice']['furnace_make'])); ?></li>
+            <li><label>Age</label><?php echo $html->input('Invoice/furnace_age', array('value'=>$invoice['Invoice']['furnace_age'])); ?></li>
+            <li><label>Inputs</label><?php echo $html->input('Invoice/furnace_inputs', array('value'=>$invoice['Invoice']['furnace_inputs'])); ?></li>  
+            <li><label>Style</label><?php echo $html->input('Invoice/furnace_style', array('value'=>$invoice['Invoice']['furnace_style'])); ?></li>         
+        </ul>
+    </div>
+    <?php $index = 0; ?>
+    <?php foreach($questions as $question) { ?>
+    <div class="section">
+    	<h1><?php echo $question['Question']['question'] ?></h1>
+        <ul>
+        	<?php foreach($question['Answer'] as $answer) { ?>
+            <li>
+            	<label><?php echo $answer['answer'] ?>:</label>                                
+                <?php 
+				if($invoice['AnswersInvoice'][$index]['answer_id'] == $answer['id']) {
+					if($answer['input_type'] == 'checkbox')
+                	echo $html->input('Answer/'.$answer['id'], array('type'=>$answer['input_type'], 'value'=>'yes', 'checked'=>'checked')); 
+                	if($answer['input_type'] == 'text')
+                	echo $html->input('Answer/'.$answer['id'], array('type'=>$answer['input_type'], 'value'=>$invoice['AnswersInvoice'][$index]['user_answer'])); 
+                	$index++;
+                } else {
+                	echo $html->input('Answer/'.$answer['id'], array('type'=>$answer['input_type'], 'value'=>$answer['input_type']=='checkbox'?'yes':''));
+                } 
+				?>
+            </li> 
+            <?php } ?>     
+        </ul>
+    </div>
+    <?php } ?>
+    <div class="section">
+    	<h1>Payment</h1>       
+        <ul>
+        	<li><label>Payment Method:</label><?php echo $html->selectTag('Payment/payment_method', $paymentMethods, $payments['Payment']['payment_method']);?></li>
+            <li><label>Amount:</label><?php echo $html->input('Payment/paid_amount', array('value'=>$payments['Payment']['paid_amount'])); ?></li>
+            <li><label>Auth#:</label><?php echo $html->input('Payment/auth_number', array('value'=>$payments['Payment']['auth_number'])); ?></li>
+            <li><label>Date:</label><?php echo $html->input('Payment/payment_date', array('value'=>$payments['Payment']['payment_date'])); ?></li>
+            <li><label>Saved by:</label><?php echo $payments['User']['first_name']; ?></li>  
+        </ul>
+    </div>
+    <div class="bottom_nav close">        
+        <div class="right_arrow"><input type="button" value=">"></div>
+        <div class="left_arrow"><input type="button" value="<"></div>
+        <div class="options"><input type="button" value="+"></div>                          
+    </div>
+    <input type="submit" value="save" />    
+</form>
+<pre>
+<?php //print_r($invoice); ?>
+</pre>
+</div>

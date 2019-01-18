@@ -1,0 +1,6 @@
+<?php if($details['purchase_date'] != '') { ?>
+<?php echo $details['package_status'] ?><br />
+<?php echo $details['purchase_date'] ?> to <?php echo $details['expiry_date'] ?>
+<?php } else { ?>
+N/A
+<?php } ?>

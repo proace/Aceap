@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Calls | Invoice</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <!-- Bootstrap 3.3.2 -->
+    <link href="http://acecare.ca/responsive2/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <!-- Font Awesome Icons -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <!-- Ionicons -->
+    <link href="http://code.ionicframework.com/ionicons/2.0.0/css/ionicons.min.css" rel="stylesheet" type="text/css" />
+    <!-- Theme style -->
+    <link href="http://acecare.ca/responsive2/dist/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <?php $obj =  $orders[0]; ?>
+  <body>
+
+    <div class="wrapper">
+      <!-- Main content -->
+      <section class="invoice">
+        <!-- title row -->
+        <div class="row">
+          <div class="col-xs-4">
+			<img style="width:initial;padding-left:5px" src="http://acesys.ace1.ca/app/webroot/img/print_ace2.png"/>
+          </div>
+        </div><!-- /.row -->
+        <div class="row">
+          <div class="col-xs-4">
+            <address>
+              102-3855 Henning Dr.<br />
+              Burnaby, BC V5C 6N3<br />
+              Tel: 604-293-3770 &nbsp;&nbsp;Fax: 604-293-3773
+            </address>
+          </div><!-- /.col -->
+          <div class="col-xs-4">
+            <h3><?php //echo $obj['Type']['name'];?></h3>
+          </div><!-- /.col -->
+          <div class="col-xs-4 pull-right">
+          	<b>Date:</b> <?php echo date("M, d Y", strtotime($obj['Order']['job_date']));?><br/>
+            <b>GST:</b> 896625589<br/>
+            <b>REF:</b> <?php echo $obj['Order']['order_number'];?><br/>
+            <b>Time:</b> <?php echo date('ga', strtotime($obj['Order']['job_time_beg']));?> - <?php echo date('ga', strtotime($obj['Order']['job_time_end']));?><br/>
+            <!--<b>HK:</b> <?php echo $history_keys[$obj['Order']['customer_id']] ?>-->
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+
+        <!-- info row -->
+        <div class="row invoice-info">
+          <div class="col-sm-4 invoice-col">
+            <address>
+              <strong>Bill to:</strong><br>
+			  <?php echo $obj['Customer']['first_name'];?> <?php echo $obj['Customer']['last_name'];?><br>
+              <?php echo $obj['Customer']['address_unit']?> <?php echo $obj['Customer']['address_street_number']?> <?php echo $obj['Customer']['address_street']?><br>
+              <?php echo $obj['Customer']['city'];?> <?php echo $obj['Customer']['postal_code'];?>
+
+            </address>
+          </div><!-- /.col -->
+          <div class="col-sm-4 invoice-col">
+
+          </div><!-- /.col -->
+          <div class="col-sm-4 invoice-col">
+
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+
+        <style>
+		@media print {
+			body {-webkit-print-color-adjust: exact !important;}
+			.table-invoice .bg-grey {
+				background-color:#CCC;
+			/*background-image:url(http://acecare.ca/responsive2/dist/img/bg-grey.png);*/
+			}
+		}
+
+
+		<?php $border = 1; ?>
+        .table-invoice {
+			border-top:<?php echo $border ?>px solid black;
+			border-right:<?php echo $border ?>px solid black;
+		}
+		.table-invoice th {
+			border-left:<?php echo $border ?>px solid black !important;
+			border-bottom:<?php echo $border ?>px solid black !important;
+		}
+		.table-invoice td {
+			border-bottom:none !important;
+			border-left:<?php echo $border ?>px solid black;
+		}
+		.table-invoice td {
+			border:none !important;
+		}
+
+		.table-invoice td.top-border {
+			border-top:solid black !important;
+    		border-width:<?php echo $border ?>px !important;
+		}
+		.table-invoice td.bottom-border {
+			border-bottom:solid black !important;
+    		border-width:<?php echo $border ?>px !important;
+		}
+		.table-invoice td.left-border {
+			border-left:solid black !important;
+    		border-width:<?php echo $border ?>px !important;
+		}
+		.table-invoice td.right-border {
+			border-right:solid black !important;
+    		border-width:<?php echo $border ?>px !important;
+		}
+
+		.table-invoice .bg-grey img {
+			width:100%; height:30px;
+		}
+		.table-invoice .bg-grey .text-alignment {
+			position:absolute;
+			padding:5px;
+			padding-left:34%;
+		}
+
+        </style>
+        <!-- Table row -->
+        <div class="row">
+          <div class="col-xs-12 table-responsive">
+            <table class="table table-invoice">
+              <thead>
+                <tr>
+                  <th class="text-center bg-grey" colspan="2"><div class="">Description</div></th>
+                  <th class="text-center bg-grey"><div class="">Rate</div></th>
+                  <th class="text-center bg-grey"><div class="">Discount</div></th>
+                  <th class="text-center bg-grey"><div class="">Amount</div></th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php
+				//Mixing booking items and coupons
+				$arr = array();
+				$index=0;
+
+
+				//No more then 10 items
+				$subtotal = 0;
+					$flag = 1;
+				?>
+                <?php for($i = 0; $i < 10; $i++) { ?>
+				<tr>
+                    <td colspan="2" class="left-border"><div contenteditable>&nbsp;</div></td>
+                    <td class="text-center left-border" style="text-align:center;"><div contenteditable>&nbsp;</div></td>
+                    <td class="text-right left-border" style="padding-right:10px;text-align:right;"><div contenteditable>&nbsp;</div></td>
+                    <td class="text-right left-border" style="padding-right:10px;text-align:right;"><div contenteditable>&nbsp;</div></td>
+                </tr>
+				<?php } ?>
+                <tr>
+                	<td rowspan="5" class="top-border">
+                    <b>Additional Job Notes</b>
+                    <p class="text-muted well well-sm no-shadow" style="margin-top: 10px;">
+					<div contenteditable><?php echo $obj['Order']['job_notes_technician'];?>&nbsp;</div>
+                    </p>
+                    <b>Tech 1:</b> <?php echo $obj['Technician1']['first_name'];?>&nbsp;<?php echo $obj['Technician1']['last_name'];?>
+            <!--    <b>Tech 2:</b> <?php echo $obj['Technician2']['first_name'];?>&nbsp;<?php echo $obj['Technician2']['last_name'];?>  -->
+                    </td>
+                    <td class="text-right right-border top-border">Subtotal</td>
+                    <td class="top-border right-border bg-grey"></td>
+                    <td class="top-border right-border bg-grey"></td>
+                    <td class="text-right top-border bg-grey"><div contenteditable>&nbsp;</div></td>
+                </tr>
+                <tr>
+                    <td class="text-right right-border">GST 5%</td>
+                    <td class="top-border right-border bg-grey"></td>
+                    <td class="top-border right-border bg-grey"></td>
+                    <td class="text-right top-border bg-grey"><div contenteditable>&nbsp;</div></td>
+                </tr>
+                <tr>
+                    <td class="text-right right-border"><b>Total</b></td>
+                    <td class="top-border right-border bg-grey"></td>
+                    <td class="top-border right-border bg-grey"></td>
+                    <td class="text-right top-border bg-grey"><div contenteditable>&nbsp;</div></td>
+                </tr>
+                <tr>
+                    <td class="text-right right-border">Deposit</td>
+                    <td class="top-border right-border bg-grey"></td>
+                    <td class="top-border right-border bg-grey"></td>
+                    <td class="text-right top-border bg-grey"><div contenteditable>&nbsp;</div></td>
+                </tr>
+                <tr>
+                    <td class="text-right right-border">Remaining</td>
+                    <td class="top-border bottom-border right-border bg-grey"></td>
+                    <td class="top-border bottom-border right-border bg-grey"></td>
+                    <td class="text-right top-border bottom-border bg-grey"><div contenteditable>&nbsp;</div></td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+		<div class="row invoice-info">
+          <div class="col-sm-12 text-left">
+          	If you have any questions or concerns regarding this invoice, please contact 604-293-3770 or email us at info@acecare.ca          </div><!-- /.col -->
+        </div><!--/.row-->
+        <div class="row invoice-info">
+          <div class="col-sm-12 text-center">
+          	<strong>THANK YOU FOR YOUR BUSINESS!</strong>
+          </div><!-- /.col -->
+          <div class="col-sm-12 text-left">
+          	We appreciate you feed back. Please logon to www.acecare.ca. Click on [<b>write a review</b>] tab, pick your city and write your experience.
+          </div><!-- /.col -->
+        </div><!--/.row-->
+      </section><!-- /.content -->
+    </div><!-- ./wrapper -->
+    <!-- AdminLTE App -->
+    <!--<script src="http://acecare.ca/responsive2/dist/js/app.min.js" type="text/javascript"></script>-->
+  </body>
+</html>

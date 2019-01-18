@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Edit Item</title>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/iv_items_edit.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/inventory.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+</head>
+<body id="page_edit">
+<h1><?php echo isset($_GET['seed'])?'Add':'Edit' ?> Item</h1>
+<form action="<?php echo BASE_URL ?>/iv_items/save" method="post">
+	<?php echo $html->hidden('IvItem/id'); ?>
+    <table>
+		<tr>
+        	<td><label>SKU</label></td>
+            <td><?php echo $html->input('IvItem/sku')?></td>
+        </tr>
+    	<tr>
+        	<td><label>Name</label></td>
+            <td><?php echo $html->input('IvItem/name')?></td>
+        </tr>        
+        <tr>
+        	<td><label>Regular Price</label></td>
+            <td><?php echo $html->input('IvItem/regular_price')?></td>
+        </tr>
+        <tr>
+        	<td><label>Selling Price</label></td>
+            <td><?php echo $html->input('IvItem/selling_price')?></td>
+        </tr>
+        <tr>
+        	<td><label>Supplier Price</label></td>
+            <td><?php echo $html->input('IvItem/supplier_price')?></td>
+        </tr>
+        <tr>
+        	<td><label>Description1</label></td>
+            <td>
+            <?php if(isset($_GET['seed'])) { ?>			
+            <?php echo $html->input('IvItem/description1', array('value'=>$description1))?>
+            <?php } else { ?>
+            <?php echo $html->input('IvItem/description1')?>
+            <?php } ?>
+            </td>
+        </tr>
+        <tr>
+        	<td><label>Description2</label></td>
+            <td>
+            <?php if(isset($_GET['seed'])) { ?>			
+            <?php echo $html->input('IvItem/description2', array('value'=>$description2))?>
+            <?php } else { ?>
+            <?php echo $html->input('IvItem/description2')?>
+            <?php } ?>
+            </td>
+        </tr>
+        <tr>
+        	<td><label>Efficiency</label></td>
+            <td>
+            <?php if(isset($_GET['seed'])) { ?>			
+            <?php echo $html->input('IvItem/efficiency', array('value'=>$efficiency))?>
+            <?php } else { ?>
+            <?php echo $html->input('IvItem/efficiency')?>
+            <?php } ?>
+            </td>
+        </tr>
+        <tr>
+        	<td><label>Model</label></td>
+            <td><?php echo $html->input('IvItem/model')?></td>
+        </tr>
+        <tr>
+        	<td><label>Category</label></td>            
+            <td>
+            <span id="selection_category">
+            <?php if(isset($_GET['seed'])) { ?>
+			<?php echo $html->selectTag('IvItem/iv_category_id', $categories, $category_id)?>
+            <?php } else { ?>            
+            <?php echo $html->selectTag('IvItem/iv_category_id', $categories)?>
+            <?php } ?>
+            </span>
+            <a href="#" title="New Category">Add new Category</a>
+            </td>
+        </tr>
+        <tr>
+        	<td><label>Brand</label></td>            
+            <td>
+            <span id="selection_brand">
+            <?php if(isset($_GET['seed'])) { ?>
+			<?php echo $html->selectTag('IvItem/iv_brand_id', $brands, $brand_id)?>
+            <?php } else { ?>            
+            <?php echo $html->selectTag('IvItem/iv_brand_id', $brands)?>
+            <?php } ?>
+            </span>
+            <a href="#" title="New Brand">Add new Brand</a>
+            </td>
+        </tr>
+        <tr>
+        	<td><label>Supplier</label></td>            
+            <td>
+            <span id="selection_supplier">
+            <?php if(isset($_GET['seed'])) { ?>
+			<?php echo $html->selectTag('IvItem/iv_supplier_id', $suppliers, $supplier_id)?>
+            <?php } else { ?>            
+            <?php echo $html->selectTag('IvItem/iv_supplier_id', $suppliers)?>
+            <?php } ?>
+            </span>
+            <a href="#" title="New Supplier">Add new Supplier</a>
+            </td>
+        </tr>
+        <?php if(!isset($_GET['seed'])) { ?>
+        <tr>
+        	<td><label>Active</label></td>           
+            <td>
+            <?php echo $html->selectTag('IvItem/active', $yesOrNo);?>
+            </td>
+        </tr>
+        <?php } else { ?>
+        	<?php echo $html->input('IvItem/active', array('type'=>'hidden','value'=>1))?>
+        <?php }?>
+        <?php if(!isset($_GET['seed'])) { ?>
+        <tr>
+        	<td><label>Notify the admin</label></td>           
+            <td>
+            <?php echo $html->selectTag('IvItem/notify_admin', $yesOrNo);?>
+            </td>
+        </tr>
+        <?php } else { ?>
+        	<?php echo $html->input('IvItem/notify_admin', array('type'=>'hidden','value'=>1))?>
+        <?php }?>
+    </table>    
+    <?php echo $html->submit('Save') ?>
+</form>
+</body>
+</html>

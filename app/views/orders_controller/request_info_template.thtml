@@ -1,0 +1,10 @@
+<script>
+//*** SET PAGE TITLE ***
+
+//document.title += " :: Calculate Order";
+
+//**********************
+</script>
+<?
+echo $this->data['appliance_info'];
+?>

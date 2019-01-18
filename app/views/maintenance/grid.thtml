@@ -1,0 +1,153 @@
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.2.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	$(".cancelNew").hide();
+	
+	$("input[type='text']").dblclick(function(){
+		$(this).parents(".datarow").find(".editable").removeAttr("readonly");
+		$(this).parents(".datarow").find(".is_edited").val(1);
+		$(this).parents(".datarow").addClass("editedrow");
+		hasChanges();
+	});
+	
+	$(".addNew").click(function(){
+		$(".newrow").show();
+		$(".newrow").find(".is_edited").val(1);
+		$(".cancelNew").show();
+		$(this).hide();
+		hasChanges();
+	});
+	
+	$(".cancelNew").click(function(){
+		$(".newrow").find(".is_edited").val(0);
+		$(".newrow").hide();		
+		$(".addNew").show();
+		$(this).hide();		
+	});	
+});
+
+function hasChanges() {
+	$(".is_edited").each(function(){
+		if($(this).val() == 1) {
+			$(".saveChanges").removeAttr("disabled");
+			return true;
+		}
+	});
+}
+
+</script>
+<style>
+input[type="text"] {
+	display:inline;
+	border:none;
+	max-width:none;
+	min-width:none;
+}
+
+input[type="button"] {
+	width:120px;	
+}
+
+.grid{
+	margin-top:60px;
+	background-color:#cccccc;
+	border:1px solid #333333;		
+}
+
+.grid td{
+	padding:2px;
+	
+}
+
+.grid th{
+	background-color:#333333;
+	color:#ffffff;
+	padding:3px;
+	border:1px solid #333333;
+}
+
+.editedrow {
+	background-color:#3366ff;
+}
+
+.nav {
+	background-color:#cccccc;
+	position:fixed;
+	top:0;
+	left:0;	
+	list-style:none;
+	margin:0;	
+	width:100%;
+	border-bottom:1px solid #666666;
+}
+
+.nav li {
+	display:inline;	
+}
+
+.nav h1 {
+	display:inline;	
+}
+
+.newrow {
+	padding:0 0 30px 10px;	
+	display:none;
+}
+
+.newrow td{
+	padding:1px;	
+	border:1px solid #333333;
+}
+
+</style>
+<div>
+<form action="<?php echo BASE_URL ?>/maintenance/saveGrid/<?php echo $id ?>" method="post">
+<div class="nav">
+    <ul>
+    	<li><a href="<?php echo BASE_URL ?>/maintenance">back</a></li>
+        <li><h1><?php echo $name; ?></h1></li>
+        <li><input type="button" value="Add New" class="addNew" /><input type="button" value="Cancel New" class="cancelNew" /></li>
+        <li><input type="submit" value="Save Changes" class="saveChanges" disabled="disabled" /></li>
+    </ul>
+    <div class="newrow">        
+        <table>
+        	<?php foreach($columns as $column) { ?>
+        	<tr>
+            	<td align="right"><?php echo $column['field'] ?></td>
+            	<td>
+                <input class="editable <?php echo $column['field'] ?> <?php echo $row[$column['field'].'_type'] ?>" type="text" name="data[newrow][<?php echo $column['field'] ?>]" value="" />
+                <input type="hidden" name="data[newrow][is_edited]" class="is_edited" value="0" />
+                </td>
+                <td><?php echo $column['comment'] ?>sdsd</td>
+            </tr>
+            <?php } ?>
+        </table>   
+    </div>
+    
+</div>
+<table class="grid">
+<tr>
+	<?php foreach($columns as $column) { ?>
+    <th><?php echo $column['field'] ?></th>
+    <?php } ?>  
+</tr>
+<?php foreach($rows as $row) { ?>
+<tr class="datarow">
+	<?php foreach($columns as $column) { ?>    
+    	<?php if($row[$column['field'].'_key'] == 'PRI') { ?>
+        <td align="center">        	
+        	<input type="hidden" class="<?php echo $column['field'] ?> <?php echo $row[$column['field'].'_type'] ?>" name="data[ThisTable][<?php echo $row['index'] ?>][<?php echo $column['field'] ?>]" value="<?php echo $row[$column['field']] ?>" />
+        	<?php echo $row[$column['field']] ?>
+        <?php } else { ?>
+        <td>
+        	<input readonly class="editable <?php echo $column['field'] ?> <?php echo $row[$column['field'].'_type'] ?>" type="text" name="data[ThisTable][<?php echo $row['index'] ?>][<?php echo $column['field'] ?>]" value="<?php echo $row[$column['field']] ?>" />
+        <input type="hidden" name="data[ThisTable][<?php echo $row['index'] ?>][is_edited]" class="is_edited" value="0" />
+        </td>
+		<?php } ?>    		    
+	<?php } ?>    
+</tr>
+<?php } ?>
+</table>
+</form>
+</div>
+<pre><?php print_r($column) ?></pre>

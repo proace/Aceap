@@ -1,0 +1,13 @@
+<?php foreach($routes as $route) { ?>
+<div class="message">
+	<div class="header"><strong><?php echo $route['name'] ?></strong> <span><?php echo $route['when'] ?></span></div>
+    <div class="footer"></div> 
+	<span class="where"><?php echo $route['where'] ?></span>
+	<!--<div class="actions">
+    	<a>Mark as read</a>
+        <a>Forward</a>
+        <a>Reply</a>
+    </div>-->
+    <div class="clear_this"></div>
+</div>
+<?php } ?>

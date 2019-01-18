@@ -1,0 +1,95 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1> Callbacks <small></small> </h1>
+  <ol class="breadcrumb">
+    <li><a href="<?php echo $home_link ?>"><i class="fa fa-home"></i> Home</a></li>
+    <li>Calls</li>
+    <li class="active">Callbacks</li>
+  </ol>
+</section>
+
+<!-- Main content -->
+<section class="content">
+  <div class="row">
+  	<div class="col-md-12">
+      <!-- general form elements -->
+      <div class="box box-primary">
+        <div class="box-header">
+          <h3 class="box-title">To Call</h3>
+        </div><!-- /.box-header -->
+        <!-- form start -->
+          <form method="post">
+            <div class="box-body">
+              <ul class="nav nav-tabs">
+                <li><a data-toggle="tab" href="#tab_past">Past</a></li>                  
+                <li class="active"><a data-toggle="tab" href="#tab_today">Today</a></li>
+                <li><a data-toggle="tab" href="#tab_future">Future</a></li>                                   
+              </ul>
+              <div class="tab-content"> 
+                <div id="tab_past" class="tab-pane">
+                	<table class="table table-bordered">
+                      <tr>                    
+                          <th>Name</th>  
+                          <th>Note</th>    
+                          <th>Call Date</th>   
+                          <th>Phone</th>                               
+                      </tr>
+                      <?php foreach($callbacks['Past'] as $callback)  { ?>            
+                      <tr>                    
+                          <td><?php echo $callback['lead_first_name']." ".$callback['lead_last_name']?></td>
+                          <td><?php echo $callback['call_note']?></td>
+                          <td><?php echo $callback['call_return_text']?></td>  
+                          <td><a class="btn btn-success" href="<?php echo BASE_URL;?>/calls/callback?id=<?php echo $callback['lead_id'] ?>"><?php echo $callback['call_number']?></a></td>                         
+                      </tr>
+                      <?php } ?>           
+                    </table>
+                </div>
+                <div id="tab_today" class="tab-pane active">
+                	<table class="table table-bordered">
+                      <tr>                    
+                          <th>Name</th>  
+                          <th>Note</th>    
+                          <th>Call Date</th>   
+                          <th>Phone</th>                               
+                      </tr>
+                      <?php foreach($callbacks['Today'] as $callback)  { ?>            
+                      <tr>                    
+                          <td><?php echo $callback['lead_first_name']." ".$callback['lead_last_name']?></td>
+                          <td><?php echo $callback['call_note']?></td>
+                          <td><?php echo $callback['call_return_text']?></td>  
+                          <td><a class="btn btn-success" href="<?php echo BASE_URL;?>/calls/callback?id=<?php echo $callback['lead_id'] ?>"><?php echo $callback['call_number']?></a></td>                         
+                      </tr>
+                      <?php } ?>           
+                    </table>
+                </div>
+                <div id="tab_future" class="tab-pane">
+                	<table class="table table-bordered">
+                      <tr>                    
+                          <th>Name</th>  
+                          <th>Note</th>    
+                          <th>Call Date</th>   
+                          <th>Phone</th>                               
+                      </tr>
+                      <?php foreach($callbacks['Future'] as $callback)  { ?>            
+                      <tr>                    
+                          <td><?php echo $callback['lead_first_name']." ".$callback['lead_last_name']?></td>
+                          <td><?php echo $callback['call_note']?></td>
+                          <td><?php echo $callback['call_return_text']?></td>  
+                          <td><a class="btn btn-success" href="<?php echo BASE_URL;?>/calls/callback?id=<?php echo $callback['lead_id'] ?>"><?php echo $callback['call_number']?></a></td>
+                      </tr>
+                      <?php } ?>
+                    </table>
+                </div>
+              </div>                          
+            </div>
+           
+            <!-- /.box-body -->
+            <div class="box-footer">
+                <!--<button type="submit" class="btn btn-primary" name="list_access" value="1">Submit</button>-->
+          	</div>
+      	</form>
+      </div><!-- /.box -->      
+    </div><!-- end col -->
+  </div>
+</section>
+<!-- /.content --> 

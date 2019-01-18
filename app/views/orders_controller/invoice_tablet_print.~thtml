@@ -1,0 +1,413 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Invoice</title>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_preview.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
+<style>
+td {
+	font-size: 10pt; /* 12pt */
+	width: 5mm !important;
+	height: 5mm !important;
+}
+.item_head{
+	border-right-style:solid;
+	border-right-color:black;
+	border-right-width:1px;
+	border-top-style:solid;
+	border-top-color:black;
+	border-top-width:1px;
+	border-bottom-style:solid;
+	border-bottom-color:black;
+	border-bottom-width:1px;
+	padding:2px;
+}
+.item_head_last{
+	border-top-style:solid;
+	border-top-color:black;
+	border-top-width:1px;
+	border-bottom-style:solid;
+	border-bottom-color:black;
+	border-bottom-width:1px;
+	padding:2px;
+}
+.item_string{
+	border-right-style:solid;
+	border-right-color:black;
+	border-right-width:1px;
+	padding:2px;
+}
+.item_string_last{
+	padding:2px;
+}
+th {
+	width: 5mm !important;
+	height: 0mm !important;
+}
+.rtop, .rbottom{display:block}
+.rtop *, .rbottom *{display: block; height: 1px; overflow: hidden}
+.r1{margin: 0 5px;background-color:black;}
+.r10{margin: 0 3px;background-color:white;}
+.r2{margin: 0 3px;background-color:black;}
+.r11{margin: 0 2px;background-color:white;}
+.r3{margin: 0 2px;background-color:black;}
+.r12{margin: 0 1px;background-color:white;}
+.r4{margin: 0 1px; height: 2px;background-color:black;}
+.history td, .history th {font-size:9px;}
+</style>
+</head>
+<body>
+<div class="invoice_page">
+<?php
+    function Headers($NumCols)
+    {
+		echo '<tr>';
+        for ($x=1;$x<=$NumCols;$x++) echo '<th></th>';
+		echo '</tr>';
+    }
+    function SkipCol($NumCols)
+    {
+        for ($x=1;$x<=$NumCols;$x++) echo '<td></td>';
+    }
+    function SkipRow($NumRols)
+    {
+        for ($x=1;$x<=$NumRols;$x++)
+        {
+            echo '<tr>';
+            SkipCol(12);
+            echo '</tr>';
+        }
+    }
+    foreach ($orders as $obj) {
+?>
+    <div id="container" style="width:750px">
+    <div class="rtop">
+      <div class="r1"></div>
+      <div class="r2"><div class="r10"></div></div>
+      <div class="r3"><div class="r11"></div></div>
+      <div class="r4"><div class="r12"></div><div class="r12"></div></div>
+    </div>
+    <table cellpadding=0 cellspacing=0 style="border-right-color:black;border-right-style:solid;border-right-width:1px;border-left-color:black;border-left-style:solid;border-left-width:1px;">
+        <?php Headers(40);?>
+        <?php $status = $obj['Order']['order_status_id'] ?>
+        <tr>
+            <td colspan=15 rowspan=4>
+                <img style="width:300px;padding-left:5px" src="http://acesys.ace1.ca/app/webroot/img/print_ace2.png"/>
+            </td>
+            <td colspan=15 rowspan=2 align=center>
+                <b style="font-size: 14pt;"><?php echo $obj['Type']['name'];?></b>
+            </td>
+            <td colspan=10 align=right valign=top>HST #896625589&nbsp;</td>
+        </tr>
+        <tr>
+            <td colspan=3 align=right valign=top>REF:</td>
+            <td colspan=7 align=left valign=top><?php echo $obj['Order']['order_number'];?></td>
+        </tr>
+        <tr>
+
+            <td colspan=15 align="center"></td>
+            <td colspan=3 align=right>Date:</td>
+            <td colspan=7><?php echo $obj['Order']['job_date'];?></td>
+
+        </tr>
+        <tr>
+            <td colspan=15 align=right></td>
+            <td colspan=3 align=right>Time:</td>
+            <td colspan=7>
+                <?=date('ga', strtotime($obj['Order']['job_time_beg']));?> - <?=date('ga', strtotime($obj['Order']['job_time_end']));?>
+            </td>
+        </tr>
+        <tr>
+            <td colspan=22 style="font-size:8pt;" valign=top>
+                &nbsp;102-3855 Henning Dr. Burnaby, BC V5C 6N3
+            </td>
+            <td colspan=8 align=right><?php if ($obj['Type']['category_id']==2) {?>Time in:<?php }?>&nbsp;</td>
+            <td colspan=3 align=right>HK:</td>
+            <td colspan=7>
+
+            	<?php echo $history_keys[$obj['Order']['customer_id']] ?>
+            </td>
+        </tr>
+        <tr>
+            <td colspan=22 valign=top style="font-size:8pt;border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:black;">
+                &nbsp;Tel:&nbsp;604-293-3770&nbsp;&nbsp;Fax:&nbsp;604-293-3773
+            </td>
+            <td colspan=8 align=right style="border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:black;">
+								<?php if ($obj['Type']['category_id']==2) {?>Time out:<?php }?>&nbsp;
+						</td>
+            <td colspan=12 style="border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:black;">&nbsp;</td>
+        </tr>
+        <!--Customer's information-->
+        <tr>
+            <td>&nbsp;</td>
+            <?php
+            if (($common->getLoggedUserRoleID() != "1")
+              &&($common->getLoggedUserRoleID() != "6"))
+            {
+            ?>
+            <td colspan=20>&nbsp;</td>
+            <?php
+            }else{
+            ?>
+            <td colspan=27>
+				         <?php if ($obj['Type']['category_id']==2) {?>
+								 Supplier:&nbsp;<?=$suppliers[$obj['Order']['app_ordered_supplier_id']];?>
+								 <?php }?>
+								 Time in:
+				    </td>
+            <?php
+            }
+            ?>
+            <td colspan=12><b><?=$obj['Customer']['first_name'];?> <?=$obj['Customer']['last_name'];?></b>&nbsp;</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <?php
+            if (($common->getLoggedUserRoleID() != "1")
+              &&($common->getLoggedUserRoleID() != "6"))
+            {
+            ?>
+            <td colspan=27>Phone:&nbsp;<?=$obj['Customer']['phone'];?>&nbsp;</td>
+            <?php
+            }else{
+            ?>
+            <td colspan=27>
+				        <?php if ($obj['Type']['category_id']==2) {?>
+				        PO number:&nbsp;<?=$obj['Order']['app_po_number'];?>
+								 <?php }?>
+								 Time out:
+				    </td>
+            <?php
+            }
+            ?>
+            <td colspan=12><b><?=$obj['Customer']['address'];?>&nbsp;</b></td>
+        </tr>
+        <tr>
+            <td style="border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:black;">&nbsp;</td>
+            <?php
+            if (($common->getLoggedUserRoleID() != "1")
+              &&($common->getLoggedUserRoleID() != "6"))
+            {
+            ?>
+            <td colspan=27 style="border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:black;">
+				         Cell phone:&nbsp;<?=$obj['Customer']['cell_phone'];?>&nbsp;</td>
+            <?php
+            }else{
+            ?>
+            <td colspan=27 style="border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:black;">
+				        <?php if ($obj['Type']['category_id']==2) {?>
+				         Pick up by:&nbsp;<?=$techs[$obj['Order']['app_ordered_pickup_person']];?>
+								 <?php }?>
+								 &nbsp;
+				    </td>
+            <?php
+            }
+            ?>
+            <td colspan=12 style="border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:black;">
+                <b>
+									<?=$obj['Customer']['city'];?>&nbsp;
+									<?=$obj['Customer']['postal_code'];?>&nbsp;
+				        </b>
+            </td>
+        </tr>
+
+        <!--Questions-->
+		<?php if (($obj['Type']['id']==9)||($obj['Type']['id']==10)) { ?>
+        <tr><td colspan=40><?php echo $obj['Order']['history']?></td></tr>
+    	<?php } else { ?>
+        <?php foreach($working_answers as $question) { ?>
+        <tr>
+            <td colspan="10" align=left style="border-bottom:1px dotted #666;font-size:9px"><strong><?php echo $question['question'] ?></strong></td>
+            <td colspan="10" align=left style="border-bottom:1px dotted #666;font-size:9px"><?php echo $question['response'].$question['response_text'] ?></td>
+            <td colspan="10" align=left style="border-bottom:1px dotted #666;font-size:9px"><?php echo $question['suggestion'] ?></td>
+            <td colspan="10" align=left style="border-bottom:1px dotted #666;font-size:9px"><?php echo $question['decision'] ?></td>
+        </tr>
+        <?php } ?>
+    	<?php } ?>
+
+        <!--Booked Items-->
+        <tr>
+            <td colspan=20 class="item_head" align=center><b>ITEMS & DESCRIPTION</b></td>
+            <td colspan=5 class="item_head" align=center><b>PRICE</b></td>
+            <td colspan=5 class="item_head" align=center><b>QUANTITY</b></td>
+            <td colspan=10 class="item_head_last" align=center><b>TOTAL PRICE</b></td>
+        </tr>
+<?php
+    //Mixing booking items and coupons
+    $arr = array();
+    $index=0;
+    foreach ($obj['BookingItem'] as $item)
+    {
+        $arr[$index]=array();
+        $arr[$index]['name']=$item['name'];
+        $arr[$index]['quantity']=$item['quantity'];
+        $arr[$index]['price']=($item['price']*$item['quantity']-1*$item['discount']+1*$item['addition'])/$item['quantity'];
+				$arr[$index]['print_it']=$item['print_it'];
+        $index++;
+    }
+    foreach ($obj['BookingCoupon'] as $item)
+    {
+        $arr[$index]=array();
+        $arr[$index]['name']=$item['name'];
+        $arr[$index]['quantity']=1;
+        $arr[$index]['price']=-$item['price'];
+        $index++;
+    }
+
+    //No more then 5 items
+    $subtotal = 0;
+		$flag = 1;
+    for ($i=0;$i<5;$i++)
+    {
+        $item = $arr[$i];
+				if (($item['print_it']=='on')||($item['name']==''))
+				{
+?>
+        <tr>
+            <td colspan=20 class="item_string">&nbsp;<?php echo $item['name'];?></td>
+            <td colspan=5 class="item_string right" style="padding-right:10px;text-align:right;">&nbsp;<?php if($item['price'] > 0) echo number_format($item['price'], 2, '.', '');?></td>
+            <td colspan=5 class="item_string center" style="text-align:center;">&nbsp;<?php echo $item['quantity'];?></td>
+            <td colspan=10 class="item_string_last right" style="padding-right:10px;text-align:right;">&nbsp;
+                <?php
+                    $total_prc=$item['price']*$item['quantity'];
+                    if ($total_prc!=0) echo number_format(round($total_prc,2), 2, '.', '');
+                ?>
+            </td>
+        </tr>
+<?php
+            $subtotal += $total_prc;
+        }
+    }
+?>
+        <tr>
+            <td colspan=20 class="item_string" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;</td>
+            <td colspan=5 class="item_string" align=right style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;</td>
+            <td colspan=5 class="item_string" align=right style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;</td>
+            <td colspan=10 class="item_string_last" align=right style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;</td>
+        </tr>
+        <!--Office notes and Footer-->
+        <tr>
+            <td colspan=20 align=left style="font-size: 8pt" valign=botom>
+                &nbsp;<b>Additional Job Notes</b>
+            </td>
+            <td colspan=5 align=center>&nbsp;
+
+            </td>
+            <td colspan=5 class="item_string" style="border-left-style:solid;border-left-color:black;border-left-width:1px;border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">
+                <b style="font-size: 7pt">SUBTOTAL</b>
+            </td>
+            <td colspan=10 class="item_string_last right" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;padding-right:10px;text-align:right;">
+                &nbsp;
+                <?php echo number_format($subtotal, 2, '.', ''); ?>
+            </td>
+        </tr>
+        <tr>
+			<td colspan=24 rowspan=3 align=left valign=top>&nbsp;<?php echo $obj['Order']['job_notes_technician'];?>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td colspan=5 class="item_string" style="border-left-style:solid;border-left-color:black;border-left-width:1px;border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;padding-right:10px;">
+                <b style="font-size: 7pt">HST</b>
+            </td>
+            <td colspan=10 class="item_string_last right" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;padding-right:10px;text-align:right;">
+                &nbsp;
+                <?php echo number_format(round(0.12*$subtotal,2), 2, '.', ''); ?>
+            </td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td colspan=5 class="item_string" style="border-left-style:solid;border-left-color:black;border-left-width:1px;border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">
+                <b style="font-size: 7pt">TOTAL</b>
+            </td>
+            <td colspan=10 class="item_string_last right" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;padding-right:10px;text-align:right;">
+                &nbsp;
+                <?php echo number_format($subtotal+round(0.12*$subtotal,2), 2, '.', ''); ?>
+            </td>
+        </tr>
+				<?php //if ($obj['Type']['category_id']==2) {?>
+        <tr>
+            <td>&nbsp;</td>
+            <td colspan=5 class="item_string" style="border-left-style:solid;border-left-color:black;border-left-width:1px;border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;padding-right:10px;">
+                <b style="font-size: 7pt">DEPOSIT</b>
+            </td>
+            <td colspan=10 class="item_string_last" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">
+                <?php //if ($obj['Order']['customer_deposit']>0) echo $obj['Order']['customer_deposit']; else echo '&nbsp;';?>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="25">&nbsp;</td>
+            <td colspan=5 class="item_string" style="border-left-style:solid;border-left-color:black;border-left-width:1px;border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">
+                <b style="font-size: 7pt">REMAINING</b>
+            </td>
+            <td colspan=10 class="item_string_last" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;
+
+            </td>
+        </tr>
+				<?php //} ?>
+        <tr>
+			<td colspan="25">&nbsp;</td>
+            <td colspan=3 align=left style="font-size:7pt;"><!--<input type="checkbox"/>Cash--></td>
+            <td colspan=3 align=left style="font-size:7pt;"><!--<input type="checkbox"/>Debit--></td>
+            <td colspan=3 align=left style="font-size:7pt;"><!--<input type="checkbox"/>Visa--></td>
+            <td colspan=6 align=left style="font-size:7pt;"><!--<input type="checkbox"/>MasterCard--></td>
+        </tr>
+		    <tr>
+        <tr>
+                <td colspan=3 align=right>Tech 1:</td>
+                <td colspan=5 align=left valign=top><?php echo $obj['Technician1']['first_name'];?>&nbsp;<?php echo $obj['Technician1']['last_name'];?></td>
+                <td colspan=3 align=right>Tech 2:</td>
+                <td colspan=14 align=left valign=top><?php echo $obj['Technician2']['first_name'];?>&nbsp;<?php echo $obj['Technician2']['last_name'];?></td>
+                <td colspan=7 align=left style="font-size:7pt;"><input type="checkbox"/>Certified Cheque</td>
+                <td colspan=8 align=left style="font-size:7pt;"><input type="checkbox"/>Financing</td>
+            </tr>
+
+            <tr><td colspan=40><hr></td></tr>
+            <tr>
+                            <td>&nbsp;</td>
+                <td colspan=20 valign=top align=left></td>
+                <td colspan=19 align=left></td>
+            </tr>
+            <tr><td>&nbsp;</td><td colspan=38>We appreciate your comments, please visit www.aceno1.ca.</td></tr>
+            <tr>
+                <td colspan=13 align=left><b><u><?php echo $payment_methods[$obj['Order']['customer_desired_payment_method_id']];?></u></b>&nbsp;</td>
+                <td colspan=27 valign=bottom align=right style="font-size: 8pt">&nbsp;Customer signature:________________ Date:_____________</td>
+            </tr>
+    </table>
+    <!--
+    <div class="rbottom">
+      <div class="r4"><div class="r12"></div><div class="r12"></div></div>
+      <div class="r3"><div class="r11"></div></div>
+      <div class="r2"><div class="r10"></div></div>
+      <div class="r1"></div>
+    </div>
+    </div>
+    <?php
+    if (($common->getLoggedUserRoleID() != "1")
+      &&($common->getLoggedUserRoleID() != "6"))
+    {
+		if ($common->getLoggedUserID()==$obj['Order']['booking_telemarketer_id'])
+		{
+    ?>
+    Job booked on:&nbsp;<?=$obj['Order']['booking_date'];?>&nbsp;
+    by:&nbsp;<?=$allSources[$obj['Order']['booking_telemarketer_id']];?>&nbsp;
+    <?php
+    	}
+    }
+    ?>-->
+<?php }?>
+</div><!--END invoice_page-->
+<br />
+<br />
+<br />
+<div class="center">
+<?php if(isset($_GET['type']) && $_GET['type'] == "office") { ?>
+
+<?php } elseif($status == 8 || $status == 1) { ?>
+<!--<input type="button" value="Done" style="height:40px;" onclick="window.open('<?php echo BASE_URL. '/orders/invoiceTablet' ?>','_self')" />-->
+<input type="button" value="Payment" style="height:40px;" onclick="window.open('<?php echo BASE_URL. '/orders/invoiceTabletPayment' ?>?order_id=<?php echo $obj['Order']['id'];?>','_self')" />
+<?php } else { ?>
+<input type="button" value="Payment" style="height:40px;" onclick="window.open('<?php echo BASE_URL. '/orders/invoiceTabletPayment' ?>?order_id=<?php echo $obj['Order']['id'];?>','_self')" />
+<?php } ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/modal_dialog/ajax.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/modal_dialog/ajax-dynamic-content.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/modal_dialog/modal-message.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/modal_dialog/jquery-1.4.2.min.js"></script>
+
+<script>
+document.title += " :: Clients";
+
+function setOrder(order){
+  f = document.forms.viewform;
+  f.currentPage.value = '';  
+  if(f.order.value == order){
+    if(f.sort.value == 'ASC')
+      f.sort.value = 'DESC';
+    else
+      f.sort.value = 'ASC';
+  }
+  else{
+    f.order.value = order;
+    f.sort.value = 'ASC';
+  }
+  f.submit();
+}
+function clearFilters(){
+	 f = document.forms.viewform;
+	 f.fserach.value = '';
+	 
+}
+function PrintIt(){
+res=document.getElementById("results");
+parent['main_view'].print();
+}
+</script>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+<table width="800">
+<tr>
+<td>
+	<table width="90%" border="0px" cellspacing="10" cellpadding="0">
+		<tr>
+			<td class="sectionTitle" colspan="7">Installations</td>
+		</tr>
+		<tr>
+			<td>
+				<input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_fdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+			</td>
+			<td>Date from:&nbsp;
+				<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			</td>
+			<td>Date to: </td>
+			<td>
+				<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			</td>
+			<td>
+				<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_tdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+			</td>
+		</tr>
+		<tr>
+			<td>Job Type: </td>
+			<td>
+			<select id="fjobtype" name="fjobtype">
+				<option value="0"></option>
+				<?
+				foreach($allJobTypes as $v => $k){
+					$selected = "";
+					if($jobtype == $v){
+						$selected = 'selected="selected"';
+					}
+					echo '<option value="'.$v.'" '.$selected.'>'.$k.'</option>';
+				}
+				?>
+			</select> 
+			</td>
+			<td>Tech: </td>
+			<td>
+			<select id="ftech" name="ftech">
+				<option value="0"></option>
+				<?
+				foreach($allUsers as $v => $k){
+					$selected = "";
+					if($tech == $v){
+						$selected = 'selected="selected"';
+					}
+					echo '<option value="'.$v.'" '.$selected.'>'.$k.'</option>';
+				}
+				?>
+			</select> 
+			</td>
+		</tr>
+		<tr>
+			<td>Appliance: </td>
+			<td>
+			<select id="fitem" name="fitem">
+				<option value="0"></option>
+				<?
+				foreach($allItems as $v => $k){
+					$selected = "";
+					if($fitem == $v){
+						$selected = 'selected="selected"';
+					}
+					echo '<option value="'.$v.'" '.$selected.'>'.$k.'</option>';
+				}
+				?>
+			</select> 
+			</td>
+			<td>Source: </td>
+			<td>
+			<select id="fsource" name="fsource">
+				<option value="0"></option>
+				<?
+				foreach($allUsers as $v => $k){
+					$selected = "";
+					if($fsource == $v){
+						$selected = 'selected="selected"';
+					}
+					echo '<option value="'.$v.'" '.$selected.'>'.$k.'</option>';
+				}
+				?>
+			</select> 
+			</td>
+			<td align="left">
+				<input type="submit" name="submit2" value="Update >>>">
+			</td>
+			<td>
+				<INPUT TYPE="button" value="Print" onClick="PrintIt()">
+			</td>
+		</tr>
+		</table>
+	</td>
+	</tr>
+	</table> 	
+</td>
+</tr>
+</table>
+</form>
+
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+    <tr>
+        <th rowspan=2 width="40" style="background-color:#CCCCCC;border-style: none;">ID</th>
+        <th rowspan=2 width="40"><a href="javascript:setOrder('customer_name');">REF #</a></th>
+        <th rowspan=2 width="90"><a href="javascript:setOrder('customer_name');">Customer</a></th>
+        <th width="180"><a href="javascript:setOrder('phone');">Phone</a></th>
+        <th colspan=2 width="80"><a href="javascript:setOrder('job_type');">Job type</a></th>
+        <th rowspan=2 width="80"><a href="javascript:setOrder('total_appl');">Appliance total</a></th>
+        <th rowspan=2 width="80"><a href="javascript:setOrder('total_other');">Other items total</a></th>
+        <th rowspan=2 width="80"><a href="javascript:setOrder('cnt_other');">Other items qty</a></th>
+        <th rowspan=2 width="80">Warranty (labour/parts)</th>
+        <th>Tech 1</th>
+        <th colspan=4 width="80">Permit</th>
+        <th colspan=3 width="80">Jobs</th>
+    </tr>
+    <tr>
+        <th width="80"><a href="javascript:setOrder('address');">Address</a></th>
+        <th width="60"><a href="javascript:setOrder('job_date');">Job date</a></th>
+        <th width="60"><a href="javascript:setOrder('job_status');">Status</a></th>
+        <th>Tech 2</th>
+        <th width="60"><a href="javascript:setOrder('permit_applied_date');">App.date</a></th>
+        <th width="80"><a href="javascript:setOrder('permit_applied_user');">App.by</a></th>
+        <th width="80"><a href="javascript:setOrder('permit_result');">Status</a></th>
+        <th width="80"><a href="javascript:setOrder('permit_number');">Permit #</a></th>
+        <th width="80"><a href="javascript:setOrder('permit_number');">2009</a></th>
+        <th width="80"><a href="javascript:setOrder('permit_number');">2010</a></th>
+        <th width="80"><a href="javascript:setOrder('permit_number');">2011</a></th>
+    </tr>
+<?php 
+	$r=1; 
+	foreach ($orders as $obj): 
+		$class = 'cell'.(++$r%2);
+
+		$status_color = '';
+		if ($obj['job_status_id']==5)
+		{
+      $status_color = 'color:#00BB00;';
+      if ((!$obj['permit_result'])||($obj['permit_result']==3))
+        $status_color = 'color:#0000BB;';
+		}
+		else if ($obj['job_status_id']==3) $status_color='color:#CC0000;';
+?>
+    <tr class="<?php echo $class;?>" style="<?=$status_color;?>">
+		 <td rowspan=2 class="firstcol" style="background-color:#CCCCCC;border-style: none;">&nbsp;<?php echo $html->link($obj['job_id'],'/orders/editBooking?order_id='.$obj['job_id']); ?></td>
+		 <td rowspan=2 style="<?=$status_color;?>">&nbsp;<?php echo $html->link($obj['order_number'],'/orders/editBooking?order_id='.$obj['job_id']); ?></td>
+		 <td rowspan=2 style="<?=$status_color;?>">&nbsp;<?php echo $obj['customer_name']; ?></td>
+		 <td style="<?=$status_color;?>">&nbsp;<?php echo $obj['phone']; ?></td>
+		 <td colspan=2 style="<?=$status_color;?>">&nbsp;<?php echo $obj['job_type']; ?></td>
+		 <td rowspan=2 style="<?=$status_color;?>">&nbsp;<?php echo $obj['total_appl']; ?></td>
+		 <td rowspan=2 style="<?=$status_color;?>">&nbsp;<?php echo $obj['total_other']; ?></td>
+		 <td rowspan=2 style="<?=$status_color;?>">&nbsp;<?php echo $obj['cnt_other']; ?></td>
+		 <td style="<?=$status_color;?>">&nbsp;<?php echo $obj['labor_warranty']; ?></td>
+		 <td style="<?=$status_color;?>">&nbsp;<?php echo $allUsers[$obj['job_technician1_id']]; ?></td>
+		 <td rowspan=2 style="<?=$status_color;?>">&nbsp;<?php if ($obj['permit_result']) echo $obj['permit_applied_date']; ?></td>
+		 <td rowspan=2 style="<?=$status_color;?>">&nbsp;<?php if ($obj['permit_result']) echo $allUsers[$obj['permit_applied_user']]; ?></td>
+		 <td rowspan=2 style="<?=$status_color;?>">&nbsp;<?php if ($obj['permit_result']) echo $allPermitStates[$obj['permit_result']]; ?></td>
+		 <td rowspan=2 style="<?=$status_color;?>">&nbsp;<?php if ($obj['permit_result']) echo $obj['permit_number']; ?></td>
+         <td rowspan=2 style="<?=$status_color;?>">&nbsp;<?php if ($obj['2009_jobs']) echo $obj['2009_jobs']; ?></td>
+         <td rowspan=2 style="<?=$status_color;?>">&nbsp;<?php if ($obj['2010_jobs']) echo $obj['2010_jobs']; ?></td>
+         <td rowspan=2 style="<?=$status_color;?>">&nbsp;<?php if ($obj['2011_jobs']) echo $obj['2011_jobs']; ?></td>
+    </tr>
+    <tr class="<?php echo $class;?>" style="<?=$status_color;?>">
+		 <td style="<?=$status_color;?>">&nbsp;<?php echo $obj['address'].' '.$obj['city']; ?></td>
+		 <td style="<?=$status_color;?>">&nbsp;<?php echo $obj['job_date']; ?></td>
+		 <td style="<?=$status_color;?>">&nbsp;<?php echo $obj['job_status']; ?></td>
+		 <td style="<?=$status_color;?>">&nbsp;<?php echo $obj['parts_warranty']; ?></td>
+		 <td style="<?=$status_color;?>">&nbsp;<?php echo $allUsers[$obj['job_technician2_id']]; ?></td>
+    </tr>
+<?php endforeach; ?>
+</table>
+
+<script>var nNumOnPage=<?php echo $r; ?></script>
+
+<table width="100%">
+<tr>
+	<td width="100%" align="center">
+		<?php echo $html->link('<<','/orders/installations?page='.$previousPage.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'&ffromdate='.$fdate.'&ftodate='.$tdate.'&fjobtype='.$jobtype) ?>
+		&nbsp;
+		<?php echo $html->link('>>','/orders/installations?page='.$nextPage.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'&ffromdate='.$fdate.'&ftodate='.$tdate.'&fjobtype='.$jobtype) ?>
+	</td>
+</tr>
+</table>

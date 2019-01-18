@@ -1,0 +1,6 @@
+<div class="greenbar">&nbsp;</div>
+<div class="topheader">
+	<img src="<?=ROOT_URL;?>/app/webroot/img/toplogo.gif" style="float: left;" alt="ACE Carpet and Furnace Cleaning">
+	<img src="<?=ROOT_URL;?>/app/webroot/img/topbears.gif" style="float: right; margin-top: 7px;">
+</div>
+<div class="horline">&nbsp;</div>

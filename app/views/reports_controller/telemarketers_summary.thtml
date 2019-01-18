@@ -1,0 +1,154 @@
+<script>
+var cur = '';
+function details(tech_id, el)
+{
+	$('.details').hide();
+	if (cur==el) {cur=''; return;}
+	cur=el;
+	$(el).html('<img src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>').parent().show();
+	$.get("<?=BASE_URL;?>/reports/technicians_summary_details",
+		{techid:tech_id,
+		 ffromdate:$('#ffromdate').val(),
+		 ftodate:$('#ftodate').val()},
+	function(data){
+		$(el).html(data);
+	});  
+}
+</script>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+	<input type="hidden" name="action" value="view" >
+	<input type="hidden" name="order" value="<?=$_GET['order']?>">
+	<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+	<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+	
+	<table border="0" cellspacing="10" cellpadding="0">
+		<tr>
+			<td class="sectionTitle" colspan="2">Technicians Summary</td>
+		</tr>
+		<tr >
+        	<td><select name="pay_period" onchange="document.viewform.submit();">
+            <?php if($pay_period == 0) $selected = 'selected'; ?>
+			<option value="0" <?=$selected?>>Pay Periods</option>
+			<?php foreach ($allPayPeriods as $v => $k) {
+				$selected = '';
+				if ($v == $pay_period) $selected = 'selected';?>
+				<option value="<?=$v?>" <?=$selected?>><?=$k?></option>
+			<?php } ?>
+			</select></td>
+			<td>Date from: </td>
+			<td>
+				&nbsp;&nbsp;
+				<input type="text" id="ffromdate" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			</td>
+			<td>Date to: </td>
+			<td>
+				&nbsp;&nbsp;
+					<input type="text" id="ftodate" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			</td>
+			<td>
+				<nobr>Technicians List:</nobr>	
+				<select name="ftechid">
+					<option value="">-=All=-</option>
+					<? 
+					foreach($allTechnician as $k => $v) {
+						echo '<option value="'.$k.'"'.( $k == $techid ? ' selected' : '').'>'.$v.'</option>';
+					}
+					?>
+				</select>		
+			</td>
+			<td align="left">
+				<input type="submit" name="submit2" value="Update" class="buttons">
+			</td>		
+		</tr>
+	</table>
+</form>
+
+<br/>       
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
+    <tr>
+		<th rowspan=2>Technician Name</th>
+		<th rowspan=2 style='width:50px;'>Jobs Done</th>
+		<th rowspan=2 style='width:50px;'>Jobs Booked by Tech</th>
+		<th colspan=2 style='width:60px;'>Complaints</th>
+		<th rowspan=2 style='width:50px;'>Follow Up</th>
+		<!--<th rowspan=2 style='width:80px;'>Booking Amount</th>-->
+		<th colspan=1>Sales</th>
+        <th colspan=3>Feedback</th>
+		<th colspan=2>Appliances Sold by Tech</th>
+    </tr>
+    <tr>
+		<th style='width:50px;'>#</th>
+		<th style='width:50px;'>%</th>
+		<!--
+        <th style='width:80px;'>Amount</th>
+        -->
+		<th style='width:50px;'>%</th>
+        
+        <th style='width:50px;'>Excellent</th>
+		<th style='width:50px;'>Good</th>
+		<th style='width:50px;'>Bad</th>
+		<th style='width:50px;'>#</th>
+		<!--<th style='width:80px;'>Amount</th>-->
+		<th style='width:50px;'>%</th>
+    </tr>
+<?php $r=1;
+	$total = array();
+	foreach ($items as $obj): 
+		$class = 'cell'.(++$r%2);
+		$total['jobs_done'] += $obj['jobs_done'];
+		$total['jobs_booked'] += $obj['jobs_booked'];
+		$total['complaints'] += $obj['complaints'];
+		$total['followups'] += $obj['followups'];
+		$total['booking'] += $obj['booking'];
+		$total['sales'] += $obj['sales'];
+		$total['extra_booking'] += $obj['extra_booking'];
+		$total['extra_booking_appliances'] += $obj['extra_booking_appliances'];
+		$total['appliances_cnt'] += $obj['appliances_cnt'];
+		$total['excellent'] += $obj['excellent'];
+		$total['good'] += $obj['good'];
+		$total['bad'] += $obj['bad'];
+?>
+    <tr class="<?= $class ?>" style='cursor:pointer;' onclick="details(<?=$obj['id']?>,'#details<?=$obj['id']?>');">
+      	<td>&nbsp;<?php echo $obj['name']; ?></td>
+      	<td>&nbsp;<?php echo $obj['jobs_done']; ?></td>
+      	<td>&nbsp;<?php echo $obj['jobs_booked']; ?></td>
+      	<td>&nbsp;<?php echo $obj['complaints']; ?></td>
+      	<td>&nbsp;<?php echo round(100*$obj['complaints']/$obj['jobs_done'],1); ?>%</td>
+      	<td>&nbsp;<?php echo $obj['followups']; ?></td>
+      	<!--
+        <td>&nbsp;<?php echo $HtmlAssist->prPrice($obj['booking']); ?></td>
+	    <td>&nbsp;<?php echo $HtmlAssist->prPrice($obj['sales']+$obj['extra_booking']-$obj['extra_booking_appliances']); ?></td>
+        -->
+	    <td>&nbsp;<?php echo round(100*($obj['sales']+$obj['extra_booking']-$obj['extra_booking_appliances'])/$obj['booking'],0); ?>%</td>
+      	<td>&nbsp;<?php echo $obj['excellent']; ?></td>
+        <td>&nbsp;<?php echo $obj['good']; ?></td>
+        <td>&nbsp;<?php echo $obj['bad']; ?></td>
+        <td>&nbsp;<?php echo $obj['appliances_cnt']; ?></td>        
+      	<!--<td>&nbsp;<?php echo $HtmlAssist->prPrice($obj['extra_booking_appliances']); ?></td>-->
+	    <td>&nbsp;<?php echo round(100*$obj['appliances_cnt']/$obj['jobs_done'],0); ?>%</td>
+    </tr>
+	<tr class="details" style="display:none;"><td colspan=12 id="details<?=$obj['id']?>"></td></tr>
+    <?php endforeach; ?>
+    <tr class="cell1">
+      	<td>&nbsp;<b>Total:</b></td>
+      	<td>&nbsp;<b><?php echo $total['jobs_done']; ?></b></td>
+      	<td>&nbsp;<b><?php echo $total['jobs_booked']; ?></b></td>
+      	<td>&nbsp;<b><?php echo $total['complaints']; ?></b></td>
+      	<td>&nbsp;<b><?php echo round(100*$total['complaints']/$total['jobs_done'],1); ?>%</b></td>
+      	<td>&nbsp;<b><?php echo $total['followups']; ?></b></td>
+      	<!--
+        <td>&nbsp;<b><?php echo $HtmlAssist->prPrice($total['booking']); ?></b></td>
+	    <td>&nbsp;<b><?php echo $HtmlAssist->prPrice($total['sales']+$total['extra_booking']-$total['extra_booking_appliances']); ?></b></td>
+	    -->
+        <td>&nbsp;<b><?php echo round(100*($total['sales']+$total['extra_booking']-$total['extra_booking_appliances'])/$total['booking'],0); ?>%</b></td>
+      	<td>&nbsp;<b><?php echo $total['excellent']; ?></b></td>
+        <td>&nbsp;<b><?php echo $total['good']; ?></b></td>
+        <td>&nbsp;<b><?php echo $total['bad']; ?></b></td>
+        <td>&nbsp;<b><?php echo $total['appliances_cnt']; ?></b></td>        
+      	<!--
+        <td>&nbsp;<b><?php echo $HtmlAssist->prPrice($total['extra_booking_appliances']); ?></b></td>
+        -->
+	    <td>&nbsp;<b><?php echo round(100*$total['appliances_cnt']/$total['jobs_done'],0); ?>%</b></td>
+    </tr>
+</table>

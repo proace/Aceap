@@ -1,0 +1,137 @@
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform" id="viewform">
+				<input type="hidden" name="action" value="view" >
+				<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+				<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+<table width="800">
+<tr>
+<td>
+<table width="90%" border="0" cellspacing="3" cellpadding="0">
+	<tr>
+		<td class="sectionTitle" colspan=4>Jobs Summary</td>
+	</tr>
+	<tr>
+		<td>Date from: </td>
+		<td>
+      <input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+		</td>
+		<td>Date to: </td>
+		<td>
+      <input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			&nbsp;&nbsp;
+			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_fdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+		</td>
+		<td colspan="1" align="left">
+		<input type="submit" name="submit2" onclick="return SearchRecords();" id="submit2" value="Update" class="buttons">
+		</td>			
+	</tr>
+	<tr>
+		<td><input type="checkbox" name="groupTypes" <?=$groupTypes?>/> Group by job types</td>
+		<td><input type="checkbox" name="groupItems" <?=$groupItems?>/> Group by items</td>
+		<td>Job type: </td>
+		<td align="left">
+			<select name="job_type" id="job_type">
+				<option value=""></option>
+				<? 
+				foreach($allJobTypes as $k => $v) {
+					echo '<option value="'.$k.'"'.( $k == $job_type ? ' selected' : '').'>'.$v.'</option>';
+				}
+				?>
+			</select>
+		</td>			
+	</tr>
+	</table>
+</td>
+</tr>
+</table> 	
+ 	</form>
+<!--<div style="overflow: auto; height: 390px;">-->
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
+    <tr style="height:25px;">
+        <th rowspan=2 width="300">Name</th>
+        <th colspan=2 style="background:#80ff80; color:black; border: 1px solid #888888;">Jobs Done</th>
+        <th rowspan=2 style="background:#ffff80; color:black; border: 1px solid #888888;">Techs Paid</th>
+        <th rowspan=2 style="background:#ffff80; color:black; border: 1px solid #888888;">Purchase</th>
+        <th rowspan=2 style="background:#cff7fe; color:black; border: 1px solid #888888;">Total</th>
+        <th colspan=3 style="background:#ff8080; color:black; border: 1px solid #888888;">Jobs Canceled</th>
+    </tr>
+    <tr style="height:25px;">
+        <th width="30" style="background:#80ff80; color:black; border: 1px solid #888888;">Count</th>
+        <th width="100" style="background:#80ff80; color:black; border: 1px solid #888888;">Sales Total</th>
+        <th width="30" style="background:#ff8080; color:black; border: 1px solid #888888;">Count</th>
+        <th width="30" style="background:#ff8080; color:black; border: 1px solid #888888;">%</th>
+        <th width="90" style="background:#ff8080; color:black; border: 1px solid #888888;">Money</th>
+    </tr>
+<?php
+	$r = 1;
+	$sales_sum = 0;
+	$purchase_sum = 0;
+	$cnt_sum = 0;
+?>
+<?php if ($groupTypes): ?>
+<?php 	foreach ($records as $obj): ?>
+<?php 		if ($groupItems) $bold='font-weight:bold;'; else $bold=''; ?>
+<?php 		$class = 'cell'.(++$r%2); ?>
+    <tr class="<?= $class ?>">
+		<td style="text-align:left;<?=$bold?>"><?=$obj['name']?></td>
+		<td style="text-align:right;<?=$bold?>">&nbsp;<?=$obj['qty'][5]?></td>
+		<td style="text-align:right;<?=$bold?>">&nbsp;<?=$HtmlAssist->prPrice($obj['money'][5])?></td>
+		<td style="text-align:right;<?=$bold?>">&nbsp;<?=$HtmlAssist->prPrice($obj['tech'][5])?></td>
+		<td style="text-align:right;<?=$bold?>">&nbsp;<?=$HtmlAssist->prPrice($obj['purchase'][5])?></td>
+		<td style="text-align:right;color:#0000a4;<?=$bold?>">&nbsp;<?=$HtmlAssist->prPrice($obj['money'][5]-$obj['tech'][5]-$obj['purchase'][5])?></td>
+		<td style="text-align:right;<?=$bold?>" style="color:red;">&nbsp;<?=$obj['qty'][3]?></td>
+		<td style="text-align:right;<?=$bold?>" style="color:red;">&nbsp;<?=round($obj['qty'][3]*100/($obj['qty'][3]+$obj['qty'][5]),0)?>%</td>
+		<td style="text-align:right;<?=$bold?>" style="color:red;">&nbsp;<?=$HtmlAssist->prPrice($obj['money'][3])?></td>
+    </tr>
+<?php 		if ($groupItems): ?>
+<?php 			foreach ($obj['items'] as $cur): ?>
+    <tr class="<?= $class ?>">
+		<td align="left">&nbsp;&nbsp;&nbsp;&nbsp;<?=$cur['name']?></td>
+		<td align="right">&nbsp;<?=$cur['qty'][5]?></td>
+		<td align="right">&nbsp;<?=$HtmlAssist->prPrice($cur['money'][5])?></td>
+		<td align="right">&nbsp;</td>
+		<td align="right">&nbsp;<?=$HtmlAssist->prPrice($cur['purchase'][5])?></td>
+		<td align="right" style="color:#0000a4;">&nbsp;<?=$HtmlAssist->prPrice($cur['money'][5]-$cur['purchase'][5])?></td>
+		<td align="right" style="color:red;">&nbsp;<?=$cur['qty'][3]?></td>
+		<td align="right">&nbsp;</td>
+		<td align="right" style="color:red;">&nbsp;<?=$HtmlAssist->prPrice($cur['money'][3])?></td>
+    </tr>
+<?php 			endforeach; ?>
+<?php 		endif; ?>
+<?php 	endforeach; ?>
+<?php endif; ?>
+<?php if ($groupItems): ?>
+<?php 	foreach ($records[0]['items'] as $cur): ?>
+<?php 		$class = 'cell'.(++$r%2); ?>
+    <tr class="<?= $class ?>">
+		<td align="left">&nbsp;<?=$cur['name']?></td>
+		<td align="right">&nbsp;<?=$cur['qty'][5]?></td>
+		<td align="right">&nbsp;<?=$HtmlAssist->prPrice($cur['money'][5])?></td>
+		<td align="right">&nbsp;<?=$HtmlAssist->prPrice($cur['tech'][5])?></td>
+		<td align="right">&nbsp;<?=$HtmlAssist->prPrice($cur['purchase'][5])?></td>
+		<td align="right" style="color:#0000a4;">&nbsp;<?=$HtmlAssist->prPrice($cur['money'][5]-$cur['tech'][5]-$cur['purchase'][5])?></td>
+		<td align="right" style="color:red;">&nbsp;<?=$cur['qty'][3]?></td>
+		<td align="right">&nbsp;</td>
+		<td align="right" style="color:red;">&nbsp;<?=$HtmlAssist->prPrice($cur['money'][3])?></td>
+    </tr>
+<?php 	endforeach; ?>
+<?php endif; ?>
+    <tr>
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b>Total:</b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b>&nbsp;<?=$recordsTotal['qty'][5]?></b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b>&nbsp;<?=$HtmlAssist->prPrice($recordsTotal['money'][5])?></b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b>&nbsp;<?=$HtmlAssist->prPrice($recordsTotal['tech'][5])?></b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f;"><b>&nbsp;<?=$HtmlAssist->prPrice($recordsTotal['purchase'][5])?></b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f;color:#0000a4;"><b>&nbsp;<?=$HtmlAssist->prPrice($recordsTotal['money'][5]-$recordsTotal['tech'][5]-$recordsTotal['purchase'][5])?></b></td>
+		<td align="right" style="border-top:1px solid #9f9f9f; color:red;"><b>&nbsp;<?=$recordsTotal['qty'][3]?></b></td>
+<?php if ($groupItems&&!$groupTypes): ?>
+		<td align="right" style="border-top:1px solid #9f9f9f; color:red;">&nbsp;</td>
+<?php else: ?>
+		<td align="right" style="border-top:1px solid #9f9f9f; color:red;">&nbsp;<?=round($recordsTotal['qty'][3]*100/($recordsTotal['qty'][3]+$recordsTotal['qty'][5]),0)?>%</td>
+<?php endif; ?>
+		<td align="right" style="border-top:1px solid #9f9f9f; color:red;"><b>&nbsp;<?=$HtmlAssist->prPrice($recordsTotal['money'][3])?></b></td>
+    </tr>
+</table>
+<!--</div>	-->

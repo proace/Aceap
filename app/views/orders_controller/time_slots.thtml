@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Available Timeslots</title>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/time_slots.js"></script>
+
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/time_slots.css" />
+</head>
+
+<body>
+<form id="thisform" method="get" action="<?php echo BASE_URL?>/orders/timeSlots">
+<div class="topbar">
+<h1>Available Timeslots</h1>
+<input type="hidden" id="current_city_id" value="<?php echo $city_id?>" />
+<select id="city_list" name="city_id">
+    <option value="">-City-</option>
+    <?php foreach($cities as $key => $city) { ?>
+    <option value="<?php echo $key ?>"><?php echo $city['name'] ?></option>
+    <?php } //END foreach ?>
+</select>
+<input type="submit" value="Refresh" />
+<input type="hidden" id="user_id" name="user_id" value="<?php echo $common->getLoggedUserID() ?>" />
+</div>
+</form>
+
+<?php if($city_id > 0) { ?>
+<div id="tabs">
+    <ul>
+    	<li><a href="#tabs-0" class="tab_link">Furnace and Boilers</a></li>
+        <li><a href="#tabs-1" class="tab_link">Airducts</a></li>
+        <li><a href="#tabs-2" class="tab_link">Installations</a></li>     
+    </ul>        
+    <div id="tabs-0" class="tabs">
+		<table class="slot_picker furnace">
+            <tr class="months">
+                <th></th>
+                <?php foreach($dates as $key => $month) { ?>
+                <th><?php echo $month['months'] ?></th>
+                <?php } //END foreach ?>
+            </tr>    
+            <tr class="dates">
+                <th></th>
+                <?php foreach($dates as $key => $date) { ?>
+                <th><?php echo $date['dates'] ?></th>
+                <?php } //END foreach ?>
+            </tr>
+            <tr class="weeks">
+                <th>        	
+                </th>
+                <?php foreach($dates as $key => $week) { ?>
+                <th><?php echo $week['weeks'] ?></th>
+                <?php } //END foreach ?>
+            </tr>
+            <?php foreach($furnaceslots as $key => $slot) { ?>
+            <tbody>
+            <tr>    	
+                <td class="slot_name"><?php echo $slot['name'] ?></td>
+                <?php for($i = 0; $i < $days_ahead; $i++) { ?>
+                <td class="slot week<?php echo $dates[$i]['week_number'] ?>">
+                    <?php if($dates[$i]['week_number'] == 0 || $slot[$i] == 0) { ?>
+                    &nbsp;
+                    <?php } else { ?>
+                    <a><?php echo $slot[$i] ?>
+                    	<input type="hidden" class="job_date" value="<?php echo $dates[$i]['full_date'] ?>" />
+                        <input type="hidden" class="week_number" value="<?php echo $dates[$i]['week_number'] ?>" />
+                        <input type="hidden" class="job_time_beg" value="<?php echo $slot['from'] ?>" />
+                        <input type="hidden" class="job_time_end" value="<?php echo $slot['to'] ?>" />
+                        <input type="hidden" class="job_time_name" value="<?php echo $slot['name'] ?>" />
+                        <input type="hidden" class="route_type" value="1" />
+                    </a>
+                    <?php } //END if ?>
+                </td>
+                <?php } //END for ?>
+            </tr>
+            </tbody>
+            <?php } //END foreach ?>
+        </table>
+    </div>
+	<div id="tabs-1" class="tabs">
+		<table class="slot_picker airduct">
+            <tr class="months">
+                <th></th>
+                <?php foreach($dates as $key => $month) { ?>
+                <th><?php echo $month['months'] ?></th>
+                <?php } //END foreach ?>
+            </tr>    
+            <tr class="dates">
+                <th></th>
+                <?php foreach($dates as $key => $date) { ?>
+                <th><?php echo $date['dates'] ?></th>
+                <?php } //END foreach ?>
+            </tr>
+            <tr class="weeks">
+                <th>        	
+                </th>
+                <?php foreach($dates as $key => $week) { ?>
+                <th><?php echo $week['weeks'] ?></th>
+                <?php } //END foreach ?>
+            </tr>
+            <?php foreach($airductslots as $key => $slot) { ?>
+            <tbody>
+            <tr>    	
+                <td class="slot_name"><?php echo $slot['name'] ?></td>
+                <?php for($i = 0; $i < $days_ahead; $i++) { ?>
+                <td class="slot week<?php echo $dates[$i]['week_number'] ?>">
+                    <?php if($dates[$i]['week_number'] == 0 || $slot[$i] == 0) { ?>
+                    &nbsp;
+                    <?php } else { ?>
+                    <a><?php echo $slot[$i] ?>
+                    	<input type="hidden" class="job_date" value="<?php echo $dates[$i]['full_date'] ?>" />
+                        <input type="hidden" class="week_number" value="<?php echo $dates[$i]['week_number'] ?>" />
+                        <input type="hidden" class="job_time_beg" value="<?php echo $slot['from'] ?>" />
+                        <input type="hidden" class="job_time_end" value="<?php echo $slot['to'] ?>" />
+                        <input type="hidden" class="job_time_name" value="<?php echo $slot['name'] ?>" />
+                        <input type="hidden" class="route_type" value="2" />
+                    </a>
+                    <?php } //END if ?>
+                </td>
+                <?php } //END for ?>
+            </tr>
+            </tbody>
+            <?php } //END foreach ?>
+        </table>     
+    </div>
+    <div id="tabs-2" class="tabs">
+		<table class="slot_picker installation">
+            <tr class="months">
+                <th></th>
+                <?php foreach($dates as $key => $month) { ?>
+                <th><?php echo $month['months'] ?></th>
+                <?php } //END foreach ?>
+            </tr>    
+            <tr class="dates">
+                <th></th>
+                <?php foreach($dates as $key => $date) { ?>
+                <th><?php echo $date['dates'] ?></th>
+                <?php } //END foreach ?>
+            </tr>
+            <tr class="weeks">
+                <th>        	
+                </th>
+                <?php foreach($dates as $key => $week) { ?>
+                <th><?php echo $week['weeks'] ?></th>
+                <?php } //END foreach ?>
+            </tr>
+            <?php foreach($installationslots as $key => $slot) { ?>
+            <tbody>
+            <tr>    	
+                <td class="slot_name"><?php echo $slot['name'] ?></td>
+                <?php for($i = 0; $i < $days_ahead; $i++) { ?>
+                <td class="slot week<?php echo $dates[$i]['week_number'] ?>">
+                    <?php if($dates[$i]['week_number'] == 0 || $slot[$i] == 0) { ?>
+                    &nbsp;
+                    <?php } else { ?>
+                    <a><?php echo $slot[$i] ?>
+                    	<input type="hidden" class="job_date" value="<?php echo $dates[$i]['full_date'] ?>" />
+                        <input type="hidden" class="week_number" value="<?php echo $dates[$i]['week_number'] ?>" />
+                        <input type="hidden" class="job_time_beg" value="<?php echo $slot['from'] ?>" />
+                        <input type="hidden" class="job_time_end" value="<?php echo $slot['to'] ?>" />
+                        <input type="hidden" class="job_time_name" value="<?php echo $slot['name'] ?>" />
+                        <input type="hidden" class="route_type" value="4" />                        
+                    </a>
+                    <?php } //END if ?>
+                </td>
+                <?php } //END for ?>
+            </tr>
+            </tbody>
+            <?php } //END foreach ?>
+        </table>
+    </div> 
+</div>
+<?php } //END if isset ?>
+<div id="slot_confirmations">
+</div>
+</body>
+</html>

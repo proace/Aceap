@@ -1,0 +1,194 @@
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script> <!-- Simple Calendar -->
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+<script>
+//*** SET PAGE TITLE ***
+document.title += " :: Callback List";
+function setOrder(order){
+  f = document.forms.viewform;
+  f.currentPage.value = '';  
+  if(f.order.value == order){
+    if(f.sort.value == 'ASC')
+      f.sort.value = 'DESC';
+    else
+      f.sort.value = 'ASC';
+  }
+  else{
+    f.order.value = order;
+    f.sort.value = 'ASC';
+  }
+  f.submit();
+}
+function clearFilters(){
+	 f = document.forms.viewform;
+	 f.fserach.value = '';
+	 
+}
+function PrintIt(){
+res=document.getElementById("results");
+parent['main_view'].print();
+}
+function ChangeUser(OldID){
+$.get("<?=BASE_URL;?>/reports/transferCallbacks",
+			{fromuser:OldID,
+			 touser:$("#SEL_"+OldID).val(),
+			 fdate:$("#ffromdate").val(),
+			 tdate:$("#ftodate").val()
+			},
+		function(data){
+			alert(data);
+			document.forms.viewform.submit();
+		});  
+}
+</script>
+
+<form method="GET" action="<?= $PHP_SELF ?>" name="viewform">
+	<input type="hidden" name="action" value="view" >
+	<input type="hidden" name="order" value="<?=$_GET['order']?>">
+	<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+	<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+	
+	<table width="90%" border="0" cellspacing="10" cellpadding="0">
+		<tr>
+			<td class="sectionTitle" colspan="4">Callback List</td>
+		</tr>
+		<tr>
+			<td>
+				<input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_fdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+                &nbsp;&nbsp;
+                Date from: 
+                &nbsp;&nbsp;
+				<input type="text" id="ffromdate" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<? if ($fdate) echo $fdate; else echo date("d M Y"); ?>">
+                &nbsp;&nbsp;
+                Date to:
+                &nbsp;&nbsp;
+				<input type="text" id="ftodate" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<? if ($tdate) echo $tdate; else echo date("d M Y"); ?>">
+                &nbsp;&nbsp;
+				<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_tdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+                &nbsp;&nbsp;
+				<input type="submit" name="submit2" value="Update >>>">
+                &nbsp;&nbsp;
+				<INPUT TYPE="button" value="Print" onClick="PrintIt()">
+			</td>
+		</tr>
+	</table>
+</form>
+
+<br/>
+<div style="float:left"><b>Callbacks</b><br/>
+	<table id="callbacks" class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;vertical-align:top; text-align:left">
+		<tr>
+			<th>Telemarketer</th>
+			<th>Callbacks</th>
+            <?php if ($_SESSION['user']['role_id'] == 6){ ?>
+			<th>Transfer</th>
+            <?php } ?>
+		</tr>
+		<?php
+			$r=1; 
+			foreach ($callbacks as $obj)
+			{
+				$class = 'cell'.(++$r%2);
+		?>
+		<tr class="<?= $class ?>" id="<?php echo $obj['id'];?>">
+				<td>&nbsp;<?php echo $obj['source_name']; ?></td>
+				<td>&nbsp;<?php echo $obj['calls']; ?></td>
+                <?php if ($_SESSION['user']['role_id'] == 6){ ?>
+				<td class="action" align="center">
+					<select class="transferselect" id="SEL_<?php echo $obj['id'];?>" onchange="ChangeUser(<?php echo $obj['id'];?>)">
+					<?php
+					foreach ($telemarketers as $cur_id => $cur_tel)
+					{
+					?>
+						<option value="<?=$cur_id?>"><?=$cur_tel?></option>
+					<?php
+					}
+					?>
+					</select>
+				</td>
+                <?php } ?>
+		</tr>
+		<tr>
+			<td colspan=11 class="clDetails" style="display:none; text-align:center" id="D_<?php echo $obj['id'];?>"></td>
+		</tr>
+		<?php
+		}
+		?>
+</table>
+</div>
+<div style="float:left;width:30px">&nbsp;</div>
+<div style="float:left"><b>Not interested CSV</b>
+	<?php
+    if ($_SESSION['user']['role_id'] == 6){ 
+	$txt = '?fdate=';
+	if ($fdate) $txt.=$fdate; else $txt.=date("d M Y");
+	$txt .= '&tdate=';
+	if ($tdate) $txt.=$tdate; else $txt.=date("d M Y");
+	?>
+    <ul>
+		<li><?php echo $html->link("All",'/reports/exportNIToCSV'.$txt); ?></li>
+    </ul>
+    <?php } ?>
+	<br/>
+	<table id="not_interested" class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;vertical-align:top; text-align:left">
+		<tr>
+			<th>Telemarketer</th>
+			<th>Calls</th>
+		</tr>
+		<?php
+			$r=1; 
+			foreach ($not_interested as $obj)
+			{
+				$class = 'cell'.(++$r%2);
+		?>
+		<tr class="<?= $class ?>" id="<?php echo $obj['id'];?>">
+				<td>&nbsp;<?php echo $obj['source_name']; ?></td>
+				<td>&nbsp;<?php echo $obj['calls']; ?></td>
+		</tr>
+		<tr>
+			<td colspan=11 class="clDetails" style="display:none; text-align:center" id="D_<?php echo $obj['id'];?>"></td>
+		</tr>
+		<?php
+		}
+		?>
+	</table>
+    <br />
+    <b>Clients CSV</b>&nbsp;&nbsp;&nbsp;&nbsp;
+    <?php
+    if ($_SESSION['user']['role_id'] == 6){ 
+		$txt = '?fdate=';
+		if ($fdate) $txt.=$fdate; 
+		else $txt.=date("d M Y"); 
+		$txt .= '&tdate=';
+		if ($tdate) $txt.=$tdate; 
+		else $txt.=date("d M Y");
+	 ?>
+     <ul>
+		<li><?php echo $html->link("All",'/reports/exportClientsToCSV'.$txt.''); ?></li>
+		<li><?php echo $html->link("Callback",'/reports/exportClientsToCSV'.$txt.'&option=2'); ?></li>
+		<li><?php echo $html->link("Do not call",'/reports/exportClientsToCSV'.$txt.'&option=3'); ?></li>
+		<li><?php echo $html->link("Sale",'/reports/exportClientsToCSV'.$txt.'&option=1'); ?></li>
+		<li><?php echo $html->link("Not In Service",'/reports/exportClientsToCSV'.$txt.'&option=7'); ?></li>
+        <li><?php echo $html->link("Not Intrested",'/reports/exportNIToCSV'.$txt); ?>
+        	<ul>
+				<li><?php echo $html->link("3 Months",'/reports/exportClientsToCSV'.$txt.'&option=4'); ?></li>
+				<li><?php echo $html->link("6 Months",'/reports/exportClientsToCSV'.$txt.'&option=8'); ?></li>
+				<li><?php echo $html->link("9 Months",'/reports/exportClientsToCSV'.$txt.'&option=9'); ?></li>
+            </ul>
+        </li>
+	 </ul>
+    <?php } ?>
+    <table id="client_records" class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;vertical-align:top; text-align:left">
+		<tr>
+			<th>Telemarketer</th>
+			<th>Calls</th>
+		</tr>
+		
+		<tr class="">
+				<td>&nbsp;All Users</td>
+				<td>&nbsp;<?php echo $clients; ?></td>
+		</tr>
+		<tr>
+			<td colspan=11 class="clDetails" style="display:none; text-align:center" id="D_<?php echo $obj['id'];?>"></td>
+		</tr>
+	</table>
+</div>

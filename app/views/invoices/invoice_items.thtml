@@ -1,0 +1,276 @@
+<div class="wrapper">
+<form action="<?php echo BASE_URL ?>/invoices/saveInvoiceItems" method="post" name="top">
+    <div class="top_nav">
+    <span class="customer_name"><?php echo $order['Customer']['first_name'] ?> <?php echo $order['Customer']['last_name'] ?></span> <span class="order_number"><?php echo $order['Order']['order_number'] ?></span><a href="#">more</a>
+    <?php echo $html->input('Invoice/id', array('type'=>'hidden', 'value'=>$invoice['Invoice']['id'])); ?>
+    <?php echo $html->input('Invoice/order_id', array('type'=>'hidden', 'value'=>$order['Order']['id'])); ?>
+    </div>
+    <div class="new_items">
+    	<h1>Add Technician Sales<input type="button" class="new_item_close" value="Close"></h1>
+        <select id="item_type">
+        	<option value="1">Heating</option>
+            <option value="2">Appliances</option>
+            <option value="3">Carpet</option>
+            <option value="4">Other</option>
+            <option value="5">Parts</option>
+        </select>
+    	<div id="Heating">
+            <?php foreach($heating_items as $item) { ?>
+            <div class="item">
+                <input type="button" class="item_add round" value="ADD">
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['id'], 'class'=>'item_id')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['name'], 'class'=>'item_name')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['price'], 'class'=>'item_price')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['regular_price'], 'class'=>'item_regular_price')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['price_purchase'], 'class'=>'item_price_purchase')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['item_category_id'], 'class'=>'item_category_id')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['dealer'], 'class'=>'item_dealer')); ?>
+                <div><?php echo $item['Item']['name'] ?></div>
+                <div>Final:<?php echo $item['Item']['price'] ?></div>
+                <div>Regular:<?php echo $item['Item']['regular_price'] ?></div>
+            </div>
+            <?php } ?>
+        </div>
+        <div id="Appliances">            
+            <?php foreach($appliances_items as $item) { ?>
+            <div class="item">
+                <input type="button" class="item_add round" value="ADD">
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['id'], 'class'=>'item_id')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['name'], 'class'=>'item_name')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['price'], 'class'=>'item_price')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['regular_price'], 'class'=>'item_regular_price')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['price_purchase']==null?0:$item['Item']['price_purchase'], 'class'=>'item_price_purchase')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['item_category_id'], 'class'=>'item_category_id')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['dealer'], 'class'=>'item_dealer')); ?>
+                <div><?php echo $item['Item']['name'] ?></div>
+                <div>Final:<?php echo $item['Item']['price'] ?></div>
+                <div>Regular:<?php echo $item['Item']['regular_price'] ?></div>
+            </div>
+            <?php } ?>
+        </div>
+        <div id="Carpet">            
+            <?php foreach($carpet_items as $item) { ?>
+            <div class="item">
+                <input type="button" class="item_add round" value="ADD">
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['id'], 'class'=>'item_id')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['name'], 'class'=>'item_name')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['price'], 'class'=>'item_price')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['regular_price'], 'class'=>'item_regular_price')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['price_purchase'], 'class'=>'item_price_purchase')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['item_category_id'], 'class'=>'item_category_id')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['dealer'], 'class'=>'item_dealer')); ?>
+                <div><?php echo $item['Item']['name'] ?></div>
+                <div>Final:<?php echo $item['Item']['price'] ?></div>
+                <div>Regular:<?php echo $item['Item']['regular_price'] ?></div>
+            </div>
+            <?php } ?>
+        </div>
+        <div id="Other">            
+            <?php foreach($other_items as $item) { ?>
+            <div class="item">
+                <input type="button" class="item_add round" value="ADD">
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['id'], 'class'=>'item_id')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['name'], 'class'=>'item_name')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['price'], 'class'=>'item_price')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['regular_price'], 'class'=>'item_regular_price')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['price_purchase'], 'class'=>'item_price_purchase')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['item_category_id'], 'class'=>'item_category_id')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['dealer'], 'class'=>'item_dealer')); ?>
+                <div><?php echo $item['Item']['name'] ?></div>
+                <div>Final:<?php echo $item['Item']['price'] ?></div>
+                <div>Regular:<?php echo $item['Item']['regular_price'] ?></div>
+            </div>
+            <?php } ?>
+        </div>
+        <div id="Parts">            
+            <?php foreach($parts_items as $item) { ?>
+            <div class="item">
+                <input type="button" class="item_add round" value="ADD">
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['id'], 'class'=>'item_id')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['name'], 'class'=>'item_name')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['price'], 'class'=>'item_price')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['regular_price'], 'class'=>'item_regular_price')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['price_purchase'], 'class'=>'item_price_purchase')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['item_category_id'], 'class'=>'item_category_id')); ?>
+                <?php echo $html->input('Item/'.$item['Item']['id'], array('type'=>'hidden', 'value'=>$item['Item']['dealer'], 'class'=>'item_dealer')); ?>
+                <div><?php echo $item['Item']['name'] ?></div>
+                <div>Final:<?php echo $item['Item']['price'] ?></div>
+                <div>Regular:<?php echo $item['Item']['regular_price'] ?></div>
+            </div>
+            <?php } ?>
+        </div>
+        <h1>Add Technician Sales<input type="button" class="new_item_close" value="Close"></h1>
+    </div>  
+    <div class="section">
+        	<ul>
+            	<li><label>Order#:</label><span class="noedit"><?php echo $order['Order']['order_number'] ?></span></li>
+            </ul>             
+        </div> 
+    <div class="section close">
+            <ul>               
+                <li><label>Fname:</label><span class="info"><?php echo $order['Customer']['first_name'] ?></span></li>
+                <li><label>Lname:</label><span class="info"><?php echo $order['Customer']['last_name'] ?></span></li>
+                <li><label>Address:</label><span class="info"><?php echo $order['Customer']['address'] ?></span></li>
+                <li><label>City:</label><span class="info"><?php echo $order['Customer']['city'] ?></span></li>
+                <li><label>Postal:</label><span class="info"><?php echo $order['Customer']['postal_code'] ?></span></li>
+            </ul>
+        </div>
+    <div class="section">
+    	<h1>Booked Items</h1>
+        <table class="office items">
+        	<tr>
+            	<th>Name</th>
+                <th>Sum</th>
+            </tr>
+        	<?php foreach($order['BookingItem'] as $officeItem) { ?>
+            <?php if($officeItem['class'] == 0) { ?>
+            <tr class="summary">
+            	<td><?php echo $officeItem['name'] ?></td>
+                <td class="value"><?php echo number_format($officeItem['price'] - $officeItem['discount'], 2, '.', ''); ?></td>
+            </tr>
+            <tr class="detail">
+            	<td>Quantity</td>
+                <td class="value"><?php echo $officeItem['quantity']; ?></td>
+            </tr>
+            <tr class="detail">
+            	<td>Price</td>
+                <td class="value"><?php echo number_format($officeItem['price'], 2, '.', ''); ?></td>
+            </tr>
+            <tr class="detail">
+            	<td>Discount</td>
+                <td class="value"><?php echo number_format($officeItem['discount'], 2, '.', ''); ?></td>
+            </tr>
+            <tr class="detail">
+            	<td>Additional</td>
+                <td class="value"><?php echo number_format($officeItem['addition'], 2, '.', ''); ?></td>
+            </tr>
+            <tr class="detail">
+            	<td>Purchase Price</td>
+                <td class="value"><?php echo number_format($officeItem['price_purchase'], 2, '.', ''); ?></td>
+            </tr>
+            <?php } ?>
+            <?php } ?>
+        	
+        </table>        
+    </div>
+    <div class="section">
+		<h1>Technician Sales</h1>        
+		<table class="tech items" id="tech_items">
+        	<tr>
+            	<th>Name</th>
+                <th>Sum</th>
+            </tr>
+        	<?php foreach($order['BookingItem'] as $techItem) { ?>
+            <?php if($techItem['class'] == 1) { ?>
+            <!--
+            <tbody class="item">
+            <tr class="summary">
+            	<td><?php echo $techItem['name'] ?></td>
+                <td class="sum value"><?php echo number_format($techItem['price'] - $techItem['discount'] + $techItem['addition'], 2, '.', ''); ?></td>
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][name]"  type="hidden" value="<?php echo $techItem['name']; ?>" class="name" id="BookingItem<?php echo $techItem['id']; ?>Name" />
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][item_id]"  type="hidden" value="<?php echo $techItem['item_id']; ?>" class="item_id" id="BookingItem<?php echo $techItem['id']; ?>ItemId" />                
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][item_category_id]"  type="hidden" value="<?php echo $techItem['item_category_id']; ?>" class="item_category_id" id="BookingItem<?php echo $techItem['id']; ?>ItemCategoryId" />
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][dealer]"  type="hidden" value="<?php echo $techItem['dealer']; ?>" class="dealer" id="BookingItem<?php echo $techItem['id']; ?>Dealer" />
+            </tr>
+            <tr class="detail">
+            	<td>Quantity</td>
+                <td class="quantity value editable"><?php echo $techItem['quantity']; ?></td>
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][quantity]"  type="hidden" value="<?php echo $techItem['quantity']; ?>" class="quantity" id="BookingItem<?php echo $techItem['id']; ?>Quantity" />
+            </tr>
+            <tr class="detail">
+            	<td>Price</td>
+                <td class="price value"><?php echo number_format($techItem['price'], 2, '.', ''); ?></td>                
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][price]"  type="hidden" value="<?php echo $techItem['price']; ?>" class="price" id="BookingItem<?php echo $techItem['id']; ?>Price" />
+            </tr>
+            <tr class="detail">
+            	<td>Discount</td>
+                <td class="discount value editable"><?php echo number_format($techItem['discount'], 2, '.', ''); ?></td>                
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][discount]"  type="hidden" value="<?php echo $techItem['discount']; ?>" class="discount" id="BookingItem<?php echo $techItem['id']; ?>Discount" />
+            </tr>
+            <tr class="detail">
+            	<td>Additional</td>
+                <td class="addition value editable"><?php echo number_format($techItem['addition'], 2, '.', ''); ?></td>                
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][addition]"  type="hidden" value="<?php echo $techItem['addition']; ?>" class="addition" id="BookingItem<?php echo $techItem['id']; ?>Addition" />
+            </tr>
+            <tr class="detail">
+            	<td>Purchase Price</td>
+                <td class="price_purchase value"><?php echo number_format($techItem['price_purchase'], 2, '.', ''); ?></td>
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][price_purchase]"  type="hidden" value="<?php echo $techItem['price_purchase']; ?>" class="quantity" id="BookingItem<?php echo $techItem['id']; ?>PricePurchase" />
+            </tr>
+            <tr class="detail">
+            	<td><input type="text" style="width:0px;border:none;background-color:#ffdddd;" />Installed</td>
+                <td class="installed editable"><?php echo $techItem['installed']==1?"Installed":"Not Installed"; ?></td>
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][installed]"  type="hidden" value="<?php echo $techItem['installed']; ?>" class="installed" id="BookingItem<?php echo $techItem['id']; ?>Installed" />
+            </tr>-->
+            </tbody>
+            <tbody class="item">
+            <tr class="summary">
+            	<td><?php echo $techItem['name'] ?>
+                
+                </td>
+                <td class="sum value"><?php echo number_format($techItem['price'] - $techItem['discount'] + $techItem['addition'], 2, '.', ''); ?></td>                
+            </tr>
+            <tr class="detail">
+            	<td>Quantity
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][quantity]"  type="text" value="<?php echo $techItem['quantity']; ?>" class="quantity" id="BookingItem<?php echo $techItem['id']; ?>Quantity" />
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][name]"  type="text" value="<?php echo $techItem['name']; ?>" class="name" id="BookingItem<?php echo $techItem['id']; ?>Name" />
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][item_id]"  type="text" value="<?php echo $techItem['item_id']; ?>" class="item_id" id="BookingItem<?php echo $techItem['id']; ?>ItemId" />                
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][item_category_id]"  type="text" value="<?php echo $techItem['item_category_id']; ?>" class="item_category_id" id="BookingItem<?php echo $techItem['id']; ?>ItemCategoryId" />
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][dealer]"  type="text" value="<?php echo $techItem['dealer']; ?>" class="dealer" id="BookingItem<?php echo $techItem['id']; ?>Dealer" />
+                </td>
+                <td class="quantity value editable"><?php echo $techItem['quantity']; ?></td>
+                
+            </tr>
+            <tr class="detail">
+            	<td>Price
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][price]"  type="text" value="<?php echo $techItem['price']; ?>" class="price" id="BookingItem<?php echo $techItem['id']; ?>Price" />
+                </td>
+                <td class="price value"><?php echo number_format($techItem['price'], 2, '.', ''); ?></td>                
+                
+            </tr>
+            <tr class="detail">
+            	<td>Discount
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][discount]"  type="text" value="<?php echo $techItem['discount']; ?>" class="discount" id="BookingItem<?php echo $techItem['id']; ?>Discount" />
+                </td>
+                <td class="discount value editable"><?php echo number_format($techItem['discount'], 2, '.', ''); ?></td>                
+                
+            </tr>
+            <tr class="detail">
+            	<td>Additional
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][addition]"  type="text" value="<?php echo $techItem['addition']; ?>" class="addition" id="BookingItem<?php echo $techItem['id']; ?>Addition" />
+                </td>
+                <td class="addition value editable"><?php echo number_format($techItem['addition'], 2, '.', ''); ?></td>                                
+            </tr>
+            <tr class="detail">
+            	<td>Purchase Price
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][price_purchase]"  type="text" value="<?php echo $techItem['price_purchase']; ?>" class="price_purchase" id="BookingItem<?php echo $techItem['id']; ?>PricePurchase" />
+                </td>
+                <td class="price_purchase value"><?php echo number_format($techItem['price_purchase'], 2, '.', ''); ?></td>
+                
+            </tr>
+            <tr class="detail">
+            	<td>Installed
+                <input name="data[BookingItem][<?php echo $techItem['id']; ?>][installed]"  type="text" value="<?php echo $techItem['installed']; ?>" class="installed" id="BookingItem<?php echo $techItem['id']; ?>Installed" />
+                </td>
+                <td class="installed editable"><?php echo $techItem['installed']==1?"Installed":"Not Installed"; ?></td>
+                
+            </tr>
+            </tbody>
+            <?php } ?>
+            <?php } ?>        	
+        </table>
+    </div>
+    
+    <div class="section" id="button">
+    	<input type="button" class="new_item_add" value="New Technician Sales">
+    </div>
+    
+    <div class="bottom_nav">        
+        <div class="right_arrow"><input type="submit" value="next"></div>
+        <div class="left_arrow"><input type="button" id="items" value="prev"></div>
+    </div>    
+</form>
+<pre>
+<?php //print_r($heating_items); //for debugging ?>
+</pre>
+</div>

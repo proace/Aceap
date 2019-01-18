@@ -1,0 +1,88 @@
+<script>
+//*** SET PAGE TITLE ***
+document.title += " :: Edit Item";
+var last_id=100;
+//**********************
+function addQuestion(){
+var tbl = document.getElementById("QuestionsTable");
+var lastRow = tbl.rows.length-1;
+var row = tbl.insertRow(lastRow);
+last_id++;
+row.setAttribute("id", last_id);
+var txt  = "<td><input type='hidden' name='data[payments][" + last_id + "][id]' value='0'/>"+
+           "<input type='hidden' name='data[payments][" + last_id + "][idorder]' value='<?=$order_id?>'/>"+
+					 "<input name='data[payments][" + last_id + "][payment_date]' class='emboss' style='width: 85px; cursor: hand; cursor: pointer;' readonly='1' onclick='scwShow(this,event);' onkeydown='return false;' value='<?=date('d M Y')?>'/></td>"+
+					 "<td><select name='data[payments][" + last_id + "][payment_method]'>";
+    txt += "<option value=0>&nbsp;</option><?php foreach ($allPaymentTypes as $id => $name) echo "<option value='$id'>$name</option>";?>";
+    txt += "</select></td>"+
+           "<td><input type='hidden' name='data[payments][" + last_id + "][creator]' value='<?=$common->getLoggedUserID()?>'/><?=$allSources[$common->getLoggedUserID()]?></td>"+
+					 "<td><input name='data[payments][" + last_id + "][paid_amount]' value='0'/></td>"+
+					 "<td><img onclick='removeQuestion(" + last_id + ")' src='<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png'/></td>";
+row.innerHTML = txt;
+}
+function removeQuestion(item_id){
+	$("#"+item_id).remove();
+}
+</script>
+
+<form name="editItemForm" action="<?=BASE_URL;?>/payments/saveItem"  method="post">
+<input type="hidden" name="data[idorder]" value="<?=$order_id?>" >
+<div class="frame-wrap" style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title">Payments</div>
+		<div class="frame-header-right"></div>
+		<div class="frame-body" style="clear: both;">
+				<table>
+						<tr>
+								<td align="left"><b>Job ref #: </b><?=$order['order_number']?></td>
+						</tr>
+						<tr>
+								<td align="left"><b>Job total: </b><?=$order['total']?></td>
+						</tr>
+						<tr><td colspan=3>
+								<table id="QuestionsTable" cellspacing=0 colspacing=0 class="inResultsBooking">
+								<tr>
+									<th>Payment date</th>
+									<th>Method of payment</th>
+									<th>Created by</th>
+									<th>Paid amount</th>
+									<th>&nbsp;</th>
+							  </tr>
+							  <?php
+								  $cur=0;
+								  foreach ($payments as $oi)
+								  {
+								    $cur++;
+								    echo '<tr id="'.$cur.'">';
+									  echo '<td><input type="hidden" name="data[payments][' .$cur .'][id]" value="'.$oi['id'].'"/>
+										<input type="hidden" name="data[payments][' .$cur .'][idorder]" value="'.$order_id.'"/>
+										<input name="data[payments][' .$cur .'][payment_date]" value="'.$oi['payment_date'].'" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" /></td>';
+									  echo "<td><select name='data[payments][" .$cur ."][payment_method]'>";
+                    foreach ($allPaymentTypes as $id => $name)
+										{
+												$selected = '';																
+												if ($oi['payment_method'] == $id)	$selected = 'selected';
+												echo "<option $selected value='$id'>$name</option>";
+										}
+									  echo '</select></td>';
+									  echo '<td><input type="hidden" name="data[payments][' .$cur .'][creator]" value="'.$oi['creator'].'"/>'.$allSources[$oi['creator']].'</td>';
+									  echo '<td><input name="data[payments][' .$cur .'][paid_amount]" value="'.$oi['paid_amount'].'"/></td>';
+									  echo '<td><img onclick="removeQuestion('.$cur.')" src="'.ROOT_URL.'/app/webroot/img/icon-vsm-delete.png"/></td>';
+										echo '</tr>';
+								  }
+								?>
+								<tr id="AddPanel" class="add_newitem" onclick="addQuestion()" style="cursor:pointer;">
+								<td style="text-align:right;border-right-style:none;"><img src="<?=ROOT_URL?>/app/webroot/img/icon-sm-plus.png"/></td>
+								<td colspan=3>Add a payment</td></tr>
+							</table>
+            <td></tr>
+						<tr>
+								<td style="text-align:right;" colspan=2>
+												<?php echo $html->submit("Save", array("class" => "buttons"));?>
+												<input type="button" value="Exit" onclick="document.location.href='<?=BASE_URL?>/payments/index';" class="buttons">
+								</td>
+						</tr>
+				</table>
+		</div>
+</div>
+</form>

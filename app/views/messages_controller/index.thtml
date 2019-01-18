@@ -1,0 +1,312 @@
+<?php if ($common->getLoggedUserRoleID() == 6) { ?><meta http-equiv="refresh" content="60"><?php } ?>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+<script>
+ var chat_window = '';
+  
+function showMessages()
+{
+  var answer = window.open("<?=BASE_URL?>/messages/ShowMessages",'', 
+  "width=600, height=350, left=300, top=200");
+}
+function createMessage()
+{
+  var answer = window.open("<?=BASE_URL?>/messages/EditMessage",'', 
+  "width=450, height=350, left=300, top=200");
+}
+
+function showPlayer(order_id, agent_id, date, phone)
+{
+	var url = "<?=BASE_URL?>/messages/player";
+	url += "?order_id=" + order_id;
+	url += "&agent_id=" + agent_id;
+	url += "&phone=" + phone;
+	url += "&date=" + date;
+		
+	var option = "width=450,height=130,left=300,top=200,status=off,resize=none";
+	
+	var answer = window.open(url,'', option);
+}
+
+function showTrackemSettings() {
+	var url = "<?=BASE_URL?>/messages/trackemSettings";
+	
+	var option = "width=300,height=450,left=300,top=200,status=off,resize=none";
+	
+	var answer = window.open(url,'', option);
+}
+
+function openChat()
+{
+  //var answer = window.open("<?=BASE_URL?>/chat/ShowMessages",'',"width=600, height=500");  
+}
+
+<?php if ($_SESSION['user']['role_id']==6) {?>
+function CheckForChat()
+{
+ //This methods is called for checking if there are pending messages for current user
+$.get("<?=BASE_URL;?>/chat/CheckForChat",
+			function(data){
+				if (data!='0'){
+					$("#chatt").fadeIn(100).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
+				}
+			});
+}
+//setInterval(CheckForChat, 1000); //1 minute = 60000
+
+function routeChange()
+{
+	job = job.replace("divjob","");
+	$.get("<?=BASE_URL;?>/orders/changeJobTruckAndHour",
+		{order_id:job,job_truck:truck,beg_hour:beg_hour},
+		function(data){
+			document.viewform.submit();
+		}
+	);
+}
+
+function showIssues()
+{
+  var answer = window.open("<?=BASE_URL?>/messages/issueGatherer",'', 
+  "width=450, height=350, left=300, top=200");
+}
+
+function showNotes()
+{
+ // var answer = window.open("<?=BASE_URL?>/messages/noteGatherer",'', 
+ // "dialogWidth:650px; dialogHeight:400px; dialogLeft:300px; dialogTop:200px;");
+  window.open("<?=BASE_URL?>/messages/noteGatherer", "main_view");
+}
+
+var winRef;
+
+function showChat()
+{  
+ var username = "<?php echo $_SESSION['user']['username_chat'];?>";
+
+ // var targetWin = window.open('','winPop', 'sample-options');
+    var targetWin = window.open("", "winPop", "width=800,height=500");
+    if(targetWin.location == 'about:blank'){
+        //create new
+        targetWin.location.href = 'https://support.acecare.ca/lhc_web/doc/autologin/autologin.php?username='+username;
+        targetWin.focus();
+    } else {
+        //give it focus (in case it got burried)
+        targetWin.focus();
+    } 
+}
+
+// if site gets closed, just comment below four lines
+$(document).ready(function(e){
+        // get_total_unread_chat();
+	   setInterval( function(){     
+	   	get_total_unread_chat();	   
+	    }, 10000 );
+
+});
+
+
+function get_total_unread_chat(){ 
+ $.ajax({
+    url:"/acesys/adminchat/custom_functions.php", 
+    data:{admin_id:<?php echo $_SESSION['user']['id'];?>,action:'total_all_unread_msg'}, 
+    success:function(result){ 
+                      var result = JSON.parse(result); 
+                  if(result['unread'] !== '0') {
+                        isRead = result['unread'];
+                        console.log('unread=',result['unread']);
+                        $('#total_unread_msg').html(result['unread']).show();
+                        showChat();
+                    } else {
+                        $('#total_unread_msg').html('').hide();
+                    }
+	 }
+   });
+}
+
+
+
+
+
+<?php } ?>
+</script>
+<style>
+.nav {
+	list-style:none;
+	padding:0;
+	position:fixed;
+	bottom:0;
+}
+
+.nav img {
+	display:block;
+	width:30px;	
+}
+
+.nav li {
+	font-size:9px;
+	display:inline-block;
+	padding:0 5px;
+}
+
+.box ul {
+	padding:0;
+	margin:0;
+	list-style:none;
+	background-color:#666666;
+	font-weight:bold;
+	color:#999999;
+}
+
+.box li {
+	display:inline-block;
+	padding:2px;
+}
+
+.box li a{
+	padding:0;
+	margin:0;
+	display:inline;
+	color:#999999;
+}
+
+li.right {
+	float:right;
+}
+
+.box {
+	border:1px solid #666666;
+}
+
+.box a {
+	display:block;
+	text-decoration:none;
+	padding:2px;
+	overflow:hidden;
+}
+
+a.item:link, a.item:visited {
+	background-color:transparent;
+}
+
+a.item:hover{
+	background-color:#ffcc66;
+}
+
+.bottom_nav {
+	position:fixed;
+	right:0px;	
+	border:1px solid red;
+}
+
+h1 {
+	font-size:100%;
+	padding:0;
+	margin:0;
+	color:#999999;
+	display:block;
+}
+
+.color0 {
+	background-color:transparent;	
+}
+
+.color1 {
+	background-color:#dedede;	
+}
+
+a{
+	border:none;	
+}
+
+#issue_counter {
+	background-color:#000000;
+	padding:0 3px;
+	color:white;
+	position:fixed;
+	bottom:25px;
+	margin-left:18px;
+}
+#total_unread_msg{
+padding-left:30px;
+font-weight:bold;
+font-size:10px;
+background:red;
+padding:4px 8px;
+border-radius:30px;
+color:#fff;
+display:none;
+}
+#recent_msg li{
+   list-style:none;
+    background-color: #dff0d8;
+    border: 1px solid #d6e9c6;
+    color: #3c763d;
+     padding:5px;
+     overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom:4px;
+   cursor:pointer;
+}
+#recent_msg ul{
+ padding-left:0px;
+}
+.pull-left{
+float:left;
+}
+.pull-right{
+float:right;
+}
+.full-width{
+ width:100%;
+clear:both;
+padding-top:2px;
+}
+div#recent_msg ul{
+	overflow-y:auto;
+	height: 115px;
+}
+</style>
+<?php if ($common->getLoggedUserRoleID() == 6) { ?>
+
+<div id="recent_msg"></div>
+
+
+
+<ul class="nav">
+	<li><img src="<?=ROOT_URL?>/app/webroot/img/icon-lg-callback.png" onclick="showMessages()"><b>History</b></li>
+    <li><img src="<?=ROOT_URL?>/app/webroot/img/icon-lg-enter-work-done.png" onclick="createMessage()"><b>Message</b></li>
+    <li><img src="<?=ROOT_URL?>/app/webroot/img/iconset_coquette/warning32x32.png" onclick="showNotes()">
+    	<?php if($issue_count > 0) { ?>
+        <span id="issue_counter"><strong><?php echo $issue_count ?></strong></span>
+        <?php } ?>
+        <b>Issues</b></li>  
+
+    <?php if($_SESSION['user']['role_id']==6){ ?>
+    <li><span class="badge" id="total_unread_msg" style="position: absolute;top: -15px;"><i class="fa fa-comments-o" aria-hidden="true"></i></span><img src="<?=ROOT_URL?>/app/webroot/img/comments.png"><b>Chat</b><input type="hidden" id="check_window_open" value="0" ></li>
+<?php } ?>
+</ul>
+
+<br />
+
+<?php } else { ?>
+<table>
+	<tr>
+		<td style="text-align:center;">
+			<img src="<?=ROOT_URL?>/app/webroot/img/icon-lg-callback.png" onclick="showMessages()"><br/>
+			<b>History</b>
+		</td>
+		<td style="text-align:center;">
+			<img src="<?=ROOT_URL?>/app/webroot/img/icon-lg-enter-work-done.png" onclick="createMessage()"><br/>
+			<b>Send</b>
+		</td>		
+	</tr>
+</table>
+<?php } ?>
+<pre>
+<?php //echo print_r($routes) ?>
+</pre>
+

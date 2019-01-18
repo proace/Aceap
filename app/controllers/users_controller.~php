@@ -1,0 +1,559 @@
+<?
+error_reporting(1);
+
+class UsersController extends AppController
+{
+	//To avoid possible PHP4 problems
+	var $name = "UsersController";
+
+	var $uses = array('User','Role','Userrole', 'Order', 'Commission', 'Setting');
+
+	var $helpers = array('Time','Ajax','Common');
+	var $components = array('HtmlAssist', 'RequestHandler','Common','Lists');
+
+	var $itemsToShow = 40;
+	var $pagesToDisplay = 20;
+	var $beforeFilter = array('checkAccess');
+
+	function checkAccess()
+	{
+		if( $this->action == 'index' || $this->action == 'edit' || $this->action == 'add' ) {
+			$this->Common->checkRoles(array('6','3','13'));
+		}
+		if( $this->action == 'customer' ) {
+			$this->Common->checkRoles(array('6','8'));
+		}
+	}
+  
+	function edit()
+	{
+		$id = $_REQUEST['id'];
+		
+		$this->set('sm', 10);
+		$this->set('subtitle', 'Edit User');
+
+		//If we have no data, then we need to provide the data to the user for editing
+		if (empty($this->data['User']))
+		{
+			$this->User->id = $id;
+			$this->data = $this->User->read();
+			$this->set('data', $this->data);
+			$this->set('interfaces', $this->Lists->UserInterfaces());
+			$this->set('eprint', $this->Lists->EprintTerminals());
+			
+			$msg = $this->Setting->find(array('title'=>'portfolio_template'));
+			$portfolio = $msg['Setting']['valuetxt'];
+			
+			$portfolio = str_replace("{first_name}", $this->data['User']['first_name'], $portfolio);
+			$portfolio = str_replace("{last_name}", $this->data['User']['last_nam1'], $portfolio);			
+			$portfolio = str_replace("{techphoto}", $this->data['User']['binary_picture'], $portfolio);
+			$portfolio = str_replace("{qualifications}", $this->data['User']['qualifications'], $portfolio);
+			$portfolio = str_replace("{experience}", $this->data['User']['experience'], $portfolio);
+			$portfolio = str_replace("{skills}", $this->data['User']['skills'], $portfolio);
+			$portfolio = str_replace("{about}", $this->data['User']['about'], $portfolio);
+			$portfolio = str_replace("{goals}", $this->data['User']['goals'], $portfolio);
+			$portfolio = str_replace("{hobbies}", $this->data['User']['hobbies'], $portfolio);
+			
+			$this->set('portfolio', $portfolio);
+		}
+		else if (!empty($this->data['User']))
+		{
+			$isValid = true;
+			
+			// check if email is entered
+		  	if($this->data['User']['email'] == ''){
+				$this->User->invalidate('email_1'); $isValid=false;
+			}
+			else{
+				
+				if(!$this->check_email($this->data['User']['email'])){
+					$this->User->invalidate('email_2'); $isValid=false;
+				}
+			}
+			// check if email is valid
+			
+			// check if phone is entered
+			if($this->data['User']['phone'] == ''){
+				$this->User->invalidate('phone'); $isValid=false;
+			}
+			
+			//$this->data['Role']['user_id'] = $this->data['User']['id'];
+			//$this->User->Role->user_id = $this->data['User']['id'];
+
+			//$this->User->Role->save($this->data);
+			$this->data['User']['phone'] = $this->data['User']['phone'] ? $this->Common->preparePhone($this->data['User']['phone']) : '';
+			$this->data['User']['cell_phone'] = $this->data['User']['cell_phone'] ? $this->Common->preparePhone($this->data['User']['cell_phone']) : '';
+			$this->data['User']['postal_code'] = $this->data['User']['postal_code'] ? $this->Common->prepareZip($this->data['User']['postal_code']) : '';
+			$this->data['User']['is_active'] = $_POST['is_active'];
+			
+			// by reason - Telemarketer: Access Limitation
+			if( $this->data['User']['id'] == '' && $this->Common->getLoggedUserRoleID() == 3) {
+				$this->data['User']['telemarketer_id'] = $this->Common->getLoggedUserID();
+			}
+			
+			//Validate & Validate
+			if($isValid)
+			{
+				if ($this->User->save($this->data['User']))
+				{
+					$this->Userrole->del($this->User->id);
+					$this->data['Userrole']['user_id'] = $this->User->id;
+					$this->data['Userrole']['role_id'] = $this->data['Role']['role_id'];
+					$this->Userrole->save($this->data);
+					
+					//Forward user where they need to be - if this is a single action per view
+					if ($this->data['rurl'][0])
+						$this->redirect($this->data['rurl'][0]);
+					else
+						$this->redirect('/users/');
+					exit();
+				}
+				else
+				{
+					//Generate the error messages for the appropriate fields
+					//this is not really necessary as save already does this, but it is an example
+					//call $this->User->validates($this->data['User']); if you are not doing a save
+					//then use the method below to populate the tagErrorMsg() helper method
+					$this->validateErrors($this->User);
+	
+					//And render the edit view code
+					$this->render();
+				}
+			}
+		}
+		
+		$items = $this->Role->findAll();
+		foreach( $items as $item ) {
+			$items4select[$item['Role']['id']] = $item['Role']['name'];
+		}
+	
+		$this->set('Roles4Select',$items4select);
+	}
+
+	function editself()
+	{
+		//$id = $_REQUEST['id'];
+		$id = $_SESSION['user']['id'];
+		
+		$this->set('sm', 10);
+		$this->set('subtitle', 'Edit User');
+		
+
+		//If we have no data, then we need to provide the data to the user for editing
+		if (empty($this->data['User']))
+		{
+			$this->User->id = $id;
+			$this->data = $this->User->read();
+			$this->set('data', $this->data);
+		}
+		else if (!empty($this->data['User']))
+		{
+			$isValid = true;
+			
+			// check if passwords match
+			if($this->data['User']['password'] != $this->data['User']['password2']) {
+				$this->User->invalidate('password');
+				$isValid=false;
+			} else {
+				$newpassword = $this->data['User']['password'];
+			}
+			
+			//Validate & Validate
+			if($isValid)
+			{
+				$this->User->id = $id;
+				$this->data = $this->User->read();
+				$this->data['User']['password'] = $newpassword;
+				if ($this->User->save($this->data['User']))
+				{		
+								
+					//Forward user where they need to be - if this is a single action per view
+					/*if ($this->data['rurl'][0])
+						$this->redirect($this->data['rurl'][0]);
+					else
+						$this->redirect('/users/editself');*/
+					$this->redirect('/orders/scheduleView');
+					exit();
+				}
+				else
+				{
+					//Generate the error messages for the appropriate fields
+					//this is not really necessary as save already does this, but it is an example
+					//call $this->User->validates($this->data['User']); if you are not doing a save
+					//then use the method below to populate the tagErrorMsg() helper method
+					$this->validateErrors($this->User);
+	
+					//And render the edit view code
+					$this->render();
+				}
+			}
+		}
+		
+		$items = $this->Role->findAll();
+		foreach( $items as $item ) {
+			$items4select[$item['Role']['id']] = $item['Role']['name'];
+		}
+	
+		$this->set('Roles4Select',$items4select);
+	}
+
+	function add()
+	{
+		$items = $this->Role->findAll();
+	    foreach( $items as $item ) {
+	    	$items4select[$item['Role']['id']] = $item['Role']['name'];
+	    }
+   
+	    $this->set('Roles4Select',$items4select);
+
+		//Users and Customers View
+		$this->set('sm', 10);
+		$this->set('subtitle', 'Add User');
+		$this->set('show_roles', 1);
+    
+		$this->render("edit");
+	}
+	
+	//adds a VICIDial user
+	function addDialerUser() {
+		$ace_userid = $_GET['id'];
+		
+		$this->User->id = $ace_userid;
+		$this->data = $this->User->read();
+		
+		$db = ConnectionManager::getDataSource('vicidial');
+		
+		$result = $db->_execute("
+			SELECT COUNT(*) n 
+			FROM vicidial_users WHERE
+			user = '$ace_userid'
+		");
+		
+		$row = mysql_fetch_array($result);
+	    if($row['n'] == 0) {		
+		$db->_execute("
+			INSERT INTO vicidial_users (user, pass, full_name, user_level, user_group, phone_login, phone_pass, delete_users, delete_user_groups, delete_lists, delete_campaigns, delete_ingroups, delete_remote_agents, load_leads, campaign_detail, ast_admin_access, ast_delete_phones, delete_scripts, modify_leads, hotkeys_active, change_agent_campaign, agent_choose_ingroups, closer_campaigns, scheduled_callbacks, agentonly_callbacks, agentcall_manual, vicidial_recording, vicidial_transfers, delete_filters, alter_agent_interface_options, closer_default_blended, delete_call_times, modify_call_times, modify_users, modify_campaigns, modify_lists, modify_scripts, modify_filters, modify_ingroups, modify_usergroups, modify_remoteagents, modify_servers, view_reports, vicidial_recording_override, alter_custdata_override, qc_enabled, qc_user_level, qc_pass, qc_finish, qc_commit, add_timeclock_log, modify_timeclock_log, delete_timeclock_log, alter_custphone_override, vdc_agent_api_access, modify_inbound_dids, delete_inbound_dids, active, alert_enabled, download_lists, agent_shift_enforcement_override, manager_shift_enforcement_override, shift_override_flag, export_reports, delete_from_dnc, email, user_code, territory, allow_alerts, agent_choose_territories, custom_one, custom_two, custom_three, custom_four, custom_five, voicemail_id, agent_call_log_view_override, callcard_admin, agent_choose_blended, realtime_block_user_info, custom_fields_modify, force_change_password, agent_lead_search_override) 
+			VALUES ('$ace_userid', '".$this->data['User']['password']."', \"".$this->data['User']['first_name']." ".$this->data['User']['last_name']."\", 3, 'Agent', '', '', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1', '0', '1', '', '1', '1', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', 'DISABLED', 'NOT_ACTIVE', '', 0, '', '', '', '0', '0', '0', 'NOT_ACTIVE', '0', '0', '0', 'Y', '0', '0', 'DISABLED', '0', '0', '0', '0', '', '', '', '0', '', '', '', '', '', '', '', 'DISABLED', '0', '1', '0', '0', 'N', 'NOT_ACTIVE')
+		");
+			echo "OK";
+		} else {
+			echo "Please check if the user is not on the dialer already.";
+		}
+		
+		exit;
+		//$this->redirect($this->referer());
+	}
+	
+	function index()
+	{
+		if (($this->Common->getLoggedUserRoleID() != 6)&&($this->Common->getLoggedUserRoleID() != 13)) exit;
+		$this->layout="list";
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		
+		$sort = $_GET['sort'];
+		$order = $_GET['order'];
+		if (!$order) $order = 'username asc';
+		
+		$conditions = "and u.is_active=1";
+		$ShowInactive = $_GET['ShowInactive'];
+		if ($ShowInactive) $conditions = "";
+		
+		$disable_roles = array();
+		$role = $_GET['data']['role'][0];
+		if ($this->Common->getLoggedUserRoleID() == 13) {$role = 3; $disable_roles = array('disabled'=>'1');}
+		if ($role) $conditions .= " and exists (select * from ace_rp_users_roles r where r.user_id=u.id and r.role_id=$role)";
+		
+		$query = "select *
+		            from ace_rp_users u
+				   where exists (select * from ace_rp_users_roles r where r.user_id=u.id and r.role_id!=8) $conditions  
+				   order by $order $sort";
+		
+		$items = array();
+		$result = $db->_execute($query);
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			foreach ($row as $k => $v)
+			  $items[$row['id']][$k] = $v;
+		}		
+		
+		$this->set('ShowInactive', $ShowInactive);
+		$this->set('role', $role);
+		$this->set('disable_roles', $disable_roles);
+		$this->set('items', $items);
+		
+		$items = $this->Role->findAll();
+		foreach( $items as $item ) {
+			$items4select[$item['Role']['id']] = $item['Role']['name'];
+		}
+		$this->set('query',$query);
+		$this->set('Roles4Select',$items4select);
+	}
+
+	// AJAX method for activation/deactivation of an item
+	function changeActive()
+	{
+		$item_id = $_GET['item_id'];
+		$is_active = $_GET['is_active'];
+		
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$db->_execute("update ace_rp_users set is_active='".$is_active."' where id=".$item_id);
+
+		exit;
+	}
+	
+	function customer() {
+		$db =& ConnectionManager::getDataSource("default");
+		
+		$this->set('user_id',$this->Common->getLoggedUserID());
+		
+		$this->User->id = $this->Common->getLoggedUserID();
+		$this->data = $OrdersControllerthis->User->read();
+		
+		$query = "SELECT id,job_date FROM ace_rp_orders WHERE customer_id = '".$this->Common->getLoggedUserID()."' AND order_status_id = '6'";
+	  	$result = $db->_execute($query);
+	  	$row = mysql_fetch_array($result);
+	  	$this->set('next_appointment',$row['job_date']);
+	  	
+	  	$pastJobs = array();
+	  	$query = "SELECT id,job_date,sale_amount FROM ace_rp_orders WHERE customer_id = '".$this->Common->getLoggedUserID()."' AND order_status_id = '5'";
+	  	$result = $db->_execute($query);
+	  	while( $row = mysql_fetch_array($result) ) {
+	  		$pastJobs[] = $row;
+	  	}
+	  	
+	  	$this->set('pastJobs',$pastJobs);
+	}
+	
+	function delUser($user_id)
+	{
+		if (!$user_id)
+			$user_id = $this->params['url']['user_id'];
+			
+		//delete all Orders before deleting User - they are not linked up
+		$orders = $this->Order->findAll(array("Order.customer_id" => $user_id));
+		
+		foreach( $orders as $order )
+		{
+			$this->Order->delete($order['Order']['id'], true);
+		}
+		
+		//Delete All Commissions
+		$commissions = $this->Commission->findAll(array("Commission.user_id" => $user_id));
+		
+		foreach( $commissions as $comm )
+		{
+			$this->Commission->delete($comm['Commission']['id'], true);
+		}
+		
+		//Now delete User
+		$this->User->delete($user_id, true);
+
+		if ($this->params['url']['rurl'])
+			$this->redirect($this->params['url']['rurl']);
+		else
+			$this->redirect('/users/');			
+	}
+	
+	function delOrder($order_id)
+	{
+		
+	}
+	
+	function check_email($email) {
+	    if( (preg_match('/(@.*@)|(\.\.)|(@\.)|(\.@)|(^\.)/', $email)) ||
+	        (preg_match('/^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z]{2,3}|[0-9]{1,3})(\]?)$/',$email)) ) {
+	        
+	    	return true;
+	    }
+	    else{
+	    	return false;
+	    }
+	}
+
+  // Method draws the list of clients to be chosen
+	// Generates a call for a javascript function
+	// 'addItem' from the local context when the row is selected.
+	// Created: Anthony Chernikov, 08/13/2010
+	function _GetClients($field, $value)
+	{
+		$bg = 'background:#EEFFEE;';
+		$txt = 'color:#000000;';
+        
+		//Select all items related to the current job type
+		$db =& ConnectionManager::getDataSource('default');
+		$conditions = ' where i.is_active=1 and not exists (select * from ace_rp_users_roles r
+													where r.user_id=i.id and r.role_id!=8)';
+		if ($value)
+			if ($field == 'name')
+				$conditions .= ' and concat(upper(first_name),\' \',upper(last_name)) like \'%'.$value.'%\'';
+			elseif ($field == 'address')
+				$conditions .= ' and upper(address) like \'%'.$value.'%\'';
+			elseif ($field == 'ref')
+				$conditions .= ' and exists (select * from ace_rp_orders o where o.customer_id=i.id and order_number=\''.$value.'\')';
+			elseif ($field == 'phone')
+			{
+				$value = preg_replace("/[- \.]/", "", $value);
+				$value = preg_replace("/([?])*/", "[-]*", $value);
+				$conditions .= ' and phone REGEXP \''.$value.'\'';
+			}
+		
+		$query = "select i.id, i.first_name, i.last_name, i.address, i.city,
+										 i.phone, i.cell_phone, i.postal_code, i.email
+								from ace_rp_users i 
+								".$conditions."
+							 order by last_name asc, first_name asc limit 20";
+
+		$result = $db->_execute($query);
+		while ($row = mysql_fetch_array($result,MYSQL_ASSOC))
+		{					
+				$h .= '<tr class="item_row" id="item_'.$row['id'].'" style="cursor:pointer;"';
+				$h .= 'onclick="addItem('.$row['id'].',\''.$row['first_name'].'\',\''.$row['last_name'].'\',\''.$row['address'].'\'';
+				$h .= ',\''.$row['city'].'\',\''.$row['phone'].'\',\''.$row['cell_phone'].'\',\''.$row['postal_code'].'\',\''.$row['email'].'\')"';
+				$h .= 'onMouseOver="highlightCurRow(\'item_'.$row['id'].'\')">';
+				$h .= '<td class="item_address_td" style="display:none">&nbsp;'.strtoupper($row['address']).'</td>';
+				if ($this->Common->getLoggedUserRoleID() != 1)
+				{
+					$h .= '<td style='.$txt.'>&nbsp;'.$row['phone'].'</td>';
+					$h .= '<td style='.$txt.'>&nbsp;'.$row['cell_phone'].'</td>';
+				}
+				$h .= '<td style='.$txt.'>&nbsp;'.$row['first_name'].'</td>';
+				$h .= '<td style='.$txt.'>&nbsp;'.$row['last_name'].'</td>';
+				$h .= '<td style='.$txt.'>&nbsp;'.$row['address'].'</td>';
+				$h .= '<td style='.$txt.'>&nbsp;'.$row['city'].'</td>';
+				$h .= '</tr>';
+		}
+		
+		return $h;
+	}
+
+  // Method draws a wrap for the list of clients
+	// Created: Anthony Chernikov, 08/13/2010
+	function _ShowClients()
+	{
+		$bg = 'background:#EEFFEE;';
+		$txt = 'color:#000000;';
+
+    $h = '
+			<style type="text/css" media="all">
+		   @import "'.ROOT_URL.'/app/webroot/css/style.css";
+			</style>
+			<script language="JavaScript" src="'.ROOT_URL.'/app/webroot/js/jquery.js"></script>
+      <script language="JavaScript">
+				function SearchFilter(element, search_type){
+				  if (element.value.length>0){
+						var val = element.value.toUpperCase();
+						$("#Working").show();
+						$.get("'.BASE_URL.'/users/getClients",{value:val,field:search_type},
+									function(data){$("#Working").hide();$("#body_target").html(data);});
+					}
+				}
+				function addItem(item_id, item_first_name, item_last_name, item_address, item_city,
+										 item_phone, item_cell_phone, item_postal_code, item_email)
+				{
+				  var new_item=new Array();
+					new_item[0]=item_id;
+					new_item[1]=item_first_name;
+					new_item[2]=item_last_name;
+					new_item[3]=item_address;
+					new_item[4]=item_city;
+					new_item[5]=item_phone;
+					new_item[6]=item_cell_phone;
+					new_item[7]=item_postal_code;
+					new_item[8]=item_email;
+					window.returnValue=new_item;
+					window.close();
+				}
+				function highlightCurRow(element){
+					$(".item_row").css("background","");
+					$("#"+element).css("background","#a9f5fe");
+				}
+				$(document).ready(function(){$("#ItemSearchString").focus();});
+      </script>
+			<table>';
+		if ($this->Common->getLoggedUserRoleID() != 1)
+		{
+			$h .= ' <tr>
+								<td><b>Phone/Cell:</b></td>
+								<td><input style="width:150px" type="text" id="ItemSearchString" onchange="SearchFilter(this,\'phone\')"/></td>
+								<td><input type="button" value="GO"/></td>
+							</tr>';
+		}	
+$h .= ' <tr>
+					<td><b>Name:</b></td>
+					<td><input style="width:150px" type="text" id="ItemSearchString" onchange="SearchFilter(this,\'name\')"/></td>
+					<td><input type="button" value="GO"/></td>
+				</tr>
+				<tr>
+					<td><b>Address:</b></td>
+					<td><input style="width:150px" type="text" id="ItemSearchString" onchange="SearchFilter(this,\'address\')"/></td>
+					<td><input type="button" value="GO"/></td>
+				</tr>
+				<tr>
+					<td><b>REF #:</b></td>
+					<td><input style="width:50px" type="text" id="ItemSearchString" onchange="SearchFilter(this,\'ref\')"/></td>
+					<td><input type="button" value="GO"/></td>
+				</tr>
+			</table>
+			<img id="Working" style="display:none" src="'.ROOT_URL.'/app/webroot/img/wait30trans.gif"/>';
+        
+		//Select all items related to the current job type
+		$db =& ConnectionManager::getDataSource('default');
+		$h .= '<table style="'.$bg.'" cellspacing=0 colspacing=0>';
+		$h .= '<tr>';
+		if ($this->Common->getLoggedUserRoleID() != 1)
+		{
+			$h .= ' <th width="100px" style="'.$bg.'">Phone</th>';
+			$h .= ' <th width="100px" style="'.$bg.'">Cell</th>';
+		}
+		$h .= ' <th width="100px" style="'.$bg.'">First Name</th>
+						<th width="100px" style="'.$bg.'">Last Name</th
+						<th width="150px" style="'.$bg.'">Address</th
+						<th width="60px" style="'.$bg.'">City</th
+					 </tr><tbody id="body_target"></tbody>';
+
+		$h .= '</table>';
+		
+		return $h;
+	}
+	
+  // AJAX methods for the list of all the clients
+	// Created: Anthony Chernikov, 08/13/2010
+	function getClients()
+	{
+		$field = $_GET['field'];
+		$value = $_GET['value'];
+		echo $this->_GetClients($field, $value);
+		exit;
+	}
+	
+	function showClients()
+	{
+		echo $this->_ShowClients();
+		exit;
+	}
+	
+	function GetList()
+	{
+		$aRet = array();		
+		$sql = "select * from ace_rp_users where phone like '%12345%'";
+		$db =& ConnectionManager::getDataSource('default');
+		$result = $db->_execute($sql);
+		while ($aRet[] = mysql_fetch_array($result,MYSQL_ASSOC));
+
+		return $aRet;
+	}
+	
+	function testT()
+	{
+		$aRows = &$this->GetList();
+		$sTempl = file_get_contents("test.html");
+		foreach ($aRows as $row)
+		{
+			eval("\$sRes=\"$sTempl\";");
+			echo $sRes;
+		}
+		exit;
+	}
+	
+}
+?>

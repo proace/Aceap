@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Unresolved Issues</title>
+
+<style>
+body {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:80%;	
+}
+
+#issues {
+	border-collapse:collapse;
+	width:100%;	
+}
+
+#issues td {
+	border:1px solid #cccccc;
+	text-align:center;	
+}
+</style>
+
+<script type="text/javascript">
+function goToJob(ref_id) {
+	window.open("<?php echo BASE_URL?>/orders/editBooking?order_id=" + ref_id, "main_view");
+	window.close();
+}
+</script>
+
+</head>
+
+<body>
+<table id="issues">
+	<tr>
+    	<th>Noted by</th>
+        <th>Message</th>
+        <th>Ref #</th>
+    </tr>
+	<?php foreach($issues as $issue) { ?>
+	<tr>
+    	<td><?php echo $issue['noted_by'] ?></td>
+    	<td><?php echo $issue['message'] ?></td>
+        <td><input type="button" class="job_button" onclick="goToJob(<?php echo $issue['order_id'] ?>)" value="<?php echo $issue['order_number'] ?>" /></td>
+    </tr>
+    <?php } ?>
+</table>
+</body>
+</html>

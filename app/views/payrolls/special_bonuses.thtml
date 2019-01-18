@@ -1,0 +1,66 @@
+<form method="GET" action="<?= $PHP_SELF?>" name="titleform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="paginationList1" value="<?=$_GET['paginationList1']?>">
+
+<!-- TABLE :: FILTER -->
+<!-- *************** -->
+<table width="800">
+	<tr>
+		<td class="sectionTitle" colspan=3>Booking Bonus</td>
+	</tr>
+	<tr>
+		<td>
+			Pay period:&nbsp;
+			<select name="pay_period" onchange="document.titleform.submit();">
+			<?php foreach ($allPayPeriods as $v => $k) {
+				$selected = '';
+				if ($v == $pay_period) $selected = 'selected';?>
+				<option value="<?=$v?>" <?=$selected?>><?=$k?></option>
+			<?php } ?>
+			</select>
+		</td>
+		<td align="left">
+			<input type="submit" name="submit2" id="submit2" value="Update" class="buttons">
+		</td>			
+	</tr>
+</table> 	
+</form>
+
+<!-- TABLE :: RESULT -->
+<!-- *************** -->
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
+    <tr style="height:25px;">
+        <th rowspan=2 width="150">Employee</th>
+<?php foreach ($dates as $cur): ?>
+        <th><?=date("M d, Y",$cur)?></th>
+<?php endforeach; ?>
+    </tr>
+    <tr style="height:25px;">
+<?php foreach ($dates as $cur): ?>
+        <th><?=date("l",$cur)?></th>
+<?php endforeach; ?>
+    </tr>
+<?php $r=1;
+foreach ($items as $obj): 
+	$class = 'cell'.(++$r%2);
+?>
+<tr class="<?= $class ?>" >
+	<td><a href="<?=BASE_URL?>/payrolls/time_sheet?userid=<?=$obj['id']?>&pay_period=<?=$pay_period?>"><?=$obj['name']?>&nbsp;</a></td>
+<?php foreach ($dates as $key => $cur): ?>
+<?php 	$color = ""; ?>
+<?php 	if (count($obj[$key])>3) {$color = "background:#ffde93;";} ?>
+<?php 	if (count($obj[$key])>7) {$color = "background:#f99191;";} ?>
+	<td align="center" style="<?=$color?>">
+		<a href="#" onclick="$('#details<?=$key.$obj['id']?>').toggle()"><?=count($obj[$key])?>&nbsp;</a>
+		<div id="details<?=$key.$obj['id']?>" style="display:none;">
+		<?php foreach ($obj[$key] as $id => $number): ?>
+			<a href="<?=BASE_URL?>/orders/editBooking?order_id=<?=$id?>"><?=$number?></a><br/>
+		<?php endforeach; ?>
+		</div>
+	</td>
+<?php endforeach; ?>
+</tr>
+<?php endforeach; ?>
+</table>

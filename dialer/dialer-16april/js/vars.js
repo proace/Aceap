@@ -1,0 +1,20 @@
+var navigationBar = document.getElementById('navbarStatus');
+var textsts = document.getElementById('textStatus');
+var btnCall = document.getElementById('startDial');
+var btnHang = document.getElementById('hangUp');
+var btnMute = document.getElementById('muteBtn');
+var btnHold = document.getElementById('holdBnt')
+var icnMute = document.getElementById('iconMute');
+var acceptBtn = document.getElementById("btnAccept");
+var rejectBtn = document.getElementById("btnReject");
+var idCaller = document.getElementById("callerIDText");
+var divCallID = document.getElementById("icoming_call_layout");
+var Muted = "fa fa-microphone-slash";
+var Unmuted = "fa fa-microphone";
+var callInco = document.getElementById("toggleCall");
+var clickToCall = document.getElementById("call-button");
+var statusReady = "Ready";
+var statusCalling = "Calling";
+var stusDialing = "Dialing";
+var statusIncoming = "Incoming";
+

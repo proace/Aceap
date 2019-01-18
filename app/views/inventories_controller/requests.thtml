@@ -1,0 +1,88 @@
+<style>
+#return {
+	display:block;
+	color:#ff6633;
+	background-color:#333333;
+	padding:3px;
+	position:relative;
+	left:-10px;
+	top:-10px;
+	font-size:140%;
+}
+</style>
+<?php if($ismobile == 1) { ?>
+	<a href="<?php echo BASE_URL ?>/pages/mobileMenu" id="return">Back to Main</a>
+<?php } ?>
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+<table width="90%" border="0px" cellspacing="10" cellpadding="0">
+	<tr>
+		<td class="sectionTitle" >Follow up part requests</td>
+		<td colspan="7">
+			Date from: &nbsp;&nbsp;
+      <input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			&nbsp;&nbsp;Date to: &nbsp;&nbsp;
+      <input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			&nbsp;&nbsp;
+			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_fdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+		</td>
+  </tr>
+	<tr>
+		<td align="left">
+			<input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/inventories/editRequest?rurl=<?=urlencode('requests?'.$_SERVER['QUERY_STRING'])?>'" />
+		</td>
+		<td>Tech:&nbsp;
+				<select name="ftechid" id="ftechid" <?=(($_SESSION['user']['role_id'] == 1) ? "disabled='disabled'" : "")?> onchange="document.viewform.submit();">
+					<option value="-1">-=All=-</option>
+					<? 
+					foreach($allTechnicians as $k => $v) {
+						echo '<option value="'.$k.'"'.( $k == $techid ? ' selected' : '').'>'.$v.'</option>';
+					}
+					?>
+				</select>
+		</td>
+<td>
+				Search by name:&nbsp;&nbsp;<input type="text" id="ItemSearchString" onkeyup="SearchFilter2(this,'.item_name_td')"/>
+				&nbsp;&nbsp;Search by part #:&nbsp;&nbsp;<input type="text" id="NumberSearchString" onkeyup="SearchFilter2(this,'.part_number_td')"/>
+</td>
+	</tr>
+</table> 	
+</form>
+
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+    <tr>
+				<td class="item_name_td" style="display:none"><?php echo strtoupper($cur_item['name']);?></td>
+				<td class="part_number_td" style="display:none"><?php echo strtoupper($cur_item['part_number']);?></td>
+        <th width="150"><a href="javascript:setOrder('tech_id');">Tech</a></th>
+        <th width="100"><a href="javascript:setOrder('docdate');">Date</a></th>
+        <th width="100"><a href="javascript:setOrder('status');">Status</a></th>
+        <th width="100"><a href="javascript:setOrder('ref_number');">REF #</a></th>
+        <th width="200"><a href="javascript:setOrder('customer');">Customer</a></th>
+        <th width="200"><a href="javascript:setOrder('name');">Items</a></th>
+        <th width="100"><a href="javascript:setOrder('qty');">Quantity</a></th>
+        <th>Notes</th>
+    </tr>
+		<?php $r=1;
+			foreach ($documents as $obj) {
+				$class = 'cell'.(++$r%2);
+		?>
+    <tr id="r<?=$r?>" class="<?=$class?>" style='cursor:pointer;' onclick='document.location.href="<?=BASE_URL?>/inventories/editRequest?id=<?=$obj['id']?>&rurl=<?=urlencode('requests?'.$_SERVER['QUERY_STRING'])?>"'>
+				<td class="item_name_td" style="display:none"><?php echo strtoupper($cur_item['name']);?></td>
+				<td class="part_number_td" style="display:none"><?php echo strtoupper($cur_item['part_number']);?></td>
+      	<td>&nbsp;<?php echo $obj['tech_name']; ?></td>
+      	<td>&nbsp;<?php echo $obj['docdate']; ?></td>
+      	<td>&nbsp;<?php echo $obj['status_name']; ?></td>
+      	<td>&nbsp;<?php echo $obj['ref_number']; ?></td>
+      	<td>&nbsp;<?php echo $obj['customer']; ?></td>
+      	<td>&nbsp;<?php echo $obj['name']; ?></td>
+      	<td>&nbsp;<?php echo $obj['qty']; ?></td>
+      	<td>&nbsp;<?php echo $obj['notes']; ?></td>
+    </tr>
+    <? } ?>
+</table>

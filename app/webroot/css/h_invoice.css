@@ -1,0 +1,173 @@
+/* CSS Document */
+
+.wrapper {
+	margin:0 auto;
+	font-size:130%;
+	height:100%;
+}
+
+.section {
+	margin:0 auto;
+	padding-top:20px;	
+}
+
+.section li {
+	list-style:none;
+	margin-bottom:15px;	
+	padding:0;
+}
+
+.section ul {
+	padding:0;	
+	margin:0;
+}
+
+.section h1 {
+	font-size:100%;	
+}
+
+.top_nav {
+	position:fixed;
+	background-color:#cccccc;
+	width:100%;
+	display:none;
+}
+
+.bottom_nav {
+	margin:70px 0;
+	text-align:center;
+	width:100%;
+}
+
+.bottom_nav .options{
+	width:60px;
+	height:60px;
+	margin:0 auto;
+}
+
+.bottom_nav .left_arrow{
+	width:60px;
+	height:60px;
+	float:left;
+}
+	
+.bottom_nav .right_arrow{
+	width:60px;
+	height:60px;
+	float:right;
+}
+
+input.round {
+	width:50px;
+	height:50px;
+	/*
+	font-size:40px;	
+	background-image:url(../img/round.png);
+	background-color:transparent;
+	border:none;
+	color:#cccccc;*/
+}
+
+input[type=text] {
+	width:50%;	
+}
+
+textarea {
+	width:50%;
+}
+
+label {
+	width:40%;
+	padding:5px 13px;
+	display:inline-block;
+	font-weight:bold;
+}
+
+.noedit {
+	border:1px solid #cccccc;
+	display:inline-block;
+	width:50%;
+	padding-left:5px;
+}
+
+.close {
+	padding:0;
+	margin:0;
+	overflow:hidden;
+	height:0px;	
+}
+
+table.items {
+	width:100%;	
+	border:1px solid #333333;
+}
+
+table.items .value {
+	width:30%;
+	text-align:right;	
+}
+
+.summary td{
+	border:1px solid #999999;
+	background-color:#cccccc;
+	color:#333333;
+}
+
+.detail td{
+	padding-left:10px;
+}
+
+.detail .value{
+	padding-left:10px;
+}
+
+.office {
+	background-color:#ddffdd;	
+}
+
+.tech {
+	background-color:#ffdddd;	
+}
+
+.new_items .item {
+	border:1px solid #999999;
+	background-color:#ddddff;
+}
+
+.new_items .item_add {
+	display:block;
+	float:left;
+	font-size:10px;
+}
+
+.new_items .item_clear {
+	clear:both;	
+}
+
+.invoice_summary .job {
+	border:1px solid #cccccc;
+	padding:8px 6px;
+	color:#333333;
+	font-size:18px;
+}
+
+.viewonly {
+	background-color:#cccccc;	
+}
+
+.item div {
+	padding-left:55px;
+}
+
+#tech_items .editable {
+	border:1px solid #666666;
+	background-color:#ffffff;
+}
+
+tbody input[type=text]{
+	border:none;
+	width:0;
+	height:0;	
+	background-color:#ffdddd;
+	color:#ffdddd;
+}

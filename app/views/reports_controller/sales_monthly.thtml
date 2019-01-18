@@ -1,0 +1,204 @@
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform" id="viewform">
+				<input type="hidden" name="action" value="view" >
+				<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+				<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+<table border="0" cellspacing="3" cellpadding="0">
+	<tr>
+		<td class="sectionTitle" colspan=4>Monthly Summary</td>
+	</tr>
+	<tr>
+		<td>
+			Date from:&nbsp;&nbsp;
+			<input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			&nbsp;&nbsp;Date to:&nbsp;&nbsp;
+			<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			&nbsp;&nbsp;
+			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_fdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+			&nbsp;&nbsp;
+			<input type="submit" name="submit2" onclick="return SearchRecords();" id="submit2" value="Update" class="buttons">
+		</td>			
+	</tr>
+	<tr>
+		<td>
+			Data: &nbsp;&nbsp;
+			<input type="checkbox" name="showDoneNumber" <?=$showDoneNumber?>/> # of Jobs Done&nbsp;
+			<input type="checkbox" name="showDoneAvgNumber" <?=$showDoneAvgNumber?>/> Average Jobs Done per Day&nbsp;
+			<input type="checkbox" name="showCanceledNumber" <?=$showCanceledNumber?>/> # of Jobs Canceled&nbsp;
+			<input type="checkbox" name="showCanceledPercent" <?=$showCanceledPercent?>/> Cancellation Percent&nbsp;
+			<input type="checkbox" name="showDoneMoney" <?=$showDoneMoney?>/> Total Sales&nbsp;
+			<input type="checkbox" name="showDoneAvgMoney" <?=$showDoneAvgMoney?>/> Average Money per Job&nbsp;
+		</td>
+		<td rowspan=2 style="vertical-align:top;padding-left:20px;"><b>Job types:</b><br/>
+				<? 
+				foreach($allJobTypes as $k => $v) {
+					echo '<input type="checkbox" name="job_types['.$k.']" '.$job_types[$k].'>'.$v.'<br/>';
+				}
+				?>
+		</td>			
+	</tr>
+	<tr>
+		<td style="vertical-align:top;">
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
+    <tr style="height:25px;">
+        <th colspan=2 width="200">Job Type</th>
+<?php foreach ($months as $cur): ?>
+        <th style="background:#ffffff; color:black; border: 1px solid #888888;"><?=$cur?></th>
+<?php endforeach; ?>
+    </tr>
+<?php
+	$sales_sum = 0;
+	$purchase_sum = 0;
+	$cnt_sum = 0;
+?>
+<?php foreach ($records as $obj): ?>
+<?php 	$titleDone = 'border-top: 2px solid #888888;'; ?>
+<?php 	$class = 'cell0'; ?>
+<?php 	if ($showDoneNumber): ?>
+    <tr class="<?= $class ?>">
+		<td rowspan=<?= $rowspan ?> style="text-align:left;border-top: 2px solid #888888;"><?=$obj['name']?></td>
+		<td style="text-align:left;border-top: 2px solid #888888;"># Done</td>
+<?php 		foreach ($months as $cur): ?>
+		<td style="text-align:right;border-top: 2px solid #888888;">&nbsp;<?=$obj['cnt_done'][$cur]?></td>
+<?php 		endforeach; ?>
+<?php 		$titleDone = ''; ?>
+    </tr>
+<?php 	endif; ?>
+<?php 	if ($showDoneMoney): ?>
+    <tr class="<?= $class ?>">
+<?php 		if ($titleDone): ?>
+		<td rowspan=<?= $rowspan ?> style="text-align:left;border-top: 2px solid #888888;"><?=$obj['name']?></td>
+<?php 		endif; ?>
+		<td style="text-align:left;<?=$titleDone?>">$ Done</td>
+<?php 		foreach ($months as $cur): ?>
+		<td style="text-align:right;<?=$titleDone?>">&nbsp;<?=$HtmlAssist->prPrice($obj['money_done'][$cur])?></td>
+<?php 		endforeach; ?>
+<?php 		$titleDone = ''; ?>
+    </tr>
+<?php 	endif; ?>
+<?php 	if ($showDoneAvgNumber): ?>
+    <tr class="<?= $class ?>">
+<?php 		if ($titleDone): ?>
+		<td rowspan=<?= $rowspan ?> style="text-align:left;border-top: 2px solid #888888;"><?=$obj['name']?></td>
+<?php 		endif; ?>
+		<td style="text-align:left;<?=$titleDone?>">Jobs per Day</td>
+<?php 		foreach ($months as $cur): ?>
+		<td style="text-align:right;<?=$titleDone?>">&nbsp;<?=round($obj['cnt_done'][$cur]/30,1)?></td>
+<?php 		endforeach; ?>
+<?php 		$titleDone = ''; ?>
+    </tr>
+<?php 	endif; ?>
+<?php 	if ($showDoneAvgMoney): ?>
+    <tr class="<?= $class ?>">
+<?php 		if ($titleDone): ?>
+		<td rowspan=<?= $rowspan ?> style="text-align:left;border-top: 2px solid #888888;"><?=$obj['name']?></td>
+<?php 		endif; ?>
+		<td style="text-align:left;<?=$titleDone?>">$ per Job</td>
+<?php 		foreach ($months as $cur): ?>
+		<td style="text-align:right;<?=$titleDone?>"><?=($obj['money_done'][$cur])?$HtmlAssist->prPrice(round($obj['money_done'][$cur]/$obj['cnt_done'][$cur],0)):'&nbsp;'?></td>
+<?php 		endforeach; ?>
+<?php 		$titleDone = ''; ?>
+    </tr>
+<?php 	endif; ?>
+<?php 	if ($showCanceledNumber): ?>
+    <tr class="<?= $class ?>">
+<?php 		if ($titleDone): ?>
+		<td rowspan=<?= $rowspan ?> style="text-align:left;border-top: 2px solid #888888;"><?=$obj['name']?></td>
+<?php 		endif; ?>
+		<td style="text-align:left;<?=$titleDone?>">Canceled</td>
+<?php 		foreach ($months as $cur): ?>
+		<td style="text-align:right;<?=$titleDone?>">&nbsp;<?=$obj['cnt_canceled'][$cur]?></td>
+<?php 		endforeach; ?>
+<?php 		$titleDone = ''; ?>
+    </tr>
+<?php 	endif; ?>
+<?php 	if ($showCanceledPercent): ?>
+    <tr class="<?= $class ?>">
+<?php 		if ($titleDone): ?>
+		<td rowspan=<?= $rowspan ?> style="text-align:left;border-top: 2px solid #888888;"><?=$obj['name']?></td>
+<?php 		endif; ?>
+		<td style="text-align:left;<?=$titleDone?>">Cancel %</td>
+<?php 		foreach ($months as $cur): ?>
+		<td style="text-align:right;<?=$titleDone?>">&nbsp;<?=round($obj['cnt_canceled'][$cur]*100/($obj['cnt_canceled'][$cur]+$obj['cnt_done'][$cur]),0)?>%</td>
+<?php 		endforeach; ?>
+    </tr>
+<?php 	endif; ?>
+<?php endforeach; ?>
+<?php 	$titleDone = true; ?>
+<?php 	$class = 'cell1'; ?>
+    <tr class="<?= $class ?>">
+<?php 	if ($showDoneNumber): ?>
+		<td rowspan=<?= $rowspan ?> style="text-align:right;border-bottom: 1px solid #888888;border-top: 1px solid #888888;"><b>Total:</b></td>
+		<td style="text-align:left;border-top: 1px solid #888888;"><b># Done</b></td>
+<?php 	foreach ($months as $cur): ?>
+		<td style="text-align:right;border-top: 1px solid #888888;">&nbsp;<b><?=$recordsTotal['cnt_done'][$cur]?></b></td>
+<?php 	endforeach; ?>
+<?php 	$titleDone = false; ?>
+    </tr>
+<?php 	endif; ?>
+<?php if ($showDoneMoney): ?>
+    <tr class="<?= $class ?>">
+<?php 	if ($titleDone): ?>
+		<td rowspan=<?= $rowspan ?> style="text-align:right;border-bottom: 1px solid #888888;border-top: 1px solid #888888;"><b>Total:</b></td>
+<?php 	endif; ?>
+		<td style="text-align:left;border-top: 1px solid #888888;"><b>$ Done</b></td>
+<?php 	foreach ($months as $cur): ?>
+		<td style="text-align:right;border-top: 1px solid #888888;">&nbsp;<b><?=$HtmlAssist->prPrice($recordsTotal['money_done'][$cur])?></b></td>
+<?php	 endforeach; ?>
+<?php 	$titleDone = false; ?>
+    </tr>
+<?php endif; ?>
+<?php if ($showDoneAvgNumber): ?>
+    <tr class="<?= $class ?>">
+<?php 	if ($titleDone): ?>
+		<td rowspan=<?= $rowspan ?> style="text-align:right;border-bottom: 1px solid #888888;border-top: 1px solid #888888;"><b>Total:</b></td>
+<?php 	endif; ?>
+		<td style="text-align:left;"><b>Jobs per Day</b></td>
+<?php	 foreach ($months as $cur): ?>
+		<td style="text-align:right;">&nbsp;<b><?=round($recordsTotal['cnt_done'][$cur]/30,1)?></b></td>
+<?php	 endforeach; ?>
+<?php 	$titleDone = false; ?>
+    </tr>
+<?php endif; ?>
+<?php if ($showDoneAvgMoney): ?>
+    <tr class="<?= $class ?>">
+<?php 	if ($titleDone): ?>
+		<td rowspan=<?= $rowspan ?> style="text-align:right;border-bottom: 1px solid #888888;border-top: 1px solid #888888;"><b>Total:</b></td>
+<?php 	endif; ?>
+		<td style="text-align:left;"><b>$ per Job</b></td>
+<?php 	foreach ($months as $cur): ?>
+		<td style="text-align:right;">&nbsp;<b><?=$HtmlAssist->prPrice(round($recordsTotal['money_done'][$cur]/$recordsTotal['cnt_done'][$cur],0))?></b></td>
+<?php 	endforeach; ?>
+<?php 	$titleDone = false; ?>
+    </tr>
+<?php endif; ?>
+<?php if ($showCanceledNumber): ?>
+    <tr class="<?= $class ?>">
+<?php 	if ($titleDone): ?>
+		<td rowspan=<?= $rowspan ?> style="text-align:right;border-bottom: 1px solid #888888;border-top: 1px solid #888888;"><b>Total:</b></td>
+<?php 	endif; ?>
+		<td style="text-align:left;"><b>Canceled</b></td>
+<?php 	foreach ($months as $cur): ?>
+		<td style="text-align:right;">&nbsp;<b><?=$recordsTotal['cnt_canceled'][$cur]?></b></td>
+<?php 	endforeach; ?>
+<?php 	$titleDone = false; ?>
+    </tr>
+<?php endif; ?>
+<?php if ($showCanceledPercent): ?>
+    <tr class="<?= $class ?>">
+<?php 	if ($titleDone): ?>
+		<td rowspan=<?= $rowspan ?> style="text-align:right;border-bottom: 1px solid #888888;border-top: 1px solid #888888;"><b>Total:</b></td>
+<?php 	endif; ?>
+		<td style="text-align:left;border-bottom: 1px solid #888888;"><b>Cancel %</b></td>
+<?php 	foreach ($months as $cur): ?>
+		<td style="text-align:right;border-bottom: 1px solid #888888;">&nbsp;<b><?=round($recordsTotal['cnt_canceled'][$cur]*100/($recordsTotal['cnt_canceled'][$cur]+$recordsTotal['cnt_done'][$cur]),0)?>%</b></td>
+<?php	 endforeach; ?>
+<?php endif; ?>
+    </tr>
+</table>
+</td>
+</tr>
+</table>
+</form>

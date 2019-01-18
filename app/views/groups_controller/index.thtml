@@ -1,0 +1,289 @@
+<link type="text/css" href="<?php echo ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />	
+<link rel="Stylesheet" type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/jpicker-1.1.6.min.css" />
+<link rel="Stylesheet" type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/jPicker.css" />
+<script type="text/javascript" src="<?php echo ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+<script src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.4.min.js" type="text/javascript"></script>
+<script src="<?=ROOT_URL;?>/app/webroot/js/jpicker-1.1.6.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+<!--
+
+
+function hideall(name) {
+	var t = document.getElementsByName(name);
+	for(i = 0; i < t.length; i++) 
+		t[i].style.display = 'none';		
+}
+
+function saveGroup(o) {
+	var s=o; 
+	window.open('<?php echo BASE_URL ?>/groups/saveGroup/?uid=' + s, '_self');
+}
+
+function addGroup(name) {
+	window.open('<?php echo BASE_URL ?>/groups/addGroup/?name=' + name, '_self');
+}
+
+function editGroup(id, name) {
+	window.open('<?php echo BASE_URL ?>/groups/editGroup/?uid=' + id + '&name=' + name, '_self');
+}
+
+function saveLeader(id) {
+	window.open('<?php echo BASE_URL ?>/groups/saveLeader/?uid=' + id, '_self');
+}
+
+function saveGroupSettings(id, perBooking, perBudget, minBooking, maxBooking, goalBooking, type, lead_color, lead_text, team_color, team_text) {
+	var url = "<?php echo BASE_URL ?>/groups/saveGroupSettings/?uid=" + id + 
+	"&perBooking=" + perBooking + 
+	"&perBudget=" + perBudget + 
+	"&minBooking=" + minBooking + 
+	"&maxBooking=" + maxBooking + 
+	"&goalBooking=" + goalBooking + 
+	"&type=" + type + 
+	"&lead_color=" + lead_color + 
+	"&lead_text=" + lead_text + 
+	"&team_color=" + team_color + 
+	"&team_text=" + team_text + 
+	"";
+	
+	window.open(url, "_self");
+}
+
+function deleteGroup(name, id) {
+	var r = confirm("Are you sure you want to delete the group " + name + "?");
+	if(r) window.open('<?php echo BASE_URL ?>/groups/deleteGroup/?uid=' + id, '_self');
+}
+
+$(document).ready(function() {
+	$(".save").click(function(){
+		saveGroupSettings(
+			$(this).parents(".commission").find(".id").val(),
+			$(this).parents(".commission").find(".perBooking").val(),
+			$(this).parents(".commission").find(".perBudget").val(),
+			$(this).parents(".commission").find(".minBooking").val(),
+			$(this).parents(".commission").find(".maxBooking").val(),
+			$(this).parents(".commission").find(".goalBooking").val(),
+			$(this).parents(".commission").find(".type").val(),
+			$(this).parents(".grouping").find(".lead_color").val(),
+			$(this).parents(".grouping").find(".lead_text").val(),
+			$(this).parents(".grouping").find(".team_color").val(),
+			$(this).parents(".grouping").find(".team_text").val()
+		);
+		
+	});
+	
+	$(".rtype").click(function(){		
+		$(this).parents(".commission").find(".type").val($(this).val());	
+	});
+	
+	$(".lead_color").jPicker();	
+	$(".lead_text").jPicker();	
+	$(".team_color").jPicker();	
+	$(".team_text").jPicker();	
+	
+});
+
+// -->
+</script>
+<style>
+
+.results th {border-bottom: 1px solid #6c6c6c;background-color:#800000; color:white;border:2px outset white;font-size: small;}
+.regular {font-weight:bold;}
+
+.grouping {
+	clear:both;
+}
+
+.group {
+	float:left;
+}
+
+.commission {
+	border:1px solid #CCC;	
+	margin-left:370px;
+}
+
+h2 {
+	margin-bottom:2px;
+}
+
+h3 {
+	margin:0;	
+}
+
+.comm_text {
+	width:70px;
+	text-align:right;
+}
+
+.select {
+	background-color:#cccccc;	
+}
+
+</style>
+<h1>Call Center Groups</h1>
+<div class="grouping">
+<h2>Add New Group</h2>
+<div class="group">
+<table>
+    <tr>
+        <td><input type="text" name="groupName" id="groupName" />
+        </td>
+        <td><input type="button" onclick="addGroup(document.getElementById('groupName').value)" value="Save" />
+    </tr>
+</table>
+</div>
+<div class="commission">
+    <h3>Commission - All Teams</h3>
+    <table>
+        <tr>
+            <td align="right" width="170px">
+            
+            Per Booking: <input type="text" class="perBooking comm_text" value="<?php echo $groups[0]['perBooking']?>" /><br />
+            Budget: <input type="text" class="perBudget comm_text" value="<?php echo $groups[0]['perBudget']?>" /><br />
+            Min Booking: <input type="text" class="minBooking comm_text" value="<?php echo $groups[0]['minBooking']?>" /><br />
+            Max Booking: <input type="text" class="maxBooking comm_text" value="<?php echo $groups[0]['maxBooking']?>" /><br />
+            Goal Booking: <input type="text" class="goalBooking comm_text" value="<?php echo $groups[0]['goalBooking']?>" />
+            <input type="hidden" class="type" value="0" />
+            <input type="hidden" class="id" value="0" />
+            </td>
+            <td>
+            <p>At the end of the pay period, the team with the most bookings done (min of <span class="display_minBooking"><?php echo $groups[0]['minBooking']?></span> up a max of <span class="display_maxBooking"><?php echo $groups[0]['maxBooking']?></span>) will receive a commission.</p>
+            <fieldset>
+                <input type="radio" class="rtype" name="r0" 
+				<?php echo $groups[0]['type']==1?"checked='checked'":"''"; ?> 
+                value="1" />Each person will get $<span class="display_perBooking"><?php echo $groups[0]['perBooking']?></span> per job.<br />
+                <input type="radio" class="rtype" name="r0" 
+				<?php echo $groups[0]['type']==2?"checked='checked'":"''"; ?> 
+                value="2" />The team will get $<span class="display_perBudget"><?php echo $groups[0]['perBudget']?></span>.<br />
+                <input type="radio" class="rtype" name="r0" 
+				<?php echo $groups[0]['type']==3?"checked='checked'":"''"; ?> 
+                value="3" />First team to reach <span class="display_goalBooking"><?php echo $groups[0]['goalBooking']?></span> gets $<span class="display_perBudget"><?php echo $groups[0]['perBudget']?></span>.                
+            </fieldset>
+            </td>
+        </tr>
+        <tr>
+        	<td></td>
+        	<td><input type="button" value="Save" class="save" />
+            </td>
+        </tr>
+    </table>
+</div><!--END commission-->
+</div>
+<?php foreach ($groups as $group) {?>
+	<? if($group['id'] > 0) { ?>
+	<div class="grouping">
+	<h2 style="margin-bottom:2px;"><?php echo $group['name'] ?></h2>            
+	<table id="edit<?php echo $group['id']?>" name="edit" style="display:none">
+		<tr>
+			<td><input type="text" name="groupNameChange<?php echo $group['id']?>" id="groupNameChange<?php echo $group['id']?>" value="<?php echo $group['name']?>" />
+			</td>
+			<td><input type="button" onclick="editGroup('<?php echo $group['id']?>', document.getElementById('groupNameChange<?php echo $group['id']?>').value)" value="Update" />
+		</tr>
+	</table>
+           
+	<div style="margin-bottom:10px;">
+	<input type="button" value="Edit Group Name" onclick="hideall('edit'); document.getElementById('edit<?php echo $group['id']?>').style.display = 'block';" />
+	<input type="button" value="Delete Group" onclick="deleteGroup('<?php echo $group['name']?>', '<?php echo $group['id']?>')" />
+	
+	</div>
+    <div class="group">  
+	<table class="results" cellpadding="0" cellspacing="0" style="border-style: solid;border-width:1px;">
+		<tr style="height:25px;">
+			<th width="150" align="right">Leader <input type="hidden" class="lead_color" value="<?php echo $group['lead_color']?>" /><input type="hidden" class="lead_text" value="<?php echo $group['lead_text']?>" /></th>
+            <th>
+            <select style="width:20px">
+				<option></option>                        
+				<?php foreach($items as $member) { ?>
+                	<?php if($group['id'] == $member['gid']) {?>						
+                    	<option onclick="window.open('<?php echo BASE_URL ?>/groups/saveLeader/?uid=<?php echo $member['gid'];?>|<?php echo $member['id'];?>', '_self');"><?php echo $member['first_name'].' '.$member['last_name'];?></option>                                                
+                	<?php } //end if  ?>
+				<?php } //end foreach  ?>
+			</select>
+            </th>
+            
+			<th width="150" align="right">Member <input type="hidden" class="team_color" value="<?php echo $group['team_color']?>" /><input type="hidden" class="team_text" value="<?php echo $group['team_text']?>" /></th>
+			<th>
+			<select style="width:20px">
+				<option></option>                        
+				<?php foreach($items as $item2) { ?>
+				<?php if($item2['gid'] == null) { ?>
+				<option onclick="window.open('<?php echo BASE_URL ?>/groups/saveGroup/?uid=<?php echo $group['id'] ?>|<?php echo $item2['id'] ?>','_self');"><?php echo $item2['first_name'].' '.$item2['last_name'];?></option>                        
+				<?php } //end if  ?>
+
+				<?php } //end foreach  ?>
+			</select>
+			</th>
+		</tr>
+    
+    <?php $i = 0; ?>
+	<?php foreach ($items as $item) {?>
+	<?php if($group['id'] == $item['gid']) {?>  
+	<?php $class = 'cell0'; ?>
+		<tr class="<?php echo $class ?>" style="height:35px;">
+        	<?php if($i++ == 0) { ?>
+            <?php $name = ''; ?>
+			<?php foreach ($items as $leader) {?>
+                <?php if($item['gleaderid'] == $leader['id']) { ?>
+                <?php $name = $leader['first_name'].' '.$leader['last_name']; ?>
+                <?php } ?> 
+            <?php } ?>
+			<td colspan="2" rowspan="<?php echo count($items); ?>" align="center" style="border:2px outset #d0d0ce;font-size: small;">
+            <?php echo $name; ?>          
+			</td>            			
+			<?php } ?>
+			<td align="left" style="border:2px outset #d0d0ce;font-size: small; font-weight:bold; font-style: italic;"><?php echo $item['first_name'].' '.$item['last_name'];?></td>
+			<td align="center"><input type="button" value="X" style="width:20px" onclick="window.open('<?php echo BASE_URL ?>/groups/saveGroup/?uid=0|<?php echo $item['id'] ?>', '_self');" />
+			</td>
+	   </tr>
+	<?php } //end if?>         
+	<?php } //end foreach items?>                
+	</table>
+    <div style="clear:both">&nbsp;</div>
+    </div><!--END group-->
+    <div class="commission">
+    	<h3>Commission - <?php echo $group['name']?></h3>
+    	<table>
+        	<tr>
+            	<td align="right" width="170px">
+                Per Booking: <input type="text" class="perBooking comm_text" value="<?php echo $group['perBooking']?>" /><br />
+                Budget: <input type="text" class="perBudget comm_text" value="<?php echo $group['perBudget']?>" /><br />
+                Min Booking: <input type="text" class="minBooking comm_text" value="<?php echo $group['minBooking']?>" /><br />
+                Max Booking: <input type="text" class="maxBooking comm_text" value="<?php echo $group['maxBooking']?>" /><br />
+                Goal Booking: <input type="text" class="goalBooking comm_text" value="<?php echo $group['goalBooking']?>" />
+                <input type="hidden" class="type" value="0" />
+                <input type="hidden" class="id" value="<?php echo $group['id']?>" />
+                </td>
+                <td>
+                <p>At the end of the pay period, the team with the most bookings done (min of <span class="display_minBooking"><?php echo $group['minBooking']?></span> up a max of <span class="display_maxBooking"><?php echo $group['maxBooking']?></span>) will receive a commission.</p>
+                <fieldset>
+                <input type="radio" class="rtype" name="r<?php echo $group['id']?>" 
+				<?php echo $group['type']==0?"checked='checked'":"''"; ?> 
+                value="0" />Use All Team Rule<br />
+                <input type="radio" class="rtype" name="r<?php echo $group['id']?>" 
+				<?php echo $group['type']==1?"checked='checked'":"''"; ?> 
+                value="1" />Each person will get $<span class="display_perBooking"><?php echo $group['perBooking']?></span> per job.<br />
+                <input type="radio" class="rtype" name="r<?php echo $group['id']?>" 
+				<?php echo $group['type']==2?"checked='checked'":"''"; ?> 
+                value="2" />The team will get $<span class="display_perBudget"><?php echo $group['perBudget']?></span>.<br />
+                <input type="radio" class="rtype" name="r<?php echo $group['id']?>" 
+				<?php echo $group['type']==3?"checked='checked'":"''"; ?> 
+                value="3" />First team to reach <span class="display_goalBooking"><?php echo $group['goalBooking']?></span> gets $<span class="display_perBudget"><?php echo $group['perBudget']?></span>.
+                </fieldset>
+                </td>
+            </tr>
+            <tr>
+            	<td></td>
+                <td><input type="button" value="Save" class="save" />
+                </td>
+            </tr>
+        </table>
+    
+    </div><!--END commission-->
+    </div><!--END grouping-->
+	<?php } ?>
+<?php } //end foreach groups?>
+
+        
+        
+
+

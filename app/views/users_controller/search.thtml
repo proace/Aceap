@@ -1,0 +1,159 @@
+<script>
+function resetForm() {
+	f=document.forms['csform'];
+	f.search_value.value='';
+	f.nsfrom.value='';
+	f.nsto.value='';
+	f.exfrom.value='';
+	f.exto.value='';
+	f.ppage.value='';
+	f.submit();
+}
+function change_search_value(e) {
+	if (e.value=='city') {
+		hide=document.getElementById('val_input');
+		show=document.getElementById('city_select');
+	}
+	else {
+		show=document.getElementById('val_input');
+		hide=document.getElementById('city_select');
+	}
+	hide.style.display='none';
+	hide.name='sv';
+	show.style.display='inline-block';
+	show.name='search_value';
+}
+</script>
+<form method="post" action="" name="csform">
+<table border="0" cellspacing="10" cellpadding="0">
+	<tr>
+		<td class="sectionTitle" colspan="2">Members</td>
+	</tr>
+	<tr>
+		<td colspan="2" align="right"><b>Active Members Count: <?=$active_members_count?> <!-- &nbsp;&nbsp; Expired: <?=$exp_members_count?></b> --></td>
+	</tr>
+	<tr >
+		<td colspan="2">Search: 
+			&nbsp;&nbsp;
+<?php
+	$search_fields=array(
+		'card_number'=>'Card Nnumber',
+		'first_name'=>'First Name',
+		'last_name'=>'Last Name',
+		'address'=>'Address',
+		'city'=>'City',
+		'phone'=>'Phone',
+		);
+?>
+			<select name="search_field" onchange="change_search_value(this)">
+				<?php foreach ($search_fields as $f=>$v): ?>
+				<option value="<?=$f?>" <?=($f==$search_field ? 'selected' : '')?>><?=$v?></option>
+				<?php endforeach; ?>
+			</select>
+			&nbsp;&nbsp;
+			<input type="text" value="<?=($search_field!='city' ? $search_value : '')?>" id="val_input" <?=($search_field=='city' ? 'style="display:none" name="sv"' :'name="search_value"')?>>
+			<select id="city_select" <?=($search_field!='city' ? 'style="display:none" name="sv"' :'name="search_value"')?>>
+				<?php foreach ($cities as $v): ?>
+				<option value="<?=$v?>" <?=($v==$search_value ? 'selected' : '')?>><?=$v?></option>
+				<?php endforeach; ?>
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td>Next Service Date from:</td>
+		<td>
+			<input type="text" name="nsfrom" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$nsfrom?>">
+			&nbsp;&nbsp;
+			to:
+			&nbsp;&nbsp;
+			<input type="text" name="nsto" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$nsto?>">
+		</td>
+	</tr>
+	<tr>
+		<td>Expiry Date from:</td>
+		<td>
+			<input type="text" name="exfrom" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$exfrom?>">
+			&nbsp;&nbsp;
+			to:
+			&nbsp;&nbsp;
+			<input type="text" name="exto" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$exto?>">
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+			Show only active:&nbsp;<input type="checkbox" id="onlyactive" <?php if ($onlyactive) echo 'checked';?> name="onlyactive" onchange="document.forms['csform'].submit();" value="1" />
+			&nbsp;&nbsp;
+			Rows per page <input type="text" name="ppage" value="<?=$ppage?>" style="width:40px" />
+		</td>
+		<td align="right">
+			<input type="submit" name="submit2" value="Submit" class="buttons" />
+			<input class="buttons" type="button" value="Reset" onclick="resetForm()" />
+		</td>
+	</tr>
+</table>
+<b><?=$rows_count;?></b> Members found by your request <br />
+</form>
+<?php
+	$fields=array(
+		// 'id'=>'ID',
+		'name'=>'Name',
+		'email'=>'E-Mail',
+		'phone'=>'Phone',
+		'cell_phone'=>'Cel. Phone',
+		'card_number'=>'Card Nnumber',
+		'card_exp'=>'Exp. Date',
+		'next_service'=>'Next Service',
+		'address'=>'Address',
+		'city'=>'City',
+		'callback_date'=>'Callback Date',
+		//'tech_name'=>'Technician'
+		);
+	if ($pages_count>1) {
+		$pages='Pages: ';
+		$url=BASE_URL.'/users/search/'.$sort_field.'/'.$sort_order.'/';
+		if ($page_number>1) $pages.='<a href="'.$url.'">&lt;&lt;</a>&nbsp; ';
+		$pstart=max($page_number-10,1);
+		for ($i=$pstart; $i<=$pages_count; $i++) {
+			if ($i==$page_number)
+				$pages.='&nbsp;<b>'.$i.'</b>&nbsp; ';
+			else
+				$pages.='&nbsp;<a href="'.$url.$i.'">'.$i.'</a>&nbsp; ';
+			if ($i-$pstart>19) {
+				$pages.='&nbsp;...&nbsp; &nbsp;<a href="'.$url.$pages_count.'">'.$pages_count.'</a>&nbsp; ';
+				break;
+			}
+		}
+		if ($page_number<$pages_count) $pages.='&nbsp;<a href="'.$url.($page_number+1).'">&gt;&gt;</a>';
+	}
+	else $pages='';
+	echo $pages;
+
+?>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+	<tr>
+		<?php foreach ($fields as $f=>$v): ?>
+		<th><a href="<?=BASE_URL;?>/users/search/<?=$f?>/<?=( ($f==$sort_field && $sort_order=='asc') ? 'desc' : 'asc' )?>"><?=$v?></a> <?=($f==$sort_field ? ($sort_order=='asc' ? 'v' : '^') : '' )?></th>
+		<?php endforeach; ?>
+	</tr>
+<?php $r=1;
+	foreach ($items as $obj): 
+		$class = 'cell'.(++$r%2);
+		if ($fdetails) $extra = 'style="font-weight:bold;"';
+?>
+	<tr class="<?= $class ?>" style="cursor:pointer" onclick="location.href='<?=BASE_URL;?>/orders/editBooking?customer_id=<?=$obj['id']?>'">
+		<!-- <td><?=$obj['id']?></td> -->
+		<td><?=$obj['first_name'].' '.$obj['last_name']?></td>
+		<td><?=$obj['email']?></td>
+		<td><?=$obj['phone']?></td>
+		<td><?=$obj['cell_phone']?></td>
+		<td><nobr><?=$obj['card_number']?></nobr></td>
+		<td><nobr><?=$obj['card_exp']; ?></nobr></td>
+		<td><nobr><?=$obj['next_service']; ?></nobr></td>
+		<td><?=$obj['address']?></td>
+		<td><?=$obj['city']?></td>
+		<td><nobr><?=$obj['callback_date']?></nobr></td>
+		<!-- <td><?=$obj['tname'].' '.$obj['tlname']?></td> -->
+	</tr>
+<?php endforeach; ?>
+</table>
+<?=$pages?>

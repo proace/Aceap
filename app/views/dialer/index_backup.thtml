@@ -1,0 +1,1546 @@
+<?php error_reporting(E_ALL); ?>
+
+<script language="JavaScript" type="text/javascript" src="/acesys/app/webroot/js/jquery.js"></script>
+<div class="wrapper">
+		<!-- HEADER SECTION -->
+		<!-- END HEADER SECTION -->
+		<div class="cont_main">
+			<link type="text/css" href="/acesys/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet">
+<script language="JavaScript" src="/acesys/app/webroot/js/edit_help.js"></script>
+<script language="JavaScript" src="/acesys/app/webroot/js/showhint.js"></script>
+<script type="text/javascript" src="/acesys/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+<script type="text/javascript" src="/acesys/app/webroot/js/meio.js"></script>
+<script type="text/javascript" src="/acesys/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="/acesys/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="/acesys/app/webroot/js/jquery.quicksearch.js"></script>
+<script type="text/javascript" src="/acesys/app/webroot/js/store_tree.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="/acesys/app/webroot/css/store_tree.css">
+<link rel="stylesheet" type="text/css" media="all" href="/acesys/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css">
+<script>
+//*** SET PAGE TITLE ***
+document.title += " :: Edit Booking";
+//**********************
+</script>
+<script language="JavaScript">
+	function onSubstatusChange(el){
+		if ($(el).val()==4) $('#notifiedBy').show(); else  $('#notifiedBy').hide();
+	}
+  function CheckPaymentMethod(elem){
+    if (elem.value==9){
+      $(".fin_fields").show();
+		}else{
+      $(".fin_fields").hide();
+		}
+	}
+	function GetCalc(){
+		var prc=$("#calc_price").val();
+		var per=$("#calc_period").val();
+		$.post("/acesys/index.php/orders/calc", {calc_price:prc,calc_period:per},
+			function(data){
+				val = jQuery.parseJSON(data);
+				$("#calc_monthly").html('$'+val['calc_monthly']);
+//				$("#calc_total").html('$'+val['calc_total']);
+		});
+	}
+var CheckPrcCount=0;
+var nopen = 3;
+var item_type=0;
+var items_opend=-1;
+function openTab(n){
+	$('#tabA'+nopen).hide();
+	$('#trigger'+nopen).addClass('tabOff');
+	$('#trigger'+nopen).removeClass('tabOver');
+	$('#tabA'+n).show();
+	$('#trigger'+n).removeClass('tabOff');
+	$('#trigger'+n).addClass('tabOver');
+	nopen = n;
+}
+function ShowAN(el){
+  if (($(el).val()>2)&&($(el).val()<6))	$("#auth_number").parent().show();
+	else $("#auth_number").parent().hide();
+}
+function ChangeSupplier(element){
+  if (element.value)
+	$.get("/acesys/index.php/orders/getSupplierInfo",
+    {id:element.value},
+		function(data){
+			val = jQuery.parseJSON(data);
+			txt = ''; dev = '';
+			if (val['phone']) {txt += "phone: "+val['phone']; dev = ', ';}
+			if (val['address']) txt += dev+"addr: "+val['address'];
+			if (val['city']) txt += dev+", "+val['city'];
+      $("#SupplierInfo").html(txt);
+		});
+}
+function createMessage()
+{
+  var answer = window.open("/acesys/index.php/messages/EditMessage?order_id=&customer_id=",'',
+  "width=450, height=300, left=300,top=200");
+
+}
+function SaveCustomerData(){
+	$.get("/acesys/index.php/orders/saveCustomerData",
+		{
+		 customer_id:$('#CustomerId').val(),
+		 customer_first_name:$('#CustomerFirstName').val(),
+		 customer_last_name:$('#CustomerLastName').val(),
+		 customer_email:$('#emailinput').val(),
+		 customer_city:$('#CustomerCity').val(),
+		 customer_postcode:$('#CustomerPostalCode').val(),
+		 customer_address_unit:$('#CustomerAddressUnit').val(),
+		 customer_address_street_number:$('#CustomerAddressStreetNumber').val(),
+		 customer_address_street:$('#CustomerAddressStreet').val(),
+		 customer_phone:$('#CustomerPhone').val(),
+		 customer_cell_phone:$('#CustomerCellPhone').val(),
+		 customer_card_number:$('#CustomerCardNumber').val(),
+		 customer_card_exp:$('#data[Customer][card_exp]').val(),
+		 customer_next_service:$('#data[Customer][next_service]').val()
+		},
+		function(data){
+			$('#CustomerId').val(data);
+		  AddCustomerNote();
+    }
+  );
+}
+function OpenJobsHistory(){
+$("#JobHistoryWorking").show();
+$.get("/acesys/index.php/orders/showCustomerJobs",
+			{customer_id:$('#CustomerId').val(),
+			 order_id:'',
+			 phone:''},
+			function(data){
+        $("#JobHistory").html(data);
+				$('#JobHistory').show();
+				$('#OpenHistoryText').hide();
+				$('#CloseHistoryText').show();
+				$("#JobHistoryWorking").hide();
+			});
+}
+function CloseJobsHistory(){
+  $('#JobHistory').hide();
+  $('#OpenHistoryText').show();
+  $('#CloseHistoryText').hide();
+}
+function JobTypeChange(){
+  jt=$('#OrderOrderTypeId').val();
+	if ((jt==10)||(jt==31)) $('#ApplianceOrder').show();  else $('#ApplianceOrder').hide();
+  if ((jt==9)||(jt==10))
+	{
+    $("#PreviousSection").show();
+		if (!$("#OrderJobEstimateId").val())
+		{
+				customer_id = $("#CustomerId").val();
+				phone = $("#CustomerPhone").val();
+				$.get("/acesys/index.php/orders/getLastJob",
+							{customer_id:customer_id, phone:phone},
+				function(data){
+								val = jQuery.parseJSON(data);
+								$("#OrderJobEstimateId").val(val.job_id);
+								$("#OrderBookingSourceId").val(val.source1_id);
+								$("#OrderBookingSource2Id").val(val.source2_id);
+								$("#OrderJobEstimateText").html(val.job_text);
+				});
+		}
+	}
+  else
+    $("#PreviousSection").hide();
+  $.get("/acesys/index.php/jobs/getCategory", {job_type:jt},
+  function(data){
+				//for installation jobs show the appliance order
+				if (data=='2') $('#ApplianceOrder').show();
+				//for all jobs show the questions section
+				OpenQuestions(0);
+  });
+}
+function OpenQuestions(tt){
+	$('#QuestionsWorking'+tt).show();
+  jt=$('#OrderOrderTypeId').val();
+	//$.get("/acesys/index.php/orders/showQuestions",
+		$.get("/acesys/index.php/orders/showTemplateQuestions",
+			  {
+			order_id:'',
+		  	job_type:jt,
+		  	question_type:tt,
+			customer_id:document.getElementById('CustomerId').value
+		  },
+		function(data){
+			$('#OpenQuestionsText').hide();
+			$('#CloseQuestionsText').show();
+			$('#JobDetails'+tt).html(data);
+			$('#JobDetails'+tt).show();
+			last_jt=jt;
+			$('#QuestionsWorking'+tt).hide();
+			checkText();
+		});
+}
+function CloseQuestions(){
+  $('#JobDetails0').hide();
+  $('#JobDetails1').hide();
+  $('#JobDetails2').hide();
+  $('#OpenQuestionsText').show();
+  $('#CloseQuestionsText').hide();
+}
+function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, part_number){
+	$("#item_selector0").html("").hide();
+	$("#item_selector1").html("").hide();
+	var index=1*document.getElementById("NumberOfItems").value;
+	if (new_type==0) tbl = document.getElementById("CurrentItemsTable");
+	else  tbl = document.getElementById("CurrentItemsTableTech");
+		var lastRow = tbl.rows.length-1;
+		var row = tbl.insertRow(lastRow);
+		if (new_type==0) row.setAttribute("class", "booked");
+		else row.setAttribute("class", "extra");
+		row.setAttribute("id", "order_"+index);
+		bodyContent = $.ajax({
+					url: "/acesys/index.php/orders/newItemHTML",
+					type: "GET",
+					data: ({index:index,
+							actions:true,
+							item_id:item_id,
+							name:item_name,
+							price:item_prc,
+							quantity:1,
+							category:new_category,
+							price_purchase:new_pp,
+							part_number:part_number,
+							item_class:new_type}),
+					dataType: "html",
+					async:false}).responseText;
+	$("#order_"+index).html(bodyContent);
+	index++;
+	TotalCalculation();
+	document.getElementById("NumberOfItems").value=index;
+}
+
+function removeItem(item_id){
+		document.getElementById("data[Order][BookingItem]["+item_id+"][quantity]").value="0";
+		$("#order_"+item_id).remove();
+		TotalCalculation();
+//		var index=1*document.getElementById("NumberOfItems").value;
+//    document.getElementById("NumberOfItems").value=index-1;
+}
+function AddCustomerNote()
+{
+	var customer_id = document.getElementById("CustomerId");
+	var customer_note = document.getElementById("txt_customer_note");
+	if(customer_note == null || customer_note.value == ""){
+//		alert("Please enter note!");
+//		customer_note.focus();
+		return;
+	}
+	//1. Add note
+  if(!customer_id.value) SaveCustomerData();
+  else
+	  $.get("/acesys/index.php/orders/customer_notes_add_ajax",
+			{customer_id:customer_id.value,note:customer_note.value},
+		function(data){
+			val = jQuery.parseJSON(data);
+			addRowToTable(val['date'], val['note'], val['created_by']);
+			customer_note.value = "";
+	  });
+}
+function showPayments(){
+  var id = $('#OrderId').val();
+	$.get("/acesys/index.php/payments/techPaymentsForJob",
+	      {order_id:id},
+		function(data){
+			$('#PaymentsDetails').html(data);
+		});
+}
+function SavePayment(){
+  var id = $('#OrderId').val();
+	var method = $("#method").val();
+	var amount = $("#amount").val();
+	var auth_number = $("#auth_number").val();
+	if (!method) {alert('A payment method should be selected!'); return;}
+	if ((method>2)&&(method<6)&&(!auth_number)) {alert('An authorization number is required!'); return;}
+ $.post("/acesys/index.php/payments/savePayment",
+				{order_id:id, method:method, amount:amount, payment_type:1, auth_number:auth_number},function(data){
+    $('#cancel_payment_link').click();
+		showPayments();
+  });
+}
+function ErasePayment(payment_id){
+  $.post("/acesys/index.php/payments/deletePayment",{payment_id:payment_id},function(data){
+    showPayments();
+  });
+}
+function addRowToTable(date, note, created_by)
+{
+	var tbl = document.getElementById('note_table');
+  	var lastRow = tbl.rows.length;
+	//2- header, 1-separator
+  	//alert((lastRow/2)- 1);
+	var row = tbl.insertRow(lastRow);
+	row.setAttribute("style", "height: 20px;background-color:#F8F7F9;");
+	var cellDate = row.insertCell(0);
+	var textNodeDate = document.createTextNode(date);
+  	cellDate.appendChild(textNodeDate);
+	var cellCreatedBy = row.insertCell(1);
+	var textNodeCreatedBy = document.createTextNode(created_by);
+  	cellCreatedBy.appendChild(textNodeCreatedBy);
+	var row2 = tbl.insertRow(lastRow+1);
+	row2.setAttribute("style", "height: 20px;");
+  	var cellNote = row2.insertCell(0);
+	var textNodeNote = document.createTextNode(note);
+  	cellNote.appendChild(textNodeNote);
+  	//Add Separator
+	var row1 = tbl.insertRow(lastRow+2);
+	var cellSeparator = row1.insertCell(0);
+	cellSeparator.setAttribute("colSpan", 3);
+	cellSeparator.setAttribute("style", "background: #AAAAAA; height: 2px;");
+}
+function isValidEmail(email)
+{
+		var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+		return re.test(email);
+}
+function ValidateFields(jobstatus)
+{
+
+	if ( jobstatus == 5 ) {
+		
+		// Prompt user to send a thank you email when the "Done by Tech"
+		// button is pressed from the editBooking page.
+		//if (!confirm("Send email to client?")) {
+		//	return;
+		//}
+		showInvoiceReview();
+		/*var x = screen.width/2 - 800/2;		// width of popup window
+		var y = screen.height/2 - 540/2;	// height of popup window
+		window.open(
+			'../orders/thank_you?id=&email='
+				+ $('#emailinput').val(),
+			'_blank',
+			'scrollbars=1,height=540,width=800,left='+x+',top='+y,
+			false
+		);
+		*/
+		return false;
+	}		
+	var submitForm = true;
+	var errorMsg = "";
+	var CurState = $('#radiostatus:checked').val();
+	if(jobstatus) document.getElementById('OrderOrderStatusId').value = jobstatus;
+	if (CurState==6||(CurState==3)||(CurState==2)){
+		$("#OrderJobTruck").val(0);
+		document.forms['editBookingform'].submit();
+		return;
+	}
+	// Job type
+	var jobType = $("#OrderOrderTypeId").val();
+	if (jobType<=0){submitForm = false; errorMsg += "Please select a job type.\n";}
+	// Customer's phone
+	var phone = $("#CustomerPhone").val();
+	if((phone == null) || trim(phone) == ''){
+		submitForm = false;
+		errorMsg += "Please enter in a phone for this customer.\n";
+	}
+	else
+		$("#CustomerPhone").val(trim(phone));
+	// Customer's Email
+	var email = $("#emailinput").val();
+	if((email == null) || trim(email) == ''){
+		submitForm = false;
+		errorMsg += "Please enter an email for this customer.\n";
+		$("#emailinput").focus();
+	}
+	else {
+		//check if email is valid
+		if(!isValidEmail(email)){
+			submitForm = false;
+			errorMsg += "Please enter in a valid email for this customer.\n";
+			$("#emailinput").focus();
+		}
+		else
+		/*if( (email.indexOf('ace')==0) || (email.indexOf('@ace')==0) ){
+			submitForm = false;
+			errorMsg += "Please enter in a real email for this customer.\n";
+			$("#emailinput").focus();
+		}
+		else*/
+			$("#emailinput").val(trim(email));
+	}
+	// Customer's postal code
+	var val = $("#CustomerPostalCode").val();
+	if (val=='') {
+		submitForm = false;
+		errorMsg += "Please enter a postal code for the customer\n";
+	}
+	if(jobstatus != 8) {
+		// Check truck number
+		var truck = $("#OrderJobTruck").val();
+		if (truck<=0) {
+			submitForm = false;
+			errorMsg += "Please select a route (truck) number.\n";
+		}
+		// Check job date
+		var date = $("#OrderJobDate").val();
+		if (date<=0) {
+			submitForm = false;
+			errorMsg += "Please set the date for this job.\n";
+		}
+		// Check job time
+		var valb = $("#OrderJobTimeBegHour").val();
+		if (valb<=0) {
+			submitForm = false;
+			errorMsg += "Please set the job start time.\n";
+		}
+		var vale = $("#OrderJobTimeEndHour").val();
+		if (vale<=0) {
+			submitForm = false;
+			errorMsg += "Please set the job end time.\n";
+		}
+		if (vale==valb) {
+			submitForm = false;
+			errorMsg += "Job start and job end hours must not be equal!\n";
+		}
+	}
+	//Check if spoken to is empty
+	var valf = $("#OrderSSpokeTo").val();
+	if (valf == '') {
+		submitForm = false;
+		errorMsg += "Spoke to must be filled in\n";
+	}
+	if(jobstatus == 3) {
+	var valg = $("#NoteMessage").val();
+	if (valg == '') {
+		submitForm = false;
+		errorMsg += "Put a reason for cancellation on the notes\n";
+	}
+	}
+	// Check questions
+ /*   NumOfItems=(document.getElementById('DetailsTable').rows.length-1)/2;
+    for(j=0; j<NumOfItems; j++)
+    {
+				aaa = document.getElementById('data[Order][OrdersQuestions]['+(1*j)+'][local_answer]').value;
+				if (aaa=="") {
+				  submitForm = false;
+			    errorMsg += "Please, answer ALL the questions before saving.\n";
+				  break;
+				}
+    }*/
+	// Check items
+	var index=1*document.getElementById("NumberOfItems").value;
+	if (index==0){
+		submitForm = false;
+		errorMsg += "Please add at least one item.\n";
+	}
+	//****************
+	var is_installed = true;
+  	$('.is_installed').each(function(){
+		if($(this).val() == 0) {
+			is_installed = false;
+			return;
+		}
+	});
+	if(!is_installed) {
+		alert("Please indicate if the part was installed/not installed");
+		return;
+	}
+	var selectObj = document.getElementById('CustomerCity');
+	var customerCity = selectObj.value;
+	
+		
+	var OrderID = '';
+	//alert(OrderID);
+		if(submitForm){
+		    if((submitForm==true) && (OrderID!='')){
+				//alert('ImIn');
+				CheckMailSent(OrderID);
+				return false;
+			}
+			if(jobstatus != 8) {
+			$.get("/acesys/index.php/orders/conflictCheck",
+				{jobstatus:jobstatus,
+				 customer_city:customerCity,
+				 job_date:date,
+				 job_truck:truck,
+				 job_from:valb,
+				 job_to:vale,
+				 user_role_id:'3',
+				 order_id:''},
+				function(data){
+				//	if (data.indexOf('OK') > 0)
+					if (data=='OK')
+						//alert('submitFormNEW');
+						document.forms['editBookingform'].submit();
+					else
+						alert(data);
+				});
+			} else {
+				//alert('submitForm');
+				document.forms['editBookingform'].submit();
+			}
+		}
+		else alert(errorMsg);
+
+	if ( jobstatus == 5 ) {
+		
+		// Prompt user to send a thank you email when the "Done by Tech"
+		// button is pressed from the editBooking page.
+		if (!confirm("Send email to client?")) {
+			return;
+		}
+		var x = screen.width/2 - 800/2;		// width of popup window
+		var y = screen.height/2 - 540/2;	// height of popup window
+		window.open(
+			'../orders/thank_you?id=&email='
+				+ $('#emailinput').val(),
+			'_blank',
+			'scrollbars=1,height=540,width=800,left='+x+',top='+y,
+			false
+		);
+	}
+
+}
+function TotalCalculation()
+{
+    subtotal = 0;
+    CheckPrcCount = 0;
+	$('#CurrentItemsTable').children('tbody').children('tr').each(function(i, el) {
+		qty = $(el).children('.quantity').children('input').val();
+		if (qty!=null){
+			prc = $(el).children('.price').children('input').val();
+			disc = $(el).children('.discount').children('input').val();
+			add = $(el).children('.addition').children('input').val();
+			if (prc=="") prc=0;
+			if (disc=="") disc=0;
+			if (add=="") add=0;
+			amount = parseFloat(prc) * qty - (1*disc) + (1*add);
+			subtotal += amount;
+			$(el).children('.amount').html('$'+amount);
+		}
+    });
+    hst = 0;
+    if (subtotal>0) hst = subtotal*0.05;
+ 	  total = subtotal+hst;
+    h = '<table class="total" cellspacing=0>';
+		h += '<tr><td align=right style="border-right:none;">Subtotal:</td><td align=right>'+subtotal.toFixed(2)+'</td></tr>';
+    h += '<tr><td align=right style="border-right:none;">GST:</td><td align=right>'+hst.toFixed(2)+'</td></tr>';
+		h += '<tr><td align=right style="border-right:none;">Total:</td><td align=right>'+total.toFixed(2)+'</td></tr>';
+		h += '</table>';
+  	$("#CurrentItemsTotal").html(h);
+}
+var ChangeDetailsShow=0;
+var last_jt=0;
+function ShowChangeDetails(row_id,cust_id,ord_id,user_id,change_date,change_time){
+	$(".change_details").hide();
+	if (ChangeDetailsShow==0){
+		$.get("/acesys/index.php/orders/getChangesDetails",
+			{customer_id:cust_id,
+			 order_id:ord_id,
+			 change_date:change_date,
+			 change_time:change_time,
+			 change_user_id:user_id},
+			function(data){
+				$("#"+row_id).html(data);
+				$("#"+row_id).show();
+		});
+		ChangeDetailsShow=1;
+	}else ChangeDetailsShow=0;
+}
+function ShowCallHistory(){
+$.get("/acesys/index.php/orders/getCallHistory",
+			{phone:$('#CustomerPhone').val()},
+			function(data){
+        $("#CallHistory").html(data);
+    });
+}
+function SaveCallRecord(){
+	// Check if all the fields are filld up
+	if ($('#CallRecordCallResultId').val()=='') {alert('Please select a CALL RESULT');return;}
+	if ($('#CallRecordCallResultId').val()==2)
+	{
+		if ($('#CallRecordCallbackDate').val()=='') {alert('Please select a CALLBACK DATE');return;}
+		if ($('#CallRecordCallbackUserId').val()=='') {alert('Please select a CALLBACK USER');return;}
+	}
+	$.get("/acesys/index.php/orders/saveCallRecord",
+		{
+		 customer_id:$('#CustomerId').val(),
+		 customer_first_name:$('#CustomerFirstName').val(),
+		 customer_last_name:$('#CustomerLastName').val(),
+		 customer_email:$('#emailinput').val(),
+		 customer_city:$('#CustomerCity').val(),
+		 customer_postcode:$('#CustomerPostalCode').val(),
+		 customer_address_unit:$('#CustomerAddressUnit').val(),
+		 customer_address_street_number:$('#CustomerAddressStreetNumber').val(),
+		 customer_address_street:$('#CustomerAddressStreet').val(),
+		 customer_phone:$('#CustomerPhone').val(),
+		 customer_cell_phone:$('#CustomerCellPhone').val(),
+		 customer_card_number:$('#CustomerCardNumber').val(),
+		 customer_card_exp:$('#data[Customer][card_exp]').val(),
+		 customer_next_service:$('#data[Customer][next_service]').val(),
+		 callresult:$('#CallRecordCallResultId').val(),
+		 callback_reason:$('#CallRecordCallNote').val(),
+		 callback_date:$('#CallRecordCallbackDate').val(),
+		 callback_time:$('#CallRecordCallbackTimeHour').val()+':'+$('#CallRecordCallbackTimeMin').val(),
+		 callback_user:$('#CallRecordCallbackUserId').val(),
+		 call_id:0,
+		 dialer_id:'web'
+		}, function(data){
+			$('#CustomerId').val(data);
+			$.get("/acesys/index.php/orders/getCallHistory", {customer_id:$('#CustomerId').val()}, function(data){
+			  showhist=1;
+			  $("#CallHistory").html(data);
+			  AddCustomerNote();
+			});
+	});
+}
+var PrevState = 7;
+var CurState = 7;
+function StatusChange(element)
+{
+  CurState=element.value;
+	if ((element.value==2)||(element.value==3)) document.getElementById('divReason').style.display='block';
+	else document.getElementById('divReason').style.display='none';
+	if ((element.value==5)&&(''==2)){
+    $("#PermitsSection").show();
+	}else{
+    $("#PermitsSection").hide();
+	}
+}
+function createMessage()
+{
+  var answer = window.open("/acesys/index.php/messages/EditMessage?order_id=&customer_id=",'',
+  "width=450,height=300,left=300,top=200");
+}
+function ShowSelectSupply(){
+  var supply_id = window.open("/acesys/index.php/suppliers/index?mode=select",'',
+"width=800,height=600,left=100,top=50");
+	$("#OrderAppOrderedSupplierId").val(supply_id);
+	ChangeSupplier(document.getElementById("OrderAppOrderedSupplierId"));
+}
+function showAddItems(item_type)
+{
+	$("#item_selector0").html('').hide();
+	$("#item_selector1").html('').hide();
+	jt=$('#OrderOrderTypeId').val();
+	$("#item_selector"+item_type).html('<img src="/acesys/app/webroot/img/wait30trans.gif"/>').show();
+	$.get("/acesys/index.php/items/showPrices?item_type="+item_type+"&job_type="+jt, {}, function(data){
+		$("#item_selector"+item_type).html("<button type='button' style='cursor:pointer;' onclick='$(\"#item_selector"+item_type+"\").html(\"\").hide();'>Close Section</button>"+data);
+	});
+}
+function showChangePrevious()
+{
+	phone=$('#CustomerPhone').val();
+  var new_item = window.open("/acesys/index.php/orders/getPreviousJobs?phone="+phone,'',
+"width=400,height=400,left=100,top=100"); 
+	if (new_item[0]){
+	  $("#OrderJobEstimateId").val(new_item[0]);
+	  $("#OrderBookingSourceId").val(new_item[1]);
+	  $("#OrderBookingSource2Id").val(new_item[2]);
+	  $("#OrderJobEstimateText").html(new_item[3]);
+	}
+}
+function showClients()
+{
+  var new_item = window.open("/acesys/index.php/users/showClients",'',
+  "width=400,height=400,left=200,top=100");
+
+$('#OrderCustomerId').val(new_item[0]);
+$('#CustomerId').val(new_item[0]);
+$('#CustomerFirstName').val(new_item[1]);
+$('#CustomerLastName').val(new_item[2]);
+$('#CustomerAddressUnit').val(new_item[3]);
+$('#CustomerAddressStreetNumber').val(new_item[4]);
+$('#CustomerAddressStreet').val(new_item[5]);
+$('#CustomerCity').val(new_item[6]);
+$('#CustomerPostalCode').val(new_item[9]);
+$('#CustomerPhone').val(new_item[7]);
+$('#CustomerEmail').val(new_item[10]);
+$('#CustomerCellPhone').val(new_item[8]);
+}
+function CheckWithSchedule()
+{
+  var job_date = $('#OrderJobDate').val();
+  var new_item = window.open("/acesys/index.php/orders/scheduleView?schedule_mode=inside&ffromdate="+job_date,
+				'',"width=1000,height=600,left=100,top=100");
+  $('#OrderJobTruck').val(new_item[0]);
+  $('#OrderJobDate').val(new_item[1]);
+  $('#OrderJobTimeBegHour').val(new_item[2]);
+  $('#OrderJobTimeEndHour').val("");
+  $('#OrderJobTechnician1Id').val(new_item[3]);
+  $('#OrderJobTechnician2Id').val(new_item[4]);
+}
+function CheckWithTimeslot() {
+ 	var city = $('#CustomerCity').val();
+	if(city != "") {
+		city = city.replace(' ', '_');
+		var city_id = $('#' + city).val()
+		var new_item = window.open("/acesys/index.php/orders/timeSlots?city_id="+city_id+"&user_id="+231296, '', "width=870,height=350,center=yes");
+ 
+		$('#OrderJobTruck').val(new_item[0]);
+		$('#OrderJobDate').val(new_item[1]);
+		$('#OrderJobTimeBegHour').val(new_item[2]);
+		$('#OrderJobTimeEndHour').val(new_item[5]);
+		$('#OrderJobTechnician1Id').val(new_item[3]);
+		$('#OrderJobTechnician2Id').val(new_item[4]);
+	} else {
+		alert("City must not be blank");
+	}
+}
+function maintenancePackage() {
+	var customer_id = "";
+	if(customer_id != "") {
+		$.post("/acesys/index.php/orders/maintenancePackage",
+			{
+				customer_id:customer_id
+			},
+			function(data){
+				$("#maintenancePackage").html(data);
+			}
+		);
+	}
+}
+function checkText() {
+	$(".text_response").each(function(){
+		if($(this).val() == '') return;
+		var question_id = $(this).prev(".question_id").val();
+		var text_response = $(this).val();
+		var response_id = 0;
+		$(".q" + question_id).addClass("hide");
+		$(".q" + question_id).attr("disabled", "disabled");
+		$(this).next(".response_codes").children(".code").each(function(){
+			var id = $(this).children(".id").val();
+			var operation_id = $(this).children(".operation_id").val();
+			var which_id = $(this).children(".which_id").val();
+			var value;
+			if(which_id == 1) {
+				value = $(this).children(".value").val();
+			} else if(which_id == 2) {
+				var input = $(".rank" + $(this).children(".value").val());
+				if(input.is("select")) value = input.find('option:selected').text();
+				else value = input.val();
+			}
+			if(!isNaN(value)) value = parseInt(value);
+			switch(operation_id){
+				case '1':
+					if(text_response == value) {
+						response_id = id;
+						return false;
+					}
+				break;
+				case '2':
+					if(text_response > value){
+						response_id = id;
+						return false;
+					}
+				break;
+				case '3':
+					if(text_response >= value) {
+						response_id = id;
+						return false;
+					}
+				break;
+				case '4':
+					if(text_response < value) {
+						response_id = id;
+						return false;
+					}
+				break;
+				case '5':
+					if(text_response <= value) {
+						response_id = id;
+						return false;
+					}
+				break;
+				case '6':
+					if(text_response != value) {
+						response_id = id;
+						return false;
+					}
+				break;
+			}
+			response_id = 0;
+		});
+		$("#r" + response_id).removeClass("hide");
+		$("#r" + response_id).removeAttr("disabled", "disabled");
+	});
+	$(".suggestions").each(function(){
+		var response_id = $(this).prev(".response_id").val();
+		var suggestion_id = $(this).val();
+		$(".r" + response_id).addClass("hide");
+		$(".r" + response_id).attr("disabled", "disabled");
+		$("#s" + suggestion_id).removeClass("hide");
+		$("#s" + suggestion_id).removeAttr("disabled", "disabled");
+	});
+}
+$(function(){
+    $("#sortpicture1").change(function(){
+        upload_photo(1);
+    });
+    $("#sortpicture2").change(function(){
+        upload_photo(2);
+    });
+});
+function upload_photo(i) {
+	if($('input[id="sortpicture'+i+'"]').val().length == 0) {
+		return;
+	}
+	var formData = new FormData();
+	formData.append('section', 'general');
+	formData.append('action', 'previewImg');
+	// Main magic with files here
+	formData.append('image', $('input[id="sortpicture'+i+'"]')[0].files[0]);
+	$('#uploading_' + i).show();
+
+	$.ajax({
+		url: '/acesys/index.php/orders/uploadPhoto//'+i,
+		dataType: 'text',
+		cache: false,
+		contentType: false,
+		processData: false,
+		data: formData,
+		type: 'post',
+		success: function(data) {
+			$('#photo_' + i).attr('src', data);
+			$('#big_photo_' + i).attr('src', data);
+			$('#uploading_' + i).hide();
+		}
+	});
+}
+$(document).ready(function(){
+	//$('input:text').setMask();
+	last_jt='';
+	ShowCallHistory();
+	showPayments();
+  				OpenJobsHistory();
+  	//
+	var test_server = "http://69.31.184.162:81/acesys/acesys/acesys-2.0/index.php/";
+	//var live_server = "http://69.31.184.162:81/acesys/index.php/";
+	var live_server = "/acesys/index.php";
+	var l = $(location).attr('href');
+	if(l.indexOf("acesys-2.0") != -1) G_URL = test_server;
+	else G_URL = live_server;
+	var G_URL = 'http://acecare.ca/acesys/index.php/';
+  //tree view for the items
+	storeTreeInitialize();
+	$('#closeBookedItems').hide();
+	$('#closeTechnicianSales').hide();
+	$('.loading_indicator').hide();
+	$('#addBookedItems').click(function(){
+		$('#addBookedItemsTree').click();
+	});
+	$('#addBookedItemsTree').click(function(){
+		var ROOT_URL = '/acesys/index.php/';
+		var url = ROOT_URL + "iv_items/storeTree?mode=0";
+		$('#addBookedItems').hide();
+		$('#book_loading').show();
+		$('#closeBookedItems').hide();
+		$('#closeTechnicianSales').click();
+		$.get(url,
+			{},
+			function(data){
+				$('#book_loading').hide();
+				$('#closeBookedItems').show();
+				$('#item_selector0').show();
+				$('#item_selector1').html('');
+				$('#item_selector1').hide();
+				$('#item_selector0').html(data);
+				$('#tabs').tabs();
+				$(".all_node").click();
+		});
+	});
+	$('#addBookedItemsList').click(function(){
+		var url = G_URL + "iv_items/storeList?mode=0";
+		$('#addBookedItems').hide();
+		$('#book_loading').show();
+		$('#closeBookedItems').hide();
+		$('#closeTechnicianSales').click();
+		$.get(url,
+			{},
+			function(data){
+				$('#book_loading').hide();
+				$('#closeBookedItems').show();
+				$('#item_selector0').show();
+				$('#item_selector1').html('');
+				$('#item_selector1').hide();
+				$('#item_selector0').html(data);
+				$('#tabs').tabs();
+				$(".all_node").click();
+		});
+	});
+	$('#closeBookedItems').click(function(){
+		$('#item_selector0').hide();
+		$('#item_selector0').html('');
+		$('#closeBookedItems').hide();
+		$('#addBookedItems').show();
+	});
+	$('#addTechnicianSales').click(function(){
+		$('#addTechnicianSalesTree').click();
+	});
+	$('#addTechnicianSalesTree').click(function(){
+		var url = G_URL + "iv_items/storeTree?mode=1";
+		$('#addTechnicianSales').hide();
+		$('#tech_loading').show();
+		$('#closeTechnicianSales').hide();
+		$('#closeBookedItems').click();
+		$.get(url,
+			{},
+			function(data){
+				$('#tech_loading').hide();
+				$('#closeTechnicianSales').show();
+				$('#item_selector1').show();
+				$('#item_selector0').html('');
+				$('#item_selector0').hide();
+				$('#item_selector1').html(data);
+				$('#tabs').tabs();
+				$(".all_node").click();
+		});
+	});
+	$('#addTechnicianSalesList').click(function(){
+		var url = G_URL + "iv_items/storeList?mode=1";
+		$('#addTechnicianSales').hide();
+		$('#tech_loading').show();
+		$('#closeTechnicianSales').hide();
+		$('#closeBookedItems').click();
+		$.get(url,
+			{},
+			function(data){
+				$('#tech_loading').hide();
+				$('#closeTechnicianSales').show();
+				$('#item_selector1').show();
+				$('#item_selector0').html('');
+				$('#item_selector0').hide();
+				$('#item_selector1').html(data);
+				$('#tabs').tabs();
+				$(".all_node").click();
+		});
+	});
+	$('#closeTechnicianSales').click(function(){
+		$('#item_selector1').hide();
+		$('#item_selector1').html('');
+		$('#closeTechnicianSales').hide();
+		$('#addTechnicianSales').show();
+	});
+	maintenancePackage();
+	initializeQuestions();
+});
+function emailInvoice(order_id) {
+	var email = $('#emailinput').val();
+	if(email == "") {alert("Fill in email"); return false;}
+	window.open('/acesys/index.php/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office', '_new');
+	history.go(-1);
+	window.locatoin.href='';
+	history.go(-1);
+	alert("Email sent");
+
+}
+
+function emailInvoiceReviewLink(order_id) {
+	var email = $('#emailinput').val();
+	if(email == "") {alert("Fill in email"); return false;}
+	window.open('/acesys/index.php/orders/emailInvoiceReviewLinks?order_id='+ order_id +'&email='+ email +'&type=office', '_new');
+	history.go(-1);
+	alert("Email sent");
+}
+
+function noInvoiceReviewLink(order_id) {
+	var email = $('#emailinput').val();
+	//if(email == "") {alert("Fill in email"); return false;}
+	$.ajax({url: '/acesys/index.php/orders/noInvoiceReviewLinks?order_id='+ order_id +'&email='+ email +'&type=office', success: function(result){
+        //$("#div1").html(result);
+    }});
+	//window.open('/acesys/index.php/orders/noInvoiceReviewLinks?order_id='+ order_id +'&email='+ email +'&type=office', '_new');
+	history.go(-1);
+	//alert("Email sent");
+}
+
+function emailCallsInvoice(order_id) {
+	var email = $('#emailinput').val();
+	if(email == "") {alert("Fill in email"); return false;}
+	window.open('/acesys/index.php/calls/invoiceemail?order_id='+ order_id +'&email='+ email, '_new');
+	history.go(-1);
+	alert("Email sent");
+}
+function showPlayer(order_id, agent_id, date, phone)
+{
+	var url = "/acesys/index.php/messages/player";
+	url += "?order_id=" + order_id;
+	url += "&agent_id=" + agent_id;
+	url += "&phone=" + phone;
+	url += "&date=" + date;
+	var option = "width=450,height=300,left=300,top=200,status=off,scroll=off,resizable=off";
+	var answer = window.open(url,'', option);
+}
+function carryAnswers(customer_id) {
+}
+function initializeQuestions() {
+	$(".responses").live("change", function(){
+		var question_id = $(this).prev(".question_id").val();
+		var response_id = $(this).val();
+		$(".q" + question_id).addClass("hide");
+		$(".q" + question_id).attr("disabled", "disabled");
+		$("#r" + response_id).removeClass("hide");
+		$("#r" + response_id).removeAttr("disabled", "disabled");
+	});
+	$(".suggestions").live("change", function(){
+		var response_id = $(this).prev(".response_id").val();
+		var suggestion_id = $(this).val();
+		$(".r" + response_id).addClass("hide");
+		$(".r" + response_id).attr("disabled", "disabled");
+		$("#s" + suggestion_id).removeClass("hide");
+		$("#s" + suggestion_id).removeAttr("disabled", "disabled");
+	});
+	//--------text response-----------
+	$(".text_response").live("change", function(){
+		var question_id = $(this).prev(".question_id").val();
+		var text_response = $(this).val();
+		var response_id = 0;
+		$(".q" + question_id).addClass("hide");
+		$(".q" + question_id).attr("disabled", "disabled");
+		$(this).next(".response_codes").children(".code").each(function(){
+			var id = $(this).children(".id").val();
+			var operation_id = $(this).children(".operation_id").val();
+			var which_id = $(this).children(".which_id").val();
+			var value;
+			if(which_id == 1) {
+				value = $(this).children(".value").val();
+			} else if(which_id == 2) {
+				var input = $(".rank" + $(this).children(".value").val());
+				if(input.is("select")) value = input.find('option:selected').text();
+				else value = input.val();
+			}
+			if(!isNaN(value)) value = parseInt(value);
+			switch(operation_id){
+				case '1':
+					if(text_response == value) {
+						response_id = id;
+						return false;
+					}
+				break;
+				case '2':
+					if(text_response > value){
+						response_id = id;
+						return false;
+					}
+				break;
+				case '3':
+					if(text_response >= value) {
+						response_id = id;
+						return false;
+					}
+				break;
+				case '4':
+					if(text_response < value) {
+						response_id = id;
+						return false;
+					}
+				break;
+				case '5':
+					if(text_response <= value) {
+						response_id = id;
+						return false;
+					}
+				break;
+				case '6':
+					if(text_response != value) {
+						response_id = id;
+						return false;
+					}
+				break;
+			}
+			response_id = 0;
+		});
+		$("#r" + response_id).removeClass("hide");
+		$("#r" + response_id).removeAttr("disabled", "disabled");
+	});
+}
+
+function CheckMailSent(OrderID){
+
+	var formData = '&Oid='+OrderID;
+	$.ajax({
+		url: '/acesys/index.php/orders/checkMailSend/?ordid=',
+		dataType: 'text',
+		cache: false,
+		contentType: false,
+		processData: false,
+		data: formData,
+		type: 'post',
+		success: function(data) {
+		var res = data.split("@@");
+			if(res[0]==1){
+				$("#msgbx").html("You have already sent an email to this client on ("+res[1]+") would like to send another email with all changes?");
+				showme();
+
+				/*if (window.confirm("You have already sent an email to this client on ("+res[1]+") would like to send another email with all changes?")) { 
+					$("#SendMailAgain").val(1);
+				  	return true;
+				}else{
+					$("#SendMailAgain").val(0);
+					return false;
+				}*/
+			}			
+		}
+	});
+}
+
+
+/* OPEN MODAL BOX */
+// Get the modal
+//var modal = document.getElementById('myModal');
+
+// Get the button that opens the modal
+//var btn = document.getElementById("myBtn");
+
+// Get the <span> element that closes the modal
+//var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks the button, open the modal 
+//btn.onclick = function() {
+//    modal.style.display = "block";
+//}
+
+// When the user clicks on <span> (x), close the modal
+//span.onclick = function() {
+//    modal.style.display = "none";
+//}
+
+// When the user clicks anywhere outside of the modal, close it
+//window.onclick = function(event) {
+//    if (event.target == modal) {
+//        modal.style.display = "none";
+//    }
+//}
+function hideme(){
+	document.getElementById("myModal").style.display = "none";
+}
+function showme(){
+	document.getElementById("myModal").style.display = "block";
+}
+
+function showInvoiceReview(){
+	document.getElementById("myModalNew").style.display = "block";
+}
+function hideInvoiceReview(){
+	document.getElementById("myModalNew").style.display = "none";
+}
+
+
+
+function clickYes(){	
+	//document.getElementById("conffinal").style.display = "block";
+	//document.getElementById("confbtn").style.display = "none";
+	$("#SendMailAgain").val(1);
+	document.forms['editBookingform'].submit();
+}
+function clickNo(){
+	//document.getElementById("conffinal").style.display = "block";
+	//document.getElementById("confbtn").style.display = "none";
+	$("#SendMailAgain").val(0);
+	document.forms['editBookingform'].submit();
+}
+
+//function clickOk(){
+//	document.forms['editBookingform'].submit();
+//}
+
+function verification_type(Order){	
+	var card_type = $("input[type='radio'].radioBtnClass:checked").val();
+    if(card_type == 1){
+    	emailInvoice(Order);
+    	//window.location.reload(true);
+    	window.location.href='scheduleView';
+    	hideInvoiceReview();
+    }else if(card_type == 2){
+    	emailInvoiceReviewLink(Order);
+    	window.location.href='scheduleView';
+    	hideInvoiceReview();
+    }else if(card_type == 3){
+    	noInvoiceReviewLink(Order);
+    	window.location.href='scheduleView';
+    	hideInvoiceReview();
+    }
+}
+
+/********************Jack Hutson ***********/
+$(document).ready(function(){
+    						    $('#referred_by_name').hide();
+			
+});
+
+
+</script>
+<style>
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+
+/* Modal Content */
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+/* The Close Button */
+.close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#notes_table {
+	border:1px solid #ffffff;
+	border-collapse:collapse;
+}
+#previous_notes td {
+	padding:3px;
+}
+#previous_notes .odd_row {
+	background-color:#cccccc;
+}
+.urgency_td {
+	width:20px;
+}
+.message_td {
+	width:300px;
+}
+.hide {
+	display:none;
+}
+select {
+	width:100px;
+}
+input[type=text] {
+	width:100px;
+}
+.btncls {
+	background-color: #CCC;
+    width: 60px;
+    height: 25px;
+    color: #000;
+    font-weight: bold;
+}
+p#confbtn {
+    padding: 5px;
+    vertical-align: middle;
+    text-align: center;
+}
+p#msgbx {
+    font-size: 14px;
+    padding: 5px;
+}
+.emlcls {
+	    width: 50%;
+    background-color: #CCC;
+    padding: 20px;
+    font-size: 14px;
+}
+</style>
+
+<!-- Trigger/Open The Modal -->
+<!-- The Modal -->
+<div id="myModal" class="modal">
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close" onclick="hideme()">×</span>
+    <p id="msgbx"></p>
+    <p id="confbtn">
+    	<input type="button" name="yes" value="Yes" onclick="clickYes()" class="btncls">
+    	<input type="button" name="no" value="No" onclick="clickNo()" class="btncls">
+    </p>
+    <!--<p id="conffinal" style="display:none;">
+    	<input type="button" name="ok" value="Ok" onclick="clickOk()" class="btncls">
+    </p>-->
+  </div>
+</div>
+
+
+
+
+<!-- The Modal -->
+<div id="myModalNew" class="modal">
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close" onclick="hideInvoiceReview()">×</span>
+    <p id="msgbx"></p>
+    <p id="confbtn">
+       	<table style="width: 100%;text-align: left;font-weight: bolder;">
+    		<tbody><tr class="visible">
+	    		<td class="special_section ">
+					<input type="radio" id="emailinvoice" class="radioBtnClass" name="donetechby" value="1"> Email Invoice
+				</td>
+			</tr>
+			<tr class="visible">
+				<td class="special_section ">
+					<input type="radio" id="emailInterviews" class="radioBtnClass" name="donetechby" value="2">
+					Email Invoice/Review links
+				</td>
+			</tr>
+			<tr class="visible">	
+				<td class="special_section ">
+					<input type="radio" id="emailNoInterviews" class="radioBtnClass" name="donetechby" value="3">
+					Don't Send Invoice
+				</td>
+			</tr>
+			<tr class="visible">
+				<td class="special_section">
+					<input type="button" onclick="verification_type();" name="orderbytech" value="Ok">
+					<input type="button" onclick="hideInvoiceReview()" name="orderbytech" value="Cancel">
+				</td>
+			</tr>
+    	</tbody></table>
+    </p>
+    
+  </div>
+</div>
+
+
+
+<!-- This tag creates our form tag -->
+<input type="hidden" name="havetoprint" id="havetoprint" value="0">
+<input type="hidden" id="NumberOfItems" value="0">
+
+	<input type="hidden" id="SendMailAgain" name="SendMailAgain" value="1">
+ <form  id="disposition_form" action="<?=BASE_URL;?>/dialer/index" method="post">  
+<table id="MainTable" width="90%" heigth="90%">
+<tbody><tr class="visible"><td colspan="3">
+    <div>
+   <!-- <div class="tabtrigger tabOff" id="trigger1" onclick="openTab(1);">Booking Info</div>-->
+   <!-- <div class="tabtrigger tabOver" id="trigger3" onclick="openTab(3);">Calls History</div>
+    <div class="tabtrigger" id="trigger4" onclick="openTab(4);">Feedback</div>
+	    <div class="tabtrigger tabOff" id="trigger6" onclick="createMessage();">Remind</div>-->
+	</div>
+</td>
+</tr>
+<tr style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;" class="visible">
+<td width="260px" style="text-align:left;vertical-align:top">
+    <!--<input type="button" value="Change customer" onclick="showClients()"> -->
+    <div class="frame-wrap">
+        <div class="frame-header-left"></div>
+        <div class="frame-header-title">Customer's information</div>
+        <div class="frame-header-right"></div>
+        <div class="frame-body" style="clear: both;">
+                       
+            <table>
+                <tbody>
+				<tr class="visible">
+                    <td align="right">First Name:</td>
+                    <td>
+                    <input name="first_name" style="width: 140px;"  type="text" id="CustomerFirstName" 
+                      value="<?=$customer['customer_first_name'];?>" >
+                    </td>
+                </tr>
+                <tr class="visible">
+                    <td align="right">Last Name:</td>
+                    <td>
+                    <input name="last_name" style="width: 140px;"  type="text" id="CustomerLastName" 
+                    value="<?=$customer['customer_last_name'];?>" >
+                    </td>
+                </tr>
+				<tr class="visible">
+					<td align="right">E-Mail:</td>
+					<td>
+					<input name="email" autocomplete="off" onchange="if (this.value != '') document.getElementById('maillink').innerHTML='<a href=&quot;#&quot; onclick=&quot;newWindow(\'./sendMail?email='+this.value+'\',\'\',480,350,\'resize=no\');&quot;>E-Mail Customer</a>';" id="emailinput" style="width: 140px;"  type="text"   value="<?=$customer['customer_email'];?>" >															</td>
+                </tr>
+				<!--<tr class="visible">
+					<td align="right"><b>Address:</b></td>
+					<td><input name="data[Customer][address_unit]" style="width: 120px;" value="" type="text" id="CustomerAddressUnit">
+					</td>
+				</tr>-->
+				<tr class="visible">
+					<td align="right">Unit:</td>
+					<td><input name="data[Customer][address_unit]" style="width: 120px;" value="" type="text" id="CustomerAddressUnit"></td>
+				</tr>
+				<tr class="visible">
+					<td align="right">Street number:</td>
+					<td><input name="address_street_number" style="width: 120px;" value="" type="text" id="CustomerAddressStreetNumber"></td>
+				</tr>
+				<tr class="visible">
+					<td align="right">Street:</td>
+					<td><input name="address_street" style="width: 120px;" v type="text" id="CustomerAddressStreet" 
+					  value="<?=$customer['customer_address'];?>"></td>
+				</tr>
+				<tr class="visible">
+                    <td align="right">City:</td>
+                      <td>
+					    <?php echo $html->selectTag('Customer/city', $allCities, $customer['customer_city']);?>
+                       
+                    </td>
+                                            
+                </tr>
+                <tr class="visible">
+                    <td align="right">Postal Code:</td>
+                    <td>
+                    <input name="postal_code"  style="width: 140px;" type="text" id="CustomerPostalCode" 
+                    value="<?=$customer['customer_zipcode'];?>">                                        </td>
+                </tr>
+                <tr class="visible">
+                    <td align="right">Phone*:</td>
+                    <td>
+                    <input name="phone" value="" style="width: 140px;" type="text" id="CustomerPhone">                                        </td>
+                </tr>
+                <tr class="visible">
+                    <td align="right">Cell Phone:</td>
+                    <td>
+                    <input name="cell_phone" style="width: 140px;" type="text" id="CustomerCellPhone"  
+                           value="<?=$customer['customer_homephone'];?>" >                                        
+                     </td>
+                </tr>
+                <tr class="visible">
+                    <td align="right">Business Phone:</td>
+                    <td>
+                    <input name="business_phone" value="" style="width: 140px;" type="text" id="CustomerBusinessPhone">                    </td>
+                </tr>
+                <tr class="visible">
+                    <td align="right">Member Card:</td>
+                    <td>
+                    <input name="card_number" style="width: 140px;" value="" type="text" id="CustomerCardNumber">   </td>
+								</tr>
+				<tr class="visible">
+					<td align="right">Exp. Date:</td>
+					<td>
+					<input type="text" id="card_exp" name="card_exp" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="">
+					</td>
+				</tr>
+				<tr class="visible">
+					<td align="right">Next Service:</td>
+					<td>
+					<input type="text" id="next_service" name="next_service" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="">
+					</td>
+				</tr>
+
+                <tr class="visible">
+                    <td align="center" colspan="2">
+                    <div id="maillink"></div>
+                    <script language="JavaScript">
+                    document.getElementById('emailinput').onchange();
+                    </script>
+                    </td>
+                </tr>
+				<!--<tr class="visible">
+				    <td colspan="2">Common notes:</td>
+				</tr>
+				<tr class="visible"><td colspan="2">
+					<table class="historytable" width="100%" id="note_table" name="note_table">
+						<tbody><tr style="background: #9EE871;height:15px;" class="visible">
+							<th>Date</th><th>Created By</th>
+						</tr>
+						<tr style="background: #9EE871;height:15px;" class="visible">
+							<th colspan="2">Note</th>
+						</tr>
+						<tr class="visible"><td colspan="2" style="background: black; height: 2px;"></td></tr>
+											</tbody></table>
+				</td></tr>
+				<tr class="visible"><td colspan="2">
+					Common note: <br>
+					<textarea name="data[txt_customer_note][]" rows="3" cols="35" id="txt_customer_note"></textarea>				</td></tr>
+				<tr class="visible"><td colspan="2">
+				  <tabale></tabale></td></tr><tr class="visible">
+					<td><input type="button" value="Add Note" style="border-color: #72BF44 #72BF44 #72BF44 #72BF44;" onclick="javascript:AddCustomerNote();"></td>
+				</tr>-->
+				
+            </tbody></table>
+        </div>
+    </div>
+</td>
+<td style="text-align:left;vertical-align:top">
+	 <h2>Disposition</h2>     
+	   	<table cellspacing="0" cellpadding="0">
+				<tbody>
+					<tr class="visible">
+						<td><input    name="disposition" type="radio" value="1">
+                        <span>Not interested</span></td>
+                        
+						<td><input   name="disposition" type="radio" value="2">
+                        <span>Do not call</span> </td>
+					</tr>
+					<tr class="visible">
+						<td> <input   name="disposition" type="radio" value="5">
+                        <span>Busy</span></td>
+                        
+						<td><input   name="disposition" type="radio" value="4">
+                          <span>Wrg number</span></td>
+					</tr>
+					<tr class="visible">
+						<td> <input  name="disposition" type="radio" value="9">
+                        <span>Booked</span></td>
+                        
+						<td><input   name="disposition" type="radio" value="6">
+                          <span>Not in service</span></td>
+					</tr>
+					<tr class="visible">
+						<td><input   name="disposition" type="radio" value="3">
+                        <span>Ans machine</span></td>
+                        
+						<td><input   name="disposition" type="radio" value="8">
+                        <span>No english</span></td>
+					</tr>
+					<tr class="visible">
+					<td><input   class="call_back" name="disposition" type="radio" value="7">
+                        <span>Call back</span></td>
+						<td></td>
+       				</tr>
+					<tr class="hide callback_tr">
+					<td><span>Call back date </span> <br><input   name="call_back_date" type="text" >
+                        </td>
+						<td><span>Call back time </span><br> <input   name="call_back_time" type="text" ></td>
+       				</tr>
+					
+			</tbody></table><br><br>
+   <a href="javascript:void(0)"  id="disposeBtn" name="disposeBtn" class="">Next Call</a>
+		</div>				
+  
+   
+    </div>
+</td>
+</tr>
+</tbody></table>
+
+<input type="hidden" name="customer_id" value="<?=$customer['customer_id'];?>" >
+<input type="hidden" name="submit_disposition" value="">
+</form>
+		</div>
+		<!-- FOOTER SECTION -->
+		<!-- END FOOTER SECTION -->
+		<div style="clear: both;"></div>
+	</div>
+<script>
+
+$(document).ready(function(){ 
+	$('#disposeBtn').click(function(){ 
+	 var disposition=	$('input[name="disposition"]:checked').val(); 
+		
+	if(disposition !=''){ 
+		$('#disposition_form').submit();
+	
+  }
+	
+ });
+ /******************/
+ $('.call_back').click(function(){
+	 $('.callback_tr').toggleClass('hide');
+ });
+ /******************/
+ $('input[name="call_back_date"]').datepicker({ dateFormat: 'dd-mm-yy' });
+ //$('input[name="call_back_time"]').timepicker({timeFormat: 'HH:mm:ss'});
+ 
+ 
+});
+
+</script>

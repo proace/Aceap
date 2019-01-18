@@ -1,0 +1,101 @@
+<script language="JavaScript" type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+
+<style>
+.referral_table tr{
+cursor:pointer;
+}
+</style>
+<script>
+
+function submit_referral(rowid){
+  $("input[name='first_name']").val($('tr[rowid="'+rowid+'"]').attr('first_name'));
+  $("input[name='last_name']").val($('tr[rowid="'+rowid+'"]').attr('last_name'));
+  $("input[name='email']").val($('tr[rowid="'+rowid+'"]').attr('email'));
+  $("input[name='phone']").val($('tr[rowid="'+rowid+'"]').attr('phone'));
+  $("input[name='city']").val($('tr[rowid="'+rowid+'"]').attr('city'));
+  $("input[name='address']").val($('tr[rowid="'+rowid+'"]').attr('address'));
+  $("input[name='comment']").val($('tr[rowid="'+rowid+'"]').attr('comment'));
+  $("input[name='referred_by_name']").val($('tr[rowid="'+rowid+'"]').attr('referred_by_name'));
+  $("input[name='referred_by_existing_userid']").val($('tr[rowid="'+rowid+'"]').attr('referred_by_existing_userid'));
+  $("input[name='user_card_number']").val($('tr[rowid="'+rowid+'"]').attr('user_card_number'));
+  $("input[name='ref_card_number']").val($('tr[rowid="'+rowid+'"]').attr('ref_card_number'));
+  $('#referral_form').submit();
+}
+</script>
+ <form method="post" action="<?php echo BASE_URL;?>/orders/editBooking?customer_id=&order_id=0" id="referral_form">
+       
+<input type="hidden" name="first_name" value="">
+<input type="hidden" name="last_name"  value="">
+<input type="hidden" name="email"      value="">
+<input type="hidden" name="phone"      value="">
+<input type="hidden" name="city"       value="">
+<input type="hidden" name="address"    value="">
+<input type="hidden" name="comment"    value="">
+<input type="hidden" name="referred_by_name"    value="">
+<input type="hidden" name="user_card_number"    value="">
+<input type="hidden" name="referred_by_existing_userid"    value="">
+<input type="hidden" name="ref_card_number"    value="">
+
+	   </form>
+<table class="table referral_table">
+ <tbody>
+<tr>
+<td><b>S.No</b></td>
+<td><b>Name</b></td>
+<td><b>Email</b></td>
+<td><b>Phone</b></td>
+<td><b>City</b></td>
+<td><b>Address</b></td>
+<td><b>Card Number</b></td>
+<td><b>Comment</b></td>
+<td><b>Referred By</b></td>
+<td><b>Referrer Card Number</b></td>
+ </tr>
+</tbody>
+
+ <tbody>
+<?php  $i=1;
+ foreach($referral as $r){ ?>
+<tr rowid="<?php echo $i;?>" onclick=submit_referral(<?php echo $i;?>) 
+    first_name="<?=$r['first_name'];?>" last_name="<?=$r['last_name'];?>" email="<?=$r['email'];?>" phone="<?=$r['phone'];?>" city="<?=$r['city'];?>" address="<?=$r['address'];?>"  comment="<?=$r['comment'];?>" referred_by_name="<?=$r['referred_by_name'];?>"  referred_by_existing_userid="<?=$r['existinguser_id'];?>"   user_card_number="<?=$r['card_number'];?>" ref_card_number="<?=$r['ref_card_number'];?>">
+<td><?= $i;$i++; ?></td>
+<td><?= $r['first_name'].' '.$r['last_name']; ?></td>
+<td><?= $r['email']; ?></td>
+<td><?= $r['phone']; ?></td>
+<td><?= $r['city']; ?></td>
+<td><?= $r['address']; ?></td>
+<td><?= $r['card_number']; ?></td>
+<td><?= $r['comment']; ?></td>
+<td><?= $r['referred_by_name']; ?></td>
+<td><?= $r['ref_card_number']; ?></td>
+</tr>
+<?php } ?>
+</tbody>
+
+</table>
+
+<style>
+.table {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 20px;
+}
+
+.table>tbody>tr>td {
+    padding: 8px;
+    line-height: 1.42857143;
+    vertical-align: top;
+    
+}
+.table>tbody>tr {
+   
+    border-top: 1px solid #ddd;
+}
+table {
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+</style>
+
+

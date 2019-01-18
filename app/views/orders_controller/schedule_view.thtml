@@ -1,0 +1,1153 @@
+<meta http-equiv="refresh" content="60">
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+<script language="JavaScript" type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/showhint.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.menu.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.cookie.js"></script>
+
+<style type="text/css">
+    /* all context menus has this class */
+    .context-menu {
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      border-radius: 4px;
+
+      background-color: #f2f2f2;
+      border: 1px solid #999;
+
+      list-style: none;
+      margin: 0; padding: 0;
+    }
+    .context-menu a {
+      display: block;
+      padding: 3px;
+      text-decoration: none;
+      color: #333;
+    }
+    .context-menu a:hover {
+      background-color: #666;
+      color: white;
+    }
+    #hintbox { /*CSS for pop up hint box */
+        position:absolute;
+        top: 0;
+        background-color: lightyellow;
+        width: 150px; /*Default width of hint.*/
+        padding: 3px;
+        border:1px solid black;
+        font:normal 11px Verdana;
+        line-height:18px;
+        z-index:100;
+        border-right: 3px solid black;
+        border-bottom: 3px solid black;
+        visibility: hidden;
+    }
+    .hintanchor { /*CSS for link that shows hint onmouseover*/
+        font-weight: bold;
+        color: navy;
+        margin: 3px 8px;
+    }
+    .results1 {
+        float: left;
+        background: #CCCCCC;
+    }
+    .results1 th {
+        background: #666666;
+        border-left: 0px solid #FFFFFF;
+        border-top: 0px solid #FFFFFF;
+        font-weight: bold;
+        font-size:10px;
+        font-family:Verdana;
+        color: #FFFFFF;
+    }
+    .results1 td.aaa {
+        background:  #FFFFFF;
+    }
+
+    .add_route_user {
+        width:100%;
+        float:right;
+        background-color:#eeeeee;
+        padding:0;
+        border:none;
+        font-size:90%;
+    }
+
+    .delete_route_user {
+        width:20px;
+        float:right;
+        text-align:right;
+        text-decoration:none;
+        color:#333333;
+        padding:0 2px;
+    }
+
+    .route_user {
+        margin:1px;
+        background-color:eeeeee;
+    }
+#return {
+    display:block;
+    color:#ff6633;
+    background-color:#333333;
+    padding:3px;
+    position:relative;
+    left:-10px;
+    top:-10px;
+    font-size:140%;
+}
+
+/* Blink for Webkit and others
+(Chrome, Safari, Firefox, IE, ...)
+*/
+
+@-webkit-keyframes blinker {
+  from {opacity: 1.0;}
+  to {opacity: 0.0;}
+}
+.blink{
+    text-decoration: blink;
+    -webkit-animation-name: blinker;
+    -webkit-animation-duration: 0.6s;
+    -webkit-animation-iteration-count:infinite;
+    -webkit-animation-timing-function:ease-in-out;
+    -webkit-animation-direction: alternate;
+}
+</style>
+
+
+<script>
+function BookTimeslot(job_truck, job_time_beg, tech1, tech2)
+{
+<?php if ($_REQUEST['schedule_mode']=='inside'): ?>
+    var new_item=new Array();
+    new_item[0]=job_truck;
+    new_item[1]=document.getElementById("ffromdate").value;
+    new_item[2]=job_time_beg;
+    new_item[3]=tech1;
+    new_item[4]=tech2;
+    window.returnValue=new_item;
+    window.close();
+<? else: ?>
+    document.location.href='<?=BASE_URL?>/orders/<?=$method?>?customer_id=<?=$_GET['customer_id']?>&job_truck='+job_truck
+      +'&job_time_beg='+job_time_beg+':00&job_date=<?=$fdate?>&job_technician1_id='+tech1+'&job_technician2_id='+tech2;
+<? endif; ?>
+}
+function setLocation(job, truck, beg_hour)
+{
+    job = job.replace("divjob","");
+    //alert(job + '-' + truck + '-' + beg_hour);
+    $.get("<?=BASE_URL;?>/orders/changeJobTruckAndHour",
+        {order_id:job,job_truck:truck,beg_hour:beg_hour},
+        function(data){
+            document.viewform.submit();
+        }
+    );
+}
+function nothingChangeJobTruckAndHour()
+{
+    //alert(job + '-' + truck + '-' + beg_hour);
+    $.get("<?=BASE_URL;?>/orders/nothingChangeJobTruckAndHour",
+        function(data){
+            document.viewform.submit();
+        }
+    );
+}
+function setSubstatus(job, substatus)
+{
+    job = $(job).attr('id');
+    job = job.replace("divjob","");
+    $.post("<?=BASE_URL;?>/orders/setSubstatus",
+        {order_id:job,substatus:substatus},
+        function(data){
+            document.viewform.submit();
+        }
+    );
+}
+function setEndTime(job, diff)
+{
+    job = $(job).attr('id');
+    job = job.replace("divjob","");
+    $.post("<?=BASE_URL;?>/orders/setEndTime",
+        {order_id:job,time_diff:diff},
+        function(data){
+            document.viewform.submit();
+        }
+    );
+}
+
+function toggleVisible(job, visibility)
+{
+    job = $(job).attr('id');
+    job = job.replace("divjob","");
+    $.post("<?=BASE_URL;?>/orders/toggleVisible",
+        {order_id:job,visibility:visibility},
+        function(data){
+            document.viewform.submit();
+        }
+    );
+}
+
+function getLocation(truck, beg_hour, end_hour, padding)
+{
+    var left = -1;
+    var top = -1;
+    var right = -1;
+    var bottom = -1;
+
+    //Get table location
+    tabletop = window.tabletop;
+    tableleft = window.tableleft;
+    top_mod = 0;
+    left_mod = 0;
+    <?php if (($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13)) { ?>
+    top_mod = 95;
+    left_mod = 10;
+    <? } ?>
+
+    //Get top-left and bottom-right bundaries
+    if (document.getElementById('c_' + truck + '_' + beg_hour))
+    {
+        top = document.getElementById('c_' + truck + '_' + beg_hour).offsetTop + tabletop + top_mod;
+        left = document.getElementById('c_' + truck + '_' + beg_hour).offsetLeft + tableleft + left_mod;
+    }
+
+    if (document.getElementById('c_' + truck + '_' + (end_hour-1)))
+    {
+        bottom = document.getElementById('c_' + truck + '_' + (end_hour-1)).offsetTop + document.getElementById('c_' + truck + '_' + (end_hour-1)).offsetHeight + tabletop + top_mod;
+        right = document.getElementById('c_' + truck + '_' + (end_hour-1)).offsetLeft + document.getElementById('c_' + truck + '_' + (end_hour-1)).offsetWidth + tableleft + left_mod;
+    }
+
+    //Add padding
+    if ((padding > 0) && (top != -1) && (left != -1))
+    {
+        top += padding;
+        left += padding;
+        bottom -= padding;
+        right -= padding;
+    }
+
+    return new Array(left, top, right, bottom);
+}
+
+function repositionAll()
+{
+    orders = window.orders;
+
+    for (i=0; i < orders.length; i++)
+        repositionOrder(orders[i]);
+}
+
+function repositionOrder(order)
+{
+    el = document.getElementById('divjob' + order['id']);
+    eltable = document.getElementById('divjobtable' + order['id']);
+
+    c = new Array();
+    c = getLocation(order['truck'], order['beg_hour'], order['end_hour'], 3);
+
+    if ((c[0] != -1) && (c[1] != -1))
+    {
+        el.style.position = 'absolute';
+
+        el.style.left = c[0] + 'px';
+        el.style.top = c[1] + 'px';
+        el.style.width = (c[2] - c[0]) + 'px';
+        eltable.style.width = (c[2] - c[0]) + 'px';
+        el.style.height = (c[3] - c[1]) + 'px';
+        eltable.style.height = (c[3] - c[1]) + 'px';
+    }
+}
+function clearFilters(){
+    f = document.forms.viewform;
+    f.ffromdate.value = '';
+}
+function PrintAll(){
+    window.open("printView?job_date=<?=$norm_date?>");
+}
+
+function saveAllowedCities(truck, city_list)
+{
+    $.get("<?=BASE_URL;?>/orders/saveAllowedCities",
+        {
+        job_truck:truck,
+        job_date:'<?=$fdate?>',
+        city_list:city_list
+        },
+        function(data){
+            document.viewform.submit();
+        }
+    );
+}
+
+function hideRouteVisibility(truck)
+{
+    $.get("<?=BASE_URL;?>/orders/hideRouteVisibility",
+        {
+        job_truck:truck,
+        job_date:'<?=$fdate?>'
+        },
+        function(data){
+            document.viewform.submit();
+        }
+    );
+}
+
+function showRouteVisibility(truck)
+{
+    $.get("<?=BASE_URL;?>/orders/showRouteVisibility",
+        {
+        job_truck:truck,
+        job_date:'<?=$fdate?>'
+        },
+        function(data){
+            document.viewform.submit();
+        }
+    );
+}
+
+var winRef;
+function showChat()
+{
+    var openChat = "<?php echo $_SESSION['user']['open_chat'];?>";
+   var username = "<?php echo $_SESSION['user']['username_chat'];?>";
+    var userRoleId = "<?php echo $_SESSION['user']['role_id'];?>";
+    if((userRoleId == 6 || userRoleId == 3 || userRoleId == 7) && openChat == 1) {
+        <?php $_SESSION['user']['open_chat'] = 2;?>
+        
+        var openUrl = 'https://support.acecare.ca/lhc_web/doc/autologin/autologin.php?username='+username;
+        var win = window.open(openUrl);
+        win.focus();
+    }
+ }
+
+function openPayPeriodPopup()
+{
+    var tech_popup = "<?php echo $_SESSION['user']['tech_popup'];?>";
+    var userRoleId = "<?php echo $_SESSION['user']['role_id'];?>";
+    if((userRoleId == 6 || userRoleId == 7) && tech_popup < 2) {
+        console.log(tech_popup);
+        $.ajax({
+            url:"<?=BASE_URL;?>/payrolls/getLastPeriods",
+            dataType:"json",
+            success:function(result){ 
+                var res = result.expired;       
+                if(res > 0) 
+                {
+                    window.open('/acesys/index.php/payrolls/editItem?is_admin= '+res,"_self");
+                }
+             }
+        });
+    }
+}
+$(document).ready(function(){
+    openPayPeriodPopup();
+    showChat();
+    $(".area_legend_button").click(function(){
+        $(this).next(".area_legend").toggle();
+    });
+
+    $(".area_button").click(function(){
+        $(this).next(".area_edit").toggle();
+    });
+
+    $(".area_all_check").change(function(){
+        if($(this).is(':checked')) {
+            $(this).parents(".area_edit").find(".area_check").attr('checked', true);
+            $(this).parents(".area_edit").find(".area_no_check").attr('checked', false);
+            $(this).parents(".area_edit").find(".area_zone_check").attr('checked', false);
+        } else {
+            $(this).parents(".area_edit").find(".area_check").attr('checked', false);
+        }
+    });
+
+    $(".area_no_check").change(function(){
+        if($(this).is(':checked')) {
+            $(this).parents(".area_edit").find(".area_all_check").attr('checked', false);
+            $(this).parents(".area_edit").find(".area_check").attr('checked', false);
+            $(this).parents(".area_edit").find(".area_zone_check").attr('checked', false);
+        }
+    });
+
+    $(".area_check").change(function(){
+        var isChecked = true;
+        $(this).parents(".area_edit").find(".area_zone_check").attr('checked', false);
+        $(this).parents(".area_edit").find(".area_check").each(function(){
+            if($(this).is(":checked") == false) isChecked = false;
+        });
+        $(this).parents(".area_edit").find(".area_all_check").attr('checked', isChecked);
+    });
+
+    $(".area_zone_check").change(function(){
+        var zoneValues = $(this).val();
+        var zoneArray = zoneValues.split(",");
+        for(var i in zoneArray) {
+            $(this).parents(".area_edit").find(".area_check[value='" + zoneArray[i] + "']").attr('checked', $(this).is(':checked'));
+        }
+    });
+
+    $(".toggleTechSched").change(function(){
+        if($(this).is(":checked") == false) {
+            hideRouteVisibility($(this).next(".route_id").val());
+            //alert("hide"+$(this).next(".route_id").val());
+        } else {
+            showRouteVisibility($(this).next(".route_id").val());
+            //alert("show"+$(this).next(".route_id").val());
+        }
+    });
+
+    $(".toggleAllTechSched").change(function(){
+        if($(this).is(":checked") == false) {
+            hideRouteVisibility($(this).next(".all_route_id").val());
+            //alert("hide"+$(this).next(".all_route_id").val());
+        } else {
+            showRouteVisibility($(this).next(".all_route_id").val());
+            //alert("show"+$(this).next(".all_route_id").val());
+        }
+    });
+
+    var isChecked = true;
+    $(".toggleTechSched").each(function(){
+        if($(this).is(":checked") == false) isChecked = false;
+    });
+//  $(".toggleTechSchedHidden").each(function(){
+//      if($(this).val() == 0) isChecked = false;
+//  });
+    $(".toggleAllTechSched").attr('checked', isChecked);
+
+
+    <?php if (($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13)) { ?>
+    $('.draggable').contextMenu('context-menu-1', {
+        '+1 hour extra':{click: function(el){setEndTime(el, 1);}},
+        '+2 hours extra':{click: function(el){setEndTime(el, 2);}},
+        'Set visible to tech':{click: function(el){toggleVisible(el, 1);}},
+        'Set invisible to tech':{click: function(el){toggleVisible(el, 0);}}
+        <?php
+            foreach ($substatuses as $code => $name):
+                echo ",'$name':{click: function(el){setSubstatus(el,$code);}}";
+            endforeach;
+        ?>
+    });
+
+    window.tabletop = 0;
+    window.tableleft = 0;
+    repositionAll();
+
+    $(".toggle_settings").click(function(){
+        $(".truck_number").show();
+        $(".toggle_truck_number").attr('checked', true);
+        $.cookie('toggle_truck_number', '1');
+        $(".truck_name1").show();
+        $(".toggle_truck_name1").attr('checked', true);
+        $.cookie('toggle_truck_name1', '1');
+        $(".tech_name1").show();
+        $(".toggle_tech_name1").attr('checked', true);
+        $.cookie('toggle_tech_name1', '1');
+        $(".truck_name2").show();
+        $(".toggle_truck_name2").attr('checked', true);
+        $.cookie('toggle_truck_name2', '1');
+        $(".route_users").show();
+        $(".toggle_route_user").attr('checked', true);
+        $.cookie('toggle_route_user', '1');
+        //$(".truck_visibility").toggle();
+        window.tabletop = 0;
+        window.tableleft = 0;
+        repositionAll();
+    });
+
+    $(".add_route_user").change(function(){
+        var job_truck = $(this).prev("input").val();
+        var user_id = $(this).val();
+        $.get("<?=BASE_URL;?>/orders/addRouteUser",
+            {
+            job_truck:job_truck,
+            user_id:user_id
+            },
+            function(data){
+                document.viewform.submit();
+            }
+        );
+    });
+
+    $(".delete_route_user").click(function(){
+        var job_truck = $(this).prev("input").val();
+        var user_id = $(this).next("input").val();
+        $.get("<?=BASE_URL;?>/orders/deleteRouteUser",
+            {
+            job_truck:job_truck,
+            user_id:user_id
+            },
+            function(data){
+                document.viewform.submit();
+            }
+        );
+    });
+
+    $(".toggle_truck_number").change(function(){
+        if($(this).is(":checked") == false) {
+            $(".truck_number").hide();
+            $.cookie('toggle_truck_number', '0');
+        } else {
+            $(".truck_number").show();
+            $.cookie('toggle_truck_number', '1');
+        }
+        window.tabletop = 0;
+        window.tableleft = 0;
+        repositionAll();
+    });
+
+    if($.cookie('toggle_truck_number') == 0) $(".toggle_truck_number").attr('checked', false);
+    else $(".toggle_truck_number").attr('checked', true);
+    $(".toggle_truck_number").change();
+
+    $(".toggle_tech_name1").change(function(){
+        if($(this).is(":checked") == false) {
+            $(".tech_name1").hide();
+            $.cookie('toggle_tech_name1', '0');
+        } else {
+            $(".tech_name1").show();
+            $.cookie('toggle_tech_name1', '1');
+        }
+        window.tabletop = 0;
+        window.tableleft = 0;
+        repositionAll();
+    });
+
+    if($.cookie('toggle_tech_name1') == 0) $(".toggle_tech_name1").attr('checked', false);
+    else $(".toggle_tech_name1").attr('checked', true);
+    $(".toggle_tech_name1").change();
+
+    $(".toggle_truck_name1").change(function(){
+        if($(this).is(":checked") == false) {
+            $(".truck_name1").hide();
+            $.cookie('toggle_truck_name1', '0');
+        } else {
+            $(".truck_name1").show();
+            $.cookie('toggle_truck_name1', '1');
+        }
+        window.tabletop = 0;
+        window.tableleft = 0;
+        repositionAll();
+    });
+
+    if($.cookie('toggle_truck_name1') == 0) $(".toggle_truck_name1").attr('checked', false);
+    else $(".toggle_truck_name1").attr('checked', true);
+    $(".toggle_truck_name1").change();
+
+    $(".toggle_truck_name2").change(function(){
+        if($(this).is(":checked") == false) {
+            $(".truck_name2").hide();
+            $.cookie('toggle_truck_name2', '0');
+        } else {
+            $(".truck_name2").show();
+            $.cookie('toggle_truck_name2', '1');
+        }
+        window.tabletop = 0;
+        window.tableleft = 0;
+        repositionAll();
+    });
+
+    if($.cookie('toggle_truck_name2') == 0) $(".toggle_truck_name2").attr('checked', false);
+    else $(".toggle_truck_name2").attr('checked', true);
+    $(".toggle_truck_name2").change();
+
+    $(".toggle_route_user").change(function(){
+        if($(this).is(":checked") == false) {
+            $(".route_users").hide();
+            $.cookie('toggle_route_user', '0');
+        } else {
+            $(".route_users").show();
+            $.cookie('toggle_route_user', '1');
+        }
+        window.tabletop = 0;
+        window.tableleft = 0;
+        repositionAll();
+    });
+
+    if($.cookie('toggle_route_user') == 0) $(".toggle_route_user").attr('checked', false);
+    else $(".toggle_route_user").attr('checked', true);
+    $(".toggle_route_user").change();
+
+    $(".area_cancel_button").click(function(){
+        $(this).parents(".area_edit").toggle();
+    });
+
+    $(".area_save_button").click(function(){
+        var city_list = "";
+
+        if($(this).parents(".area_edit").find(".area_all_check").is(":checked") == true) { //if all is checked
+            city_list = ",";
+        } else {
+            if($(this).parents(".area_edit").find(".area_no_check").is(":checked") == true) { //if route is closed
+                city_list = "41,"
+            } else { //if cities are selected
+                $(this).parents(".area_edit").find(".area_check:checked").each(function(index){
+                    city_list += $(this).val() + ",";
+                });
+            }
+        }
+
+        saveAllowedCities($(this).prev(".area_job_truck").val(), city_list.substr(0, city_list.length - 1));
+    });
+
+    $("#toggle_approval").change(function(){
+        alert($(this).val());
+    });
+
+    $("#set_job_approval").click(function(){
+
+        var url = "<?=BASE_URL?>/orders/setJobApproval";
+        url += "?date=" + $("#ffromdate").val();
+
+        var option = "dialogWidth:450px;dialogHeight:450px;dialogLeft:300px;dialogTop:200px;status:off;scroll:off;resizable:off;";
+
+        var answer = window.showModalDialog(url,'', option);
+
+    });
+
+    <?php } ?>
+});
+
+</script>
+<?php if($ismobile == 1) { ?>
+    <a href="<?php echo BASE_URL ?>/pages/mobileMenu" id="return">Back to Main</a>
+<?php } ?>
+<form method="GET" name="viewform">
+<input type="hidden" name="schedule_mode" id="schedule_mode" value="<?=$_REQUEST['schedule_mode']?>"/>
+<input type="hidden" name="route_type" id="route_type" value="<?=$_REQUEST['route_type']?>"/>
+<table border="0" cellspacing="0" cellpadding="5" ><!-- align=left -->
+    <tr>
+        <td>
+            <input type="button" value="Weekly" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/mapSchedule?p_code=<?=$p_code?>&city=<?=$city?>&route_type=<?=$_REQUEST['route_type']?>'" style="font-size: 8pt;">
+            &nbsp;&nbsp;
+            <?php if ($common->getLoggedUserRoleID()!=6): ?>
+            <input type="button" value="Bi-Weekly" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/weeklySchedule?p_code=<?=$p_code?>&city=<?=$city?>&route_type=<?=$_REQUEST['route_type']?>'" style="font-size: 8pt;">
+            &nbsp;&nbsp;
+            <?php endif;?>
+            <input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$ydate?>'; document.viewform.submit();" style="font-size: 8pt;">
+            &nbsp;&nbsp;
+            <input type="text" name="ffromdate" id="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+            &nbsp;&nbsp;
+            <input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+            &nbsp;&nbsp;
+<?php if ($common->getLoggedUserRoleID()==6):?>
+            <!-- <input type="button" value="Print all" class="buttons" onclick="PrintAll()" style="font-size: 8pt; display:none;">-->
+<?php endif;?>
+        </td>
+<?php if ($common->getLoggedUserRoleID()==6):?>
+        <td rowspan=2>
+            <table cellpadding=0 cellspacing=0 border=1 style="visibility:hidden">
+                <tr>
+                    <th>&nbsp;</th>
+                    <th>jobs</th>
+                    <th>redo</th>
+                    <th>followup</th>
+                    <th>install</th>
+                    <th>same phone</th>
+                </tr>
+                <tr>
+                    <td><b>Booked:</b></td>
+                    <td align=center><?=$other['booked']?></td>
+                    <td align=center><?=$redo['booked']?></td>
+                    <td align=center><?=$followup['booked']?></td>
+                    <td align=center><?=$install['booked']?></td>
+                    <td align="center" rowspan="4"><?php echo $duplicateOrders ?></td>
+                </tr>
+                <tr>
+                    <td><b>Done:</b></td>
+                    <td align=center><?=$other['done']?></td>
+                    <td align=center><?=$redo['done']?></td>
+                    <td align=center><?=$followup['done']?></td>
+                    <td align=center><?=$install['done']?></td>
+                </tr>
+                <tr>
+                    <td><b>Canceled:</b></td>
+                    <td align=center><?=$other['canceled']?></td>
+                    <td align=center><?=$redo['canceled']?></td>
+                    <td align=center><?=$followup['canceled']?></td>
+                    <td align=center><?=$install['canceled']?></td>
+                </tr>
+            </table>
+        </td>
+<?php endif;?>
+    </tr>
+    <tr>
+      <td>Postal code:
+        <input type="text" name="p_code" class="emboss" value="<?=$p_code?>" style="width:50px;">
+        &nbsp;&nbsp;City:
+        <select name="city" class="emboss" style="width:150px;" onchange="document.viewform.submit();">
+            <option value=""></option>
+            <?php
+            foreach($allCities as $k => $v) {
+            echo '<option value="'.$k.'"'.( $k == $city ? ' selected' : '').'>'.$v.'</option>';
+            }
+            ?>
+        </select>
+      <!--</td>
+      <td>Address:
+        <input type="text" name="address" class="emboss" value="<?=$address?>" style="width:250px;" onchange="GetPostalCode(this);">
+        <input type="submit" value="GO"/>-->
+      &nbsp;&nbsp;
+<?php if ($common->getLoggedUserRoleID()==6): ?>
+        <input type="button" value="All trucks" class="buttons" onclick="document.viewform.route_type.value='0'; document.viewform.submit();" style="font-size: 8pt;">
+<?php endif;
+      foreach ($allTypes as $v => $k):
+        if (($common->getLoggedUserRoleID()!=6)&&($common->getLoggedUserRoleID()!=1)&&($v==4)) continue;
+        if (($common->getLoggedUserRoleID()==1)&&($v==1)) continue;
+        if (($common->getLoggedUserRoleID()!=6)&&($v==3)) continue;
+?>
+        &nbsp;&nbsp;
+        <input type="button" value="<?=$k?>" class="buttons" onclick="document.viewform.route_type.value='<?=$v?>'; document.viewform.submit();" style="font-size: 8pt;">
+<?php endforeach; ?>
+        </td>
+  </tr>
+</table>
+
+</form>
+<?php
+function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $substatuses, $jobtypes, $method) {
+    $returnValue = '';
+
+    $icon_prn = ROOT_URL."/app/webroot/img/icon-vsm-printer.png";
+    $border2 = '';
+    $enable_access = '';
+    $source = '';
+    $style = '';
+    $edit_button = '&nbsp;';
+    $color = $HtmlAssist->orderTimeColor($order);
+    if (($common->getLoggedUserID()==$order['booking_source_id'])
+        ||($common->getLoggedUserID()==$order['booking_source2_id'])
+        ||($common->getLoggedUserID()==$order['job_technician1_id'])
+        ||($common->getLoggedUserID()==$order['job_technician2_id'])
+        ||(($common->getLoggedUserRoleID() != "1")&&($common->getLoggedUserRoleID() != "9")
+     ))
+     //&&($common->getLoggedUserRoleID() != "3")
+    {
+        $enable_access = "onclick='document.location.href=\"$method?order_id={$order['id']}&rurl=$rurl\"'";
+        $open = "style='cursor:hand;cursor:pointer;'";
+        $style='cursor:hand;cursor:pointer; text-align: center; font-size:7pt;';
+        $source = "<tr><td>{$order['booking_source_fn']}</td></tr>";
+        $edit_button = '<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-edit1.png">';
+        $hint = "onMouseover=\"showhint('".$order['customer_name'].' phone:'.$order['customer_phone'].' addr.:'.str_replace("'","`",$order['address']).' job:'.str_replace("'","`",$order['job_type_name'])."', this, event, '150px')\"";
+        //echo $order['emal_bounce_status'];
+        if($order['emal_bounce_status']==1){
+           $print_this = "<div style='border: 1px solid black; padding: 2px;border-radius: 25px; width:5px; height:5px;background-color:red;'>&nbsp;</div>";
+           
+            }else{
+                   $print_this = "<div style='border: 1px solid black; padding: 2px;border-radius: 25px; width:5px; height:5px;background-color:green;'>&nbsp;</div>";
+            }
+        //$print_this = "<img style='cursor: hand; cursor: pointer; margin-right: 1px;' src='$icon_prn' onclick='window.open(\"printView?id=$id\");return false;'>";
+    }
+
+    /*if ($common->getLoggedUserRoleID() == "3")
+    {
+        $enable_access = "";
+        $open = "";
+        $style="";
+        $source = "<tr><td></td></tr>";
+        $edit_button = "";
+        $hint = "";
+        $print_this = "";
+    }*/
+
+    if ($common->getLoggedUserRoleID() == "6")
+    {
+        $edit_button = '&nbsp;'.$order['order_number'];
+        if (!$order['appliance_ordered']) $border2 = 'background-color:#FF77FF';
+        if (!$order['permit_ordered']) $color = 'background-color: #5555FF';
+        if ($order['tech_visible'] == '0') $color = 'background-color: #555555';
+    }
+    //echo '<BR>RESPONSE<BR><pre>';print_r($order);exit;
+    $id = $order['id'];
+    /*if($order['emal_bounce_status']==1){
+        $emal_bounce_status = "<font class='blink' style='font-size:9px;color:red;background-color: #FFF;'> E-Mail Bounce</font>";
+    }else{
+        $emal_bounce_status = "";
+    }*/
+
+    $tech_visible = $order['tech_visible'];
+    $border = 'border: 0px solid #666666;border-width:1px;';
+    if (!$order['verified_by_id']) $border = 'border-color:#AA0000; border-width:3px; border-style:solid;';
+
+    if ((!$order['job_technician1_id'])&&(!$order['job_technician2_id'])&&($order['job_date']==date('Y-m-d')))
+        $border = 'border-color:#346b01; border-width:3px; border-style:solid;';
+
+    if (($common->getLoggedUserRoleID()=='6')&&($order['role_id']==9))
+        $special='border-color:#0000AA; border-width:3px; border-style:solid;';
+
+    if ($common->getLoggedUserRoleID()!='1')
+    {
+        $icon_prn = ROOT_URL."/app/webroot/img/icon-vsm-printer.png";
+        $icon_globe = ROOT_URL."/app/webroot/img/icon-vsm-globe.png";
+        $returnValue .= "
+        <div id='divjob{$id}' class='draggable' style='float: left; width: 75px !important; height:100px; overflow:hide; $special'>
+            <table id='divjobtable{$id}' cellpadding='0' cellspacing='0' style='$border $color'>
+            <tr>
+                <td style='width: 16px; background: #{$order['color']};'>
+                    $print_this
+                </td>
+                <td $enable_access $hint style='background: #{$order['color']};$style'>$edit_button</td>
+            </tr>
+            <tr>
+                <td colspan=2 $enable_access $hint style='$style'>
+                    <u>".$order['city'].((($order['zone_name']!="") && (strlen($order['postal_code']) >= 3)) ? '<br>'.$order['zone_name'] : '')."
+                </td>
+            </tr>
+            <tr>
+                <td colspan=2 style='padding-left: 3px;'>
+                    <a href='".$HtmlAssist->getOrderGoogleMap($order)."' target='_blank'><img src='$icon_globe' style='border: none; width: 15px; height: 15px; vertical-align: middle;'>
+                        ".$common->displayZip($order['postal_code'])."
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td colspan=2 style='padding-left: 3px;'>".$emal_bounce_status."</td>
+            </tr>
+            <tr $open $enable_access>
+                <td colspan=2 style='padding-left: 3px;'>";
+
+        if ($order['order_status_id']== "3")
+            $returnValue .=  "<a href=\"#\" onMouseover=\"showhint('".str_replace("'","`",$order['dCancelReason'])."', this, event, '150px')\">Canceled</a></td></tr>";
+        elseif ($order['order_status_id']== "2")
+            $returnValue .=  "<a href=\"#\" onMouseover=\"showhint('".str_replace("'","`",$order['sCancelReason'])."', this, event, '150px')\">Rescheduled</a></td></tr>";
+        else
+            $returnValue .=  '<span style="color: gray; font-style: italic;">'.$substatuses[$order['order_substatus_id']].'</span></td></tr>';
+
+        $returnValue .= $source.'<tr><td colspan=2 style="padding-left: 3px; '.$border2.'">'.$jobtypes[$order['order_type_id']].'</td></tr>';
+    }
+    else
+    {
+
+
+        if ($common->getLoggedUserID()==44884) $drag ='class="draggable"'; else $drag = "";
+        $returnValue .=  '
+          <div id="divjob'.$id.'" '.$drag.' style="float: left; width: 75px; height:100px;">
+            <table id="divjobtable'.$id.'" cellpadding="0" cellspacing="0" style="border: 0px solid #666666;border-width:1px;'
+            .($color != '' ? 'background-color: '.$color.';' : "" )
+            .'">
+            <tr '.$enable_access.'>
+                <td style="vertical-align:top; cursor: hand; cursor: pointer; text-align: center; background-color:'.$order['color'].'">
+              REF# '.$order['order_number'].'<br/><u>'.$order['city'].((($order['zone_name']!="") && (strlen($order['postal_code']) >= 3)) ? '<br>'.$order['zone_name'] : '').'
+                </td>
+            </tr>
+            <tr>
+                <td style="cursor: hand; cursor: pointer; text-align: center;">';
+        if ($common->getLoggedUserID()==44884) $returnValue .= $jobtypes[$order['order_type_id']]; else $returnValue .= '&nbsp;';
+        $returnValue .=  '  </td></tr>';
+
+
+    }
+
+    $returnValue .=  '</table></div>';
+    //&&($common->getLoggedUserRoleID()!='3')
+    if (($common->getLoggedUserRoleID()!='1')&&($common->getLoggedUserRoleID()!='9'))
+    $returnValue .=  '<script type="text/javascript">new $("#divjob'.$order['id'].'").draggable();</script>';
+
+    return $returnValue;
+}
+?>
+
+<table id="restable" class="results1" cellpadding="3" cellspacing="1">
+<?php if (($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13)) { ?>
+<tr>
+<td><!--<input type="button" class="toggle_settings" value="*" />--></td>
+<td colspan="2">
+    <input type="button" value="Set Job Approval" id="set_job_approval" />
+</td>
+</tr>
+
+<?php
+    //Pick a technician for the truck
+    $rurl = urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING']);
+    $en = false;
+    if ($common->getLoggedUserRoleID()!='1') $en = true;
+    if ($en)
+    {
+        echo '<tr style="height: 8px;"><td align="right">Truck<input type="checkbox" value="1" class="toggle_truck_number" checked="checked" /></td>';
+        foreach( $trucks as $k => $v )
+        {
+            if ($k > 1)
+            {
+                echo '<td style="width: 75px;" class="truck_number">';
+                echo '<b style="color:#444444">Truck #'.$truck_numbers[$k].'</b><br/>   ';
+                $link = "#";
+                if ($common->getLoggedUserRoleID() == "6") $link = BASE_URL.'/commissions/editTech/'.$default_techs[$k]["tech1_id"].'?view=2&date='.$norm_date;
+                echo '<a href="'.$link.'" style="color:#666666">'.$allTechnician[$default_techs[$k]["tech1_id"]].'</a>';
+                if ($default_techs[$k]["tech1_state"]==2) echo '&nbsp;<b style="color:#444444">OFF';
+                echo '</td>';
+            }
+        }
+        echo '</tr>';
+        echo '<tr><td align="right"><input type="checkbox" value="1" class="toggle_truck_name1" checked="checked" /></td>';
+        foreach( $trucks as $k => $v )
+        {
+            if( $k > 1 )
+            {
+                echo '<td style="width: 75px;" class="truck_name1">';
+                if (($common->getLoggedUserRoleID()!='1')&&($common->getLoggedUserRoleID()!='9')&&($common->getLoggedUserRoleID()!='3'))
+                    echo $html->selectTag('techpick1',$allTechnician,$trucktech[$k][0],array('style' => 'width: 75px;', 'onchange' => 'document.location.href=\'setTechnicians?tech_num=1&tech_id=\'+this.value+\'&job_truck='.$k.'&job_date='.$norm_date.'&rurl='.$rurl.'\';')).'<br/>';
+                else
+                    echo $html->selectTag('techpick1',$allTechnician,$trucktech[$k][0],array('style' => 'width: 75px;', 'disabled' => '1')).'<br/>';
+                echo '</td>';
+            }
+        }
+        echo '</tr>';
+        echo '<tr><td align="right"><input type="checkbox" value="1" class="toggle_tech_name1" checked="checked" /></td>';
+        foreach( $trucks as $k => $v )
+        {
+            if( $k > 1 )
+            {
+                echo '<td style="width: 75px;" class="tech_name1">';
+                $link = "#";
+                if ($common->getLoggedUserRoleID() == "6") $link = BASE_URL.'/commissions/editTech/'.$default_techs[$k]["tech2_id"].'?view=2&date='.$norm_date;
+                echo '<a href="'.$link.'" style="color:#666666">'.$allTechnician[$default_techs[$k]["tech2_id"]].'</a>';
+                if ($default_techs[$k]["tech2_state"]==2) echo '&nbsp;<b style="color:#444444">OFF';
+                echo '</td>';
+            }
+        }
+        echo '</tr>';
+        echo '<tr><td align="right"><input type="checkbox" value="1" class="toggle_truck_name2" checked="checked" /></td>';
+        foreach( $trucks as $k => $v )
+        {
+            if( $k > 1 )
+            {
+                echo '<td style="width: 75px;" class="truck_name2">';
+                if (($common->getLoggedUserRoleID()!='1')&&($common->getLoggedUserRoleID()!='9')&&($common->getLoggedUserRoleID()!='3'))
+                    echo $html->selectTag('techpick2',$allTechnician,$trucktech[$k][1],array('style' => 'width: 75px;', 'onchange' => 'document.location.href=\'setTechnicians?tech_num=2&tech_id=\'+this.value+\'&job_truck='.$k.'&job_date='.$norm_date.'&rurl='.$rurl.'\';'));
+                else
+                    echo $html->selectTag('techpick2',$allTechnician,$trucktech[$k][1],array('style' => 'width: 75px;', 'disabled' => '1'));
+                echo '</td>';
+            }
+        }
+        echo '</tr>';
+
+    }
+
+    //for route areas
+    ?>
+    <?php } //end of telemarketer hiding ?>
+    <!--Telemarketer assignment-->
+
+    <?php if($en) { ?>
+
+    <tr>
+        <td class="truck_visibility">
+        <?php if (($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13)) { ?>
+        <!--<input type="checkbox" class="toggleAllTechSched" value="1" />-->
+
+        <?php
+        foreach( $trucks as $k => $v ) {
+            $allRouteId .= $k.",";
+        }
+        ?>
+        <!--<input type="hidden" class="all_route_id" value="<?php echo substr($allRouteId, 0, -1) ?>" />
+        Schedule-->
+        <? } ?>
+        </td>
+
+        <?php if (($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13)) { ?>
+        <?php foreach( $trucks as $k => $v ) { ?>
+        <td><?php if($routeVisibility[$k]['show'] == 1) { ?>
+            <!--<input type="checkbox" class="toggleTechSched" value="1" checked="checked" />
+            <input type="hidden" class="toggleTechSchedHidden" value="1" />-->
+            <?php } else { ?>
+            <!--<input type="checkbox" class="toggleTechSched" value="1" />
+            <input type="hidden" class="toggleTechSchedHidden" value="0" />-->
+            <?php } ?>
+            <!--<input type="hidden" class="route_id" value="<?php echo $k ?>" />Show-->
+        </td>
+        <?php } ?>
+        <?php } ?>
+
+    <?php } ?>
+    </tr>
+
+    <tr style="display:none;">
+        <td style="position:relative;width: 65px;"valign="bottom">Allowed cities
+        <input type="button" value="Legend" style="width:75px" class="area_legend_button" />
+        <div class="area_legend" style="background-color:#FFFFFF;position:absolute;border:1px solid #888888;z-index:1;display:none;">
+            <table>
+                <tr>
+                    <td width="50%" valign="top">
+                    <?php $cityCount = 0; ?>
+                    <ul>
+                    <?php foreach($cityWithId as $cityId) {?>
+                        <li>
+                        <?php echo $cityId['name'] ?>
+                        </li>
+                        <?php $cityCount++; ?>
+                        <?php if($cityCount % 15 == 0) { ?>
+                        </ul>
+                        </td><td width="50%" valign="top"><ul>
+                        <?php } ?>
+                    <?php } ?>
+                    </td>
+                </tr>
+            </table>
+            </div>
+        </td>
+    <?php
+    //echo '<tr><td style="width: 65px;">Allowed cities</td>';
+    foreach($trucks as $k => $v)
+    {
+        ?>
+        <td style="position:relative;" valign="bottom">
+            <div>
+            <?php $tempdisplay = ""; ?>
+            <?php foreach($routeCodes[$k] as $routeCode) {?>
+                <?php if($routeCode['route_id'] == $k) $tempdisplay .= $routeCode['city_code'] . ', ' ?>
+            <?php } ?>
+            <?php echo substr($tempdisplay, 0, -2); ?>
+            &nbsp;
+            </div>
+            <?php if (($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13)) { ?>
+            <input type="button" value="Cities" style="width:75px" class="area_button" />
+            <div class="area_edit" style="background-color:#FFFFFF;position:absolute;width:324px;border:1px solid #888888;z-index:1;display:none;">
+            <table>
+                <tr>
+                    <td width="50%" valign="top">
+                    <?php $cityCount = 0; ?>
+                    <div style="background-color:#cc9900"><input class="area_all_check" type="checkbox" value="0" />All cities</div>
+                    <?php $cityCount++; ?>
+                    <div style="background-color:#cc9900"><input class="area_no_check" type="checkbox" value="41" />Route is closed</div>
+                    <?php $cityCount++; ?>
+                    <?php foreach($cityAreas as $areaid => $cityArea) { ?>
+                        <div style="background-color:#ccccff">
+                        <input class="area_zone_check" type="checkbox" value="<?php echo $cityArea['cities']; ?>" />Zone <?php echo $cityArea['area_id']; ?>                        </div>
+                        <?php $cityCount++; ?>
+                        <div style="background-color:#ccccff;height:inherit">
+                        <?php echo $cityCodes[$areaid]['codes']; ?>
+                        </div>
+                    <?php } ?>
+
+                    <?php foreach($cityWithId as $cityId) {?>
+                        <div style="width:100%">
+                        <input class="area_check" type="checkbox" value="<?php echo $cityId['id'] ?>" <?php echo $ischeked ?> /><?php echo $cityId['name'] ?>
+                        </div>
+                        <?php $cityCount++; ?>
+                        <?php if($cityCount % 16 == 0) { ?>
+                        </td><td width="50%" valign="top">
+                        <?php } ?>
+                    <?php } ?>
+                    <div>
+                    <input type="hidden" class="area_job_truck" value="<?php echo $k; ?>" />
+                    <input type="button" value="save"  style="width:60px" class="area_save_button" />
+                    <input type="button" value="cancel"  style="width:60px" class="area_cancel_button" />
+                    </div>
+                    </td>
+                </tr>
+            </table>
+            </div>
+            <?php } ?>
+        </td>
+        <?php
+    }
+    echo '</tr>';
+
+    //Header
+    echo '<tr><td style="width: 65px;"></td>';
+    foreach( $trucks as $k => $v )
+    {
+        if ($k > 1)
+        {
+            echo '<th style="width: 75px;color:'.$truck_colors[$k].';background-color:#EEEEEE;border-left:1px solid #484848;" valign="top"><img style="display:none; cursor: hand; cursor: pointer; margin-right: 1px;" src="'.ROOT_URL.'/app/webroot/img/icon-vsm-printer.png" onclick="window.open(\'printView?job_truck='.$k.'&job_date='.$norm_date.'\');return false;">&nbsp;'.$v.'</th>';
+        }
+    }
+    echo '</tr>';
+
+    $DroppableString = '<script type="text/javascript">';
+    for( $t=$time_beg; $t <= $time_end; $t = date('H:i:s', strtotime($t) + 60*60))
+    {
+        echo '<tr>';
+        echo '<td valign="top" style="background-color:#CCCCCC;border-style: none; width: 60px;height:50px;white-space:nowrap;">';
+        echo '<b>'.date('g:i a', strtotime($t))."</b><br/>";
+        if ($common->getLoggedUserRoleID()=='6')
+        {
+
+        }
+        echo '</td>';
+
+        $i = 0;
+        foreach( $trucks as $k => $v )
+        {
+            $i++;
+            if ($k > 1)
+            {
+                if ((($default_techs[$k]["tech1_state"]==2)&&(!$trucktech[$k][0]||$trucktech[$k][0]==$default_techs[$k]["tech1_id"]))
+                  &&(($default_techs[$k]["tech2_state"]==2)&&(!$trucktech[$k][1]||$trucktech[$k][1]==$default_techs[$k]["tech2_id"]))) {
+                    echo '<td id="c_'.$k.'_'.date('G', strtotime($t)).'" class="aaa" valign="top" style="background-color:#AAAAAA; width:75px;height:50px; text-align: center; vertical-align: middle;">';
+                    echo '</td>';
+                }
+                else {
+                    if (!$trucktech[$k][0]) $tech1 = $default_techs[$k]["tech1_id"]; else $tech1 = $trucktech[$k][0];
+                    if (!$trucktech[$k][1]) $tech2 = $default_techs[$k]["tech2_id"]; else $tech2 = $trucktech[$k][1];
+                    $bgc = 'background:#ffffff;';
+                    $en = true;
+                    if ($p_code||$city){
+                        $en = false;
+                        if ((in_array($k,$map[date('G', strtotime($t))]))||(array_key_exists($k,$map_all))) {
+                            $en = true;
+                            $bgc = 'background:#ccffcc;';
+                        }
+                    }
+                    echo '<td id="c_'.$k.'_'.date('G', strtotime($t)).'" class="aaa" valign="top" style="width:75px;height:50px; text-align: center; vertical-align: middle;'.$bgc.'">';
+                    if ($en) echo "<img onclick='BookTimeslot($k,\"".date('H', strtotime($t))."\",\"".$tech1."\",\"".$tech2."\")' src='".ROOT_URL."/app/webroot/img/icon-sm-plus.png' style='border: 0px; vertical-align: middle; cursor:pointer;' />";
+                    echo '</td>';
+
+                    //# Droppable object by Anthony Chernikov, 05/17/2010.
+                    echo ' ';
+                    $DroppableString .= "$('#c_".$k.'_'.date('G', strtotime($t))."').droppable({drop: function( event, ui ) {var droppedObj = [$k,".date('G', strtotime($t))."];var offset = ui.draggable.offset();var here = $('#c_".$k.'_'.date('G', strtotime($t))."').offset();if(confirm('Are you sure ?')){if (offset.top<here.top) start_time=droppedObj[1]-1;else start_time=droppedObj[1];if (start_time<8) start_time=8;setLocation(ui.draggable.attr('id'), droppedObj[0], start_time+':00:00');}else{ nothingChangeJobTruckAndHour(); }}}); ";
+                }
+            }
+        }
+        if ($i < 12) {
+            for (;$i<=12; $i++)
+                echo '<td class="aaa" valign="top" style="width:75px;height:50px; text-align: center; vertical-align: middle;">&nbsp</td>';
+        }
+        echo '</tr>';
+    }
+    ?>
+    </table>
+<table width="100%"><tr><td>&nbsp;</td></tr></table>
+    <?php
+    //Print the divs
+    $i = -1;
+    $js = "";
+    foreach ($orders as $order)
+    {
+
+        if($routeVisibility[$order['truck']]['show'] == 1 || $common->getLoggedUserRoleID() != 1 || $order['booking_source_id'] == $common->getLoggedUserID() || $order['booking_source2_id'] == $common->getLoggedUserID()) {
+        echo displayOrder($order, $trucks, $common, $HtmlAssist, urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING']), $fdate, $substatuses, $jobtypes, $method);
+
+
+        $i++;
+        $js .= 'orders['.$i.']=new Array();';
+        $js .= 'orders['.$i.']["id"]='.$order['id'].";\n";
+        if ($order['truck'])
+            $js .= 'orders['.$i.']["truck"]='.$order['truck'].";\n";
+        $js .= 'orders['.$i.']["beg_hour"]='.date('G', strtotime($order['job_time_beg'])).";\n";
+        $js .= 'orders['.$i.']["end_hour"]='.date('G', strtotime($order['job_time_end'])).";\n";
+        }
+    }
+
+    ?>
+
+<script language="JavaScript">
+orders = new Array();
+<?=$js;?>
+window.map = <?=$map;?>;
+window.orders = orders;
+window.tabletop = document.getElementById('restable').offsetTop;
+window.tableleft = document.getElementById('restable').offsetLeft;
+window.onresize = function(){
+  window.tabletop = 0;
+  window.tableleft = 0;
+  repositionAll();
+};
+
+repositionAll();
+</script>
+<br/><br/>
+<br/><br/>
+<? $DroppableString .= '</script>'; echo $DroppableString; ?>

@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Audit Bookings</title>
+</head>
+
+<body>
+<table>
+	<tr>
+    	<th>REF#</th>
+        <th>Booked On</th>
+        <th>Job Date</th>
+        <th>Status</th>
+        <th>Booked By</th>
+        <th>Source</th>
+    </tr>
+    <?php foreach($bookings as $key => $booking) { ?>
+    <tr>
+    	<td><?php echo $booking['order_number'] ?></td>
+        <td><?php echo $booking['created'] ?></td>
+        <td><?php echo $booking['job_date'] ?></td>
+        <td><?php echo $booking['order_status'] ?></td>
+        <td><?php echo $booking['booked_by'] ?></td>
+        <td><?php echo $booking['source'] ?></td>
+    </tr>
+    <?php } ?>
+</table>
+</body>
+</html>

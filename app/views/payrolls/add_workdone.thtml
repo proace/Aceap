@@ -1,0 +1,102 @@
+<!--
+***************************************
+THIS FORM WAITING FOR THIS PARAMETERS:
+$_GET['user_id']
+***************************************
+-->
+<script>
+//*** SET PAGE TITLE ***
+
+document.title += " :: Enter Work Done";
+
+//**********************
+</script>
+<form method="POST" action="<?= $PHP_SELF?>" name="newWorkdone">
+<? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
+
+<input type="hidden" name="user_id" value="<?=$_GET['user_id']?>">
+
+<table width="100%" align="center" border="0" cellspacing="10" cellpadding="0"> 
+	<tr>
+		<td class="sectionTitle">Enter Work Done</th>
+	</tr>
+</table>
+<br/>
+<table border="0" cellspacing="0" cellpadding="5" class="results">
+	<tr>
+	  <td valign="top">Employee :</td>
+	  <td>
+			<?php
+				$disabled = "";
+				$selectedUser = $this->data["WorkRecord"]["user_id"]; 	 
+				/*
+				if(intval($_GET['user_id']) > 0)
+				{	
+					$disabled = "disabled='disabled'";
+					$selectedUser = intval($_GET['user_id']);
+				}
+				*/
+			?>
+	  	<select name="data[WorkRecord][user_id]" style="width:250;" <?php echo $disabled; ?> >
+			<?php 
+			if(intval($_GET['user_id']) <= 0)
+			{
+				echo '<option value="0"></option>'; 
+			} 
+	  	foreach ($users as $objItm):
+	  	?>
+	  	<option value="<?php echo $objItm['User']['id'];?>"
+	  	<?php
+	  		if($selectedUser == $objItm['User']['id'])
+	  		{
+	  			echo "selected='selected'";
+	  		}
+	  	?>>
+	  	<?php echo $objItm['User']['first_name']." ".$objItm['User']['last_name'];?></option>
+	  	<?php
+	  	endforeach;
+	  	?>	  		
+	  	</select>
+ 		 <font color="red"> <?php echo $html->tagErrorMsg('WorkRecord/user_id', 'Please select user.') ?></font>
+	  </td>
+	</tr>
+	<tr> 
+	  <td>Date of Record:</td>
+	  <td>
+		<?php echo $html->dateTimeOptionTag('WorkRecord/date','DMY',none); ?>
+	  	<font color="red"><?php echo $html->tagErrorMsg('WorkRecord/date', 'Please enter date.') ?></font>
+	  </td>
+	</tr>	
+	<tr> 
+	  <td>Start time:</td>
+	  <td>
+		<?php echo $html->dateTimeOptionTag('WorkRecord/start_time',none,"24"); ?>
+	  	<font color="red"><?php echo $html->tagErrorMsg('WorkRecord/start_time', 'Please enter start time.') ?></font>
+	  </td>
+	</tr>	
+	<tr> 
+	  <td>Finish time:</td>
+	  <td>
+		<?php echo $html->dateTimeOptionTag('WorkRecord/finish_time',none,"24"); ?>
+	  	<font color="red"><?php echo $html->tagErrorMsg('WorkRecord/finish_time', 'Please enter finish time.') ?></font>
+	  </td>
+	</tr>	
+	<tr> 
+	  <td>Break time:</td>
+	  <td>
+		<?php echo $html->input('WorkRecord/break_time'); ?>
+	  <?php //echo $html->dateTimeOptionTag('WorkRecord/break_time',none,"24"); ?>
+	  	<font color="red"><?php echo $html->tagErrorMsg('WorkRecord/break_time', 'Break time is invalid.') ?></font>
+	  </td>
+	</tr>			
+	<tr>
+		<td>&nbsp;</td> 
+	  <td align="left" colspan="1">
+	  <input type="submit" name="submit1" value="Add Record" class="buttons">&nbsp;
+	  <input type="button" value="Cancel" onclick="javascript:OpenPage('index')" class="buttons">
+	  </td>
+	</tr>
+</table>
+</table>
+<br/><br/>
+</form>

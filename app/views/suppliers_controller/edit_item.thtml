@@ -1,0 +1,84 @@
+<script>
+//*** SET PAGE TITLE ***
+document.title += " :: Edit Item";
+//**********************
+</script>
+
+<form name="editItemForm" action="<?=BASE_URL;?>/suppliers/saveItem" method="post">
+<?php echo $html->hidden('Supplier/id')?>
+<div class="frame-wrap" style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title">Supplier information</div>
+		<div class="frame-header-right"></div>
+		<div class="frame-body" style="clear: both;">
+				<table>
+						<tr>
+								<td align="right">Name:</td>
+								<td>
+								<?php echo$html->input('Supplier/name', array('style' => 'width: 200px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Phone:</td>
+								<td>
+								<?php echo$html->input('Supplier/phone', array('style' => 'width: 200px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Address:</td>
+								<td>
+								<?php echo$html->input('Supplier/address', array('style' => 'width: 200px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">City:</td>
+								<td>
+								<?php echo$html->input('Supplier/city', array('style' => 'width: 200px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Parts:</td>
+								<td>
+								<?php echo$html->input('Supplier/brand_part', array('style' => 'width: 300px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Furnaces:</td>
+								<td>
+								<?php echo$html->input('Supplier/brand_furnace', array('style' => 'width: 300px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Boilers:</td>
+								<td>
+								<?php echo$html->input('Supplier/brand_boiler', array('style' => 'width: 300px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Hot Water Tanks:</td>
+								<td>
+								<?php echo$html->input('Supplier/brand_hwt', array('style' => 'width: 300px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Tankless Water Heaters:</td>
+								<td>
+								<?php echo$html->input('Supplier/brand_tankless', array('style' => 'width: 300px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Heat Pumps:</td>
+								<td>
+								<?php echo$html->input('Supplier/brand_heatpump', array('style' => 'width: 300px;')); ?>
+								</td>
+						</tr>
+						<tr>
+								<td style="text-align:right" colspan=2>
+												<?php echo $html->submit("Save", array("class" => "buttons"));?>
+												<input type="button" value="Exit" onclick="document.location.href='<?=BASE_URL?>/suppliers/index'" class="buttons">
+								</td>
+						</tr>
+				</table>
+		</div>
+</div>
+</form>

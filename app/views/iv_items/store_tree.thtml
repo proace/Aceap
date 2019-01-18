@@ -1,0 +1,27 @@
+<div id="page_store_tree">
+    <div id="tabs">
+        <ul>    	
+            <?php foreach($categories as $category) { ?>
+            <!--<li><a href="#tabs-<?php //echo $category['IvCategory']['id'] ?>"><?php //echo $category['IvCategory']['name'] ?></a>
+            <pre><?php print_r($category) ?></pre>
+            </li>-->
+            <li><a href="#tabs-<?php echo $category['id'] ?>"><?php echo $category['name'] ?></a>
+            </li>          
+            <?php } ?>        
+        </ul>
+        <div id="list_filter"><input type="text" id="filter_name" /> <a id="link_filter_name">Search</a></div>
+        <?php foreach($categories as $category) { ?>
+        <!--<div id="tabs-<?php //echo $category['IvCategory']['id'] ?>" class="tabs">-->
+        <div id="tabs-<?php echo $category['id'] ?>" class="tabs">
+            <ul class="parent">
+                <li><a title="More" class="all_node link_branch tab-<?php echo $category['id'] ?>">
+                    <input type="hidden" class="criteria" value='{"level":"0","category_id":"<?php echo $category['id'] ?>","mode":"<?php echo $mode ?>"}' />
+                    <input type="hidden" class="path" value='branch' />
+                </a>
+                <ul></ul>
+                </li>
+            </ul>        
+        </div>
+        <?php } ?>    
+    </div>
+</div>
