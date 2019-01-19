@@ -2129,7 +2129,6 @@ function get_data($url)
             <?php echo $html->hidden('Order/id')?>
             <?php echo $html->hidden('Order/customer_id')?>
             <?php echo $html->hidden('Order/booking_date')?>
-            <?php echo $html->hidden('Order/order_number')?>
             <table>
                 <tr>
                     <td align="right">Job Date:</td>
