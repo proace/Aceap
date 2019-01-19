@@ -1179,7 +1179,7 @@ $(document).ready(function(){
 	var l = $(location).attr('href');
 	if(l.indexOf("acesys-2.0") != -1) G_URL = test_server;
 	else G_URL = live_server;
-	var G_URL = 'http://acecare.ca/acesys/index.php/';
+	var G_URL = '/acesys/index.php/';
   //tree view for the items
 	storeTreeInitialize();
 	$('#closeBookedItems').hide();
