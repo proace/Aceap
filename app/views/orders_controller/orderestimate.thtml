@@ -114,7 +114,8 @@
 
 
 			<?php if($preViewEstimate=="true"){ ?>
-				<input name="send" onclick="sendEmail()" value="Send" class="buttons" type="button"> 
+				<!-- <input name="send" onclick="sendEmail()" value="Send" class="buttons" type="button">  -->
+				<input name="submit" onclick="saveTemplate()" value="Save" class="buttons" type="button"> 
 			<?php }else{ ?>
 				<input name="submit" onclick="saveTemplate()" value="Save" class="buttons" type="button"> 
 			<?php } ?>

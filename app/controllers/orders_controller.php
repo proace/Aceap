@@ -887,7 +887,7 @@ class OrdersController extends AppController
 				$template = $row;
 		}
 
-		if(empty($template)){
+		if(1){
 
 		$this->Order->id = $order_id;
 		$orderData = $this->Order->read();

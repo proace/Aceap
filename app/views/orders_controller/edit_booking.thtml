@@ -105,7 +105,7 @@ function showestimate(order_id){
 
 function showestimateSubmit(){
 
-	document.getElementById('preViewEstimate').value=1;
+	document.getElementById('preViewEstimate').value=0;
 	document.getElementById('sendMailOnEstimate').value=0;
 	var status = ValidateFields(1);
 	if(status){
