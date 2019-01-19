@@ -579,14 +579,15 @@ function ValidateFields(jobstatus)
 				 order_id:'<?=$html->tagValue("Order/id")?>'},
 				function(data){
 					var res = data.trim();
-					console.log(res);
-				//	if (data.indexOf('OK') > 0)
-					if (res == 'OK')
+					if (data.indexOf('OK') > 0) {
 						//alert('submitFormNEW');
 						document.forms['editBookingform'].submit();
-					else
-						console.log("ayayay");
+					}						
+						
+					else{
 						alert(res);
+					}
+						
 				});
 			} else {
 				//alert('submitForm');
@@ -760,11 +761,6 @@ function SaveDialerCallRecord(){
 		if (callResultId == 9)
 		{
 			current = CurrentDate.setMonth(CurrentDate.getMonth() + 9);
-			callbackDate = new Date(current).toISOString().slice(0,10);
-		}
-		if (callResultId == 11)
-		{
-			current = CurrentDate.setMonth(CurrentDate.getMonth() + 11);
 			callbackDate = new Date(current).toISOString().slice(0,10);
 		}
 		if (callResultId == 2)
@@ -1183,7 +1179,7 @@ $(document).ready(function(){
 	var l = $(location).attr('href');
 	if(l.indexOf("acesys-2.0") != -1) G_URL = test_server;
 	else G_URL = live_server;
-	var G_URL = 'http://acecare.ca/acesys/index.php/';
+	var G_URL = '/acesys/index.php/';
   //tree view for the items
 	storeTreeInitialize();
 	$('#closeBookedItems').hide();
