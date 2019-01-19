@@ -763,11 +763,6 @@ function SaveDialerCallRecord(){
 			current = CurrentDate.setMonth(CurrentDate.getMonth() + 9);
 			callbackDate = new Date(current).toISOString().slice(0,10);
 		}
-		if (callResultId == 11)
-		{
-			current = CurrentDate.setMonth(CurrentDate.getMonth() + 11);
-			callbackDate = new Date(current).toISOString().slice(0,10);
-		}
 		if (callResultId == 2)
 		{
 			$(".call_next_user").trigger("click");

@@ -3232,7 +3232,7 @@ class OrdersController extends AppController
 					FROM ace_rp_customers as c
 						join ace_rp_orders o on c.id=o.customer_id
 						left join ace_rp_users u on u.id=c.telemarketer_id
-					WHERE o.id='".$_GET['sq_str']."'
+					WHERE o.order_number='".$_GET['sq_str']."'
 						$telem_clause
 			 ";
 			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
