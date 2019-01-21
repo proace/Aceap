@@ -733,13 +733,14 @@ function SaveDialerCallRecord(){
 	var callResultId = $("#answer_reply").val();
 	var callbackDate = ''; 
 	var lastCall = new Date().toISOString().slice(0,10);
+	var callmode = window.parent.frame_browser.document.getElementById("call_mode").value;
 	if(callResultId == 3 || callResultId == 7 ) 
 	{
 		$.post("<?=BASE_URL;?>/orders/deleteUserFromCampaign",
 			{  customer_id:$('#CustomerId').val()			
 			},
 			function(data){
-				var callmode = window.parent.frame_browser.document.getElementById("call_mode").value;
+			$("#end_current_call").trigger("click");
 			if(callmode == "" || callmode == 3)
 			{
 				$(".call_next_user").trigger("click");
@@ -765,11 +766,19 @@ function SaveDialerCallRecord(){
 		}
 		if (callResultId == 2)
 		{
-			$(".call_next_user").trigger("click");
+			$("#end_current_call").trigger("click");
+			if(callmode == "" || callmode == 3)
+			{
+				$(".call_next_user").trigger("click");
+			}
 		}
 		if (callResultId == 1)
 		{
-			$(".call_next_user").trigger("click");
+			$("#end_current_call").trigger("click");
+			if(callmode == "" || callmode == 3)
+			{
+				$(".call_next_user").trigger("click");
+			}
 		}
 	$.get("<?=BASE_URL;?>/orders/saveCallRecord",
 		{
@@ -798,7 +807,6 @@ function SaveDialerCallRecord(){
 		}
 	, function(data){
 			 AddCustomerNote();
-		var callmode = window.parent.frame_browser.document.getElementById("call_mode").value;
 			$("#end_current_call").trigger("click");
 			if(callmode == "" || callmode == 3)
 			{
@@ -853,18 +861,9 @@ function SaveCallRecord(){
 		 call_id:0,
 		 dialer_id:'web'
 		}, function(data){
-			// $('#CustomerId').val(data);
-			// $.get("<?=BASE_URL;?>/orders/getCallHistory", {customer_id:$('#CustomerId').val()}, function(data){
-			//   showhist=1;
-			//   $("#CallHistory").html(data);
+			
 			  AddCustomerNote();
-			//});
-			var callmode = window.parent.frame_browser.document.getElementById("call_mode").value;
-			console.log("callmode",callmode);
-			if(callmode == "" || callmode == 3)
-			{
-				$(".call_next_user").trigger("click");
-			}
+			$("#dialer_callback").dialog("destroy");
 	});
 }
 var PrevState = <?=$this->data['Order']['order_status_id']?>;

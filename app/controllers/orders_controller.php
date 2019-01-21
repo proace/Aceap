@@ -7112,8 +7112,6 @@ class OrdersController extends AppController
         
         }
       
-
-
         if($_GET['savedata']==1) {
         $this->Addquestions(
             $customer_id,
@@ -13391,5 +13389,20 @@ function weeklySchedule(){
 		
 		
 	} 
+
+function deleteUserFromCampaign() 
+{
+	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+	$customer_id = $_POST['customer_id'];
+	$query = "DELETE from ace_rp_all_campaigns where call_history_ids = $customer_id";
+ 		$result = $db->_execute($query);
+ 	if($result)
+ 	{
+ 		$query = "UPDATE ace_rp_customers set campaign_id = '' where id = $customer_id";
+ 		$result = $db->_execute($query);		
+ 	}
+ 	echo "hi";
+ 	exit();
+}
 }
 ?>
