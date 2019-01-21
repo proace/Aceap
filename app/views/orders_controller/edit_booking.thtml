@@ -1128,6 +1128,7 @@ $(document).ready(function(){
 			},500);
 		}
 	});
+	$(window).load(function() {
 	var callMode = window.parent.frame_browser.document.getElementById("call_mode").value;
 	if(3 == callMode)
 	{
@@ -1137,7 +1138,7 @@ $(document).ready(function(){
 	} else if(1 == callMode) {
 		$('.select-call-mode-button:eq(0)').addClass("current-call-mode-selected-button");
 	}
-
+    });
 	$(".call_icon").click(function(){
 		$(".call_icon").removeClass("call_current");
 		$(this).addClass("call_current");
