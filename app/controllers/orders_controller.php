@@ -2599,6 +2599,7 @@ class OrdersController extends AppController
     // Method renders call history into the table
     function getCallHistory()
     {   
+        session_write_close(); // It added to remove delay in ajax response
         $customer_id = $_GET['customer_id'];
         $phone = $_GET['phone'];
 
@@ -5960,6 +5961,7 @@ class OrdersController extends AppController
 	// Method creates an HTML table with customer jobs' history
 	function showCustomerJobs()
 	{
+		session_write_close(); // It added to remove delay in ajax response
 		$customer_id = $_GET['customer_id'];
 		$order_id = $_GET['order_id'];
 		$phone = $_GET['phone'];
