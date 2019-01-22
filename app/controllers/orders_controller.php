@@ -2609,8 +2609,7 @@ class OrdersController extends AppController
 
         //Telemarketers will not see 'Answering Machine' results
         $ans = '';
-        if (($this->Common->getLoggedUserRoleID() == 3)
-		    ||($this->Common->getLoggedUserRoleID() == 13)
+        if (($this->Common->getLoggedUserRoleID() == 13)
          	||($this->Common->getLoggedUserRoleID() == 9))
             $ans = 'call_result_id!=6 and';
 
@@ -3482,7 +3481,7 @@ class OrdersController extends AppController
 			//$cust = $this->User->findAll($conditions, null, $sort, $limit);
 
 			if($this->Common->getLoggedUserRoleID() != 6) {
-				$telem_clause = " AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = User.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
+				$telem_clause = " AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = u.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
 			}
 
 			$criteria = 'c.'.$_GET['sq_crit'];
@@ -3506,7 +3505,7 @@ class OrdersController extends AppController
 			//$cust = $this->User->findAll($conditions, null, $sort, $limit);
 
 			if($this->Common->getLoggedUserRoleID() != 6) {
-				$telem_clause = " AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = User.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
+				$telem_clause = " AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = u.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
 			}
 
 			$criteria = 'c.'.$_GET['sq_crit'];

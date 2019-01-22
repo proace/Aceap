@@ -749,6 +749,11 @@ function SaveDialerCallRecord(){
 	} else {
 		var CurrentDate = new Date();
 		
+		if(callResultId == 6)
+		{
+			
+			callbackDate = '';
+		} 
 		if(callResultId == 4)
 		{
 			current = CurrentDate.setMonth(CurrentDate.getMonth() + 3);

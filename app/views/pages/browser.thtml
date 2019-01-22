@@ -145,7 +145,7 @@
 		else
 		{
 			<? if (($common->getLoggedUserRoleID()=="3")||($common->getLoggedUserRoleID()=="9")) { ?>
-			parent.frames['main_view'].document.location.href='<?=BASE_URL;?>/orders/editBooking?action_type=callback&hotlist=1&agent_select=1&customer_id='+userid;
+			parent.frames['main_view'].document.location.href='<?=BASE_URL;?>/orders/editBooking?hotlist=1&agent_select=1&customer_id='+userid;
 			<? }else{ ?>
 			parent.frames['main_view'].document.location.href='<?=BASE_URL;?>/orders/editBooking?hotlist=1&admin_select=1&customer_id='+userid;
 			<? } ?>
