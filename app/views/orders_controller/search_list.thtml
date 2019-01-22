@@ -22,8 +22,9 @@ if ($add == 0) { ?>
 </div>
 
 <? } ?>
-<?php $r=1;
+<?php $r=1; $cus_count=0;
 	foreach ($cust as $obj): 
+		++$cus_count;
 		$class = 'cell'.(++$r%2);
 	?>
 	<?php 
@@ -88,6 +89,8 @@ if ($add == 0) { ?>
 	<div class="dcell" style="width: 95px;<? echo $color?>"><?=$obj["User"]["address_unit"].' '.$obj["User"]["address_street_number"].' '.$obj["User"]["address_street"]; ?></div>
 </div>
 <?php endforeach; ?>
+<input type="hidden" name="count_of_cust" id='count_of_cust' value="<?php echo $cus_count;?>">
+</form>
 <script language="JavaScript">
 	window.curpage = <?=$curpage;?>;
 	window.sq_crit = '<?=$sq_crit;?>';

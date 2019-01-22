@@ -28,8 +28,14 @@
 		}
 		//alert("requested page "+page+"\nmaxpage "+maxpage+"\nlimit "+limit);
 		divID = document.getElementById('listbox');
+		divID2 = document.getElementById('count_of_cust_div1');
 		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&add=0&curpage='+page,
-				function(data){divID.innerHTML=data;});
+				function(data){
+					divID.innerHTML=data;
+					count_of_cust = document.getElementById('count_of_cust').value;
+					document.getElementById('append_count_div').style.display = '';
+					divID2.innerHTML=count_of_cust;
+				});
 			//new Ajax.Updater(divID,, {asynchronous:true, evalScripts:true, requestHeaders:['X-Update', 'listbox']});
 	}
 
@@ -153,6 +159,11 @@
 	}
 
 </script>
+
+<div id='append_count_div' style="display: none;margin-left: 10px;">
+	<div style="float: left;display:inline-block;">No. of count - </div>
+	<div style="float: left;display:inline-block;" id="count_of_cust_div1"></div>
+</div>
 
 <div id="listbox" style="float: left;">
 
