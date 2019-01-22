@@ -28,6 +28,7 @@ function call_cell_phone()
 	//$('#CustomerCellPhone').val();604-8415774
 	var phone_number = $('#CustomerCellPhone').val();
 	$("#currentCallNum").val(phone_number);
+	bringToFront();
 	placeCall(phone_number);
 }
 function directPlaceCall()
@@ -44,6 +45,7 @@ function call_phone()
 	var phone_number = $('#CustomerPhone').val();
 	// var phone_number = '1 800 394 1980';
 	$("#currentCallNum").val(phone_number);
+	bringToFront();
 	placeCall(phone_number);
 }
 function DiallerJobsHistory(){
@@ -56,13 +58,13 @@ function DiallerJobsHistory(){
 			$('#Dialler-Job-History').show();
 		});
 }
-function DiallerCallHistory(){
-$.get("<?=BASE_URL;?>/orders/getCallHistory",
-			{phone:$('#CustomerPhone').val()},
-			function(data){
-        $("#Dialler-Call-History").html(data);
-    });
-}
+// function DiallerCallHistory(){
+// $.get("<?=BASE_URL;?>/orders/getCallHistory",
+// 			{phone:$('#CustomerPhone').val()},
+// 			function(data){
+//         $("#Dialler-Call-History").html(data);
+//     });
+// }
 function showCallBack() 
 {  
 	$( "#dialer_callback" ).dialog("open");
@@ -706,6 +708,7 @@ $.get("<?=BASE_URL;?>/orders/getCallHistory",
 			{phone:$('#CustomerPhone').val()},
 			function(data){
         $("#CallHistory").html(data);
+        $("#Dialler-Call-History").html(data);
     });
 }
 
@@ -732,22 +735,28 @@ function SaveDialerCallRecord(){
 	var callResultId = $("#answer_reply").val();
 	var callbackDate = ''; 
 	var lastCall = new Date().toISOString().slice(0,10);
+	var callmode = window.parent.frame_browser.document.getElementById("call_mode").value;
 	if(callResultId == 3 || callResultId == 7 ) 
 	{
 		$.post("<?=BASE_URL;?>/orders/deleteUserFromCampaign",
 			{  customer_id:$('#CustomerId').val()			
 			},
 			function(data){
-				console.log("aa gyaya");
-				var callmode = window.parent.frame_browser.document.getElementById("call_mode").value;
+			$("#end_current_call").trigger("click");
 			if(callmode == "" || callmode == 3)
 			{
 				$(".call_next_user").trigger("click");
 			}
+			return false;
     	});
 	} else {
 		var CurrentDate = new Date();
 		
+		if(callResultId == 6)
+		{
+			
+			callbackDate = '';
+		} 
 		if(callResultId == 4)
 		{
 			current = CurrentDate.setMonth(CurrentDate.getMonth() + 3);
@@ -765,11 +774,21 @@ function SaveDialerCallRecord(){
 		}
 		if (callResultId == 2)
 		{
-			$(".call_next_user").trigger("click");
+			$("#end_current_call").trigger("click");
+			if(callmode == "" || callmode == 3)
+			{
+				$(".call_next_user").trigger("click");
+			}
+			return false;
 		}
 		if (callResultId == 1)
 		{
-			$(".call_next_user").trigger("click");
+			$("#end_current_call").trigger("click");
+			if(callmode == "" || callmode == 3)
+			{
+				$(".call_next_user").trigger("click");
+			}
+			return false;
 		}
 	$.get("<?=BASE_URL;?>/orders/saveCallRecord",
 		{
@@ -797,20 +816,10 @@ function SaveDialerCallRecord(){
 		 dialer_id:'web'
 		}
 	, function(data){
-			//$('#CustomerId').val(data);
-			// $.get("<?=BASE_URL;?>/orders/getCallHistory", {customer_id:$('#CustomerId').val()}, function(data){
-			//   showhist=1;
-			//   $("#Dialler-Call-History").html(data);
-			//   $("#dialer_callback").dialog("destroy");
-			//   console.log("run");
 			 AddCustomerNote();
-			// });
-			
-		var callmode = window.parent.frame_browser.document.getElementById("call_mode").value;
-		console.log("callmode=",callmode);
+			$("#end_current_call").trigger("click");
 			if(callmode == "" || callmode == 3)
 			{
-				console.log('insave');
 				$(".call_next_user").trigger("click");
 			}
 		});
@@ -862,18 +871,9 @@ function SaveCallRecord(){
 		 call_id:0,
 		 dialer_id:'web'
 		}, function(data){
-			// $('#CustomerId').val(data);
-			// $.get("<?=BASE_URL;?>/orders/getCallHistory", {customer_id:$('#CustomerId').val()}, function(data){
-			//   showhist=1;
-			//   $("#CallHistory").html(data);
+			
 			  AddCustomerNote();
-			//});
-			var callmode = window.parent.frame_browser.document.getElementById("call_mode").value;
-			console.log("callmode",callmode);
-			if(callmode == "" || callmode == 3)
-			{
-				$(".call_next_user").trigger("click");
-			}
+			$("#dialer_callback").dialog("destroy");
 	});
 }
 var PrevState = <?=$this->data['Order']['order_status_id']?>;
@@ -1099,11 +1099,11 @@ $(document).ready(function(){
           autoOpen: false, 
           modal: true,
           width: 420,
-          height: 200
+          height: 300
       });
     GetUserHotList();
 	DiallerJobsHistory();
-	DiallerCallHistory();
+	//DiallerCallHistory();
 	var callResultId = $("#answer_reply").val();
 	if(callResultId == 1) {
 		$("#new_booking").addClass("current-selected-button");
@@ -1138,7 +1138,17 @@ $(document).ready(function(){
 			},500);
 		}
 	});
-
+	$(window).load(function() {
+	var callMode = window.parent.frame_browser.document.getElementById("call_mode").value;
+	if(3 == callMode)
+	{
+		$('.select-call-mode-button:eq(2)').addClass("current-call-mode-selected-button");
+	} else if(2 == callMode) {
+		$('.select-call-mode-button:eq(1)').addClass("current-call-mode-selected-button");
+	} else if(1 == callMode) {
+		$('.select-call-mode-button:eq(0)').addClass("current-call-mode-selected-button");
+	}
+    });
 	$(".call_icon").click(function(){
 		$(".call_icon").removeClass("call_current");
 		$(this).addClass("call_current");
@@ -1147,7 +1157,10 @@ $(document).ready(function(){
 		$(".select-button").removeClass("current-selected-button");
 		$(this).addClass("current-selected-button");
 	});
-
+	$(".select-call-mode-button").click(function(){
+		$(".select-call-mode-button").removeClass("current-call-mode-selected-button");
+		$(this).addClass("current-call-mode-selected-button");
+	});
 	last_jt='<?=$this->data['Order']['order_type_id']?>';
 	ShowCallHistory();
 	showPayments();
@@ -1282,6 +1295,15 @@ $(document).ready(function(){
 	});
 	maintenancePackage();
 	initializeQuestions();
+	$(".answer_reply").live("click", function(){
+		var clr = $(this).attr("clr");
+		$("#answer_reply").val(clr);
+	});
+
+	$("#dialer-call-result").live("change", function(){
+		var clr = $(this).val();
+		$("#answer_reply").val(clr);
+	});
 });
 
 
@@ -1661,6 +1683,10 @@ table.dialler-scroll tr{
 .current-selected-button{
 	border: 2px solid black;
 }
+.current-call-mode-selected-button{
+	border: 2px solid rgb(165, 253, 93);
+    background: rgb(165, 253, 93);
+}
 </style>
 
 <?php
@@ -1769,7 +1795,7 @@ function get_data($url)
 <tr><td colspan=3>
     <div>
     <div class="tabtrigger <?=$tab1?>" id="trigger1" onclick="openTab(1);">Booking Info</div>
-    <div class="tabtrigger <?=$tab3?>" id="trigger3" onclick="openTab(3);">Calls History</div>
+   <!--  <div class="tabtrigger <?=$tab3?>" id="trigger3" onclick="openTab(3);">Calls History</div> -->
     <?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 3) {?>
     <div class="tabtrigger <?=$tab7?>" id="trigger7" onclick="openTab(7);">Dialer</div>
     <?php }?>
@@ -2834,7 +2860,7 @@ function get_data($url)
  		<div class="dialer-sec">
 			<div class="dialer-hdr clearfix">
 			<a href="javascript:void(0)" class="pitch-icon">pitch</a>
-			<a href="<?=BASE_URL?>/orders/scheduleView"  class=" btn btn-wht sch-btn">Schedule</a>	
+			<a href="javascript:void(0)" onclick="CheckWithSchedule()"  class=" btn btn-wht sch-btn">Schedule</a>	
 			</div>
 	
 			<div class="dailer-txt">
@@ -2889,9 +2915,9 @@ function get_data($url)
 	</div>	 <!--end dialer-ctn-->	
 			<div class="dialer-ftr clearfix">	
 				<div class="ftr-left">
-					<a href="javascript:void(0)" onclick="setcallmode(1)" class="btn btn-wht">Pause </a>
-					<a href="javascript:void(0)" onclick="setcallmode(2)" class="btn btn-wht">Manual </a>
-					<a href="javascript:void(0)" onclick="setcallmode(3)" class="btn btn-wht">Auto </a>
+					<a href="javascript:void(0)" onclick="setcallmode(1)" class="btn btn-wht select-call-mode-button">Pause </a>
+					<a href="javascript:void(0)" onclick="setcallmode(2)" class="btn btn-wht select-call-mode-button">Manual </a>
+					<a href="javascript:void(0)" onclick="setcallmode(3)" class="btn btn-wht select-call-mode-button">Auto </a>
 				</div>
 				
 			<div class="ftr-right">

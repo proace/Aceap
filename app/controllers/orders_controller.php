@@ -2599,6 +2599,7 @@ class OrdersController extends AppController
     // Method renders call history into the table
     function getCallHistory()
     {   
+        session_write_close(); // It added to remove delay in ajax response
         $customer_id = $_GET['customer_id'];
         $phone = $_GET['phone'];
 
@@ -2608,8 +2609,7 @@ class OrdersController extends AppController
 
         //Telemarketers will not see 'Answering Machine' results
         $ans = '';
-        if (($this->Common->getLoggedUserRoleID() == 3)
-		    ||($this->Common->getLoggedUserRoleID() == 13)
+        if (($this->Common->getLoggedUserRoleID() == 13)
          	||($this->Common->getLoggedUserRoleID() == 9))
             $ans = 'call_result_id!=6 and';
 
@@ -3481,7 +3481,7 @@ class OrdersController extends AppController
 			//$cust = $this->User->findAll($conditions, null, $sort, $limit);
 
 			if($this->Common->getLoggedUserRoleID() != 6) {
-				$telem_clause = " AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = User.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
+				$telem_clause = " AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = u.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
 			}
 
 			$criteria = 'c.'.$_GET['sq_crit'];
@@ -3505,7 +3505,7 @@ class OrdersController extends AppController
 			//$cust = $this->User->findAll($conditions, null, $sort, $limit);
 
 			if($this->Common->getLoggedUserRoleID() != 6) {
-				$telem_clause = " AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = User.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
+				$telem_clause = " AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = u.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
 			}
 
 			$criteria = 'c.'.$_GET['sq_crit'];
@@ -5960,6 +5960,7 @@ class OrdersController extends AppController
 	// Method creates an HTML table with customer jobs' history
 	function showCustomerJobs()
 	{
+		session_write_close(); // It added to remove delay in ajax response
 		$customer_id = $_GET['customer_id'];
 		$order_id = $_GET['order_id'];
 		$phone = $_GET['phone'];
@@ -7110,8 +7111,6 @@ class OrdersController extends AppController
         
         }
       
-
-
         if($_GET['savedata']==1) {
         $this->Addquestions(
             $customer_id,
@@ -13389,5 +13388,20 @@ function weeklySchedule(){
 		
 		
 	} 
+
+function deleteUserFromCampaign() 
+{
+	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+	$customer_id = $_POST['customer_id'];
+	$query = "DELETE from ace_rp_all_campaigns where call_history_ids = $customer_id";
+ 		$result = $db->_execute($query);
+ 	if($result)
+ 	{
+ 		$query = "UPDATE ace_rp_customers set campaign_id = '' where id = $customer_id";
+ 		$result = $db->_execute($query);		
+ 	}
+ 	echo "hi";
+ 	exit();
+}
 }
 ?>
