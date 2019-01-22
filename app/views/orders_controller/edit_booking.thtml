@@ -28,6 +28,7 @@ function call_cell_phone()
 	//$('#CustomerCellPhone').val();604-8415774
 	var phone_number = $('#CustomerCellPhone').val();
 	$("#currentCallNum").val(phone_number);
+	bringToFront();
 	placeCall(phone_number);
 }
 function directPlaceCall()
@@ -44,6 +45,7 @@ function call_phone()
 	var phone_number = $('#CustomerPhone').val();
 	// var phone_number = '1 800 394 1980';
 	$("#currentCallNum").val(phone_number);
+	bringToFront();
 	placeCall(phone_number);
 }
 function DiallerJobsHistory(){
@@ -745,6 +747,7 @@ function SaveDialerCallRecord(){
 			{
 				$(".call_next_user").trigger("click");
 			}
+			return false;
     	});
 	} else {
 		var CurrentDate = new Date();
@@ -776,6 +779,7 @@ function SaveDialerCallRecord(){
 			{
 				$(".call_next_user").trigger("click");
 			}
+			return false;
 		}
 		if (callResultId == 1)
 		{
@@ -784,6 +788,7 @@ function SaveDialerCallRecord(){
 			{
 				$(".call_next_user").trigger("click");
 			}
+			return false;
 		}
 	$.get("<?=BASE_URL;?>/orders/saveCallRecord",
 		{
@@ -1679,7 +1684,8 @@ table.dialler-scroll tr{
 	border: 2px solid black;
 }
 .current-call-mode-selected-button{
-	border: 2px solid black;
+	border: 2px solid rgb(165, 253, 93);
+    background: rgb(165, 253, 93);
 }
 </style>
 
@@ -2854,7 +2860,7 @@ function get_data($url)
  		<div class="dialer-sec">
 			<div class="dialer-hdr clearfix">
 			<a href="javascript:void(0)" class="pitch-icon">pitch</a>
-			<a href="<?=BASE_URL?>/orders/scheduleView"  class=" btn btn-wht sch-btn">Schedule</a>	
+			<a href="javascript:void(0)" onclick="CheckWithSchedule()"  class=" btn btn-wht sch-btn">Schedule</a>	
 			</div>
 	
 			<div class="dailer-txt">

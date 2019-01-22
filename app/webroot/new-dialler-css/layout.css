@@ -79,7 +79,7 @@ body { margin: 0px; padding: 0px; background: #fff; color: #000; font-family: 'R
 
 .ftr-left{ float: left; padding-top: 3px;}
 .ftr-left a{ display: inline-block; margin-left: 3px; font-weight: 400;}
-.ftr-left .btn:hover{ opacity: 1; background: #d1d1d1;}
+.ftr-left .btn:hover{ opacity: 1; background: #d1d1d1; border: 2px solid #e2e1e1;}
 .ftr-right{ float: right;}
 
 .num-fild{ display: inline-block; }
