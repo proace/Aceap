@@ -1938,17 +1938,21 @@ class OrdersController extends AppController
 			$this->set('tab_num',3);
 			$this->set('tab1','tabOff');
 			$this->set('tab7','tabOff');
+			//$this->set('tab10','tabOff');
 			$this->set('tab3','tabOver');
 			$this->set('page1','none');
 			$this->set('page3','block');
+			//$this->set('page10','none');
 			$this->set('page7','none');
 		}else if($hotlist){
 			$this->set('tab_num',7);
 			$this->set('tab1','tabOff ');
 			$this->set('tab7','tabOver');
 			$this->set('tab3','tabOff');
+			//$this->set('tab10','tabOff');
 			$this->set('page1','none');
 			$this->set('page3','none');
+			//$this->set('page10','none');
 			$this->set('page7','block');
 		}else
 		{
@@ -1956,12 +1960,26 @@ class OrdersController extends AppController
 			$this->set('tab1','tabOver ');
 			$this->set('tab7','tabOff');
 			$this->set('tab3','tabOff');
+			//$this->set('tab10','tabOff');
 			$this->set('page1','block');
 			$this->set('page3','none');
 			$this->set('page7','none');
+			//$this->set('page10','none');
 
 		}
-
+		// Get call recordings 1 800 394 1980
+		// $query =  "SELECT * FROM ace_rp_call_recordings where phone_number='".$this->data['Customer']['phone']."' order by id desc";
+		// $recordings = array();
+		// if(!empty($this->data['Customer']['phone']))
+		// {
+		// 	$query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
+		// 	$result = $db->_execute($query);
+		// 	while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		// 	{
+		// 		array_push($recordings, $row);
+		// 	}
+		// }
+		// $this->set('callRecordings',$recordings);
 		// PREPARE DATA FOR UI
 		// Get Associated Options
 		if (!$this->data['Order']['permit_applied_date'])
@@ -2018,7 +2036,6 @@ class OrdersController extends AppController
 			foreach ($past_orders as $ord)
 				$job_estimate_text = 'REF# '.$ord['Order']['order_number'].' - '.date('d M Y', strtotime($ord['Order']['job_date']));
 		}
-
 		// Find customer's notes
 		if ($this->data['Customer']['id'])
 		{
@@ -5999,8 +6016,7 @@ class OrdersController extends AppController
 					$add = "style=\"background: #FFFF99;\"";
 				else
 				{
-					if ((($this->Common->getLoggedUserRoleID() != 3)
-					   &&($this->Common->getLoggedUserRoleID() != 9)
+					if ((($this->Common->getLoggedUserRoleID() != 9)
 					   &&($this->Common->getLoggedUserRoleID() != 1))
 						||($this->Common->getLoggedUserID()==$p_order['Order']['booking_telemarketer_id']))
 						$add = " style=\"cursor: hand; cursor: pointer;\" onclick=\"location.href='./".$method."?order_id=".$p_order['Order']['id']."';\"";
@@ -13403,5 +13419,22 @@ function deleteUserFromCampaign()
  	echo "hi";
  	exit();
 }
+
+ function saveCallRecording()
+ {
+ 	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+ 	$recordingName = $_POST['recording_name'];
+ 	$phoneNumber = $_POST['phone_number'];
+ 	$date = date("Y-m-d h:i:s");
+
+ 	$query = "INSERT into ace_rp_call_recordings (phone_no, recording_name	, record_date) values ('".$phoneNumber."', '".$recordingName."', '".$date."')";
+ 		$result = $db->_execute($query);
+ 	if($result)
+ 	{
+ 		echo "OK";
+ 		exit();
+ 	}
+ }
+ 
 }
 ?>
