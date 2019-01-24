@@ -48,6 +48,10 @@ function call_phone()
 	bringToFront();
 	placeCall(phone_number);
 }
+// function playRecording(e)
+// {
+// 	console.log(e.val());
+// }
 function DiallerJobsHistory(){
 	$.get("<?=BASE_URL;?>/orders/showCustomerJobs",
 		{customer_id:$('#CustomerId').val(),
@@ -147,6 +151,13 @@ function openTab(n){
 	$('#tabA'+n).show();
 	$('#trigger'+n).removeClass('tabOff');
 	$('#trigger'+n).addClass('tabOver');
+
+	if(1 == n)
+	{
+		$("#show-new-booking").trigger("click");
+	}
+	//$("#tabA1 table td:first-child").show();
+
 	nopen = n;
 }
 function ShowAN(el){
@@ -731,9 +742,11 @@ function GetUserHotList()
     });
 }
 function SaveDialerCallRecord(){
-	
+	var callId = $('#end_current_call').attr("call_id");
 	var callResultId = $("#answer_reply").val();
 	var callbackDate = ''; 
+	//var recordingName = $('#recordingName').val();
+	var phoneNumber = $("#currentCallNum").val();
 	var lastCall = new Date().toISOString().slice(0,10);
 	var callmode = window.parent.frame_browser.document.getElementById("call_mode").value;
 	if(callResultId == 3 || callResultId == 7 ) 
@@ -816,13 +829,29 @@ function SaveDialerCallRecord(){
 		 dialer_id:'web'
 		}
 	, function(data){
-			 AddCustomerNote();
-			$("#end_current_call").trigger("click");
+		 AddCustomerNote();
+		 $("#end_current_call").trigger("click");
+		 //apiStopCallRecord(callId);
+		 // $.post("<?=BASE_URL;?>/orders/saveCallRecording",
+			// {  recording_name:recordingName,
+			//    phone_number:phoneNumber	
+			// },
+			// function(data){
+			// 	console.log(data);
+			// 	if(data.indexOf('OK') > 0) {
+			// 		if(callmode == "" || callmode == 3)
+			// 		{
+			// 			$(".call_next_user").trigger("click");
+			// 		}
+			// 	}
+				
+			// });
 			if(callmode == "" || callmode == 3)
 			{
 				$(".call_next_user").trigger("click");
 			}
-		});
+    	});
+		
 	}
 }
 function callTransfer()
@@ -832,10 +861,10 @@ function callTransfer()
 }
 function callRecord(){
 	var callId = $('#end_current_call').attr("call_id");
-	var userConNum = $("#currentCallNum").val();
 	var time = Date.now();
-	var fileLocation = "<?= WWW_JS_ROOT_PATH ;?>call-recording/"+userConNum+'_'+time;
-
+	var userConNum = $("#currentCallNum").val()+'_'+time;
+	$("#recordingName").val(userConNum+'.wav');
+	var fileLocation = "<?= WWW_ROOT ;?>call-recording/"+userConNum;
 	apiCallRecord(callId,fileLocation);
  }
 
@@ -1128,7 +1157,6 @@ $(document).ready(function(){
 		} else if(callcount == 1 && callmode == 2)
 		{
 			var initcall = setInterval(function(){
-				console.log("next2");
 				var constatus = $("#ConnectionStatus").val();
 				if(constatus == "CONNECTED")
 				{
@@ -1166,7 +1194,7 @@ $(document).ready(function(){
 	showPayments();
 	ShowLastCallHistory();
   <?php if ((!isset($_GET['order_id']))&&(!isset($_GET['job_truck']))) {?>
-				OpenJobsHistory();
+				//OpenJobsHistory();
   <?php }else{?>
 				TotalCalculation();
 				jt=$('#OrderOrderTypeId').val();
@@ -1778,6 +1806,7 @@ function get_data($url)
 
 <form name="editBookingform" action="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
 <!-- This tag creates our form tag -->
+<input type="hidden" name="recordingName" id="recordingName" value=""/>
 <input type="hidden" name="havetoprint" id="havetoprint" value="0"/>
 <input type="hidden" id="NumberOfItems" value="<?=$num_items;?>">
 <input type="hidden" name="data[Order][order_status_id]" id="OrderOrderStatusId" value="<?php echo $this->data['Order']['order_status_id'];?>" />
@@ -1795,6 +1824,9 @@ function get_data($url)
 <tr><td colspan=3>
     <div>
     <div class="tabtrigger <?=$tab1?>" id="trigger1" onclick="openTab(1);">Booking Info</div>
+   <?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 3) {?>
+	<div class="tabtrigger <?=$tab10?>" id="trigger10" onclick="openTab(10);">Recordings</div>
+	<?php }?>
    <!--  <div class="tabtrigger <?=$tab3?>" id="trigger3" onclick="openTab(3);">Calls History</div> -->
     <?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 3) {?>
     <div class="tabtrigger <?=$tab7?>" id="trigger7" onclick="openTab(7);">Dialer</div>
@@ -2000,6 +2032,9 @@ function get_data($url)
 			<tr><td>
 			<table cellspacing=0 cellpadding=0>
 				<tr>
+					<td class="special_section" id="show-new-booking" onclick="location.href='./editBooking?customer_id=<?=$this->data['Customer']['id']?>&order_id=0';">
+								<u style="color:blue">New booking</u>
+					</td>
 					<td class="special_section" id="OpenHistoryText" onclick="OpenJobsHistory()">
 								<u style="color:blue">Show history</u>
 								<img id="JobHistoryWorking" style="display:none" src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>
@@ -2007,9 +2042,7 @@ function get_data($url)
 					<td class="special_section" id="CloseHistoryText" onclick="CloseJobsHistory()" style="display:none">
 								<u style="color:blue">Hide history</u>
 					</td>
-					<td class="special_section" onclick="location.href='./editBooking?customer_id=<?=$this->data['Customer']['id']?>&order_id=0';">
-								<u style="color:blue">New booking</u>
-					</td>
+					
 				  <td class="special_section" onclick="CheckWithSchedule()">
 							  <u style="color:blue;cursor:pointer">Show Schedule</u>
 				  </td>
@@ -2937,6 +2970,17 @@ function get_data($url)
 			<div id="APIMessageLog"></div>
 	</div> <!--end dialer-sec-->
 </div>
+<div id="tabA10" style="display:<?=$page10?>; width:100%">
+	<table>
+	<tr>
+		<th>Recordings</th>
+	</tr>
+	<!-- <?php
+		 foreach($callRecordings as $recording) { 
+		 	 echo '<tr><td href="javascript:void(0)" onclick="playRecording(this);">'.$recording["recording_name"].'</td></tr>';
+		  }?> -->
+	</table>
+</div>
 
     <div id="tabA4" style="display:none"><!-- Feedback -->
 				<div class="frame-wrap">
@@ -3208,10 +3252,8 @@ function get_data($url)
 <script>
 	function showHotListData(ctype)
 		{
-			console.log("ctype=",ctype);
 			if("p" == ctype)
 			{
-				console.log("inprev");
 				javascript:parent.frame_browser.document.getElementsByClassName('active_user')[0].previousElementSibling.click();	
 			}else{
 				javascript:parent.frame_browser.document.getElementsByClassName('active_user')[0].nextElementSibling.click();	
