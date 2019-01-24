@@ -1938,21 +1938,21 @@ class OrdersController extends AppController
 			$this->set('tab_num',3);
 			$this->set('tab1','tabOff');
 			$this->set('tab7','tabOff');
-			//$this->set('tab10','tabOff');
+			$this->set('tab10','tabOff');
 			$this->set('tab3','tabOver');
 			$this->set('page1','none');
 			$this->set('page3','block');
-			//$this->set('page10','none');
+			$this->set('page10','none');
 			$this->set('page7','none');
 		}else if($hotlist){
 			$this->set('tab_num',7);
 			$this->set('tab1','tabOff ');
 			$this->set('tab7','tabOver');
 			$this->set('tab3','tabOff');
-			//$this->set('tab10','tabOff');
+			$this->set('tab10','tabOff');
 			$this->set('page1','none');
 			$this->set('page3','none');
-			//$this->set('page10','none');
+			$this->set('page10','none');
 			$this->set('page7','block');
 		}else
 		{
@@ -1960,11 +1960,11 @@ class OrdersController extends AppController
 			$this->set('tab1','tabOver ');
 			$this->set('tab7','tabOff');
 			$this->set('tab3','tabOff');
-			//$this->set('tab10','tabOff');
+			$this->set('tab10','tabOff');
 			$this->set('page1','block');
 			$this->set('page3','none');
 			$this->set('page7','none');
-			//$this->set('page10','none');
+			$this->set('page10','none');
 
 		}
 		// Get call recordings 1 800 394 1980
@@ -1972,14 +1972,15 @@ class OrdersController extends AppController
 		// $recordings = array();
 		// if(!empty($this->data['Customer']['phone']))
 		// {
-		// 	$query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
+		// 	// $query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
+		// 	$query =  "SELECT * FROM ace_rp_call_recordings where phone_no='".$this->data['Customer']['phone']."' order by id desc";
 		// 	$result = $db->_execute($query);
 		// 	while($row = mysql_fetch_array($result, MYSQL_ASSOC))
 		// 	{
 		// 		array_push($recordings, $row);
 		// 	}
 		// }
-		// $this->set('callRecordings',$recordings);
+		//$this->set('callRecordings',$recordings);
 		// PREPARE DATA FOR UI
 		// Get Associated Options
 		if (!$this->data['Order']['permit_applied_date'])
