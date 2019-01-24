@@ -89,7 +89,7 @@
 		external_link_list_url : "js/link_list.js",
 		external_image_list_url : "js/image_list.js",
 		media_external_list_url : "js/media_list.js",
-		spellchecker_rpc_url : "js/tiny_mce/plugins/spellchecker/editor_plugin.js"
+		gecko_spellcheck : true, browser_spellcheck : true
 		});
 	
 
