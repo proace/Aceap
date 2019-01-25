@@ -159,11 +159,17 @@ function apiBringToFront() {
  
 function apiPlaceCall(target, suppressGUI) {
 	var content = xmlDeclarationString + '<dial type="audio">\r\n <number>' + target + '</number>\r\n <displayName></displayName>\r\n <suppressMainWindow>' + suppressGUI + '</suppressMainWindow>\r\n</dial>';
+	
 	var msg = constructApiMessage(ApiRequestTypes.CALL, content);
 	sendMessage(msg);
 }	
 function apiCallRecord(callId, fileLocation) {
 	var content = xmlDeclarationString + '<startCallRecording>\r\n <callId>' + callId + '</callId>\r\n <filename>' + fileLocation + '</filename>\r\n <suppressPopup>true</suppressPopup> \r\n </startCallRecording>';
+	var msg = constructApiMessage(ApiRequestTypes.STARTCALLRECORDING, content);
+	sendMessage(msg);
+}
+function apiStopCallRecord(callId) {
+	var content = xmlDeclarationString + '<stopCallRecording>\r\n <callId>' + callId + '</callId> \r\n  </stopCallRecording>';
 	var msg = constructApiMessage(ApiRequestTypes.STARTCALLRECORDING, content);
 	sendMessage(msg);
 }
@@ -275,7 +281,7 @@ function handleStatusChangeEvent(eventType) {
 function handleCallStatusResponse(callStatusDoc) {
 	/* Each Call Status Response contain zero or more 'call' elements with information about each ongoing call */
 	var calls = callStatusDoc.getElementsByTagName("call");
-	console.log(calls);
+
 	
 	/* Create an array to hold the list of calls */
 	var currentCallList = [];
@@ -612,6 +618,7 @@ function updateCallActivity(callList) {
 					//html += 'Connected call with ' + participant.displayName + holdStateString + ' (' + participant.number + ') <br/>[<a href="" onclick="apiEndCall(\'' + call.id + '\'); return false;">End Call</a>]' + holdStateAction + ' [<a href="" onclick="doCallTransfer(\'' + call.id + '\'); return false;">Transfer</a>]';
 					endc = '<a href="javascript:void(0)" id="end_current_call" class="fa fa-times" call_id="'+call.id+'" onclick="apiEndCall(\'' + call.id + '\'); return false;" ></a>';
 					// jq("#end_current_call").attr("onclick",apiEndCall(call.id));
+					callRecord();
 					break;
 				default:
 					//html += 'Call ' + participant.state + ' ';

@@ -599,9 +599,11 @@ class OrdersController extends AppController
 				//REDIRECT FOR SEND ESTIMATE TEMPLATE
 				$this->orderEstimate($order_id, $this->data['Order']['BookingItem']);
 			}else{
-				$custId = $this->data['Customer']['id'];
+				
 				if($isDialer) {
-					$this->redirect('orders/editBooking?hotlist=1&customer_id='.$custId.'&is_booking=1');
+					$custId = $this->data['Customer']['id'];
+					$orderNumber = $this->data['Order']['order_number'];
+					$this->redirect('orders/editBooking?hotlist=1&customer_id='.$custId.'&is_booking=1&orderNo='.$orderNumber);
 				} else {
 				if($_POST['havetoprint'] == 3 && $_SESSION['user']['role_id']==6)
 					$this->redirect('/orders/scheduleView');
@@ -1726,7 +1728,8 @@ class OrdersController extends AppController
 		$isDialer = isset($this->params['url']['is_dialer'])?$this->params['url']['is_dialer']:0;
 
 		$is_booking = isset($this->params['url']['is_booking'])?$this->params['url']['is_booking'] : "";
-
+		$orderNo = isset($this->params['url']['orderNo'])?$this->params['url']['orderNo'] : '';
+		
 		if (!empty($this->data['Order']))
 		{
 			//If order information is submitted - save the order
@@ -1738,13 +1741,16 @@ class OrdersController extends AppController
 		}
 		else
 		{
+		
 			$this->set('is_booking',$is_booking);
+			$this->set('orderNo',$orderNo);
 			// If no order data is submitted, we'll have one of the following situations:
 			// 1. we are being asked to display an existing order's data ($order_id!='')
 			// 2. we are being asked to create a new order for an existing customer ($order_id=='', $customer_id!='')
 			// 3. we are being asked to create a completely new customer ($order_id=='', $customer_id=='')
 			// Check submitted data for any special parameters to be set
 			$order_id = $this->params['url']['order_id'];
+			// print_r($order_id);die;
 			$customer_id = $this->params['url']['customer_id'];
 			$num_items = 0;
 			$show_app_order='display:none';
@@ -1935,15 +1941,29 @@ class OrdersController extends AppController
 		// Currently open page
 		if ( in_array($this->params['url']['action_type'], array('callback','comeback','dnc') ) )
 		{
-			$this->set('tab_num',3);
-			$this->set('tab1','tabOff');
-			$this->set('tab7','tabOff');
-			$this->set('tab10','tabOff');
-			$this->set('tab3','tabOver');
-			$this->set('page1','none');
-			$this->set('page3','block');
-			$this->set('page10','none');
-			$this->set('page7','none');
+			// if($this->Common->getLoggedUserRoleID() == 3 || $this->Common->getLoggedUserRoleID() == 6) 
+			// {
+			// 	$this->set('tab_num',1);
+			// 	$this->set('tab1','tabOver ');
+			// 	$this->set('tab7','tabOff');
+			// 	$this->set('tab3','tabOff');
+			// 	$this->set('tab10','tabOff');
+			// 	$this->set('page1','block');
+			// 	$this->set('page3','none');
+			// 	$this->set('page7','none');
+			// 	$this->set('page10','none');
+			// } else {
+				$this->set('tab_num',3);
+				$this->set('tab1','tabOff');
+				$this->set('tab7','tabOff');
+				$this->set('tab10','tabOff');
+				$this->set('tab3','tabOver');
+				$this->set('page1','none');
+				$this->set('page3','block');
+				$this->set('page10','none');
+				$this->set('page7','none');
+			//}
+					
 		}else if($hotlist){
 			$this->set('tab_num',7);
 			$this->set('tab1','tabOff ');
@@ -1969,18 +1989,17 @@ class OrdersController extends AppController
 		}
 		// Get call recordings 1 800 394 1980
 		// $query =  "SELECT * FROM ace_rp_call_recordings where phone_number='".$this->data['Customer']['phone']."' order by id desc";
-		// $recordings = array();
-		// if(!empty($this->data['Customer']['phone']))
-		// {
-		// 	// $query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
-		// 	$query =  "SELECT * FROM ace_rp_call_recordings where phone_no='".$this->data['Customer']['phone']."' order by id desc";
-		// 	$result = $db->_execute($query);
-		// 	while($row = mysql_fetch_array($result, MYSQL_ASSOC))
-		// 	{
-		// 		array_push($recordings, $row);
-		// 	}
-		// }
-		//$this->set('callRecordings',$recordings);
+		$recordings = array();
+		if(!empty($this->data['Customer']['phone']))
+		{
+			$query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
+			$result = $db->_execute($query);
+			while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+			{
+				array_push($recordings, $row);
+			}
+		}
+		$this->set('callRecordings',$recordings);
 		// PREPARE DATA FOR UI
 		// Get Associated Options
 		if (!$this->data['Order']['permit_applied_date'])
@@ -2096,7 +2115,7 @@ class OrdersController extends AppController
 			$cities_with_id[$row['internal_id']]['name']= $row['name'];
 		}
 
-		if(isset($order_id)) {
+		if(!empty($order_id)) {
 			$query = "
 				SELECT n.*, nt.name note_type_name,
 					ur.name urgency_name,
@@ -2148,7 +2167,7 @@ class OrdersController extends AppController
 
 		$this->set('use_template_questions',$use_template_questions);
 
-		if(isset($order_id)) {
+		if(!empty($order_id)) {
 			$query = "SELECT photo_1, photo_2 FROM ace_rp_orders WHERE id = ".$order_id;
 			$result = $db->_execute($query);
 			while($row = mysql_fetch_array($result)) {
@@ -13426,9 +13445,10 @@ function deleteUserFromCampaign()
  	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
  	$recordingName = $_POST['recording_name'];
  	$phoneNumber = $_POST['phone_number'];
+ 	$orderNumber = !empty($_POST['order_num']) ? $_POST['order_num'] : 'null';
  	$date = date("Y-m-d h:i:s");
 
- 	$query = "INSERT into ace_rp_call_recordings (phone_no, recording_name	, record_date) values ('".$phoneNumber."', '".$recordingName."', '".$date."')";
+ 	$query = "INSERT into ace_rp_call_recordings (phone_no, recording_name, record_date, order_number) values ('".$phoneNumber."', '".$recordingName."', '".$date."',".$orderNumber.")";
  		$result = $db->_execute($query);
  	if($result)
  	{

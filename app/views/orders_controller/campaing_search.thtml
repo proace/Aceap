@@ -2,6 +2,7 @@
 <input type="hidden" id ="first_call" name="first_call" value="0">
 <input type="hidden" id ="call_mode" name="call_mode" value="3">
 <input type="hidden" id="currentUserId" val="">
+<input type="hidden" id="currentUserPhoneNo" val="">
 <? if ($add == 0) { ?>
 <div style="clear: both; float: left;">
 	<div class="dhcell" style="width: 110px;">Last Name<?=$last_name?></div>

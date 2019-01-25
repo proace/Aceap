@@ -38,6 +38,9 @@ ini_set('session.cache_expire', 120960);
 	define('WEBROOT_DIR', 'webroot');
 	define('WWW_ROOT', ROOT . DS . APP_DIR . DS . WEBROOT_DIR . DS);
 	define('WWW_JS_ROOT_PATH', str_replace('\\', '/', WWW_ROOT));
+	define('BASE_PATH','/');
+	define('HTTP_PATH', "http://".$_SERVER['HTTP_HOST'].'/');
+	define('ADUIO_REC_PATH', HTTP_PATH.'acesys/app/'.WEBROOT_DIR.BASE_PATH.'call-recording'.BASE_PATH);
 /**
  * This only needs to be changed if the cake installed libs are located
  * outside of the distributed directory structure.
