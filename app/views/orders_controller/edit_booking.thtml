@@ -77,11 +77,9 @@ function emailInvoice(order_id){
 	 var email = $('#emailinput').val();
 	 var emailInvoice = document.getElementById("emailinvoicelink").value;
 	if(emailInvoice == "emailinvoice"){
-
 		window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office', '_new');
 	}
 	if(emailInvoice == "emailinvoicereview"){
-		alert("here is coming");
 		window.open('<?=BASE_URL?>/orders/emailInvoiceReviewLinks?order_id='+ order_id +'&email='+ email +'&type=office', '_new');
 	}
 }
@@ -2065,10 +2063,10 @@ function get_data($url)
                     Print
                 	 <select name="print_r" id="print_r" onchange="invoiceprint(<?=$this->data["Order"]["id"]?>);">
                     	<option></option>
-                    	<option value="invoiceprint">invoiceprint</option>
+                    	<option value="invoiceprint">Complete</option>
                     	<option value="invoiceprintnototal">No Total</option>
                     	<option value="invoiceprintblank">Blank</option>
-                    	<option value="invoiceTabletPrint">Qs</option>
+                    	<option value="invoiceTabletPrint">Questions On</option>
                     	<!-- <option value="estimateTabletPrint">Estimate Template</option> -->
                     </select>
                 </td>

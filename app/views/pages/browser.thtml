@@ -70,8 +70,14 @@
 		}
 		//alert("requested page "+page+"\nmaxpage "+maxpage+"\nlimit "+limit);
 		divID = document.getElementById('listbox');
+		divID2 = document.getElementById('count_of_cust_div1');
 		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&sq_dates='+sq_dates+'&add=0&curpage='+page,
-				function(data){divID.innerHTML=data;});
+				function(data){
+					divID.innerHTML=data;
+					count_of_cust = document.getElementById('count_of_cust').value;
+					document.getElementById('append_count_div').style.display = '';
+					divID2.innerHTML=count_of_cust;
+				});
 			//new Ajax.Updater(divID,, {asynchronous:true, evalScripts:true, requestHeaders:['X-Update', 'listbox']});
 	}
 
