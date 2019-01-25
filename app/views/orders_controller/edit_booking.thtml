@@ -22,12 +22,14 @@ document.title += " :: Edit Booking";
 <script language="JavaScript">
 function call_cell_phone()
 {
+	var phone_number = $('#CustomerCellPhone').val();
 	window.parent.frame_browser.document.getElementById("first_call").value = 1;
 	window.parent.frame_browser.document.getElementById("currentUserId").value = $('#CustomerId').val();
-
+	window.parent.frame_browser.document.getElementById("currentUserPhoneNo")
+	.value = phone_number;
 	//$('#CustomerCellPhone').val();604-8415774
-	var phone_number = $('#CustomerCellPhone').val();
-	$("#currentCallNum").val(phone_number);
+	
+	// $("#currentCallNum").val(phone_number);
 	bringToFront();
 	placeCall(phone_number);
 }
@@ -38,19 +40,20 @@ function directPlaceCall()
 }
 function call_phone()
 {
+	// var phone_number = '1 800 394 1980';
+	var phone_number = $('#CustomerPhone').val();
 	window.parent.frame_browser.document.getElementById("first_call")
 	.value = 1;
 	window.parent.frame_browser.document.getElementById("currentUserId").value = $('#CustomerId').val();
-
-	var phone_number = $('#CustomerPhone').val();
-	// var phone_number = '1 800 394 1980';
-	$("#currentCallNum").val(phone_number);
+	window.parent.frame_browser.document.getElementById("currentUserPhoneNo")
+	.value = phone_number;
+	// $("#currentCallNum").val(phone_number);
 	bringToFront();
 	placeCall(phone_number);
 }
-// function playRecording(e)
-// {
-// 	console.log(e.val());
+// function playRecording(recName)
+// {	
+// 	console.log(recName);
 // }
 function DiallerJobsHistory(){
 	$.get("<?=BASE_URL;?>/orders/showCustomerJobs",
@@ -62,13 +65,7 @@ function DiallerJobsHistory(){
 			$('#Dialler-Job-History').show();
 		});
 }
-// function DiallerCallHistory(){
-// $.get("<?=BASE_URL;?>/orders/getCallHistory",
-// 			{phone:$('#CustomerPhone').val()},
-// 			function(data){
-//         $("#Dialler-Call-History").html(data);
-//     });
-// }
+
 function showCallBack() 
 {  
 	$( "#dialer_callback" ).dialog("open");
@@ -143,6 +140,7 @@ var nopen = <?=$tab_num?>;
 var item_type=0;
 var items_opend=-1;
 function openTab(n){
+
 	$('#tabA'+nopen).hide();
 	$('#trigger'+nopen).addClass('tabOff');
 	$('#trigger'+nopen).removeClass('tabOver');
@@ -154,8 +152,6 @@ function openTab(n){
 	{
 		$("#show-new-booking").trigger("click");
 	}
-	//$("#tabA1 table td:first-child").show();
-
 	nopen = n;
 }
 function ShowAN(el){
@@ -740,11 +736,12 @@ function GetUserHotList()
     });
 }
 function SaveDialerCallRecord(){
+	var orderNo = $("#orderNo").val();
 	var callId = $('#end_current_call').attr("call_id");
 	var callResultId = $("#answer_reply").val();
 	var callbackDate = ''; 
-	//var recordingName = $('#recordingName').val();
-	var phoneNumber = $("#currentCallNum").val();
+	var recordingName = callId+'.wav';
+	var phoneNumber = window.parent.frame_browser.document.getElementById("currentUserPhoneNo").value;
 	var lastCall = new Date().toISOString().slice(0,10);
 	var callmode = window.parent.frame_browser.document.getElementById("call_mode").value;
 	if(callResultId == 3 || callResultId == 7 ) 
@@ -754,10 +751,20 @@ function SaveDialerCallRecord(){
 			},
 			function(data){
 			$("#end_current_call").trigger("click");
-			if(callmode == "" || callmode == 3)
-			{
-				$(".call_next_user").trigger("click");
-			}
+			$.post("<?=BASE_URL;?>/orders/saveCallRecording",
+			{  recording_name:recordingName,
+			   phone_number:phoneNumber	,
+			   order_num: orderNo
+			},
+			function(data){
+				if(data.indexOf('OK') > 0) {
+					if(callmode == "" || callmode == 3)
+					{
+						$(".call_next_user").trigger("click");
+					}
+				}
+				
+			});
 			return false;
     	});
 	} else {
@@ -786,19 +793,41 @@ function SaveDialerCallRecord(){
 		if (callResultId == 2)
 		{
 			$("#end_current_call").trigger("click");
-			if(callmode == "" || callmode == 3)
-			{
-				$(".call_next_user").trigger("click");
-			}
+			$.post("<?=BASE_URL;?>/orders/saveCallRecording",
+			{  recording_name:recordingName,
+			   phone_number:phoneNumber	,
+			   order_num: orderNo
+			},
+			function(data){
+				console.log(data);
+				if(data.indexOf('OK') > 0) {
+					if(callmode == "" || callmode == 3)
+					{
+						$(".call_next_user").trigger("click");
+					}
+				}
+				
+			});
 			return false;
 		}
 		if (callResultId == 1)
 		{
 			$("#end_current_call").trigger("click");
-			if(callmode == "" || callmode == 3)
-			{
-				$(".call_next_user").trigger("click");
-			}
+			$.post("<?=BASE_URL;?>/orders/saveCallRecording",
+			{  recording_name:recordingName,
+			   phone_number:phoneNumber	,
+			   order_num: orderNo
+			},
+			function(data){
+				console.log(data);
+				if(data.indexOf('OK') > 0) {
+					if(callmode == "" || callmode == 3)
+					{
+						$(".call_next_user").trigger("click");
+					}
+				}
+				
+			});
 			return false;
 		}
 	$.get("<?=BASE_URL;?>/orders/saveCallRecord",
@@ -828,26 +857,22 @@ function SaveDialerCallRecord(){
 		}
 	, function(data){
 		 AddCustomerNote();
-		 $("#end_current_call").trigger("click");
-		 //apiStopCallRecord(callId);
-		 // $.post("<?=BASE_URL;?>/orders/saveCallRecording",
-			// {  recording_name:recordingName,
-			//    phone_number:phoneNumber	
-			// },
-			// function(data){
-			// 	console.log(data);
-			// 	if(data.indexOf('OK') > 0) {
-			// 		if(callmode == "" || callmode == 3)
-			// 		{
-			// 			$(".call_next_user").trigger("click");
-			// 		}
-			// 	}
+		$("#end_current_call").trigger("click");
+		 apiStopCallRecord(callId);
+		 $.post("<?=BASE_URL;?>/orders/saveCallRecording",
+			{  recording_name:recordingName,
+			   phone_number:phoneNumber	,
+			   order_num: orderNo
+			},
+			function(data){
+				if(data.indexOf('OK') > 0) {
+					if(callmode == "" || callmode == 3)
+					{
+						$(".call_next_user").trigger("click");
+					}
+				}
 				
-			// });
-			if(callmode == "" || callmode == 3)
-			{
-				$(".call_next_user").trigger("click");
-			}
+			});
     	});
 		
 	}
@@ -859,10 +884,9 @@ function callTransfer()
 }
 function callRecord(){
 	var callId = $('#end_current_call').attr("call_id");
-	var time = Date.now();
-	var userConNum = $("#currentCallNum").val()+'_'+time;
-	$("#recordingName").val(userConNum+'.wav');
+	var userConNum =callId;
 	var fileLocation = "<?= WWW_ROOT ;?>call-recording/"+userConNum;
+	// var fileLocation = "<?= WWW_JS_ROOT_PATH ;?>call-recording/"+userConNum;
 	apiCallRecord(callId,fileLocation);
  }
 
@@ -2927,6 +2951,7 @@ function get_data($url)
 							  <option value="9">9 Month</option>
 							</select>
 						</li>
+						<input type="hidden" value="<?php echo $orderNo; ?>" id="orderNo">
 						<input type="hidden" value="<?php echo $is_booking; ?>" id="answer_reply">
 						<li class="sub-w100"><a onclick="SaveDialerCallRecord()" class="btn btn-navy">Submit</a></li>
 					</ul>
@@ -2969,16 +2994,19 @@ function get_data($url)
 	</div> <!--end dialer-sec-->
 </div>
 <div id="tabA10" style="display:<?=$page10?>; width:100%">
-	<table>
+	<table style="width:100%">
 	<tr>
 		<th>Recordings</th>
 	</tr>
-	<!-- <?php
+	 <?php
 		 foreach($callRecordings as $recording) { 
-		 	 echo '<tr><td href="javascript:void(0)" onclick="playRecording(this);">'.$recording["recording_name"].'</td></tr>';
-		  }?> -->
+		 	 $recName = $recording["recording_name"];
+		 	 echo '<tr><td href="javascript:void(0)"><span>'.$recName.'</span><audio controls><source src="'.ADUIO_REC_PATH.$recName.'" type="audio/wav"></audio></td></tr>';
+		  }?>
 	</table>
 </div>
+
+<!-- echo '<tr><td href="javascript:void(0)" onclick="playRecording('.$newRecName.');">'.$ -->
 
     <div id="tabA4" style="display:none"><!-- Feedback -->
 				<div class="frame-wrap">
