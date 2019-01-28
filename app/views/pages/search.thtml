@@ -347,11 +347,11 @@ Date.prototype.format = function (mask, utc) {
 	      &nbsp;&nbsp;
 	      Date from: 
 	      &nbsp;&nbsp;
-		  <input type="text" id="ffromdate" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<? if ($fdate) echo $fdate; else echo ''; ?>">
+		  <input type="text" id="ffromdate" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($fdate) echo $fdate; else echo ''; ?>">
 	      &nbsp;&nbsp;
 	      Date to:
 	      &nbsp;&nbsp;
-		  <input type="text" id="ftodate" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<? if ($tdate) echo $tdate; else echo ''; ?>">
+		  <input type="text" id="ftodate" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($tdate) echo $tdate; else echo ''; ?>">
 	  </div>
       <?php 
       echo
