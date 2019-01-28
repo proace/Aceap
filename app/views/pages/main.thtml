@@ -16,7 +16,7 @@ echo "&nbsp";
 	<frame src="<?=BASE_URL;?>/inventories/index" name="main_view" id="main_view" />
   <? } else { ?>
   <frameset cols = "230, *" frameBorder="1">
-	<frameset rows = "60, *" frameBorder="0">
+	<frameset rows = "90, *" frameBorder="0">
 		<frame src="<?=BASE_URL;?>/pages/search" name="frame_search" id="frame_search" />
         <?php if ($common->getLoggedUserRoleID() == 6) { ?>
 		<frameset rows = "*, 200" frameBorder="1">
