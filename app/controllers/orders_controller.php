@@ -64,7 +64,7 @@ class OrdersController extends AppController
 			|| $this->action == 'invoiceTabletItems'
 			|| $this->action == 'invoiceTabletFeedback'
 			|| $this->action == 'invoiceTabletNewBooking') {
-		$this->Common->checkRoles(array('1','12'));
+		$this->Common->checkRoles(array('1','12','6'));
 	  }
 	}
 
@@ -9905,25 +9905,29 @@ class OrdersController extends AppController
 	}
 
 	function invoiceTablet() {
-		$this->layout = "blank";
+		if($this->Common->getLoggedUserRoleID() == 6){
+             $this->redirect("http://hvacproz.ca/acesys/index.php/pages/main");exit;
+        }
+        else{
+			$this->layout = "blank";
 
-		$this->set('jobs', $this->Order->findAll(array(
-			"Order.job_date" => date("Y-m-d"),  
-			"OR" => array("Order.booking_source_id" => $this->Common->getLoggedUserID(),
-				"Order.booking_source2_id" => $this->Common->getLoggedUserID(),
-				"Order.job_technician1_id" => $this->Common->getLoggedUserID(),
-				"Order.job_technician2_id" => $this->Common->getLoggedUserID()
-			))
-		, null, "Order.job_time_beg ASC"));
+			$this->set('jobs', $this->Order->findAll(array(
+				"Order.job_date" => date("Y-m-d"),  
+				"OR" => array("Order.booking_source_id" => $this->Common->getLoggedUserID(),
+					"Order.booking_source2_id" => $this->Common->getLoggedUserID(),
+					"Order.job_technician1_id" => $this->Common->getLoggedUserID(),
+					"Order.job_technician2_id" => $this->Common->getLoggedUserID()
+				))
+			, null, "Order.job_time_beg ASC"));
 
-		$order_id = $_GET['id'];
+			$order_id = $_GET['id'];
 
-		if(isset($order_id)) {
-			//save time out
-			$this->Order->id = $order_id;
-			$this->Order->saveField('fact_job_end', date("H:i:s"));
+			if(isset($order_id)) {
+				//save time out
+				$this->Order->id = $order_id;
+				$this->Order->saveField('fact_job_end', date("H:i:s"));
+			}
 		}
-
 	}
 
 	function invoiceTabletOverview() {
@@ -10047,7 +10051,7 @@ class OrdersController extends AppController
 		$headers = "From: info@acecare.ca\n";
 		$headers .= "Content-Type: text/html; charset=iso-8859-1\n";
 
-		$msg = file_get_contents("http://acecare.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
+		$msg = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
 		$res = mail($email, $subject, $msg, $headers);
 
 		$this->redirect("orders/invoiceTabletPrint?order_id=$order_id");
@@ -10471,7 +10475,7 @@ class OrdersController extends AppController
 			$return = $this->emailInvoiceReviewLinks($order_id,$cemail);
                         if($this->Common->getLoggedUserRoleID() == 6){
                              //$this->redirect("orders/invoiceTabletPrint?order_id=$order_id&type=$type");exit;
-                             $this->redirect("http://acecare.ca/acesys/index.php/pages/main");exit;
+                             $this->redirect("http://hvacproz.ca/acesys/index.php/pages/main");exit;
                         }
 			$this->redirect("orders/invoiceTablet?order_id=$order_id");exit;
 		}
@@ -10615,7 +10619,7 @@ class OrdersController extends AppController
 		$msg.= "ACE Clients<br>Pro Ace Heating & Air Conditioning Ltd<br>";
 		$msg.= "Tel: 604-293-3770<br>www.acecare.ca";
 
-		$invoice = file_get_contents("http://acecare.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
+		$invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
 
 		$boundary = md5(time());
 		$header = "From: info@acecare.ca \r\n";
@@ -12785,7 +12789,7 @@ class OrdersController extends AppController
 		$this->layout = "blank";
 
 
-		$fileUrl ="http://acecare.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
+		$fileUrl ="http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
 		
 		set_time_limit(300);
 		$subject = 'Ace Services Ltd';
@@ -12880,7 +12884,7 @@ class OrdersController extends AppController
 			$email = $_GET['email'];
 		}
 			
-		$fileUrl = "http://acecare.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
+		$fileUrl = "http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
 		set_time_limit(300);
 		$subject = 'Ace Services Ltd';
 		$settings = $this->Setting->find(array('title'=>'email_template_custom'));
