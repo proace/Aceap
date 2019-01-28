@@ -1941,18 +1941,18 @@ class OrdersController extends AppController
 		// Currently open page
 		if ( in_array($this->params['url']['action_type'], array('callback','comeback','dnc') ) )
 		{
-			// if($this->Common->getLoggedUserRoleID() == 3 || $this->Common->getLoggedUserRoleID() == 6) 
-			// {
-			// 	$this->set('tab_num',1);
-			// 	$this->set('tab1','tabOver ');
-			// 	$this->set('tab7','tabOff');
-			// 	$this->set('tab3','tabOff');
-			// 	$this->set('tab10','tabOff');
-			// 	$this->set('page1','block');
-			// 	$this->set('page3','none');
-			// 	$this->set('page7','none');
-			// 	$this->set('page10','none');
-			// } else {
+			if($this->Common->getLoggedUserRoleID() == 3 || $this->Common->getLoggedUserRoleID() == 6) 
+			{
+				$this->set('tab_num',1);
+				$this->set('tab1','tabOver ');
+				$this->set('tab7','tabOff');
+				$this->set('tab3','tabOff');
+				$this->set('tab10','tabOff');
+				$this->set('page1','block');
+				$this->set('page3','none');
+				$this->set('page7','none');
+				$this->set('page10','none');
+			} else {
 				$this->set('tab_num',3);
 				$this->set('tab1','tabOff');
 				$this->set('tab7','tabOff');
@@ -1962,7 +1962,7 @@ class OrdersController extends AppController
 				$this->set('page3','block');
 				$this->set('page10','none');
 				$this->set('page7','none');
-			//}
+			}
 					
 		}else if($hotlist){
 			$this->set('tab_num',7);
@@ -1988,11 +1988,11 @@ class OrdersController extends AppController
 
 		}
 		// Get call recordings 1 800 394 1980
-		// $query =  "SELECT * FROM ace_rp_call_recordings where phone_number='".$this->data['Customer']['phone']."' order by id desc";
 		$recordings = array();
 		if(!empty($this->data['Customer']['phone']))
 		{
-			$query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
+			$query =  "SELECT * FROM ace_rp_call_recordings where phone_no='".$this->data['Customer']['phone']."' order by id desc";
+			// $query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
 			$result = $db->_execute($query);
 			while($row = mysql_fetch_array($result, MYSQL_ASSOC))
 			{
