@@ -83,6 +83,11 @@
 		<?php echo $job['Customer']['address'] ?> <?php echo $job['Customer']['city'] ?> <?php echo $job['Customer']['postal_code'] ?>
         </a>
     </p>
+    <?php if(!empty($recordingName)){?>
+         <img src="/acesys/app/webroot/img/voice.jpg" style="width:27px;height:32px">
+        <audio controls><source src="<?echo ADUIO_REC_PATH.$recordingName?>" type="audio/wav"></audio></td></tr>    
+    <?php }?>
+   
 	<?php if ( ($job['Customer']['card_number']!='') && ($job['Customer']['card_exp']!='0000-00-00') ) { ?>
 		<p><b style="color:red">Member</b> (Card # <?=$job['Customer']['card_number']?> &nbsp;&nbsp; Exp. Date: <?=date("d M Y", strtotime($job['Customer']['card_exp'])); ?>)</p>
 	<?php } ?>

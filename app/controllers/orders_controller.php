@@ -9930,8 +9930,13 @@ class OrdersController extends AppController
 		$this->layout = "blank";
 
 		$order_id = $_GET['order_id'];
-
-		$this->set('order', $this->Order->findById($order_id));
+		$orderDetails = $this->Order->findById($order_id);
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "SELECT recording_name from ace_rp_call_recordings where order_number=".$orderDetails['Order']['order_number'];
+		$result = $db->_execute($query);
+		$row = mysql_fetch_array($result, MYSQL_ASSOC);
+		$this->set('recordingName', $row['recording_name']);
+		$this->set('order', $orderDetails);
 		$this->set('invoice', $this->Invoice->findByOrderId($order_id));
 
 		$this->set('jobs', $this->Order->findAll(array(
