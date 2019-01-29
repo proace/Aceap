@@ -40,7 +40,7 @@ function directPlaceCall()
 }
 function call_phone()
 {
-	// var phone_number = '1 800 394 1980';
+	//var phone_number = '1 800 394 1980';
 	var phone_number = $('#CustomerPhone').val();
 	window.parent.frame_browser.document.getElementById("first_call")
 	.value = 1;
@@ -751,20 +751,24 @@ function SaveDialerCallRecord(){
 			},
 			function(data){
 			$("#end_current_call").trigger("click");
-			$.post("<?=BASE_URL;?>/orders/saveCallRecording",
-			{  recording_name:recordingName,
-			   phone_number:phoneNumber	,
-			   order_num: orderNo
-			},
-			function(data){
-				if(data.indexOf('OK') > 0) {
-					if(callmode == "" || callmode == 3)
-					{
-						$(".call_next_user").trigger("click");
-					}
-				}
+			if(callmode == "" || callmode == 3)
+			{
+				$(".call_next_user").trigger("click");
+			}
+			// $.post("<?=BASE_URL;?>/orders/saveCallRecording",
+			// {  recording_name:recordingName,
+			//    phone_number:phoneNumber	,
+			//    order_num: orderNo
+			// },
+			// function(data){
+			// 	if(data.indexOf('OK') > 0) {
+			// 		if(callmode == "" || callmode == 3)
+			// 		{
+			// 			$(".call_next_user").trigger("click");
+			// 		}
+			// 	}
 				
-			});
+			// });
 			return false;
     	});
 	} else {
@@ -793,41 +797,49 @@ function SaveDialerCallRecord(){
 		if (callResultId == 2)
 		{
 			$("#end_current_call").trigger("click");
-			$.post("<?=BASE_URL;?>/orders/saveCallRecording",
-			{  recording_name:recordingName,
-			   phone_number:phoneNumber	,
-			   order_num: orderNo
-			},
-			function(data){
-				console.log(data);
-				if(data.indexOf('OK') > 0) {
-					if(callmode == "" || callmode == 3)
-					{
-						$(".call_next_user").trigger("click");
-					}
-				}
+			if(callmode == "" || callmode == 3)
+			{
+				$(".call_next_user").trigger("click");
+			}
+			// $.post("<?=BASE_URL;?>/orders/saveCallRecording",
+			// {  recording_name:recordingName,
+			//    phone_number:phoneNumber	,
+			//    order_num: orderNo
+			// },
+			// function(data){
+			// 	console.log(data);
+			// 	if(data.indexOf('OK') > 0) {
+			// 		if(callmode == "" || callmode == 3)
+			// 		{
+			// 			$(".call_next_user").trigger("click");
+			// 		}
+			// 	}
 				
-			});
+			// });
 			return false;
 		}
 		if (callResultId == 1)
 		{
 			$("#end_current_call").trigger("click");
-			$.post("<?=BASE_URL;?>/orders/saveCallRecording",
-			{  recording_name:recordingName,
-			   phone_number:phoneNumber	,
-			   order_num: orderNo
-			},
-			function(data){
-				console.log(data);
-				if(data.indexOf('OK') > 0) {
-					if(callmode == "" || callmode == 3)
-					{
-						$(".call_next_user").trigger("click");
-					}
-				}
+			if(callmode == "" || callmode == 3)
+			{
+				$(".call_next_user").trigger("click");
+			}
+			// $.post("<?=BASE_URL;?>/orders/saveCallRecording",
+			// {  recording_name:recordingName,
+			//    phone_number:phoneNumber	,
+			//    order_num: orderNo
+			// },
+			// function(data){
+			// 	console.log(data);
+			// 	if(data.indexOf('OK') > 0) {
+			// 		if(callmode == "" || callmode == 3)
+			// 		{
+			// 			$(".call_next_user").trigger("click");
+			// 		}
+			// 	}
 				
-			});
+			// });
 			return false;
 		}
 	$.get("<?=BASE_URL;?>/orders/saveCallRecord",
@@ -859,20 +871,24 @@ function SaveDialerCallRecord(){
 		 AddCustomerNote();
 		$("#end_current_call").trigger("click");
 		 apiStopCallRecord(callId);
-		 $.post("<?=BASE_URL;?>/orders/saveCallRecording",
-			{  recording_name:recordingName,
-			   phone_number:phoneNumber	,
-			   order_num: orderNo
-			},
-			function(data){
-				if(data.indexOf('OK') > 0) {
-					if(callmode == "" || callmode == 3)
-					{
-						$(".call_next_user").trigger("click");
-					}
-				}
+		 if(callmode == "" || callmode == 3)
+			{
+				$(".call_next_user").trigger("click");
+			}
+		 // $.post("<?=BASE_URL;?>/orders/saveCallRecording",
+			// {  recording_name:recordingName,
+			//    phone_number:phoneNumber	,
+			//    order_num: orderNo
+			// },
+			// function(data){
+			// 	if(data.indexOf('OK') > 0) {
+			// 		if(callmode == "" || callmode == 3)
+			// 		{
+			// 			$(".call_next_user").trigger("click");
+			// 		}
+			// 	}
 				
-			});
+			// });
     	});
 		
 	}
