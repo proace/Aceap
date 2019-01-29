@@ -158,7 +158,8 @@
             	<td class="left"><?php echo $item['name'] ?>
                 	<input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][name]" value="<?php echo $item['name'] ?>" />
                     <input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][price_purchase]" value="<?php echo $item['price_purchase'] ?>" />
-                	<input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][item_category_id]" value="<?php echo $item['item_category_id'] ?>" />              		<input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][addition]" value="<?php echo $item['addition'] ?>" />
+                	<input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][item_category_id]" value="<?php echo $item['item_category_id'] ?>" />       <input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][addition]" value="<?php echo $item['addition'] ?>" />
+                    <input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][item_id]" value="<?php echo $item['item_id'] ?>" />
                 </td>
                 <td class="center">                	
                 	<!--<select class="installed" name="data[BookingItem][<?php echo $item['item_id'] ?>][installed]">
