@@ -870,7 +870,7 @@ function SaveDialerCallRecord(){
 	, function(data){
 		 AddCustomerNote();
 		$("#end_current_call").trigger("click");
-		 apiStopCallRecord(callId);
+		 //apiStopCallRecord(callId);
 		 if(callmode == "" || callmode == 3)
 			{
 				$(".call_next_user").trigger("click");
