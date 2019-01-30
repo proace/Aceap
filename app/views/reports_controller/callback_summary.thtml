@@ -930,13 +930,11 @@ $.get("<?=BASE_URL;?>/reports/export_csv",
 				 export_data_val:export_data_val
 			},
 		function(data){
-			console.log(data);
 			if(data == 'no'){
-				alert();
 				document.getElementById('job_tans_msg').innerHTML = 'File can not be export because currently no data present.';
 			}
 			else{
-				window.location = "http://aceno1.ca/development/csv_folder/"+data+".csv";
+				window.location = "http://hvacproz.ca/acesys/csv_folder/"+data+".csv";
 				document.getElementById('job_tans_msg').innerHTML = '';
 			}
 		}); 

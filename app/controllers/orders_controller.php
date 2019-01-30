@@ -883,6 +883,7 @@ class OrdersController extends AppController
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		// Read the order's data from database
 
+		$first_Temp = "";
 		$query = "SELECT * FROM ace_rp_order_estimation WHERE order_id=".$order_id;
 		$result = $db->_execute($query);
 		while ($row = mysql_fetch_array($result)){
@@ -894,13 +895,17 @@ class OrdersController extends AppController
 		$this->Order->id = $order_id;
 		$orderData = $this->Order->read();
 		
-		
-
-
-		//echo $this->data['Order']['order_type_id'];
-		$templateQuery = "select * from ace_rp_estimation_template where job_type_id =".$this->data['Order']['order_type_id']; 
-		$result = $db->_execute($templateQuery);
-		$template = mysql_fetch_array($result);
+		if(empty($template)){
+			$templateQuery = "select * from ace_rp_estimation_template where job_type_id =".$this->data['Order']['order_type_id']; 
+			$result = $db->_execute($templateQuery);
+			$template = mysql_fetch_array($result);
+			$first_Temp = "true";
+		}
+		else{
+			$templateQuery = "SELECT * FROM ace_rp_order_estimation WHERE order_id=".$order_id; 
+			$result = $db->_execute($templateQuery);
+			$template = mysql_fetch_array($result);
+		}
 
 		//Load current questions 
 		//$officeQuery =  $this->_showQuestions(0, 0,$orderData['Order']['order_type_id'],'');
@@ -940,179 +945,345 @@ class OrdersController extends AppController
 		$note = mysql_fetch_assoc($result);		
 
 		//$temp as officeQuery
-		$officeQueryHTML = '<table style="border-collapse: collapse; width: 35%;" border="1">
-			<tbody>
-			<tr style="height: 18px;">
-				<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">#</strong></td>
-				<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Questions</strong></td>
-				<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Responses</strong></td>
-			</tr>';
-		
-		foreach ($temp as $key => $value) {
-				
-			$officeQueryHTML .='<tr style="height: 18px;">
-					<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['rank'].'</td>
-					<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['value'].'</td>
-					<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['qan']['response_text']. '</td>
+		if($first_Temp == "true"){
+			$officeQueryHTML = '<table class="officeQueryHTML" style="border-collapse: collapse; width: 35%;" border="1">
+				<tbody>
+				<tr style="height: 18px;">
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">#</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Questions</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Responses</strong></td>
 				</tr>';
-		}
-		$officeQueryHTML .= '</table>';
+			
+			foreach ($temp as $key => $value) {
+					
+				$officeQueryHTML .='<tr style="height: 18px;">
+						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['rank'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['value'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['qan']['response_text']. '</td>
+					</tr>';
+			}
+			$officeQueryHTML .= '</table>';
 
 
-		$option1 = '<table style="border-collapse: collapse; width: 35%;" border="1">
-			<tbody>
-			<tr style="height: 18px;">
-				<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
-				<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
-				<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
-				<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
-			</tr>';
-
-
-		$option2 = '<table style="border-collapse: collapse; width: 35%;" border="1">
-			<tbody>
-			<tr style="height: 18px;">
-				<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
-				<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
-				<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
-				<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
-			</tr>';
-
-			$subTotalPrice1 = 0;
-			$subTotalPrice2 = 0;
-			$classZeroExist = 0;
-			$classOneExist = 0;
-		foreach ($bookingItem as $key => $value) {
-			if($value['class']==0){
-				$classZeroExist = 1;
-				$option1 .='<tr style="height: 18px;">
-					<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
-					<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
-					<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['price']. '</td>
-					<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
+			$option1 = '<table class="option1_new" style="border-collapse: collapse; width: 35%;" border="1">
+				<tbody>
+				<tr style="height: 18px;">
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
 				</tr>';
-				$subTotalPrice1 = $subTotalPrice1+($value['price']*$value['quantity']-$value['discount']);
+
+
+			$option2 = '<table class="option2_new" style="border-collapse: collapse; width: 35%;" border="1">
+				<tbody>
+				<tr style="height: 18px;">
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
+				</tr>';
+
+				$subTotalPrice1 = 0;
+				$subTotalPrice2 = 0;
+				$classZeroExist = 0;
+				$classOneExist = 0;
+			foreach ($bookingItem as $key => $value) {
+				if($value['class']==0){
+					$classZeroExist = 1;
+					$option1 .='<tr style="height: 18px;">
+						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['price']. '</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
+					</tr>';
+					$subTotalPrice1 = $subTotalPrice1+($value['price']*$value['quantity']-$value['discount']);
+				}
+
+
+				if($value['class']==1){
+					$classOneExist = 1;
+					$option2 .='<tr style="height: 18px;">
+						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['price']. '</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
+					</tr>';
+					$subTotalPrice2 = $subTotalPrice2+($value['price']*$value['quantity']-$value['discount']);
+				}
 			}
 
+			
+			$gst1 = $subTotalPrice1*0.05;
+			$total1 = $subTotalPrice1+$gst1;
 
-			if($value['class']==1){
-				$classOneExist = 1;
-				$option2 .='<tr style="height: 18px;">
-					<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
-					<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
-					<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['price']. '</td>
-					<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
+			$gst2 = $subTotalPrice2*0.05;
+			$total2 = $subTotalPrice2+$gst2;		
+
+
+			$subTotal1 = '<table class="subTotal1" style="border-collapse: collapse; width: 15.593%; height: 100px;" border="1">
+			<tbody>
+			<tr>
+			<td style="width: 50%; text-align: right;">SubTotal:</td>
+			<td style="width: 50%; text-align: right;">'.$subTotalPrice1.'</td>
+			</tr>
+			<tr>
+			<td style="width: 50%; text-align: right;">GST:</td>
+			<td style="width: 50%; text-align: right;">'.$gst1.'</td>
+			</tr>
+			<tr>
+			<td style="width: 50%; text-align: right;">Total</td>
+			<td style="width: 50%; text-align: right;">'.$total1.'</td>
+			</tr>
+			</tbody>
+			</table>';
+
+			$subTotal2 = '<table class="subTotal2" style="border-collapse: collapse; width: 15.593%; height: 100px;" border="1">
+			<tbody>
+			<tr>
+			<td style="width: 50%; text-align: right;">SubTotal:</td>
+			<td style="width: 50%; text-align: right;">'.$subTotalPrice2.'</td>
+			</tr>
+			<tr>
+			<td style="width: 50%; text-align: right;">GST:</td>
+			<td style="width: 50%; text-align: right;">'.$gst2.'</td>
+			</tr>
+			<tr>
+			<td style="width: 50%; text-align: right;">Total</td>
+			<td style="width: 50%; text-align: right;">'.$total2.'</td>
+			</tr>
+			</tbody>
+			</table>';
+
+			$option1 .= '</tbody></table>';
+			$option2 .= '</tbody></table>';
+
+			$optionHTML = '<select name="jobType">';
+			while ($row = mysql_fetch_assoc($typeResult)){
+				$temp = '';
+				if($orderData['Order']['order_type_id']==$row['id']){
+					$temp = 'selected="selected"';
+					$jobetype = "<span class='cus_job_type'>".$row['name']."</span>";
+				}
+				$optionHTML .='<option  '.$temp.'  value="'.$row['id'].'" > '.$row['name'].' </option>';
+			}
+			$optionHTML .= '</select>';
+			
+			/*echo $jobetype; die;*/
+
+
+			$name = "<span class='cus_name'>".$orderData['Customer']['first_name'].' '.$orderData['Customer']['last_name']."</span>";
+			$address = "<span class='cus_address'>".$orderData['Customer']['address_unit'].' '.$orderData['Customer']['address_street_number'].' '.$orderData['Customer']['address_street']."</span>";
+			$city = "<span class='cus_city'>".$orderData['Customer']['city']."</span>";
+			$postal = "<span class='cus_postal'>".$orderData['Customer']['postal_code']."</span>";
+			$email= "<span class='cus_email'>".$orderData['Customer']['email']."</span>"; 
+			$phone= "<span class='cus_phone'>".$orderData['Customer']['phone']."</span>";
+			$cellphone= "<span class='cus_cellphone'>".$orderData['Customer']['cell_phone']."</span>";
+			$note = "<span class='cus_note'>".$note['message']."</span>";
+			$officeQuery = $officeQueryHTML;
+			$date = "<span class='cus_date'>".$orderData['Order']['booking_date']."</span>";
+			$reference = "<span class='cus_ref'>".$orderData['Order']['id']."</span>";
+			$ref = $orderData['Order']['id'];
+		
+			$template['template'] = str_replace("{name}",$name ,$template['template']);
+			$template['template'] = str_replace("{address}",$address ,$template['template']);
+			$template['template'] = str_replace("{city}",$city ,$template['template']);
+			$template['template'] = str_replace("{postal}",$postal ,$template['template']);
+			$template['template'] = str_replace("{email}",$email ,$template['template']);
+			$template['template'] = str_replace("{phone}",$phone ,$template['template']);
+			$template['template'] = str_replace("{cellphone}",$cellphone ,$template['template']);
+			$template['template'] = str_replace("{officequestion}",$officeQuery ,$template['template']);
+			$template['template'] = str_replace("{date}",$date ,$template['template']);
+			$template['template'] = str_replace("{reference}",$reference ,$template['template']);
+			$template['template'] = str_replace("{note}",$note ,$template['template']);
+
+			$template['template'] = str_replace("{jobetype}",$jobetype ,$template['template']);
+			
+			if($classZeroExist){
+				$template['template'] = str_replace("{option1}",$option1 ,$template['template']);	
+				$template['template'] = str_replace("{subtotal1}",$subTotal1 ,$template['template']);	
+			}else{
+				$template['template'] = str_replace("{option1}",'' ,$template['template']);	
+				$template['template'] = str_replace("{subtotal1}",'' ,$template['template']);	
+			}
+			
+			if($classOneExist){
+				$template['template'] = str_replace("{option2}",$option2 ,$template['template']);	
+				$template['template'] = str_replace("{subtotal2}",$subTotal2 ,$template['template']);	
+			}else{
+				$template['template'] = str_replace("{option2}",'' ,$template['template']);	
+				$template['template'] = str_replace("{subtotal2}",'' ,$template['template']);	
+			}
+		}
+		else{
+			$officeQueryHTML = '<table class="officeQueryHTML" style="border-collapse: collapse; width: 35%;" border="1">
+				<tbody>
+				<tr style="height: 18px;">
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">#</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Questions</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Responses</strong></td>
 				</tr>';
-				$subTotalPrice2 = $subTotalPrice2+($value['price']*$value['quantity']-$value['discount']);
+			
+			foreach ($temp as $key => $value) {
+					
+				$officeQueryHTML .='<tr style="height: 18px;">
+						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['rank'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['value'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['qan']['response_text']. '</td>
+					</tr>';
 			}
-		}
+			$officeQueryHTML .= '</table>';
 
-		
-		$gst1 = $subTotalPrice1*0.05;
-		$total1 = $subTotalPrice1+$gst1;
-
-		$gst2 = $subTotalPrice2*0.05;
-		$total2 = $subTotalPrice2+$gst2;		
-
-
-		$subTotal1 = '<table style="border-collapse: collapse; width: 15.593%; height: 100px;" border="1">
-		<tbody>
-		<tr>
-		<td style="width: 50%; text-align: right;">SubTotal:</td>
-		<td style="width: 50%; text-align: right;">'.$subTotalPrice1.'</td>
-		</tr>
-		<tr>
-		<td style="width: 50%; text-align: right;">GST:</td>
-		<td style="width: 50%; text-align: right;">'.$gst1.'</td>
-		</tr>
-		<tr>
-		<td style="width: 50%; text-align: right;">Total</td>
-		<td style="width: 50%; text-align: right;">'.$total1.'</td>
-		</tr>
-		</tbody>
-		</table>';
-
-		$subTotal2 = '<table style="border-collapse: collapse; width: 15.593%; height: 100px;" border="1">
-		<tbody>
-		<tr>
-		<td style="width: 50%; text-align: right;">SubTotal:</td>
-		<td style="width: 50%; text-align: right;">'.$subTotalPrice2.'</td>
-		</tr>
-		<tr>
-		<td style="width: 50%; text-align: right;">GST:</td>
-		<td style="width: 50%; text-align: right;">'.$gst2.'</td>
-		</tr>
-		<tr>
-		<td style="width: 50%; text-align: right;">Total</td>
-		<td style="width: 50%; text-align: right;">'.$total2.'</td>
-		</tr>
-		</tbody>
-		</table>';
+			$option1 = '<table class="option1_new" style="border-collapse: collapse; width: 35%;" border="1">
+				<tbody>
+				<tr style="height: 18px;">
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
+				</tr>';
 
 
+			$option2 = '<table class="option2_new" style="border-collapse: collapse; width: 35%;" border="1">
+				<tbody>
+				<tr style="height: 18px;">
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
+				</tr>';
+
+				$subTotalPrice1 = 0;
+				$subTotalPrice2 = 0;
+				$classZeroExist = 0;
+				$classOneExist = 0;
+			foreach ($bookingItem as $key => $value) {
+				if($value['class']==0){
+					$classZeroExist = 1;
+					$option1 .='<tr style="height: 18px;">
+						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['price']. '</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
+					</tr>';
+					$subTotalPrice1 = $subTotalPrice1+($value['price']*$value['quantity']-$value['discount']);
+				}
 
 
-		$option1 .= '</tbody></table>';
-		$option2 .= '</tbody></table>';
-
-		
-
-
-
-		$optionHTML = '<select name="jobType">';
-		while ($row = mysql_fetch_assoc($typeResult)){
-			$temp = '';
-			if($orderData['Order']['order_type_id']==$row['id']){
-				$temp = 'selected="selected"';
-				$jobetype = $row['name'];
+				if($value['class']==1){
+					$classOneExist = 1;
+					$option2 .='<tr style="height: 18px;">
+						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['price']. '</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
+					</tr>';
+					$subTotalPrice2 = $subTotalPrice2+($value['price']*$value['quantity']-$value['discount']);
+				}
 			}
-			$optionHTML .='<option  '.$temp.'  value="'.$row['id'].'" > '.$row['name'].' </option>';
-		}
-		$optionHTML .= '</select>';
-		
-		/*echo $jobetype; die;*/
+			
+			$gst1 = $subTotalPrice1*0.05;
+			$total1 = $subTotalPrice1+$gst1;
 
-		$name = $orderData['Customer']['first_name'].' '.$orderData['Customer']['last_name'];
-		$address = $orderData['Customer']['address_unit'].' '.$orderData['Customer']['address_street_number'].' '.$orderData['Customer']['address_street'];
-		$city = $orderData['Customer']['city'];
-		$postal = $orderData['Customer']['postal_code'];
-		$email= $orderData['Customer']['email']; 
-		$phone= $orderData['Customer']['phone'];
-		$cellphone= $orderData['Customer']['cell_phone'];
-		$note = $note['message'];
-		$officeQuery=$officeQueryHTML;
-		$date = $orderData['Order']['booking_date'];
-		$ref = $orderData['Order']['id'];
+			$gst2 = $subTotalPrice2*0.05;
+			$total2 = $subTotalPrice2+$gst2;		
 
-		
-		$template['template'] = str_replace("{name}",$name ,$template['template']);
-		$template['template'] = str_replace("{address}",$address ,$template['template']);
-		$template['template'] = str_replace("{city}",$city ,$template['template']);
-		$template['template'] = str_replace("{postal}",$postal ,$template['template']);
-		$template['template'] = str_replace("{email}",$email ,$template['template']);
-		$template['template'] = str_replace("{phone}",$phone ,$template['template']);
-		$template['template'] = str_replace("{cellphone}",$cellphone ,$template['template']);
-		$template['template'] = str_replace("{officequestion}",$officeQuery ,$template['template']);
-		$template['template'] = str_replace("{date}",$date ,$template['template']);
-		$template['template'] = str_replace("{reference}",$ref ,$template['template']);
-		$template['template'] = str_replace("{note}",$note ,$template['template']);
 
-		$template['template'] = str_replace("{jobetype}",$jobetype ,$template['template']);
-		
-		if($classZeroExist){
-			$template['template'] = str_replace("{option1}",$option1 ,$template['template']);	
-			$template['template'] = str_replace("{subtotal1}",$subTotal1 ,$template['template']);	
-		}else{
-			$template['template'] = str_replace("{option1}",'' ,$template['template']);	
-			$template['template'] = str_replace("{subtotal1}",'' ,$template['template']);	
-		}
-		
-		if($classOneExist){
-			$template['template'] = str_replace("{option2}",$option2 ,$template['template']);	
-			$template['template'] = str_replace("{subtotal2}",$subTotal2 ,$template['template']);	
-		}else{
-			$template['template'] = str_replace("{option2}",'' ,$template['template']);	
-			$template['template'] = str_replace("{subtotal2}",'' ,$template['template']);	
+			$subTotal1 = '<table class="subTotal1" style="border-collapse: collapse; width: 15.593%; height: 100px;" border="1">
+			<tbody>
+			<tr>
+			<td style="width: 50%; text-align: right;">SubTotal:</td>
+			<td style="width: 50%; text-align: right;">'.$subTotalPrice1.'</td>
+			</tr>
+			<tr>
+			<td style="width: 50%; text-align: right;">GST:</td>
+			<td style="width: 50%; text-align: right;">'.$gst1.'</td>
+			</tr>
+			<tr>
+			<td style="width: 50%; text-align: right;">Total</td>
+			<td style="width: 50%; text-align: right;">'.$total1.'</td>
+			</tr>
+			</tbody>
+			</table>';
+
+			$subTotal2 = '<table class="subTotal2" style="border-collapse: collapse; width: 15.593%; height: 100px;" border="1">
+			<tbody>
+			<tr>
+			<td style="width: 50%; text-align: right;">SubTotal:</td>
+			<td style="width: 50%; text-align: right;">'.$subTotalPrice2.'</td>
+			</tr>
+			<tr>
+			<td style="width: 50%; text-align: right;">GST:</td>
+			<td style="width: 50%; text-align: right;">'.$gst2.'</td>
+			</tr>
+			<tr>
+			<td style="width: 50%; text-align: right;">Total</td>
+			<td style="width: 50%; text-align: right;">'.$total2.'</td>
+			</tr>
+			</tbody>
+			</table>';
+
+			$option1 .= '</tbody></table>';
+			$option2 .= '</tbody></table>';
+
+			$optionHTML = '<select name="jobType">';
+			while ($row = mysql_fetch_assoc($typeResult)){
+				$temp = '';
+				if($orderData['Order']['order_type_id']==$row['id']){
+					$temp = 'selected="selected"';
+					$jobetype = $row['name'];
+				}
+				$optionHTML .='<option  '.$temp.'  value="'.$row['id'].'" > '.$row['name'].' </option>';
+			}
+			$optionHTML .= '</select>';
+			
+			/*echo $jobetype; die;*/
+
+			$name = "<span class='cus_name'>".$orderData['Customer']['first_name'].' '.$orderData['Customer']['last_name']."</span>";
+			$address = "<span class='cus_address'>".$orderData['Customer']['address_unit'].' '.$orderData['Customer']['address_street_number'].' '.$orderData['Customer']['address_street']."</span>";
+			$city = "<span class='cus_city'>".$orderData['Customer']['city']."</span>";
+			$postal = "<span class='cus_postal'>".$orderData['Customer']['postal_code']."</span>";
+			$email= "<span class='cus_email'>".$orderData['Customer']['email']."</span>"; 
+			$phone= "<span class='cus_phone'>".$orderData['Customer']['phone']."</span>";
+			$cellphone= "<span class='cus_cellphone'>".$orderData['Customer']['cell_phone']."</span>";
+			$note = "<span class='cus_note'>".$note['message']."</span>";
+			$date = "<span class='cus_date'>".$orderData['Order']['booking_date']."</span>";
+			$reference = "<span class='cus_ref'>".$orderData['Order']['id']."</span>";
+			$ref = $orderData['Order']['id'];
+
+			$template['estimate'] = preg_replace('/<span class=\"cus_name\">.*<\/span>/',$name,$template['estimate']);
+			$template['estimate'] = preg_replace('/<span class=\"cus_address\">.*<\/span>/',$address,$template['estimate']);
+			$template['estimate'] = preg_replace('/<span class=\"cus_city\">.*<\/span>/',$city,$template['estimate']);
+			$template['estimate'] = preg_replace('/<span class=\"cus_postal\">.*<\/span>/',$postal,$template['estimate']);
+			$template['estimate'] = preg_replace('/<span class=\"cus_email\">.*<\/span>/',$email,$template['estimate']);
+			$template['estimate'] = preg_replace('/<span class=\"cus_phone\">.*<\/span>/',$phone,$template['estimate']);
+			$template['estimate'] = preg_replace('/<span class=\"cus_cellphone\">.*<\/span>/',$cellphone,$template['estimate']);
+			$template['estimate'] = preg_replace('/<span class=\"cus_note\">.*<\/span>/',$note,$template['estimate']);
+			$template['estimate'] = preg_replace('/<span class=\"cus_off_query\">.*<\/span>/',$officeQuery,$template['estimate']);
+			$template['estimate'] = preg_replace('/<span class=\"cus_date\">.*<\/span>/',$date,$template['estimate']);
+			$template['estimate'] = preg_replace('/<span class=\"cus_ref\">.*<\/span>/',$reference,$template['estimate']);
+
+			$template['estimate'] =preg_replace('/<table class="officeQueryHTML" [^>]*>.*?<\/table>/si',$officeQueryHTML,$template['estimate']);
+
+			$template['estimate'] = preg_replace('/<span class=\"cus_job_type\">.*<\/span>/',$jobetype,$template['estimate']);
+			
+			if($classZeroExist){ 
+				$template['estimate'] =preg_replace('/<table class="option1_new" [^>]*>.*?<\/table>/si',$option1,$template['estimate']);
+				$template['estimate'] =preg_replace('/<table class="subtotal1" [^>]*>.*?<\/table>/si',$subTotal1,$template['estimate']);
+			}else{
+				$template['estimate'] =preg_replace('/<table class="option1_new" [^>]*>.*?<\/table>/si','',$template['estimate']);
+				$template['estimate'] =preg_replace('/<table class="subtotal1" [^>]*>.*?<\/table>/si','',$template['estimate']);
+			}
+			
+			if($classOneExist){
+				$template['estimate'] =preg_replace('/<table class="option2_new" [^>]*>.*?<\/table>/si',$option2,$template['estimate']);
+				$template['estimate'] =preg_replace('/<table class="subtotal2" [^>]*>.*?<\/table>/si',$subTotal2,$template['estimate']);
+			}else{	
+				$template['estimate'] =preg_replace('/<table class="option2_new" [^>]*>.*?<\/table>/si','',$template['estimate']);
+				$template['estimate'] =preg_replace('/<table class="subtotal2" [^>]*>.*?<\/table>/si','',$template['estimate']);
+			}
+
+			$template['template']=$template['estimate'];
 		}
 		
 		$emptytemplate ='';
