@@ -1,0 +1,97 @@
+<style>
+    
+.results tr td {
+    border-right: 1px solid #000;
+    text-align: center;
+    background-color: yellow;
+}
+</style>
+<h3>Campaign Report</h3>
+
+<form method="post" action="<?=BASE_URL?>/customers/campaingReport" name="csform">
+  
+   
+    Date from:
+    &nbsp;&nbsp;
+    <input type="text" name="from" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$from?>">
+    &nbsp;&nbsp;
+    to:
+    &nbsp;&nbsp;
+    <input type="text" name="to" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$to?>">
+     <br>
+     <br>
+     Campaing City: 
+    <select id="city_select" name="city">
+        <?php foreach ($cities as $v): ?>
+        <option value="<?=$v?>" <?=($v==$city ? 'selected' : '')?>><?=$v?></option>
+        <?php endforeach; ?>
+    </select>
+    &nbsp;&nbsp;
+    Select: 
+        <select id="call_action" name="call_action" style="margin-left: 14px;">
+            <option value="">Choose action</option>
+                    <option value="1" <?=("1"==$call_action ? 'selected' : '')?>>Book</option>
+                    <option value="2" <?=("2"==$call_action ? 'selected' : '')?>>Call back</option>
+                    <option value="4" <?=("4"==$call_action ? 'selected' : '')?>>Not Interested 3 Months</option>
+                    <option value="8" <?=("8"==$call_action ? 'selected' : '')?>>Not Interested 6 Months</option>
+                    <option value="9" <?=("9"==$call_action ? 'selected' : '')?>>Not Interested 9 Months</option>
+                    <!-- <option value="">Do Not Call</option>   -->
+                    <option value="6" <?=("6"==$call_action ? 'selected' : '')?>>Answering Machine</option> 
+                    <option value="11" <?=("11"==$call_action ? 'selected' : '')?>>Busy</option>  
+        </select>
+    <br>
+    <br>
+    Job Type
+    <select id="job_types_select" name="job_type">
+        <option value="">All</option>
+        <?php foreach ($job_types as $v): ?>
+        <option value="<?=$v['id']?>" <?=($v['id']==$job_type ? 'selected' : '')?>><?=$v['name']?></option>
+        <?php endforeach; ?>
+    </select>
+
+    <input type="submit" name="submit2" value="Submit" class="buttons" style="margin-left:16px"/><br clear="all">
+
+</form>
+<?php
+    $fields=array(
+        'city'=>'City',
+        'done'=>'Done',
+        'booked'=>'Booked',
+        'canceled'=>'Canceled',
+        'not_interested_3_months'=>'Not Interested 3 Months',
+        'not_interested_6_months'=>'Not Interested 6 Months',
+        'not_interested_9_months'=>'Not Interested 9 Months',
+        'callback'=>'Callback',
+        'answering machine'=>'Answering Machine',
+        'busy'=>'Busy',
+        'not_in_service'=>'Not In Service',
+        // 'do_not_call'=>'Do Not call',
+        'total'=>'Total',
+        'assigned'=>'Assigned'
+        );
+
+?>
+<?php $total = 0;
+    $total = $dataCount['Done']+$dataCount['Booked']+$dataCount['Cancelled']+$callResultCount['Not Interested (3 month)']+$callResultCount['Not Interested (6 month)']+$callResultCount['Not Interested (9 month)']+$callResultCount['Call Back']+$callResultCount['Answering Machine']+$callResultCount['Busy']+$callResultCount['Not In Service'];?>
+<style>tr:hover td{background-color:#eec}</style>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+    <tr>
+        <?php foreach ($fields as $f=>$v) { ?>
+        <th><?=$v?></th>
+        <?php }  ?>
+    </tr>
+    <tr>
+        <td><?php echo $city ?></td>
+        <td><?php echo $dataCount['Done'] ?></td>
+        <td><?php echo $dataCount['Booked'] ?></td>
+        <td><?php echo $dataCount['Cancelled'] ?></td>
+        <td><?php echo $callResultCount['Not Interested (3 month)'] ?></td>
+        <td><?php echo $callResultCount['Not Interested (6 month)'] ?></td>
+        <td><?php echo $callResultCount['Not Interested (9 month)'] ?></td>
+        <td><?php echo $callResultCount['Call Back'] ?></td>
+        <td><?php echo $callResultCount['Answering Machine'] ?></td>
+        <td><?php echo $callResultCount['Busy'] ?></td>
+        <td><?php echo $callResultCount['Not In Service'] ?></td>
+        <td><?php echo $total?></td>
+    </tr>
+</table>

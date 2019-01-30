@@ -1137,6 +1137,91 @@ $h .= ' <tr>
 
 	}
 
+	function campaingReport()
+	{
+		$where = '';
+		$callResultWhere = '';
+		if(!empty($_POST['call_action'])) 
+		{
+			$callResultWhere.=' AND ch.call_result_id ="'.$_POST['call_action'].'"';
+			$this->set('call_action', $_POST['call_action']);
+		}
+		if(!empty($_POST['city'])) 
+		{
+			$callResultWhere.= ' AND c.city ="'.$_POST['city'].'"';
+			$where.=' AND c.city ="'.$_POST['city'].'"';
+			$this->set('city', $_POST['city']);
+		}
+		if(!empty($_POST['job_type']))
+		{
+			$where.=' AND o.order_type_id ="'.$_POST['job_type'].'"';
+			$this->set('job_type', $_POST['job_type']);
+		}
+		if(!empty($_POST['from']) && !empty($_POST['to']))
+		{
+
+			$to = date('Y-m-d',strtotime($_POST['to']));
+			$from = date('Y-m-d',strtotime($_POST['from']));
+			$callResultWhere.= ' AND ch.call_date BETWEEN "'.$from.'" AND "'.$to.'"';
+			$where.=' AND o.booking_date BETWEEN "'.$from.'" AND "'.$to.'"';
+			$this->set('from', $_POST['from']);
+			$this->set('to', $_POST['to']);
+
+		}
+
+		$db =& ConnectionManager::getDataSource('default');
+		$r = $db->_execute('select DISTINCT(u.city) as c from ace_rp_customers u order by u.city');
+		$cities=array();
+
+		while ($row = mysql_fetch_array($r,MYSQL_ASSOC)) {
+
+			$cities[]=$row['c'];
+
+		}
+
+		$this->set('cities', $cities);
+
+		$r = $db->_execute('select id, name from `ace_rp_order_types` t where t.`flagactive`=1 order by t.`id`');
+
+		$job_types = array();
+
+		while ($row = mysql_fetch_array($r,MYSQL_ASSOC)) {
+
+			$job_types[]=$row;
+
+		}
+		$this->set('job_types', $job_types);
+		$dataCount = array();
+		$total = 0;
+		if (isset($_POST['submit2']) || isset($_GET['refresh'])) {
+			
+				$query = 'SELECT COUNT( o.order_status_id ) as count , os.name FROM ace_rp_orders o LEFT JOIN ace_rp_order_statuses os ON os.id = o.order_status_id LEFT JOIN ace_rp_customers c ON c.id = o.customer_id where o.order_status_id != ""'.$where.' GROUP BY o.order_status_id';
+				$result = $db->_execute($query);
+			
+				while ($row = mysql_fetch_array($result,MYSQL_ASSOC)) {
+					$total = $total+$row["count"];
+					$dataCount[$row["name"]] = $row["count"];
+					
+				}
+				$this->set('dataCount', $dataCount);
+
+			$callResultCount = array();
+			
+				$query1 = 'SELECT COUNT( ch.call_result_id ) as call_count, cr.name FROM ace_rp_call_history ch
+						LEFT JOIN ace_rp_call_results cr ON cr.id = ch.call_result_id 
+						LEFT JOIN ace_rp_customers c ON c.id = ch.customer_id
+						WHERE ch.call_result_id != ""'.$callResultWhere.' GROUP BY ch.call_result_id';
+			$result1 = $db->_execute($query1);
+			
+			while ($row1 = mysql_fetch_array($result1,MYSQL_ASSOC)) {
+				$total = $total + $row1["call_count"];
+				$callResultCount[$row1["name"]] = $row1["call_count"];	
+			}
+			$this->set('callResultCount', $callResultCount);
+		}
+		
+	}
+
 
 }
 ?>

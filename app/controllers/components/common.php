@@ -1004,6 +1004,15 @@ class CommonComponent extends Object
 
 							'img' => 'voice.jpg'
 
+						),
+						array(
+
+							'name' => 'Campaing Report',
+
+							'url' => BASE_URL.'/customers/campaingReport',
+
+							'img' => 'icon-lg-customers.png',
+
 						)
 
 					),
@@ -1572,6 +1581,15 @@ class CommonComponent extends Object
 							'name' => 'Client Filter',
 							'url' => BASE_URL.'/reports/clientFilter',
 							'img' => 'icon-lg-all-bookings.png'
+						),
+						array(
+
+							'name' => 'Campaing Report',
+
+							'url' => BASE_URL.'/customers/campaingReport',
+
+							'img' => 'icon-lg-customers.png',
+
 						)
 					),
 					array(
