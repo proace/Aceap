@@ -775,9 +775,9 @@ function SaveDialerCallRecord(){
 		var CurrentDate = new Date();
 		
 		if(callResultId == 6)
-		{
-			
-			callbackDate = '';
+		{	
+			current = CurrentDate.setDate(CurrentDate.getDate() + 2);
+			callbackDate = new Date(current).toISOString().slice(0,10);
 		} 
 		if(callResultId == 4)
 		{

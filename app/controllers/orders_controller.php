@@ -1900,7 +1900,7 @@ class OrdersController extends AppController
 
 		$is_booking = isset($this->params['url']['is_booking'])?$this->params['url']['is_booking'] : "";
 		$orderNo = isset($this->params['url']['orderNo'])?$this->params['url']['orderNo'] : '';
-		
+
 		if (!empty($this->data['Order']))
 		{
 			//If order information is submitted - save the order
@@ -7280,7 +7280,7 @@ class OrdersController extends AppController
         $this->data['Customer']['next_service']   					= $_GET['customer_next_service'];
         
         $this->data['txt_customer_note'][]   						= $_GET['txt_customer_note'];
-        //echo json_encode($this->data['Customer']);die;
+        // echo json_encode($this->data['Customer']);die;
         $this->_SaveCustomer();
         if (!$customer_id)
         {
@@ -7546,7 +7546,7 @@ class OrdersController extends AppController
 			{
 				// Set the date to now
 				//$callback_date
-				$scheduled_date = 'now() + INTERVAL 6 MONTH';
+				$scheduled_date = 'now() + INTERVAL 2 DAY';
 				$scheduled_time = 'current_time()';
 				$callback_reason = 'Answering machine';
 		    	$callback_user = 57145; //ACE
@@ -8241,7 +8241,6 @@ class OrdersController extends AppController
 		while ($row = mysql_fetch_assoc($result)){
 			$cust[] = $row;
 		}
-
 		$this->set('cust', $cust);
 	}
 
