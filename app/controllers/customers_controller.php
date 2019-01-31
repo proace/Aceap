@@ -1207,15 +1207,18 @@ $h .= ' <tr>
 
 			$callResultCount = array();
 			
-				$query1 = 'SELECT COUNT( ch.call_result_id ) as call_count, cr.name FROM ace_rp_call_history ch
-						LEFT JOIN ace_rp_call_results cr ON cr.id = ch.call_result_id 
-						LEFT JOIN ace_rp_customers c ON c.id = ch.customer_id
-						WHERE ch.call_result_id != ""'.$callResultWhere.' GROUP BY ch.call_result_id';
+				// $query1 = 'SELECT COUNT( ch.call_result_id ) as call_count, cr.name FROM ace_rp_call_history ch
+				// 		LEFT JOIN ace_rp_call_results cr ON cr.id = ch.call_result_id 
+				// 		LEFT JOIN ace_rp_customers c ON c.id = ch.customer_id
+				// 		WHERE ch.call_result_id != ""'.$callResultWhere.' GROUP BY ch.call_result_id';
+						
+					$query1 = 	'SELECT COUNT(call_result_id) as crd, name FROM (SELECT ch.call_result_id,cr.name FROM `ace_rp_call_history` ch INNER JOIN ace_rp_call_results cr ON cr.id = ch.call_result_id INNER JOIN ace_rp_customers c ON c.id = ch.customer_id WHERE ch.call_result_id != ""'.$callResultWhere.' GROUP By call_result_id,customer_id) as res GROUP BY call_result_id';
+
+
 			$result1 = $db->_execute($query1);
 			
 			while ($row1 = mysql_fetch_array($result1,MYSQL_ASSOC)) {
-				$total = $total + $row1["call_count"];
-				$callResultCount[$row1["name"]] = $row1["call_count"];	
+				$callResultCount[$row1["name"]] = $row1["crd"];	
 			}
 			$this->set('callResultCount', $callResultCount);
 		}
