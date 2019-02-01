@@ -3,7 +3,7 @@
 .results tr td {
     border-right: 1px solid #000;
     text-align: center;
-    background-color: yellow;
+    background-color: #d6d628;
 }
 </style>
 <h3>Campaign Report</h3>

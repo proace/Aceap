@@ -2839,7 +2839,7 @@ class OrdersController extends AppController
 //		else if ($phone) $query = "select * from ace_rp_call_history where ".$ans." customer_id in (select id from ace_rp_users where phone='".$phone."')";
 		else if ($phone) $query = "select * from ace_rp_call_history where ".$ans." phone='".$phone."'";
  
-        $query .= " order by call_date desc, call_time desc";
+        $query .= " order by call_date desc, call_time desc limit 1";
 
 		$r = 1;
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
@@ -6193,7 +6193,7 @@ class OrdersController extends AppController
 //	      $past_orders = $this->Order->findAll(array('Order.customer_phone'=> $phone), null, "job_date DESC", null, null, 1);
 			$past_orders = array();
 			$db =& ConnectionManager::getDataSource('default');
-			$query = "select * from ace_rp_orders where customer_phone regexp '$sq_str' order by job_date DESC";
+			$query = "select * from ace_rp_orders where customer_phone regexp '$sq_str' order by job_date DESC limit 1";
 
 			$result = $db->_execute($query);
 			while($row = mysql_fetch_array($result))
