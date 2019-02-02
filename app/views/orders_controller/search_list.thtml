@@ -1,4 +1,22 @@
-<div style="width: 1250px; float: left;">
+<style type="text/css">
+.new-btn {
+	position: fixed;
+    display: block;
+    width: 100%;
+}	
+.new-btn-input {
+	padding: 3px;
+	margin-left: 6px;
+}
+</style>
+<?php if($is_campaing == 1) { ?>
+<div class="new-btn">
+<input class="new-btn-input" type="button" id="call-back" value="Call Back" onclick="searchList('Campaign_data',<?php echo $campId ?>,'','1')">
+<input class="new-btn-input" type="button" id="ace-list" value="Ace List" onclick="searchList('Campaign_data',<?php echo $campId ?>,'','2')">
+<input class="new-btn-input" type="button" id="new-list" value="New List">	
+</div>
+<?php }?>
+<div style="width: 1250px; float: left;  margin-top: 28px;">
 <input type="hidden" id ="first_call" name="first_call" value="0">
 <input type="hidden" id ="call_mode" name="call_mode" value="3">
 <input type="hidden" id="currentUserId" val="">

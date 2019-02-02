@@ -14,8 +14,8 @@ class CommonComponent extends Object
 		$userID = (integer)$this->getLoggedUserID();
 		$menu = array();
 //var_dump($roleID); die;
-		if (($userID == 44851)||($userID == 68476)||($userID == 58613)||($userID == 230964))	// FULL ADMINISTRATORS: ALI, SANAZ, ANTHONY, MKUDRYAVTSEV
-
+		if (($userID == 44851)||($userID == 58613))	
+		// FULL ADMINISTRATORS: ALI, SANAZ
 		{
 
 			$menu = array(

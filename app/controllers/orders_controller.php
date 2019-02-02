@@ -3352,6 +3352,8 @@ class OrdersController extends AppController
 	function searchList()
 	{
 		$conditions = array();
+		$is_campaing = 0;
+		$campaignId = 0;
 
 		if ($_GET['sq_crit'] == 'phone')
 		{
@@ -3399,13 +3401,22 @@ class OrdersController extends AppController
 		}
 		else if ($_GET['sq_crit'] == 'Campaign_data')
 		{
+			$isCampaing = 1;
+			$callResult = $_GET['is_call_result'];
+			$this->set('is_campaing', $isCampaing);
 			$data = explode('-', $_GET['sq_str']);
 			if(isset($data[0]) && isset($data[1]) && isset($data[2])){}
 			else{
 				if($_GET['sq_str'] != ''){
 					$id = $_GET['sq_str'];
-
-					$sql = "SELECT * FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL AND ec.last_inserted_id = $id";
+					$this->set('campId', $id);
+					if($callResult == 1)
+					{
+						$callWhere = " AND u2.callresult IN (1,2) AND u2.callback_date = CURDATE()";
+					} else if($callResult == 2) {
+						$callWhere = " AND u2.callresult IN (6,4,8,9,11) AND u2.callback_date = CURDATE()";
+					}
+					$sql = "SELECT * FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL AND ec.last_inserted_id = $id".$callWhere;
 					$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 					$result = $db->_execute($sql);
 
@@ -3424,6 +3435,7 @@ class OrdersController extends AppController
 				}	
 			}
 		}
+
 		else if ($_GET['sq_crit'] == 'REF')
 		{
 			if($this->Common->getLoggedUserRoleID() != 6) {
@@ -8231,7 +8243,9 @@ class OrdersController extends AppController
 	}
 
 	function campaingSearch() {
+
 		$id = $_REQUEST['id'];
+
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$query = "SELECT * FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL AND ec.last_inserted_id = $id";
 
@@ -8242,6 +8256,7 @@ class OrdersController extends AppController
 			$cust[] = $row;
 		}
 		$this->set('cust', $cust);
+		$this->set('campId', $id);
 	}
 
 	function campaing_list() {

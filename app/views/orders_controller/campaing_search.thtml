@@ -1,8 +1,25 @@
-<div style="width: 1250px; float: left;">
+<style type="text/css">
+.new-btn {
+	position: relative;
+    display: block;
+    width: 100%;
+}	
+.new-btn-input {
+	padding: 3px;
+}
+</style>
+
+<div class="new-btn">
+<input class="new-btn-input" type="button" id="call-back" value="Call Back" onclick="searchList('Campaign_data',<?php echo $campId ?>,'','1')">
+<input class="new-btn-input" type="button" id="ace-list" value="Ace List" onclick="searchList('Campaign_data',<?php echo $campId ?>,'','2')">
+<input class="new-btn-input" type="button" id="new-list" value="New List">	
+</div>
+<div style="width: 1250px; float: left; margin-top: 25px;">
 <input type="hidden" id ="first_call" name="first_call" value="0">
 <input type="hidden" id ="call_mode" name="call_mode" value="3">
 <input type="hidden" id="currentUserId" val="">
 <input type="hidden" id="currentUserPhoneNo" val="">
+
 <? if ($add == 0) { ?>
 <div style="clear: both; float: left;">
 	<div class="dhcell" style="width: 110px;">Last Name<?=$last_name?></div>

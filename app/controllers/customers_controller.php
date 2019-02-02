@@ -1162,7 +1162,7 @@ $h .= ' <tr>
 
 			$to = date('Y-m-d',strtotime($_POST['to']));
 			$from = date('Y-m-d',strtotime($_POST['from']));
-			$callResultWhere.= ' AND ch.call_date BETWEEN "'.$from.'" AND "'.$to.'"';
+			$callResultWhere.= ' AND ch.callback_date BETWEEN "'.$from.'" AND "'.$to.'"';
 			$where.=' AND o.booking_date BETWEEN "'.$from.'" AND "'.$to.'"';
 			$this->set('from', $_POST['from']);
 			$this->set('to', $_POST['to']);
