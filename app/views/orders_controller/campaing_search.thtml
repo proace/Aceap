@@ -9,11 +9,34 @@
 }
 </style>
 
+<input type="hidden" id = "current-seleted-button" name="current-seleted-button" value="">
+<input type="hidden" id = "selected-str" name="selected-str" value="today">
+
 <div class="new-btn">
+<input class="new-btn-input" type="button" id="call-back" value="Call Back" onclick="showSelectBar(1);">
+<input class="new-btn-input" type="button" id="ace-list" value="Ace List" onclick="showSelectBar(2);">
+<input class="new-btn-input" type="button" id="new-list" value="New List">
+</div>
+<select id="call-back-select" style="display: none" onchange="callbackSourceType(this.value);">
+ <option value="today">Todays</option>
+ <option value="all">All</option>
+ <option value="missed-call-date">Missed call backs</option>
+</select>
+<div id='missed_callback_dates' style="display: none;">
+	      from: 
+	      &nbsp;&nbsp;
+
+		  <input type="text" id="datepicker1" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($fdate) echo $fdate; else echo ''; ?>">
+	      to:
+	      &nbsp;&nbsp;
+		  <input type="text" id="datepicker2" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($tdate) echo $tdate; else echo ''; ?>">
+	  </div>
+<input type="button" name="call-back-result" value="Go" onclick="searchList('Campaign_data',<?php echo $campId ?>);">
+<!-- <div class="new-btn">
 <input class="new-btn-input" type="button" id="call-back" value="Call Back" onclick="searchList('Campaign_data',<?php echo $campId ?>,'','1')">
 <input class="new-btn-input" type="button" id="ace-list" value="Ace List" onclick="searchList('Campaign_data',<?php echo $campId ?>,'','2')">
 <input class="new-btn-input" type="button" id="new-list" value="New List">	
-</div>
+</div> -->
 <div style="width: 1250px; float: left; margin-top: 25px;">
 <input type="hidden" id ="first_call" name="first_call" value="0">
 <input type="hidden" id ="call_mode" name="call_mode" value="3">

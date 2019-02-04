@@ -3401,22 +3401,49 @@ class OrdersController extends AppController
 		}
 		else if ($_GET['sq_crit'] == 'Campaign_data')
 		{
+			$seletedStr = $_GET['seletedStr'];
+			$fromDate = $_GET['fromDate'];
+			$toDate = $_GET['toDate'];
 			$isCampaing = 1;
 			$callResult = $_GET['is_call_result'];
 			$this->set('is_campaing', $isCampaing);
 			$data = explode('-', $_GET['sq_str']);
-			if(isset($data[0]) && isset($data[1]) && isset($data[2])){}
+			if(isset($data[0]) && isset($data[1]) && isset($data[2])){
+
+				$allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
+				$arrayString = implode(',', $allCampList);
+				
+				$callWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
+			}
 			else{
 				if($_GET['sq_str'] != ''){
 					$id = $_GET['sq_str'];
+ 					
 					$this->set('campId', $id);
-					if($callResult == 1)
+					$callWhere = ' AND ec.last_inserted_id ='.$id.''; 
+				}	
+			}
+			if($callResult == 1)
 					{
-						$callWhere = " AND u2.callresult IN (1,2) AND u2.callback_date = CURDATE()";
+						$callWhere .= " AND u2.callresult IN (1,2)";
 					} else if($callResult == 2) {
-						$callWhere = " AND u2.callresult IN (6,4,8,9,11) AND u2.callback_date = CURDATE()";
+						$callWhere .= " AND u2.callresult IN (6,4,8,9,11)";
 					}
-					$sql = "SELECT * FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL AND ec.last_inserted_id = $id".$callWhere;
+					if(!empty($seletedStr)) 
+					{
+						if($seletedStr == 'today')
+						{
+							$callWhere .= " AND u2.callback_date = CURDATE()"; 
+						} else if ($seletedStr == 'missed-call-date') {
+							// $fdate1 = date_create($fromDate);
+						 //   $fromDate = date_format($date,"Y-m-d");
+							$callWhere .= " AND u2.callback_date BETWEEN'".$fromDate."' AND '". $toDate."'";
+						} else {
+							$callWhere .= '';
+						}
+					}
+					
+			$sql = "SELECT * FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere;
 					$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 					$result = $db->_execute($sql);
 
@@ -3432,8 +3459,7 @@ class OrdersController extends AppController
 
 						$cust[$row['id']] = $cust_temp;
 					}
-				}	
-			}
+
 		}
 
 		else if ($_GET['sq_crit'] == 'REF')

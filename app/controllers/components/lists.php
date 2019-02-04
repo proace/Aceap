@@ -159,6 +159,21 @@ class ListsComponent extends Object
 				return $Ret;
 		}
 
+		function AgentAllCampaingList($agent_id)
+		{
+				$db =& ConnectionManager::getDataSource($this->controller->User->useDbConfig);
+				
+				$result = $db->_execute("select a.id from ace_rp_reference_campaigns a where source_from = $agent_id");
+				
+				$Ret = array();
+
+				while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+	
+					$Ret[] = $row['id'];
+				}
+				return $Ret;
+		}
+
 		// This method creates a list for the drop-down menu from a given table.
 		// This table should have 'id' and 'name' fields
 		function ListTable($table_name, $conditions='', $fields=array('name'))

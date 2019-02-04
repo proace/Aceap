@@ -1,11 +1,65 @@
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.8.24/themes/base/jquery-ui.css"> -->
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+<!-- <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
+ -->
+<!--  <script src="http://code.jquery.com/jquery-1.8.2.js
+"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.js"></script> -->
 
+<!-- 
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+ -->
 <script language="JavaScript" type="text/javascript">
+
+    // $( "#datepicker2" ).datepicker();
+  
+	function showSelectBar(nval)
+	 {
+			$("#current-seleted-button").val(nval);
+	 	//document.getElementById("current-seleted-button").value = n;
+	 		$('#call-back-select').show();
+	 }
+	 function callbackSourceType(callType)
+	 {	
+	 	$("#selected-str").val(callType);
+	 	if(callType == 'missed-call-date')
+	 	{
+	 		document.getElementById('missed_callback_dates').style.display = 'block';
+	 	} else {
+	 		document.getElementById('missed_callback_dates').style.display = 'none';
+	 	}
+	 }
 	var last_sq_crit, last_sq_str, last_dates;
 	var lpp = 1000;	//lines per page
 	var maxpage = 1;
-	 function searchList (sq_crit,sq_str,page,is_call_res) {
+	 function searchList (sq_crit,sq_str,page) {
+		 	
+		
+	 	var fromDate = $("#datepicker1").val();
+	 	var toDate = $("#datepicker2").val(); 	
+	 	var is_call_res = $("#current-seleted-button").val();
+	 	if( 0 <is_call_res)
+	 	{
+	 		var selectedStr = $("#selected-str").val();
+	 	}
 		//TODO:Make system work with pages, not limits, remove limit logic from PHP
+		// if(fromDate == '' || toDate == '')
+		// {
+
+		// }
+		if(typeof(selectedStr) == 'undefined') 
+		{
+			selectedStr = '';	
+		}
+		if(typeof(fromDate) == 'undefined') 
+		{
+			fromDate = '';	
+		}
+		if(typeof(toDate) == 'undefined') 
+		{
+			toDate = '';	
+		}
 		if (typeof(page) == 'undefined')
 			page = 1;
 		if (typeof(is_call_res) == 'undefined')
@@ -30,7 +84,7 @@
 		//alert("requested page "+page+"\nmaxpage "+maxpage+"\nlimit "+limit);
 		divID = document.getElementById('listbox');
 		divID2 = document.getElementById('count_of_cust_div1');
-		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&add=0&curpage='+page+'&is_call_result='+is_call_res,
+		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&add=0&curpage='+page+'&is_call_result='+is_call_res+'&seletedStr='+selectedStr+'&fromDate='+fromDate+'&toDate='+toDate,
 				function(data){
 					divID.innerHTML=data;
 					count_of_cust = document.getElementById('count_of_cust').value;
