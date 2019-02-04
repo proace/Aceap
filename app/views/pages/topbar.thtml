@@ -4,12 +4,12 @@
 	background:#EBE9ED;
 	height:16px;
 	margin:0px;
-	background:'url(http://acesys.ace1.ca/app/webroot/img/red-grad.gif) repeat-x 0px -1px';
+	background:'url(<?=BASE_URL?>/app/webroot/img/red-grad.gif) repeat-x 0px -1px';
 }
 .tabOff{
 	height:14px;
 	margin:2px 0px 0px 0px;
-	background:'url(http://acesys.ace1.ca/app/webroot/img/red-grad.gif) repeat-x 0px -3px';
+	background:'url<?=BASE_URL?>/app/webroot/img/red-grad.gif) repeat-x 0px -3px';
 }
 
 #chatframe {
@@ -183,4 +183,5 @@ if( $_SESSION['user']['id'] > 0 ) {
 }
 ?>
 </div>
-<iframe id="chatframe" src="http://aceno1.ca/chat/notify_admin.php?web_key=<?php echo $_SESSION['user']['web_key'] ?>"></iframe>
+<!-- <iframe id="chatframe" src="http://aceno1.ca/chat/notify_admin.php?web_key=<?php echo $_SESSION['user']['web_key'] ?>"></iframe> -->
+<iframe id="chatframe" src="<?=BASE_URL?>/chat/notify_admin.php?web_key=<?php echo $_SESSION['user']['web_key'] ?>"></iframe>

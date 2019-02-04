@@ -13,11 +13,9 @@
 <script language="JavaScript" type="text/javascript">
 
     // $( "#datepicker2" ).datepicker();
-  
 	function showSelectBar(nval)
 	 {
 			$("#current-seleted-button").val(nval);
-	 	//document.getElementById("current-seleted-button").value = n;
 	 		$('#call-back-select').show();
 	 }
 	 function callbackSourceType(callType)
