@@ -1205,15 +1205,11 @@ $h .= ' <tr>
 				}
 				$this->set('dataCount', $dataCount);
 
-			$callResultCount = array();
-			
-				// $query1 = 'SELECT COUNT( ch.call_result_id ) as call_count, cr.name FROM ace_rp_call_history ch
-				// 		LEFT JOIN ace_rp_call_results cr ON cr.id = ch.call_result_id 
-				// 		LEFT JOIN ace_rp_customers c ON c.id = ch.customer_id
-				// 		WHERE ch.call_result_id != ""'.$callResultWhere.' GROUP BY ch.call_result_id';
-						
-					$query1 = 	'SELECT COUNT(call_result_id) as crd, name FROM (SELECT ch.call_result_id,cr.name FROM `ace_rp_call_history` ch INNER JOIN ace_rp_call_results cr ON cr.id = ch.call_result_id INNER JOIN ace_rp_customers c ON c.id = ch.customer_id WHERE ch.call_result_id != ""'.$callResultWhere.' GROUP By call_result_id,customer_id) as res GROUP BY call_result_id';
-
+			$callResultCount = array();	
+					// $query1 = 	'SELECT COUNT(call_result_id) as crd, name FROM (SELECT ch.call_result_id,cr.name FROM `ace_rp_call_history` ch INNER JOIN ace_rp_call_results cr ON cr.id = ch.call_result_id INNER JOIN ace_rp_customers c ON c.id = ch.customer_id WHERE ch.call_result_id != ""'.$callResultWhere.' GROUP By call_result_id,customer_id) as res GROUP BY call_result_id';
+				$query1 = 'SELECT COUNT( ch.call_result_id ) AS crd, cr.name FROM ace_rp_call_history ch INNER JOIN (SELECT customer_id, MAX( id ) AS MaxId
+					FROM ace_rp_call_history GROUP BY customer_id) topscore ON ch.customer_id =topscore.customer_id AND ch.id = topscore.MaxId INNER JOIN ace_rp_call_results cr ON cr.id = ch.call_result_id INNER JOIN ace_rp_customers c ON c.id = ch.customer_id
+						WHERE ch.call_result_id != ""'.$callResultWhere.' GROUP BY call_result_id';
 
 			$result1 = $db->_execute($query1);
 			
