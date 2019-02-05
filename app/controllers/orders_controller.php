@@ -3411,9 +3411,15 @@ class OrdersController extends AppController
 			if(isset($data[0]) && isset($data[1]) && isset($data[2])){
 
 				$allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
-				$arrayString = implode(',', $allCampList);
+				if(!empty($allCampList)) {
+					$arrayString = implode(',', $allCampList);
 				
-				$callWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
+					$callWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
+				}
+				// $arrayString = implode(',', $allCampList);
+				
+				// $callWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
+				
 			}
 			else{
 				if($_GET['sq_str'] != ''){
