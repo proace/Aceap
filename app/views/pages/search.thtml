@@ -5,7 +5,8 @@
 		var current_role_id =  document.getElementById('current_role_id').value;
 		var sq_crit = document.getElementById("sq_crit").selectedIndex;
 		
-		if((current_role_id == 3 && sq_crit != 5) || (current_role_id == 6 && sq_crit != 5)){
+		// if((current_role_id == 3 && sq_crit != 5) || (current_role_id == 6 && sq_crit != 5)){
+		if((current_role_id == 6 && sq_crit != 5)){
 			callbackSource('one_today_callback');
 		}
 		else{
@@ -35,6 +36,7 @@
 		}
 		else if (on == "Campaign_data")
 		{
+			console.log("Campaign");
 			document.getElementById("Campaign_source_id_frontend").selectedIndex = "0";
 			document.getElementById('sq_str').style.display = 'none';
 			document.getElementById('booking_source_id').style.display = 'none';
@@ -63,6 +65,7 @@
 		}
 		else if (on == "callback_date_dropdown")
 		{
+			console.log("call");
 			document.getElementById('callback_agent_option_frontend').style.display = '';
 			document.getElementById('sq_str').style.display = 'none';
 			document.getElementById('booking_source_id').style.display = 'none';
@@ -304,18 +307,18 @@ Date.prototype.format = function (mask, utc) {
 		<option value="REF">REF #</option>
 		<option value="phone">Phone</option>
 		<? if (($common->getLoggedUserRoleID() != "9")&&($common->getLoggedUserRoleID() != "3")) { ?>
-		<option value="postal_code">Postal</option>
-		<option value="city">City</option>
-		<option value="address_street">Street</option>
+			<option value="postal_code">Postal</option>
+			<option value="city">City</option>
+			<option value="address_street">Street</option>
 		<? } ?>
 		<option value="last_name">L Name</option>
 		<option value="first_name">F Name</option>
-		<? if (($common->getLoggedUserRoleID() == "3") || ($common->getLoggedUserRoleID() == "6")) { ?>
-		<option id="callback_option_id" value="callback_date_dropdown">Callbacks</option>
-		<? } else{ ?>
-		<option id="callback_option_id" value="callback_date">Callbacks</option>
+		<? if ($common->getLoggedUserRoleID() == "6") { ?>
+			<option id="callback_option_id" value="callback_date_dropdown">Callbacks</option>
+		<? } else if($common->getLoggedUserRoleID() != "3"){ ?>
+			<option id="callback_option_id" value="callback_date">Callbacks</option>
 		<? } if (($common->getLoggedUserRoleID() == "3")||($common->getLoggedUserRoleID() == "6")) { ?>
-		<option id="Campaign_source_id" value="Campaign_data">Campaign</option>
+			<option id="Campaign_source_id" value="Campaign_data">Campaign</option>
 		<? } ?>
 		<? if (($common->getLoggedUserRoleID() != "9")&&($common->getLoggedUserRoleID() != "3")) { ?>
 		<option value="booking_source_id">Source</option>

@@ -6210,7 +6210,7 @@ class OrdersController extends AppController
 		$customer_id = $_GET['customer_id'];
 		$order_id = $_GET['order_id'];
 		$phone = $_GET['phone'];
-
+		$fromDialer = isset($_GET['fromDialer']) ? $_GET['fromDialer'] : 0;
 		if ($this->Common->getLoggedUserRoleID() != "1") $method = "editBooking"; else $method = "techBooking";
 		$allStatuses = $this->Lists->ListTable('ace_rp_order_statuses');
 		$allJobTypes = $this->Lists->ListTable('ace_rp_order_types');
@@ -6231,7 +6231,13 @@ class OrdersController extends AppController
 //	      $past_orders = $this->Order->findAll(array('Order.customer_phone'=> $phone), null, "job_date DESC", null, null, 1);
 			$past_orders = array();
 			$db =& ConnectionManager::getDataSource('default');
-			$query = "select * from ace_rp_orders where customer_phone regexp '$sq_str' order by job_date DESC limit 1";
+			if($fromDialer > 0)
+			{
+				$query = "select * from ace_rp_orders where customer_phone regexp '$sq_str' order by job_date DESC limit 1";
+			} else {
+				$query = "select * from ace_rp_orders where customer_phone regexp '$sq_str' order by job_date DESC";
+			}
+			
 
 			$result = $db->_execute($query);
 			while($row = mysql_fetch_array($result))

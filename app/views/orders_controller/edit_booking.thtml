@@ -58,6 +58,7 @@ function call_phone()
 function DiallerJobsHistory(){
 	$.get("<?=BASE_URL;?>/orders/showCustomerJobs",
 		{customer_id:$('#CustomerId').val(),
+		  fromDialer:1,
 		 order_id:'<?=$html->tagValue("Order/id")?>',
 		 phone:'<?=$html->tagValue("Customer/phone")?>'},
 		function(data){

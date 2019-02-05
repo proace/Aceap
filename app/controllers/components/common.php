@@ -200,26 +200,6 @@ class CommonComponent extends Object
 
 						array(
 
-							'name' => 'Campaing',
-
-							'url' => BASE_URL.'/orders/campaing',
-
-							'img' => 'icon-lg-callback.png'
-
-						),
-
-						array(
-
-							'name' => 'Campaing List',
-
-							'url' => BASE_URL.'/orders/campaing_list',
-
-							'img' => 'icon-lg-callback.png'
-
-						)
-						,
-						array(
-
 							'name' => 'Chat',
 							'url' => 'http://support.acecare.ca/lhc_web/index.php/site_admin/',
 							'img' => 'comments.png'
@@ -957,16 +937,6 @@ class CommonComponent extends Object
 
 						array(
 
-							'name' => 'New Campaing',
-
-							'url' => BASE_URL.'/reports/callback_summary',
-
-							'img' => 'icon-lg-all-bookings.png'
-
-						),
-
-						array(
-
 							'name' => 'Cancellations',
 
 							'url' => BASE_URL.'/reports/cancellations',
@@ -1005,6 +975,36 @@ class CommonComponent extends Object
 							'img' => 'voice.jpg'
 
 						),
+
+						array(
+
+							'name' => 'New Campaing',
+
+							'url' => BASE_URL.'/reports/callback_summary',
+
+							'img' => 'icon-lg-all-bookings.png'
+
+						),
+						array(
+
+							'name' => 'Campaing',
+
+							'url' => BASE_URL.'/orders/campaing',
+
+							'img' => 'icon-lg-callback.png'
+
+						),
+
+						array(
+
+							'name' => 'Campaing List',
+
+							'url' => BASE_URL.'/orders/campaing_list',
+
+							'img' => 'icon-lg-callback.png'
+
+						)
+						,
 						array(
 
 							'name' => 'Campaing Report',
