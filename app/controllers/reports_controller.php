@@ -1980,126 +1980,68 @@ class ReportsController extends AppController
 		}
 	}
 
-	function transferCallbacksrecords(){
-
-		$condtion = " 1 ";
-		$records1 = 0;
-		$data_total = '';
-		// Dates		
+	function transferCallbacksrecords()
+	{
+		
+		$condtion = "";
+		$condtion2 = "";	
 		$fdate = isset($_REQUEST['fromdate'])?$_REQUEST['fromdate']:'';
 		$tdate = isset($_REQUEST['ttodate'])?$_REQUEST['ttodate']:'';
-
-		if(isset($_REQUEST['jobtype'])&& !empty($_REQUEST['jobtype'])){
-			/*$condtion .= "  AND arc.order_type_id = '".$_REQUEST['jobtype']."'";*/	
-			$ex_data = explode(',', $_REQUEST['jobtype']);
-			$job_type = "'".implode("','", $ex_data)."'";
-			$condtion .= " AND arc.order_type_id IN ($job_type)";	
+		if(!empty($fdate) && !empty($tdate))
+		{
+			$fdate = date("Y-m-d", strtotime($fdate));
+			$tdate = date("Y-m-d", strtotime($tdate));
+			$condtion .= " AND c.callback_date BETWEEN '".$fdate."' AND '".$tdate."'";
 		}
-
-		if(isset($_REQUEST['status'])&& !empty($_REQUEST['status'])){
-			/*$condtion .= "  AND arc.order_status_id = '".$_REQUEST['status']."'";*/
-			$ex_data = explode(',', $_REQUEST['status']);
-			$job_status = "'".implode("','", $ex_data)."'";
-			$condtion .= " AND arc.order_status_id IN ($job_status)";
-		}
-
-		$fdate = date("Y-m-d", strtotime($fdate));
-		$tdate = date("Y-m-d", strtotime($tdate));
-
-		if(!empty($fdate)&& !empty($tdate)){
-			$condtion .= "  AND arc.job_date BETWEEN '".$fdate."' AND '".$tdate."'";
-		}
-
-
-		if(isset($_REQUEST['city'])&& !empty($_REQUEST['city'])){
+		if(isset($_REQUEST['city']) && !empty($_REQUEST['city']))
+		{
+			$condtion2 .= " AND c.city='".$_REQUEST['city']."'";	
 			$condtion .= " AND c.city='".$_REQUEST['city']."'";		
 		}
 
 		$db =& ConnectionManager::getDataSource('default');
-
-    // Get the callbacks summary
-		$query = "
-		  SELECT `arc`.`id` as `id`, `arc`.`customer_id`
-			FROM ace_rp_orders arc
-			left join ace_rp_customers c on c.id = arc.customer_id
-		   where 
-		   campaign_id IS NULL
-		   AND $condtion
-		   ";
-
-		$result = $db->_execute($query);
+  		  // Get the callbacks summary
 		
-		$i=0;
-		$records1 = null;
-		$records2 = null;
 		
-		while($row = mysql_fetch_array($result)) 
+		if($_REQUEST['hidden_token'] == 'yes')
 		{
-			// var_dump($row['id']);
-			$records1[$i] = $row['id'];
-			$records2[$i] = $row['customer_id'];
-			$i++;
-		}
-
-		$str2 = "'".implode("','", $records2)."'";
-
-		$condtion2 = ' 1 ';
-
-		if($_REQUEST['hidden_token'] == 'yes'){
-			if(!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])){
+			if(!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto']))
+			{
 				$callmodefrom = isset($_REQUEST['callmodefrom'])?$_REQUEST['callmodefrom']:'';
 				$callmodeto = isset($_REQUEST['callmodeto'])?$_REQUEST['callmodeto']:'';
 
 				$callmodefrom = date("Y-m-d", strtotime($callmodefrom));
 				$callmodeto = date("Y-m-d", strtotime($callmodeto));
 
-				$condtion2 .= "  AND ach.call_date BETWEEN '".$callmodefrom."' AND '".$callmodeto."'";
+				$condtion2 .= "  AND ach.callback_date BETWEEN '".$callmodefrom."' AND '".$callmodeto."'";
 			}
-			if(isset($_REQUEST['disposition'])&& !empty($_REQUEST['disposition'])){
+			if(isset($_REQUEST['disposition'])&& !empty($_REQUEST['disposition']))
+			{
 				$ex_data = explode(',', $_REQUEST['disposition']);
 				$str3 = "'".implode("','", $ex_data)."'";
 				$condtion2 .= " AND ach.call_result_id IN ($str3)";	
 			}
-
-			if((!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])) || !empty($_REQUEST['disposition'])){
-				$query1 = "SELECT * FROM ace_rp_call_history ach WHERE id IN (SELECT MAX(id) FROM ace_rp_call_history WHERE customer_id IN ($str2) GROUP BY customer_id) AND $condtion2";
-
+				$query1 = "SELECT ach.id FROM ace_rp_call_history ach INNER JOIN (SELECT customer_id, MAX( id ) AS MaxId FROM ace_rp_call_history GROUP BY customer_id ) topscore ON ach.customer_id = topscore.customer_id
+					AND ach.id = topscore.MaxId INNER JOIN ace_rp_call_results cr ON cr.id = ach.call_result_id INNER JOIN ace_rp_customers c ON c.id = ach.customer_id
+					WHERE ach.call_result_id !='' ".$condtion2."";
+				
 				$result = $db->_execute($query1);
 				$total_records = array();
 				while($row1 = mysql_fetch_array($result)) 
 				{
 					$total_records[] = $row1['id'];
 				}
-			}
-			else{
-				if(count($records2) != 0){
-					$query1 = "SELECT * FROM ace_rp_call_history ach WHERE id IN (SELECT MAX(id) FROM ace_rp_call_history WHERE customer_id IN ($str2) GROUP BY customer_id)";
-
-					$result = $db->_execute($query1);
-					$total_records = array();
-					while($row1 = mysql_fetch_array($result)) 
-					{
-						$total_records[] = $row1['id'];
-					}
-				}
-				else{
-					$total_records = array();
-				}
-			}
 		}
-		else{
-			if(count($records2) != 0){
-				$query1 = "SELECT * FROM ace_rp_call_history ach WHERE id IN (SELECT MAX(id) FROM ace_rp_call_history WHERE customer_id IN ($str2) GROUP BY customer_id)";
+		else
+		{
+			$query = "SELECT `c`.`id` FROM ace_rp_customers c where id IS NOT NULL".$condtion."";
 
-				$result = $db->_execute($query1);
-				$total_records = array();
-				while($row1 = mysql_fetch_array($result)) 
-				{
-					$total_records[] = $row1['id'];
-				}
-			}
-			else{
-				$total_records = array();
+			$result = $db->_execute($query);
+			
+			$total_records = array();
+			while($row = mysql_fetch_array($result)) 
+			{
+				$total_records[] = $row['id'];			
 			}
 		}
 
@@ -2115,8 +2057,8 @@ this function for trasfer jobs
 	function transferCallbacksInBulk()
 	{
 		//echo "<pre>"; print_r($_GET); die;
-		$condtion = " 1 ";
-		
+		$condtion = "";
+		$condtion2 = "";
 		// Dates		
 		if(isset($_REQUEST['source'])&& !empty($_REQUEST['source'])){
 			$toUser = $_REQUEST['source'];			
@@ -2136,52 +2078,18 @@ this function for trasfer jobs
 		}
 
 		if(isset($_REQUEST['city'])&& !empty($_REQUEST['city'])){
+			$condtion2 .= " AND c.city='".$_REQUEST['city']."'";
 			$condtion .= " AND c.city='".$_REQUEST['city']."'";		
 		}
 
-		if(isset($_REQUEST['status'])&& !empty($_REQUEST['status'])){
-			/*$condtion .= "  AND arc.order_status_id = '".$_REQUEST['status']."'";*/
-			$ex_data = explode(',', $_REQUEST['status']);
-			$job_status = "'".implode("','", $ex_data)."'";
-			$condtion .= " AND arc.order_status_id IN ($job_status)";
-		}
-		
-
-		$fdate = date("Y-m-d", strtotime($fdate));
-		$tdate = date("Y-m-d", strtotime($tdate));
-		
 		if(!empty($fdate)&& !empty($tdate)){
-			$condtion .= "  AND arc.job_date BETWEEN '".$fdate."' AND '".$tdate."'";
+			$fdate = date("Y-m-d", strtotime($fdate));
+			$tdate = date("Y-m-d", strtotime($tdate));
+			$condtion .= "  AND c.callback_date BETWEEN '".$fdate."' AND '".$tdate."'";
 		}
 
 
 		$db = & ConnectionManager::getDataSource('default');
-
-		$query = "SELECT `arc`.`id` as `id`, `arc`.`booking_source_id` , `arc`.`customer_id` as cus_id 
-					FROM ace_rp_orders arc
-					left join ace_rp_customers c on c.id = arc.customer_id 
-					WHERE campaign_id IS NULL AND $condtion";
-/*
-		print_r($query);*/
-
-		$result = $db->_execute($query);
-		
-		$i = 1;
-		$records2 = null;
-		while($row = mysql_fetch_array($result)){
-			$records1[$i] = $row['id'];
-			$records2[$i] = $row['cus_id'];
-			$i++;
-		}
-
-		$list = $records1;
-
-		if(count($list) == 0){
-			echo false;
-		}
-
-		$str2 = "'".implode("','", $records2)."'";
-		$condtion2 = ' 1 ';
 
 		if($_REQUEST['hidden_token'] == 'yes'){
 			if(!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])){
@@ -2191,19 +2099,19 @@ this function for trasfer jobs
 				$callmodefrom = date("Y-m-d", strtotime($callmodefrom));
 				$callmodeto = date("Y-m-d", strtotime($callmodeto));
 
-				$condtion2 .= "  AND ach.call_date BETWEEN '".$callmodefrom."' AND '".$callmodeto."'";
+				$condtion2 .= "  AND ach.callback_date BETWEEN '".$callmodefrom."' AND '".$callmodeto."'";
 			}
 			if(isset($_REQUEST['disposition'])&& !empty($_REQUEST['disposition'])){
 				$ex_data = explode(',', $_REQUEST['disposition']);
 				$str3 = "'".implode("','", $ex_data)."'";
 				$condtion2 .= " AND ach.call_result_id IN ($str3)";	
 			}
-			if((!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])) || !empty($_REQUEST['disposition'])){
-				$query1 = "SELECT * FROM ace_rp_call_history ach 
-				left join ace_rp_customers c on c.id = ach.customer_id 
-				left join ace_rp_orders arc on c.id = arc.customer_id
-				WHERE ach.id IN (SELECT MAX(id) FROM ace_rp_call_history WHERE customer_id IN ($str2) GROUP BY customer_id) AND $condtion2 GROUP BY c.id";
+			if((!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])) || !empty($_REQUEST['disposition'])){	
 
+				$query1 = "SELECT * FROM ace_rp_call_history ach INNER JOIN (SELECT customer_id, MAX( id ) AS MaxId FROM ace_rp_call_history GROUP BY customer_id ) topscore ON ach.customer_id = topscore.customer_id
+					AND ach.id = topscore.MaxId INNER JOIN ace_rp_call_results cr ON cr.id = ach.call_result_id INNER JOIN ace_rp_customers c ON c.id = ach.customer_id
+					WHERE ach.call_result_id !='' ".$condtion2."";
+				
 				$result = $db->_execute($query1);
 				$total_records = array();
 
@@ -2213,20 +2121,16 @@ this function for trasfer jobs
 				while($row1 = mysql_fetch_array($result)) 
 				{
 					$total_records[$i] = $row1['id'];
-					$records2[$i] = $row1['customer_id'];
+					$records2[$i] = $row1['id'];
 					$despo_id_for_camp[$i] = $row1['call_result_id'];
 					$i++;
 				}
 			}
 		}
 		else{
-			if(count($records2) != 0){
-				$query1 = "SELECT * FROM ace_rp_call_history ach 
-					left join ace_rp_customers c on c.id = ach.customer_id 
-					left join ace_rp_orders arc on c.id = arc.customer_id
-					WHERE ach.id IN (SELECT MAX(id) FROM ace_rp_call_history WHERE customer_id IN ($str2) GROUP BY customer_id) GROUP BY c.id";
+				$query = "SELECT `c`.`id` FROM ace_rp_customers c where id IS NOT NULL".$condtion."";
 
-					$result = $db->_execute($query1);
+					$result = $db->_execute($query);
 					$total_records = array();
 
 					$i=0;
@@ -2235,14 +2139,10 @@ this function for trasfer jobs
 					while($row1 = mysql_fetch_array($result)) 
 					{
 						$total_records[$i] = $row1['id'];
-						$records2[$i] = $row1['customer_id'];
+						$records2[$i] = $row1['id'];
 						$despo_id_for_camp[$i] = $row1['call_result_id'];
 						$i++;
 					}
-			}
-			else{
-				$total_records = array();
-			}
 		}
 
 		$str1 = "";
@@ -2281,7 +2181,7 @@ this function for trasfer jobs
 					$j++;
 				}
 
-				$query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`booking_source_id` = $toUser,`arc`.`o_campaign_id` = $LastID WHERE id IN ($str1); ";
+				$query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`booking_source_id` = $toUser,`arc`.`o_campaign_id` = $LastID WHERE customer_id IN ($str1); ";
 
 				$result_up_order = $db->_execute($query_order_up);
 
@@ -2307,7 +2207,6 @@ this function for trasfer jobs
 	// Callback list. The list of the callbacks has to be made
 	function callback_summary()
 	{
-
 		/*if ($_REQUEST['post']) {
 			echo "string";exit();
 		} */

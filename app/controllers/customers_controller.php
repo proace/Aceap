@@ -1195,7 +1195,9 @@ $h .= ' <tr>
 		$total = 0;
 		if (isset($_POST['submit2']) || isset($_GET['refresh'])) {
 			
-				$query = 'SELECT COUNT( o.order_status_id ) as count , os.name FROM ace_rp_orders o LEFT JOIN ace_rp_order_statuses os ON os.id = o.order_status_id LEFT JOIN ace_rp_customers c ON c.id = o.customer_id where o.order_status_id != ""'.$where.' GROUP BY o.order_status_id';
+				// $query = 'SELECT COUNT( o.order_status_id ) as count , os.name FROM ace_rp_orders o LEFT JOIN ace_rp_order_statuses os ON os.id = o.order_status_id LEFT JOIN ace_rp_customers c ON c.id = o.customer_id where o.order_status_id != ""'.$where.' GROUP BY o.order_status_id';
+				$query = 'SELECT COUNT( o.order_status_id ) AS count, os.name FROM ace_rp_orders o INNER JOIN (SELECT customer_id, MAX( id ) AS MaxId
+					FROM ace_rp_orders GROUP BY customer_id)topscore ON o.customer_id = topscore.customer_id AND o.id = topscore.MaxId LEFT JOIN ace_rp_order_statuses os ON os.id = o.order_status_id LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.order_status_id !=""'.$where.' GROUP BY o.order_status_id';
 				$result = $db->_execute($query);
 			
 				while ($row = mysql_fetch_array($result,MYSQL_ASSOC)) {
@@ -1210,7 +1212,6 @@ $h .= ' <tr>
 				$query1 = 'SELECT COUNT( ch.call_result_id ) AS crd, cr.name FROM ace_rp_call_history ch INNER JOIN (SELECT customer_id, MAX( id ) AS MaxId
 					FROM ace_rp_call_history GROUP BY customer_id) topscore ON ch.customer_id =topscore.customer_id AND ch.id = topscore.MaxId INNER JOIN ace_rp_call_results cr ON cr.id = ch.call_result_id INNER JOIN ace_rp_customers c ON c.id = ch.customer_id
 						WHERE ch.call_result_id != ""'.$callResultWhere.' GROUP BY call_result_id';
-
 			$result1 = $db->_execute($query1);
 			
 			while ($row1 = mysql_fetch_array($result1,MYSQL_ASSOC)) {
