@@ -3,7 +3,7 @@ var G_CONTAINER;
 var G_NEW = false;
 $(function() {
 	var test_server = "http://acesys.ace1.ca/acesys/acesys-2.0/index.php/";
-	var live_server = "http://hvacproz.ca/acesys/index.php/";
+	var live_server = "/acesys/index.php/";
 	
 	var l = $(location).attr('href');
 

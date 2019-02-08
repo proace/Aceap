@@ -180,6 +180,17 @@ class PaymentsController extends AppController
 		$date = date("Y-m-d");
 		$creator = $this->Common->getLoggedUserID();
 		
+		$isDialer 	= isset($_POST['from_dialer'])?$_POST['from_dialer'] :0;
+		$file 		= isset($_FILES['payment_image'])? $_FILES['payment_image'] : null;
+		
+
+		if($file !== null)
+		{
+			$loggedUserId 	= $this->Common->getLoggedUserID();
+            $this->User->id = $loggedUserId;
+			$imageResult 	= $this->Common->commonSavePaymentImage($file, $order_id , $config = $this->User->useDbConfig);
+		}
+
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		//$payment_date = date("Y-m-d", strtotime($dat['payment_date']));
 		$query="select * from ace_rp_payments where idorder='".$order_id."'";
@@ -191,7 +202,7 @@ class PaymentsController extends AppController
 							VALUES ($order_id, '$creator', '$method', '$date', '$amount', '$payment_type', '$auth_number', '$note')";
 			}
 			else{ 
-			echo 	$query = "UPDATE  ace_rp_payments set creator ='".$creator."',payment_method='".$method."',payment_date='".$date."' ,paid_amount='".$amount."',payment_type='".$payment_type."',auth_number='".$auth_number."',notes='".$note."' where idorder='".$order_id."'";
+				$query = "UPDATE  ace_rp_payments set creator ='".$creator."',payment_method='".$method."',payment_date='".$date."' ,paid_amount='".$amount."',payment_type='".$payment_type."',auth_number='".$auth_number."',notes='".$note."' where idorder='".$order_id."'";
 				
 			}				
 		$db->_execute($query);

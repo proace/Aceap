@@ -277,6 +277,7 @@ class OrdersController extends AppController
 			$row = mysql_fetch_array($result);
 			$old_status = $row['order_status_id'];
 		}
+		
 		if ($this->Order->save($this->data))
 		{
 			//Get Order ID
@@ -290,16 +291,10 @@ class OrdersController extends AppController
 		// Save payment image
 		if($file !== null)
 		{
-
-			$fileName = time()."_".$file['name'];
-			$fileTmpName = $file['tmp_name'];
-			if($file['error'] == 0)
-			{
-				$move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/images/".$fileName);
-				$query = "UPDATE ace_rp_orders SET payment_image ='".$fileName."' WHERE id=".$order_id;
-			$result = $db->_execute($query);
-
-			}
+			$loggedUserId = $this->Common->getLoggedUserID();
+            $this->User->id = $loggedUserId;
+             
+			$imageResult = $this->Common->commonSavePaymentImage($file, $order_id , $config = $this->User->useDbConfig);
 		}	
 		$this->Order->BookingItem->execute("DELETE FROM " . $this->Order->BookingItem->tablePrefix . "order_items WHERE order_id = '".$order_id."'");
 		$total = 0;
@@ -555,6 +550,14 @@ class OrdersController extends AppController
 			";
 			$db->_execute($query);
 			}
+
+		$campId = $this->data['Order']['order_campaing_id'];
+		$cusId = $this->data['Order']['customer_id'];
+		$up_query = "UPDATE `ace_rp_customers` as `arc` set `arc`.`campaign_id` =".$campId."  WHERE id=".$cusId.";";
+		$up_result = $db->_execute($up_query);
+		$query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`o_campaign_id` =".$campId." WHERE customer_id=".$cusId.";";
+		$up_order = $db->_execute($query_order_up);
+		
 		//END save summary
 
 		//Save Notes
@@ -1994,6 +1997,16 @@ class OrdersController extends AppController
 				$this->set('booked_items', $h_booked);
 				$this->set('tech_items', $h_tech);
 
+				/** Fetch order payment image using order id*/
+				// echo 'Order id : '.$this->data['Order']['id']; 
+				$queryPayment 	= "select payment_image from ace_rp_orders where id='".$this->data['Order']['id']."'";
+				$resultPayment 	= $db->_execute($queryPayment);
+				$rowPayment 	= mysql_fetch_array($resultPayment, MYSQL_ASSOC);
+				if($rowPayment){
+					$this->set('invoice_image_path', $rowPayment['payment_image']);
+				}
+				/* closed */
+
 				//Check the job type category
 				$query = "select category_id from ace_rp_order_types where id='".$this->data['Order']['order_type_id']."'";
 				$result = $db->_execute($query);
@@ -2050,7 +2063,7 @@ class OrdersController extends AppController
 				$this->set('tech1_comm', round($tech1_comm, 2));
 				$this->set('tech2_comm', round($tech2_comm, 2));
 				$this->set('tech1_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']);
-				$this->set('tech2_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']);
+				$this->set('tech2_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']);		
 			}
 			else
 			{
@@ -2065,7 +2078,7 @@ class OrdersController extends AppController
 			$this->data['Order']['job_time_beg'] = $this->params['url']['job_time_beg'];
 			$this->data['Order']['job_technician1_id'] = $this->params['url']['job_technician1_id'];
 			$this->data['Order']['job_technician2_id'] = $this->params['url']['job_technician2_id'];
-
+			// $this->data['Order']['order_campaing_id'] = 1;
 			// Orders created by the 'new callback' action are callbacks
 			if ( in_array($_GET['action_type'], array('callback','comeback','dnc') ) )//$_GET['action_type'] == 'callback')
 				$this->data['Order']['order_status_id'] = 7;
@@ -2191,6 +2204,13 @@ class OrdersController extends AppController
 			  $items[$row['id']][$k] = $v;
 		}
 
+		$query =  "SELECT id, campaign_name	 FROM ace_rp_reference_campaigns";
+		$campListArray = array();
+		$result = $db->_execute($query);
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			  $campListArray[$row['id']] = $row['campaign_name'] ;
+		}
 		$this->set('job_trucks2', $items);
 
 		$this->set('job_statuses', $this->HtmlAssist->table2array($this->OrderStatus->findAll(), 'id', 'name'));
@@ -2212,6 +2232,7 @@ class OrdersController extends AppController
 		$this->set('show_permits', $show_permits);
 		$this->set('comm_roles',$this->Lists->ListTable('ace_rp_commissions_roles'));
 		$this->set('cancellationReasons', $this->Lists->CancellationReasons());
+		$this->set('campaing_list',$campListArray);
 		//$this->set('recordingFile', $recordingFile);
 
 		// Past Order View Mode
@@ -2684,6 +2705,7 @@ class OrdersController extends AppController
 		        // Default sub-status: Not confirmed (1)
 		        $this->data['Order']['order_substatus_id'] = 1;
 
+		        
             $this->data['Order']['booking_source_id'] = $this->Common->getLoggedUserID();
 
 		        // If customer ID is submitted, read the customer's data
@@ -2717,6 +2739,7 @@ class OrdersController extends AppController
 		$this->set('sub_status', $this->HtmlAssist->table2array($this->Order->OrderSubstatus->findAll(), 'id', 'name'));
 		$this->set('allTechnician',$this->Lists->Technicians(true));
 		$this->set('txt_customer_note','');
+		
 
 		// Past Order View Mode
 		if ($this->data['Status']['name'] == 'Done') $this->set('ViewMode', 1);
@@ -3700,7 +3723,8 @@ class OrdersController extends AppController
 
 				$cust[$row['id']] = $cust_temp;
 			}
-		}elseif($_GET['sq_crit'] == 'servicesselect') {
+		}
+		elseif($_GET['sq_crit'] == 'servicesselect') {
 			$telem_clause = ' AND d.questions_id='.$_GET['curpage'];
 	      $telem_clause1 = ' AND y.call_user_id='.$this->Common->getLoggedUserID();
 
@@ -10129,7 +10153,7 @@ class OrdersController extends AppController
 
 	function invoiceTablet() {
 		if($this->Common->getLoggedUserRoleID() == 6){
-             $this->redirect("http://hvacproz.ca/acesys/index.php/pages/main");exit;
+             $this->redirect(BASE_PATH."pages/main");exit;
         }
         else{
 			$this->layout = "blank";
@@ -10279,7 +10303,7 @@ class OrdersController extends AppController
 		$headers = "From: info@acecare.ca\n";
 		$headers .= "Content-Type: text/html; charset=iso-8859-1\n";
 
-		$msg = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
+		$msg = file_get_contents(BASE_PATH."orders/invoiceTabletPrint?order_id=$order_id&type=office");
 		$res = mail($email, $subject, $msg, $headers);
 
 		$this->redirect("orders/invoiceTabletPrint?order_id=$order_id");
@@ -10529,8 +10553,6 @@ class OrdersController extends AppController
 		}			
 	}
 	function saveInvoiceTabletItems() {
-
-
 		//echo '<BR>REQUEST<BR><pre>';print_r($_REQUEST);exit;
 		if(isset($_REQUEST['order_id'])){
 			$order_id = $_REQUEST['order_id'];	
@@ -10703,7 +10725,7 @@ class OrdersController extends AppController
 			$return = $this->emailInvoiceReviewLinks($order_id,$cemail);
                         if($this->Common->getLoggedUserRoleID() == 6){
                              //$this->redirect("orders/invoiceTabletPrint?order_id=$order_id&type=$type");exit;
-                             $this->redirect("http://hvacproz.ca/acesys/index.php/pages/main");exit;
+                             $this->redirect(BASE_PATH."pages/main");exit;
                         }
 			$this->redirect("orders/invoiceTablet?order_id=$order_id");exit;
 		}
@@ -10847,7 +10869,7 @@ class OrdersController extends AppController
 		$msg.= "ACE Clients<br>Pro Ace Heating & Air Conditioning Ltd<br>";
 		$msg.= "Tel: 604-293-3770<br>www.acecare.ca";
 
-		$invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
+		$invoice = file_get_contents(BASE_PATH."orders/invoiceTabletPrint?order_id=$order_id&type=office");
 
 		$boundary = md5(time());
 		$header = "From: info@acecare.ca \r\n";
@@ -10876,6 +10898,8 @@ class OrdersController extends AppController
 	}
 
 	function invoiceTabletPrint() {
+		error_reporting(E_ALL & ~E_NOTICE);
+
 		$this->layout = "blank";
 
 		$order_id = $_GET['order_id'];
@@ -11458,6 +11482,16 @@ class OrdersController extends AppController
 		$this->set('last_order', $this->Order->findByJobEstimateId($order_id));
 		$this->set('invoice', $this->Invoice->findByOrderId($order_id));
 
+		/** Fetch order payment image using order id*/
+		$db =& ConnectionManager::getDataSource('default');
+		$queryPayment 	= "select payment_image from ace_rp_orders where id='".$order_id."'";
+		$resultPayment 	= $db->_execute($queryPayment);
+		$rowPayment 	= mysql_fetch_array($resultPayment, MYSQL_ASSOC);
+		if($rowPayment){
+			$this->set('invoice_payment_photo', $rowPayment['payment_image']);
+		}
+		/* closed */
+		
 		$this->set('jobs', $this->Order->findAll(array(
 			"Order.job_date" => date("Y-m-d"),  "Order.tech_visible" => 1,
 			"OR" => array("Order.booking_source_id" => $this->Common->getLoggedUserID(),
@@ -13017,7 +13051,9 @@ class OrdersController extends AppController
 		$this->layout = "blank";
 
 
-		$fileUrl ="http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
+		// $fileUrl ="http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
+
+		$fileUrl =BASE_PATH."orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
 		
 		set_time_limit(300);
 		$subject = 'Ace Services Ltd';
@@ -13027,7 +13063,7 @@ class OrdersController extends AppController
 		$msg = $template;
 	
 		$msg = str_replace('{file_url}', $fileUrl, $msg);
-		//$invoice = file_get_contents("http://acecare.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
+		$invoice = file_get_contents(BASE_PATH."orders/invoiceTabletPrint?order_id=$order_id&type=office");
 
 		$boundary = md5(time());
 		$header = "From: info@acecare.ca \r\n";
@@ -13053,7 +13089,6 @@ class OrdersController extends AppController
 		";
 		$db->_execute($query);
 		$res = mail($email, $subject, $output, $header);
-
 		$this->set('printerNumber', $printerNumber);
 
 		$this->redirect("orders/invoiceTabletPrint?order_id=$order_id&type=$type");
@@ -13099,7 +13134,6 @@ class OrdersController extends AppController
 
 	function emailInvoiceReviewLinks($orderid,$email){
 		//END Save Notes
-		
 		if(isset($orderid) && $orderid!=''){
 			$order_id = $orderid;
 		}else{
@@ -13112,14 +13146,14 @@ class OrdersController extends AppController
 			$email = $_GET['email'];
 		}
 			
-		$fileUrl = "http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
+		$fileUrl = BASE_PATH."orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
 		set_time_limit(300);
 		$subject = 'Ace Services Ltd';
 		$settings = $this->Setting->find(array('title'=>'email_template_custom'));
 		$template = $settings['Setting']['valuetxt'];
 		$msg = $template;
 		$msg = str_replace('{file_url}', $fileUrl, $msg);
-		//$invoice = file_get_contents("http://acecare.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
+		$invoice = file_get_contents(BASE_PATH."orders/invoiceTabletPrint?order_id=$order_id&type=office");
 
 		$boundary = md5(time());
 		$header = "From: info@acecare.ca \r\n";

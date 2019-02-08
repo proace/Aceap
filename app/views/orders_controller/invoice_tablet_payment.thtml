@@ -26,6 +26,19 @@
 
 <div id="invoice">
 <script>
+   $(function () {
+        $("#img-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 800,
+            height: 600,
+        });
+        $("#openImg").click(function () {
+            $('#img-enlarge').dialog('open');
+            });
+    });
 //function payFun(orderId){
 //   //alert(orderId);
 //   window.location="https://www.acecare.ca/test-page-1?id="+orderId;
@@ -195,7 +208,27 @@
         <div class="right">Total: <input type="text" class="right" id="current_total" name="data[Order][total]" value="0" readonly="readonly" /></div>
         <div class="right">Deposit: <input type="text" class="right" id="current_deposit" name="data[Order][deposit]" value="<?php echo $job['Order']['customer_deposit']==""?"0":$job['Order']['customer_deposit'] ?>" /></div>   
         <div class="right">Balance: <input type="text" class="right" id="current_balance" name="data[Order][balance]" value="0" /></div>   
-        <br />        
+        <br /> 
+        <div class="right">Payment photo:
+            <?php 
+                if(isset($invoice_payment_photo) && !empty($invoice_payment_photo)){                              
+                    $imgPath =  '/acesys/app/webroot/payment-images/'.$invoice_payment_photo; 
+                    ?>
+                    <div id="img-enlarge" title="Photo">
+                      <img src="<?php echo $imgPath; ?>" style="width:100%;">
+                    </div>
+                    <img id="openImg" src="<?php echo $imgPath; ?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">                         
+                    <?php 
+                }else{
+                    ?>
+                    <div class="acecare-td-adjust">
+                        <label for="Fileinput">Upload</label>
+                        <input type="file" name="uploadFile" id="Fileinput" class="right">
+                    </div>  
+                    <?php
+                }
+            ?> 
+        </div>        
         <div class="right" id="payment_box">
         	<div class="center" id="payment_details">
         	</div>

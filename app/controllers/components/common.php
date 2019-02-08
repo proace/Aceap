@@ -7,7 +7,25 @@ class CommonComponent extends Object
       $this->controller =& $controller;
     }
 
+     /** common function for save image into ace_rp_orders field payment_image
+	  *  Need to pass three parameter $file, $order_id, $config in the component 
+      */
+    function commonSavePaymentImage($file, $order_id, $config)
+    {    	
+    	$fileName = time()."_".$file['name'];
+		$fileTmpName = $file['tmp_name'];
+		
+		if($file['error'] == 0)
+		{
+			$move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/payment-images/".$fileName);
+			$query = "UPDATE ace_rp_orders SET payment_image ='".$fileName."' WHERE id=".$order_id;
+			$db =& ConnectionManager::getDataSource($config);
 
+			$result = $db->_execute($query);
+			return $result; 
+		}
+    }
+    /** end common function for save image into ace_rp_orders field payment_image*/
 	function getMenuItems()
 	{
 		$roleID = (integer)$this->getLoggedUserRoleID();

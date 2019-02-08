@@ -1803,68 +1803,26 @@ class ReportsController extends AppController
 	}
 
 	function export_csv(){
-		$condtion = " 1 ";
+		$condtion = "";
+		$condtion2 = "";
 		$records1 = 0;
 		// Dates		
 		$fdate = isset($_REQUEST['fromdate'])?$_REQUEST['fromdate']:'';
 		$tdate = isset($_REQUEST['ttodate'])?$_REQUEST['ttodate']:'';
 
-		if(isset($_REQUEST['jobtype'])&& !empty($_REQUEST['jobtype'])){
-			/*$condtion .= "  AND arc.order_type_id = '".$_REQUEST['jobtype']."'";*/	
-			$ex_data = explode(',', $_REQUEST['jobtype']);
-			$job_type = "'".implode("','", $ex_data)."'";
-			$condtion .= " AND arc.order_type_id IN ($job_type)";	
+		if(isset($_REQUEST['city'])&& !empty($_REQUEST['city'])){
+			$condtion2 .= " AND c.city='".$_REQUEST['city']."'";
+			$condtion .= " AND c.city='".$_REQUEST['city']."'";		
 		}
-
-		if(isset($_REQUEST['status'])&& !empty($_REQUEST['status'])){
-			/*$condtion .= "  AND arc.order_status_id = '".$_REQUEST['status']."'";*/
-			$ex_data = explode(',', $_REQUEST['status']);
-			$job_status = "'".implode("','", $ex_data)."'";
-			$condtion .= " AND arc.order_status_id IN ($job_status)";
-		}
-
-		$fdate = date("Y-m-d", strtotime($fdate));
-		$tdate = date("Y-m-d", strtotime($tdate));
 
 		if(!empty($fdate)&& !empty($tdate)){
-			$condtion .= "  AND arc.job_date BETWEEN '".$fdate."' AND '".$tdate."'";
-		}
-
-
-		if(isset($_REQUEST['city'])&& !empty($_REQUEST['city'])){
-			$condtion .= " AND c.city='".$_REQUEST['city']."'";		
+			$fdate = date("Y-m-d", strtotime($fdate));
+			$tdate = date("Y-m-d", strtotime($tdate));
+			$condtion .= "  AND c.callback_date BETWEEN '".$fdate."' AND '".$tdate."'";
 		}
 
 		$db =& ConnectionManager::getDataSource('default');
 
-    	// Get the callbacks summary
-		$query = "
-		  SELECT `arc`.`id` as `id`, `arc`.`customer_id`,`c`.`first_name`,`c`.`phone`,`c`.`email`,`c`.`last_name`,`c`.`city`,`c`.`address_street`,`c`.`address_street_number`, `arc`.`order_number` as `reference`,`arc`.`order_type_id` as `job_type`
-			FROM ace_rp_orders arc
-			left join ace_rp_customers c on c.id = arc.customer_id
-		   where campaign_id IS NULL AND 
-		   $condtion
-		   ";
-
-		$result = $db->_execute($query);
-		
-		$i=0;
-		$records1 = null;
-		$records2 = null;
-
-		$jType = $this->HtmlAssist->table2array($this->OrderType->findAll(), 'id', 'name');
-
-		while($row = mysql_fetch_assoc($result)) 
-		{
-			$records1[$i] = $row['id'];
-			$records2[$i] = $row['customer_id'];
-			$i++;
-		}
-
-		$str2 = "'".implode("','", $records2)."'";
-		$condtion2 = ' 1 ';
-
-		if(count($records2) != 0){
 			if($_REQUEST['hidden_token'] == 'yes'){
 				if(!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])){
 					$callmodefrom = isset($_REQUEST['callmodefrom'])?$_REQUEST['callmodefrom']:'';
@@ -1873,7 +1831,7 @@ class ReportsController extends AppController
 					$callmodefrom = date("Y-m-d", strtotime($callmodefrom));
 					$callmodeto = date("Y-m-d", strtotime($callmodeto));
 
-					$condtion2 .= "  AND ach.call_date BETWEEN '".$callmodefrom."' AND '".$callmodeto."'";
+					$condtion2 .= "  AND ach.callback_date BETWEEN '".$callmodefrom."' AND '".$callmodeto."'";
 				}
 				if(isset($_REQUEST['disposition'])&& !empty($_REQUEST['disposition'])){
 					$ex_data = explode(',', $_REQUEST['disposition']);
@@ -1881,19 +1839,20 @@ class ReportsController extends AppController
 					$condtion2 .= " AND ach.call_result_id IN ($str3)";	
 				}
 				if((!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])) || !empty($_REQUEST['disposition'])){
-					$query1 = "SELECT * ,`c`.`first_name`,`c`.`last_name`,`c`.`phone`,`c`.`city`,`c`.`email`,`c`.`address_street`,`c`.`address_street_number`,`arc`.`job_date` as `last_job_date`,`ach`.`call_date` , `ach`.`call_result_id` as `disposition` , `arc`.`order_type_id` as `job_type` , `arc`.`order_number` as `reference` FROM ace_rp_call_history ach 
-					left join ace_rp_customers c on c.id = ach.customer_id 
-					left join ace_rp_orders arc on c.id = arc.customer_id
-					WHERE ach.id IN (SELECT MAX(id) FROM ace_rp_call_history WHERE customer_id IN ($str2) GROUP BY customer_id) AND $condtion2 GROUP BY c.id";
+					$query1 = "SELECT *, `c`.`first_name`,`c`.`last_name`,`c`.`phone`,`c`.`city`,`c`.`email`,`c`.`address_street`,
+					`c`.`address_street_number`, `ach`.`call_date` , `ach`.`call_result_id` as `disposition` FROM ace_rp_call_history ach INNER JOIN (SELECT customer_id, MAX( id ) 
+				    AS MaxId FROM ace_rp_call_history GROUP BY customer_id ) topscore 
+					ON ach.customer_id = topscore.customer_id
+					AND ach.id = topscore.MaxId INNER JOIN ace_rp_call_results cr 
+					ON cr.id = ach.call_result_id INNER JOIN ace_rp_customers c ON c.id = ach.customer_id
+					WHERE ach.call_result_id !='' ".$condtion2."";
 					$result = $db->_execute($query1);
 				}
-			}
-			else{
-				$query1 = "SELECT * ,`c`.`first_name`,`c`.`last_name`,`c`.`phone`,`c`.`city`,`c`.`email`,`c`.`address_street`,`c`.`address_street_number`,`arc`.`job_date` as `last_job_date`,`ach`.`call_date` , `ach`.`call_result_id` as `disposition` , `arc`.`order_type_id` as `job_type` , `arc`.`order_number` as `reference` FROM ace_rp_call_history ach 
-					left join ace_rp_customers c on c.id = ach.customer_id 
-					left join ace_rp_orders arc on c.id = arc.customer_id
-					WHERE ach.id IN (SELECT MAX(id) FROM ace_rp_call_history WHERE customer_id IN ($str2) GROUP BY customer_id) GROUP BY c.id";
-					$result = $db->_execute($query1);
+			} else {
+				$query1 = "SELECT `c`.`id`,  `c`.`first_name`,`c`.`last_name`,`c`.`phone`,`c`.`city`,`c`.`email`,`c`.`address_street`,
+					`c`.`address_street_number` FROM ace_rp_customers c where id IS NOT NULL".$condtion."";
+
+					$result = $db->_execute($query1);	
 			}
 
 
@@ -1913,7 +1872,6 @@ class ReportsController extends AppController
 			$call_date = null;
 			$address_street_number = null;
 
-			$jType = $this->HtmlAssist->table2array($this->OrderType->findAll(), 'id', 'name');
 			$CallResult_despo = $this->HtmlAssist->table2array($this->CallResult->findAll(), 'id', 'name');
 
 			while($row1 = mysql_fetch_array($result)) 
@@ -1924,44 +1882,40 @@ class ReportsController extends AppController
 				$city[$i] = $row1['city'];
 				$address_street[$i] = $row1['address_street'];
 				$phone[$i] = $row1['phone'];
-				$last_job_date[$i] = $row1['last_job_date'];
-				$disposition[$i] = $CallResult_despo[$row1['disposition']];
-				$job_type[$i] = $jType[$row1['job_type']];
+				$disposition[$i] = isset($CallResult_despo[$row1['disposition']]) ? $CallResult_despo[$row1['disposition']] :'';
 				$reference[$i] = $row1['reference'];
 				$email[$i] = $row1['email'];
-				$call_date[$i] = $row1['call_date'];
+				$call_date[$i] = isset($row1['call_date']) ? $row1['call_date'] : '';
 				$address_street_number[$i] = $row1['address_street_number'];
 
 				$i++;
 			}
-
 			if(count($total_records) != 0){
 				$j = 0;
 				for ($i=1; $i <= count($total_records); $i++) {
 					if($i == count($total_records)){
 						if($i == 1){
-							$whole_str[] = "Refrence ,First Name,Last Name,House number,Phone,City,Email,Address,Disposition,Last call made date,Job type ,Last job date";
+							$whole_str[] = "First Name,Last Name,House number,Phone,City,Email,Address,Disposition,Last call made date";
 						}
-						$whole_str[] ="$reference[$j],$first_name[$j],$last_name[$j],$address_street_number[$j],$phone[$j],$city[$j],$email[$j],$address_street[$j],$disposition[$j],$call_date[$j],$job_type[$j],$last_job_date[$j]";
+						$whole_str[] ="$first_name[$j],$last_name[$j],$address_street_number[$j],$phone[$j],$city[$j],$email[$j],$address_street[$j],$disposition[$j],$call_date[$j]";
 					}
 					else{
 						if($i == 1){
-							$whole_str[] = "Refrence ,First Name,Last Name,House number,Phone,City,Email,Address,Disposition,Last call made date,Job type ,Last job date";
+							$whole_str[] = "First Name,Last Name,House number,Phone,City,Email,Address,Disposition,Last call made date";
 						}
-						$whole_str[] ="$reference[$j],$first_name[$j],$last_name[$j],$address_street_number[$j],$phone[$j],$city[$j],$email[$j],$address_street[$j],$disposition[$j],$call_date[$j],$job_type[$j],$last_job_date[$j],";
+						$whole_str[] ="$first_name[$j],$last_name[$j],$address_street_number[$j],$phone[$j],$city[$j],$email[$j],$address_street[$j],$disposition[$j],$call_date[$j]";
 					}
 					$j++;
 				}
 
 				if($_REQUEST['export_data_val'] == 'export_data_val'){
 					$filename = md5(date('Y-m-d H:i:s:u'));
-					$filepath = $_SERVER['DOCUMENT_ROOT']."/acesys/csv_folder/$filename.csv";
 
+					$filepath = $_SERVER['DOCUMENT_ROOT']."/acesys/csv_folder/$filename.csv";
 					header('Content-Type: text/csv');
 					header('Content-Disposition: attachment; filename=$filename.csv');
-
+							
 					$fp = fopen($filepath, 'wb');
-
 					foreach ( $whole_str as $line ) {
 					    $val = explode(",", $line);
 					    fputcsv($fp, $val);
@@ -1974,10 +1928,6 @@ class ReportsController extends AppController
 			else{
 				echo 'no';exit;
 			}
-		}
-		else{
-			echo 'no';exit;
-		}
 	}
 
 	function transferCallbacksrecords()
@@ -2056,17 +2006,9 @@ this function for trasfer jobs
 
 	function transferCallbacksInBulk()
 	{
-		//echo "<pre>"; print_r($_GET); die;
 		$condtion = "";
 		$condtion2 = "";
-		// Dates		
-		if(isset($_REQUEST['source'])&& !empty($_REQUEST['source'])){
-			$toUser = $_REQUEST['source'];			
-		}
-		else{
-			echo false;
-		}
-
+		
 		$fdate = isset($_REQUEST['fromdate'])?$_REQUEST['fromdate']:'';
 		$tdate = isset($_REQUEST['ttodate'])?$_REQUEST['ttodate']:'';
 
@@ -2155,7 +2097,7 @@ this function for trasfer jobs
 			$whole_str = '';
 
 			if($total_count_id != 0){
-				$query = "INSERT INTO ace_rp_reference_campaigns(campaign_name,camp_count,transfer_call_jobs_flag,source_from) VALUES ('$camp' , '$total_count_id','1',$toUser)";	
+				$query = "INSERT INTO ace_rp_reference_campaigns(campaign_name,camp_count,transfer_call_jobs_flag,camp_city) VALUES ('$camp' , '$total_count_id','1','".$_REQUEST['city']."')";	
 
 				$result = $db->_execute($query);
 
@@ -2181,7 +2123,7 @@ this function for trasfer jobs
 					$j++;
 				}
 
-				$query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`booking_source_id` = $toUser,`arc`.`o_campaign_id` = $LastID WHERE customer_id IN ($str1); ";
+				$query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`o_campaign_id` = $LastID WHERE customer_id IN ($str1); ";
 
 				$result_up_order = $db->_execute($query_order_up);
 

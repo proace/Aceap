@@ -72,9 +72,11 @@ function showCallBack()
 	$( "#dialer_callback" ).dialog("open");
 }
 function emailInvoice(order_id){
+
 	 var email = $('#emailinput').val();
 	 var emailInvoice = document.getElementById("emailinvoicelink").value;
 	if(emailInvoice == "emailinvoice"){
+	
 		window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office', '_new');
 	}
 	if(emailInvoice == "emailinvoicereview"){
@@ -2435,6 +2437,20 @@ function get_data($url)
 					</td>
 					<?php }?>
                 </tr>
+                	<!-- add campaing drop down -->
+                <tr>
+					<td align="right"><?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13) echo 'Campaing:';?></td>
+                    <td>
+                    <?php
+						if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13)
+						{
+							echo $html->selectTag('Order/order_campaing_id', $campaing_list, $this->data['Order']['o_campaign_id']);
+							echo $html->tagErrorMsg('Order/order_campaing_id','Please enter Campaing.');
+						}
+                    ?>
+                    </td>
+                </tr>
+
                 <tr id="notifiedBy" style="<?php if ($this->data['Order']['order_substatus_id'] != 4) echo "display:none;"; ?>">
                     <td align="right">Notified by:</td>
                     <td>
@@ -2767,11 +2783,41 @@ function get_data($url)
 														<?php echo $html->selectTag('Order/customer_payment_method_id', $payment_methods, $this->data['Order']['customer_payment_method_id']);?>
 														</td>
 												  </tr>
-												</table>
+					 </td>                
+				</tr>
+				</table>
 												<?php }?>
 										</td>
                 </tr>
+              <tr class="visible">
+					<td colspan="3" style="vertical-align:top">
+				    	
+				    </td>	
+					 <td>
+					 	<span>Payment photo:</span>
+					 	<?php 
+
+					 		if(isset($invoice_image_path) && !empty($invoice_image_path)){					 			
+						 		$imgPath =  '/acesys/app/webroot/payment-images/'.$invoice_image_path; 
+						 		?>
+						 		<div id="img-enlarge" title="Photo">
+								  <img src="<?php echo $imgPath; ?>" style="width:100%;">
+								</div>
+								<img id="openImg" src="<?php echo $imgPath; ?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">					 		
+						 		<?php 
+					 		}else{
+					 			?>
+					 			<div class="acecare-td-adjust">
+						 			<label for="Fileinput" >Upload</label>
+					 				<input type="file" name="uploadFile" id="Fileinput">
+					 			</div>	
+					 			<?php
+					 		}
+					 	?>
+					 </td>                
+				</tr>  
             </table>
+
 			<br/>
             <!--&nbsp;<b><u>If Cancelled, Put the Reason:</u></b> <?php //echo $html->selectTag('Order/cancellation_reason', $cancellationReasons);?> -->
             <div style="float: left; text-align: left;">
@@ -3294,6 +3340,19 @@ function get_data($url)
 <input type="hidden" id="ConnectionStatus">  
 <input type="hidden" id="currentCallNum">  
 <script>
+	$(function () {
+	    $("#img-enlarge").dialog({
+	        modal: true,
+	        autoOpen: false,
+	        title: "Photo",
+	        autoOpen: false,
+	        width: 800,
+	        height: 600,
+	    });
+	    $("#openImg").click(function () {
+	        $('#img-enlarge').dialog('open');
+	        });
+    });
 	function showHotListData(ctype)
 		{
 			if("p" == ctype)
@@ -3410,5 +3469,34 @@ $(document).ready(function(){
     text-decoration: none;
     display: none;
     width: 38px;
+}
+/** Custom css for change position of button lable*/
+.acecare-td-adjust {
+  position: relative;
+  height: 20px;
+  width: 50px;
+}
+
+.acecare-td-adjust > input[type="file"] {
+  position: absoulte;
+  opacity: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0
+}
+
+.acecare-td-adjust > label {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: lightgrey;
+  color: #000;
+  border-radius: 5px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer
 }
 </style>

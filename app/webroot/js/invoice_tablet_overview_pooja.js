@@ -1,7 +1,7 @@
 var G_URL;
 $(function() {
 	var test_server = "http://acecare.ca/acesys/index.php/";
-	var live_server = "http://acecare.ca/acesys/index.php/";
+	var live_server = "/acesys/index.php/";
 	
 	var l = $(location).attr('href');
 

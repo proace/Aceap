@@ -341,7 +341,7 @@ $.get("<?=BASE_URL;?>/reports/transferCallbacks",
 		Number Of Leads <input name="numberofleads" value="" style="width: 100px;" type="text" id="numberofleads" readonly> 
 		</td>
 
-		<td>
+		<!-- <td>
 		Send to: 
 
 			<select name="source_id" id='source_id'>
@@ -352,7 +352,7 @@ $.get("<?=BASE_URL;?>/reports/transferCallbacks",
 				}
 				?>
 			</select>
-		</td>	 
+		</td>	  -->
 	</tr>
 </table>
 <table>
@@ -360,7 +360,7 @@ $.get("<?=BASE_URL;?>/reports/transferCallbacks",
 	<tr>
 		<input type="hidden" id='export_data_change' value="false">
 		<input type="button" onclick="Search_dispo()" name="Search_dispo" value="Search">&nbsp;&nbsp;
-		<input type="button" onclick="transfer()" name="save" value="Transfer">&nbsp;&nbsp;
+		<input type="button" onclick="transfer()" name="save" value="Create">&nbsp;&nbsp;
 		<input type="button" onclick="export_data()" name="save" value="Export Data">&nbsp;&nbsp;
 
 		<img src="<?=ROOT_URL;?>/app/webroot/img/pink-loder.gif" style="width: 20px;vertical-align: bottom; display: none;" id="loader-img">
@@ -900,8 +900,6 @@ var ttodate = document.getElementById("ftodate1").value;
 
 var job_type = document.getElementById("multi_select_job_types_hidd").value;
 var status = document.getElementById("multi_select_job_status_hidd").value;
-var source_id = document.getElementById("source_id").value;
-
 var callmodefrom = document.getElementById("callmodefrom1").value;
 var callmodeto = document.getElementById("callmodeto1").value;
 
@@ -920,7 +918,6 @@ $.get("<?=BASE_URL;?>/reports/export_csv",
 				 campaing:campaing,
 				 numberofleads:numberofleads,
 				 status:status,
-				 source:source_id,
 				 jobtype:job_type,
 				 callmodefrom:callmodefrom,
 				 callmodeto:callmodeto,
@@ -935,7 +932,7 @@ $.get("<?=BASE_URL;?>/reports/export_csv",
 				document.getElementById('job_tans_msg').innerHTML = 'File can not be export because currently no data present.';
 			}
 			else{
-				window.location = "http://hvacproz.ca/acesys/csv_folder/"+data+".csv";
+				window.location = "/acesys/csv_folder/"+data+".csv";
 				document.getElementById('job_tans_msg').innerHTML = '';
 			}
 		}); 
@@ -957,8 +954,6 @@ var ttodate = document.getElementById("ftodate1").value;
 
 var job_type = document.getElementById("multi_select_job_types_hidd").value;
 var status = document.getElementById("multi_select_job_status_hidd").value;
-var source_id = document.getElementById("source_id").value;
-
 var callmodefrom = document.getElementById("callmodefrom1").value;
 var callmodeto = document.getElementById("callmodeto1").value;
 
@@ -975,7 +970,6 @@ $.get("<?=BASE_URL;?>/reports/transferCallbacksrecords",
 				 campaing:campaing,
 				 numberofleads:numberofleads,
 				 status:status,
-				 source:source_id,
 				 jobtype:job_type,
 				 callmodefrom:callmodefrom,
 				 callmodeto:callmodeto,
@@ -1007,9 +1001,6 @@ function transfer(){
 	var fromdate = document.getElementById("ffromdate1").value;
 	var ttodate = document.getElementById("ftodate1").value;
 	var status = document.getElementById("multi_select_job_status_hidd").value;
-
-	var source_id = document.getElementById("source_id").value;
-
 	var callmodefrom = document.getElementById("callmodefrom1").value;
 	var callmodeto = document.getElementById("callmodeto1").value;
 	var disposition = document.getElementById("multi_select_call_result_hidd").value;
@@ -1021,11 +1012,6 @@ function transfer(){
 		return;
 	}
 
-	if(source_id == ""){
-		alert("Booking source 2 user can not be empty");
-		return;
-	}
-
 	$("#loader-img").css('display', 'inherit');
 	$.get("<?=BASE_URL;?>/reports/transferCallbacksInBulk",
 				{fromdate:fromdate,
@@ -1034,7 +1020,6 @@ function transfer(){
 				 campaing:campaing,
 				 numberofleads:numberofleads,
 				 status:status,
-				 source:source_id,
 				 jobtype:job_type,
 				 callmodefrom:callmodefrom,
 				 callmodeto:callmodeto,

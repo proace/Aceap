@@ -3,7 +3,7 @@ var G_CONTAINER;
 var G_NEW = false;
 $(function() {
 	var test_server = "http://acesys.ace1.ca/acetest/acesys-2.0/index.php/";
-	var live_server = "http://acecare.ca/acesys/index.php/";
+	var live_server = "/acesys/index.php/";
 	
 	var l = $(location).attr('href');
 
@@ -477,25 +477,52 @@ function SavePayment(){
 	if (!method) {alert('A payment method should be selected!'); return;}
 	if ((method>2)&&(method<6)&&(!auth_number)) {alert('An authorization number is required!'); return;}
 
-	$.post(G_URL + "payments/savePayment",
+	var formdata = new FormData();
+	formdata.append("order_id",id);
+	formdata.append("method",method);
+	formdata.append("amount",amount);
+	formdata.append("payment_type",1);
+	formdata.append("auth_number",auth_number);
+	formdata.append('payment_image', $('#Fileinput')[0].files[0]); 
+	$.ajax({
+		url: G_URL + "payments/savePayment",
+		type: "post",
+		data: formdata,
+		contentType: false,
+		processData: false,
+		cache: false,
+		success: function(data)
 		{
-			order_id:id, 
-			method:method, 
-			amount:amount, 
-			payment_type:1, 
-			auth_number:auth_number
-		},
-		function(data){    		
-		showPayments();
-		$("#PaymentPaymentMethodId").removeAttr("readonly");
-		$("#paid_by_amount").removeAttr("readonly");
-		$("#auth_number").removeAttr("readonly");
-		$("#save_payment").removeAttr("disabled");
+			showPayments();
+			$("#PaymentPaymentMethodId").removeAttr("readonly");
+			$("#paid_by_amount").removeAttr("readonly");
+			$("#auth_number").removeAttr("readonly");
+			$("#save_payment").removeAttr("disabled");
+			
+			$("#PaymentPaymentMethodId").val(0);
+			$("#paid_by_amount").val(0);
+			$("#auth_number").val("");
+		}
+	});
+	// $.post(G_URL + "payments/savePayment",
+	// 	{
+	// 		order_id:id, 
+	// 		method:method, 
+	// 		amount:amount, 
+	// 		payment_type:1, 
+	// 		auth_number:auth_number
+	// 	},
+	// 	function(data){    		
+	// 	showPayments();
+	// 	$("#PaymentPaymentMethodId").removeAttr("readonly");
+	// 	$("#paid_by_amount").removeAttr("readonly");
+	// 	$("#auth_number").removeAttr("readonly");
+	// 	$("#save_payment").removeAttr("disabled");
 		
-		$("#PaymentPaymentMethodId").val(0);
-		$("#paid_by_amount").val(0);
-		$("#auth_number").val("");
-  });
+	// 	$("#PaymentPaymentMethodId").val(0);
+	// 	$("#paid_by_amount").val(0);
+	// 	$("#auth_number").val("");
+ //  });
 }
 
 function ErasePayment(payment_id){
