@@ -507,6 +507,7 @@ class OrdersController extends AppController
 				ON o.id = oi.order_id
 				WHERE o.id = $order_id
 				AND oi.class = 0
+				GROUP BY o.order_type_id
 				UNION
 				SELECT $order_id, 1, 2, o.order_type_id, IFNULL(SUM(((oi.price-oi.price_purchase)*oi.quantity)-oi.discount+oi.addition),0) amount
 				FROM ace_rp_orders o
@@ -514,6 +515,7 @@ class OrdersController extends AppController
 				ON o.id = oi.order_id
 				WHERE o.id = $order_id
 				AND oi.class = 1
+				GROUP BY o.order_type_id
 				UNION
 				SELECT $order_id, 0, 3, oi.item_category_id, IFNULL(SUM((oi.price*oi.quantity)-oi.discount+oi.addition),0) amount
 				FROM ace_rp_order_items oi
@@ -1896,6 +1898,7 @@ class OrdersController extends AppController
 	// Hardcoded:	* User Roles
 	function editBooking()
 	{   
+		// error_reporting(E_ALL);
 		$this->layout='edit';
 		$hotlist = isset($this->params['url']['hotlist'])?$this->params['url']['hotlist']:0;
 		;
@@ -2063,7 +2066,7 @@ class OrdersController extends AppController
 				$this->set('tech1_comm', round($tech1_comm, 2));
 				$this->set('tech2_comm', round($tech2_comm, 2));
 				$this->set('tech1_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']);
-				$this->set('tech2_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']);		
+				$this->set('tech2_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']);	
 			}
 			else
 			{
@@ -2204,12 +2207,15 @@ class OrdersController extends AppController
 			  $items[$row['id']][$k] = $v;
 		}
 
-		$query =  "SELECT id, campaign_name	 FROM ace_rp_reference_campaigns";
+		$query =  "SELECT id, campaign_name, camp_city FROM ace_rp_reference_campaigns";
 		$campListArray = array();
 		$result = $db->_execute($query);
 		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
 		{
-			  $campListArray[$row['id']] = $row['campaign_name'] ;
+		  $cla['id'] = $row['id'];
+		  $cla['camp_name'] = $row['campaign_name'];
+		  $cla['camp_city'] = $row['camp_city'];
+		  $campListArray[] = $cla;
 		}
 		$this->set('job_trucks2', $items);
 
@@ -10303,7 +10309,7 @@ class OrdersController extends AppController
 		$headers = "From: info@acecare.ca\n";
 		$headers .= "Content-Type: text/html; charset=iso-8859-1\n";
 
-		$msg = file_get_contents(BASE_PATH."orders/invoiceTabletPrint?order_id=$order_id&type=office");
+		$msg = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
 		$res = mail($email, $subject, $msg, $headers);
 
 		$this->redirect("orders/invoiceTabletPrint?order_id=$order_id");
@@ -10869,7 +10875,7 @@ class OrdersController extends AppController
 		$msg.= "ACE Clients<br>Pro Ace Heating & Air Conditioning Ltd<br>";
 		$msg.= "Tel: 604-293-3770<br>www.acecare.ca";
 
-		$invoice = file_get_contents(BASE_PATH."orders/invoiceTabletPrint?order_id=$order_id&type=office");
+		$invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
 
 		$boundary = md5(time());
 		$header = "From: info@acecare.ca \r\n";
@@ -10898,7 +10904,6 @@ class OrdersController extends AppController
 	}
 
 	function invoiceTabletPrint() {
-		error_reporting(E_ALL & ~E_NOTICE);
 
 		$this->layout = "blank";
 
@@ -13051,9 +13056,9 @@ class OrdersController extends AppController
 		$this->layout = "blank";
 
 
-		// $fileUrl ="http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
+		$fileUrl ="http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
 
-		$fileUrl =BASE_PATH."orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
+		// $fileUrl =BASE_PATH."orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
 		
 		set_time_limit(300);
 		$subject = 'Ace Services Ltd';
@@ -13063,8 +13068,8 @@ class OrdersController extends AppController
 		$msg = $template;
 	
 		$msg = str_replace('{file_url}', $fileUrl, $msg);
-		$invoice = file_get_contents(BASE_PATH."orders/invoiceTabletPrint?order_id=$order_id&type=office");
-
+		// $invoice = file_get_contents(BASE_PATH."orders/invoiceTabletPrint?order_id=$order_id&type=office");
+		$invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
 		$boundary = md5(time());
 		$header = "From: info@acecare.ca \r\n";
 		$header .= "MIME-Version: 1.0\r\n";
@@ -13146,14 +13151,14 @@ class OrdersController extends AppController
 			$email = $_GET['email'];
 		}
 			
-		$fileUrl = BASE_PATH."orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
+		$fileUrl = "http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
 		set_time_limit(300);
 		$subject = 'Ace Services Ltd';
 		$settings = $this->Setting->find(array('title'=>'email_template_custom'));
 		$template = $settings['Setting']['valuetxt'];
 		$msg = $template;
 		$msg = str_replace('{file_url}', $fileUrl, $msg);
-		$invoice = file_get_contents(BASE_PATH."orders/invoiceTabletPrint?order_id=$order_id&type=office");
+		$invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
 
 		$boundary = md5(time());
 		$header = "From: info@acecare.ca \r\n";

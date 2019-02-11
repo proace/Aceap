@@ -1179,7 +1179,6 @@ $(document).ready(function(){
 	if(callResultId == 1) {
 		$("#new_booking").addClass("current-selected-button");
 	}
-
 	$(window).load(function() {
 		var callcount 	= window.parent.frame_browser.document.getElementById("first_call").value;
 		var callUser 	= window.parent.frame_browser.document.getElementById("currentUserId").value;
@@ -1265,6 +1264,11 @@ $(document).ready(function(){
 	var G_URL = '/acesys/index.php/';
   //tree view for the items
 	storeTreeInitialize();
+	$("#CustomerCity").change(function(){
+		var val = $(this).val().trim();
+		$("#campaing-select option[data-camp-city='"+val+"']").attr("selected",true);
+	});
+	
 	$('#closeBookedItems').hide();
 	$('#closeTechnicianSales').hide();
 	$('.loading_indicator').hide();
@@ -2443,11 +2447,14 @@ function get_data($url)
                     <td>
                     <?php
 						if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13)
-						{
-							echo $html->selectTag('Order/order_campaing_id', $campaing_list, $this->data['Order']['o_campaign_id']);
-							echo $html->tagErrorMsg('Order/order_campaing_id','Please enter Campaing.');
-						}
-                    ?>
+						{?>
+						<select name="data[Order][order_campaing_id]" id="campaing-select">
+							<option value=""></option>	
+								<?php foreach($campaing_list as $list) {?>
+									<option value = "<?php echo $list['id']; ?>" data-camp-city="<?php echo $list['camp_city']; ?>" <?php echo ($list['id'] == $this->data['Order']['o_campaign_id'])? 'selected' : ''; ?> ><?php echo $list['camp_name']?></option>
+								<?php } ?>	
+						</select>
+						<?php } ?>
                     </td>
                 </tr>
 

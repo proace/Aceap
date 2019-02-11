@@ -483,7 +483,12 @@ function SavePayment(){
 	formdata.append("amount",amount);
 	formdata.append("payment_type",1);
 	formdata.append("auth_number",auth_number);
-	formdata.append('payment_image', $('#Fileinput')[0].files[0]); 
+	var fileval = $('#Fileinput')[0].files[0];
+	if(fileval)
+	{
+		formdata.append('payment_image', fileval); 
+	}
+	
 	$.ajax({
 		url: G_URL + "payments/savePayment",
 		type: "post",
