@@ -2,6 +2,21 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
 
 <script>
+	$(function () {
+	    $(".img-enlarge1").dialog({
+	        modal: true,
+	        autoOpen: false,
+	        title: "Photo",
+	        autoOpen: false,
+	        width: 800,
+	        height: 600,
+	    });
+	    $(".openImg1").click(function () {
+	    	var imgPath = $(this).attr('src');
+	    	$('.img-enlarge1 img').attr('src', imgPath);
+	        $('.img-enlarge1').dialog('open');
+	    });
+    });	
 function SelectTech(techId)
 {
 	if(techId > 0){
@@ -218,7 +233,9 @@ function ShowMessages(job_id, message_to){
         <th rowspan=2 colspan=2 width="100" style="background-color:#ffff80;">Adjustment</th>
         <th rowspan=2 width="60" style="background-color:#ffff80;">Total Comm</th>
         
-				<th rowspan=2 width="16" style="background-color:#ffff80;"><?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
+		<th rowspan=2 width="16" style="background-color:#ffff80;"><?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
+		<th rowspan=2 colspan=2 width="100" style="background-color:#ffff80;">Payments</th>
+		<th rowspan=2 colspan=2 width="100" style="background-color:#ffff80;">Purchase</th>
     </tr>
     <tr style="height:25px;">
         <th width="60" style="background-color:#53ffff;">jobs</th>
@@ -327,6 +344,22 @@ function ShowMessages(job_id, message_to){
 				
 				<td>
 				  <input type="checkbox" <?=$disable_inputs?> <?=$rows_persons[1]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[1]);?>,this);'/>
+				</td>
+				<td rowspan="4" colspan="2" width="100">
+				<?php 	
+					if($orderNumber_image_path){
+
+						$imgPath =  '/acesys/app/webroot/payment-images/'.$orderNumber_image_path; 
+						
+					 	echo '<img class="openImg1" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">'	;			 		
+				 		// echo "<a href=''><img style='width: 33px;position: relative;top: 10px' src='".$imgPath."' name=''>".$invoice_image_path."</a>";
+					}
+						
+					
+			 	?>	
+				</td>
+				<td rowspan="4" colspan="2" width="100">
+					
 				</td>
     </tr>
     <tr class="<?=$class?>">
@@ -501,3 +534,6 @@ function ShowMessages(job_id, message_to){
 	</td>
 </tr>
 </table>
+<div class="img-enlarge1" title="Photo">
+  <img src="" style="width:100%;">
+</div>

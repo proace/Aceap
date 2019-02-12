@@ -1128,7 +1128,12 @@ class CommissionsController extends AppController
 
 					$orders[$row['id']][$k] = $v;
 
-				
+				$queryPayment 	= "select payment_image from ace_rp_orders where order_number='".$row['order_number']."'";
+				$resultPayment 	= $db->_execute($queryPayment);
+				$rowPayment 	= mysql_fetch_array($resultPayment, MYSQL_ASSOC);
+				if($rowPayment){
+					$this->set('orderNumber_image_path', $rowPayment['payment_image']);
+				}
 
 				//Calculate/set special fields
 
