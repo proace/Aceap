@@ -298,12 +298,15 @@ function conflictCheck()
 		 job_to:$('#OrderJobTimeEndHour').val(),
 		 order_id:'<?=$html->tagValue("Order/id")?>'
 		}, function(data){
-				if (data=='OK')
-				{
-								document.forms['editBookingform'].submit();
-				}
-				else
-								alert(data);
+            var res = data.trim();
+			if (data.indexOf('OK') > 0)
+			{
+			    document.forms['editBookingform'].submit();
+			} else {
+                alert(data);
+            }
+
+								
 	});
 }
 function TotalCalculation()

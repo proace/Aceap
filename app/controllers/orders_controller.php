@@ -555,10 +555,16 @@ class OrdersController extends AppController
 
 		$campId = $this->data['Order']['order_campaing_id'];
 		$cusId = $this->data['Order']['customer_id'];
-		$up_query = "UPDATE `ace_rp_customers` as `arc` set `arc`.`campaign_id` =".$campId."  WHERE id=".$cusId.";";
-		$up_result = $db->_execute($up_query);
-		$query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`o_campaign_id` =".$campId." WHERE customer_id=".$cusId.";";
-		$up_order = $db->_execute($query_order_up);
+		if(!empty($campId))
+		{
+			$up_query = "UPDATE `ace_rp_customers` as `arc` set `arc`.`campaign_id` =".$campId."  WHERE id=".$cusId.";";
+			$up_result = $db->_execute($up_query);
+			
+			$query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`o_campaign_id` =".$campId." WHERE customer_id=".$cusId.";";
+			$up_order = $db->_execute($query_order_up);
+		
+		}
+		
 		
 		//END save summary
 
@@ -1898,7 +1904,6 @@ class OrdersController extends AppController
 	// Hardcoded:	* User Roles
 	function editBooking()
 	{   
-		// error_reporting(E_ALL);
 		$this->layout='edit';
 		$hotlist = isset($this->params['url']['hotlist'])?$this->params['url']['hotlist']:0;
 		;
@@ -5667,7 +5672,6 @@ class OrdersController extends AppController
 			echo "There is another job for this truck for this time.";
 			exit;
 		}
-
 		//echo "prevJobTruck:$prevJobTruck jobsOnArea:$jobsOnArea customerCity:$customer_city";
 		echo 'OK';
 		exit;
