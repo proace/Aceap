@@ -347,15 +347,13 @@ function ShowMessages(job_id, message_to){
 				</td>
 				<td rowspan="4" colspan="2" width="100">
 				<?php 	
-					if($orderNumber_image_path){
+					if(!empty($obj['orderNumber_image_path']))
+					{
 
-						$imgPath =  '/acesys/app/webroot/payment-images/'.$orderNumber_image_path; 
+						$imgPath =  '/acesys/app/webroot/payment-images/'.$obj['orderNumber_image_path']; 
 						
-					 	echo '<img class="openImg1" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">'	;			 		
-				 		// echo "<a href=''><img style='width: 33px;position: relative;top: 10px' src='".$imgPath."' name=''>".$invoice_image_path."</a>";
-					}
-						
-					
+					 	echo '<img class="openImg1" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">'	;			
+					 } 		
 			 	?>	
 				</td>
 				<td rowspan="4" colspan="2" width="100">

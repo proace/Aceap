@@ -1071,7 +1071,7 @@ class CommissionsController extends AppController
 						a.t1_method,
 
 						a.t2_method,
-
+						a.payment_image,
 					   
 
 						t1.first_name as tech1_first_name,
@@ -1126,14 +1126,9 @@ class CommissionsController extends AppController
 
 				foreach ($row as $k => $v)
 
-					$orders[$row['id']][$k] = $v;
+				$orders[$row['id']][$k] = $v;
 
-				$queryPayment 	= "select payment_image from ace_rp_orders where order_number='".$row['order_number']."'";
-				$resultPayment 	= $db->_execute($queryPayment);
-				$rowPayment 	= mysql_fetch_array($resultPayment, MYSQL_ASSOC);
-				if($rowPayment){
-					$this->set('orderNumber_image_path', $rowPayment['payment_image']);
-				}
+				
 
 				//Calculate/set special fields
 
@@ -1144,7 +1139,7 @@ class CommissionsController extends AppController
 					strtotime($row['job_date'].' '.$row['fact_job_beg']))/3600;
 
 				
-
+				$orders[$row['id']]['orderNumber_image_path'] = $row['payment_image'];
 				$orders[$row['id']]['order_status'] = $allJobStatuses[$row['order_status_id']];
 
 				$orders[$row['id']]['order_type'] = $row['order_type'];
@@ -1168,8 +1163,6 @@ class CommissionsController extends AppController
 				$orders[$row['id']]['comm'] = $rows_persons;
 
 			}				
-
-
 
 			//SET PAGE OPTIONS			
 
