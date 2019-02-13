@@ -3346,6 +3346,9 @@ function get_data($url)
 </div>
 <input type="hidden" id="ConnectionStatus">  
 <input type="hidden" id="currentCallNum">  
+<div class="invoice-img-enlarge" title="Photo">
+<img src="'.$imgPath.'" style="width:100%;">
+</div>
 <script>
 	$(function () {
 	    $("#img-enlarge").dialog({
@@ -3360,6 +3363,21 @@ function get_data($url)
 	        $('#img-enlarge').dialog('open');
 	        });
     });
+    $(function () {
+	    $(".invoice-img-enlarge").dialog({
+	        modal: true,
+	        autoOpen: false,
+	        title: "Photo",
+	        autoOpen: false,
+	        width: 800,
+	        height: 600,
+	    });
+	    $(".invoice-openImg").click(function () {
+	    	var imgPath = $(this).attr('src');
+	    	$('.invoice-img-enlarge img').attr('src', imgPath);
+	        $('.invoice-img-enlarge').dialog('open');
+	    });
+    });	
 	function showHotListData(ctype)
 		{
 			if("p" == ctype)
@@ -3478,13 +3496,20 @@ $(document).ready(function(){
     width: 38px;
 }
 /** Custom css for change position of button lable*/
+.cls-acecare-td-adjust {
+    position: relative;
+    height: 16;
+    width: 99px;
+    /* padding: 1; */
+    margin: 2px 0px 4px 0px;
+}
 .acecare-td-adjust {
   position: relative;
   height: 20px;
   width: 50px;
 }
 
-.acecare-td-adjust > input[type="file"] {
+.acecare-td-adjust > input[type="file"], .cls-acecare-td-adjust > input[type="file"]{
   position: absoulte;
   opacity: 0;
   top: 0;
@@ -3493,7 +3518,7 @@ $(document).ready(function(){
   bottom: 0
 }
 
-.acecare-td-adjust > label {
+.acecare-td-adjust > label, .cls-acecare-td-adjust > label {
   position: absolute;
   top: 0;
   right: 0;

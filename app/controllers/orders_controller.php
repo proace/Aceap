@@ -142,7 +142,7 @@ class OrdersController extends AppController
 
     // Method saves order's data that was recieved from the order's page.
     // Created: 06/02/2010, Anthony Chernikov
-    function saveOrder($saveCustomer=1, $isDialer=0, $file=null)
+    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null)
     {
     	if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
 			$this->preViewEstimate($_POST);
@@ -331,8 +331,21 @@ class OrdersController extends AppController
 			//$this->data['Order']['BookingItem'][$i]['class'] = 0;
 			if (0+$this->data['Order']['BookingItem'][$i]['quantity']!=0)
 			{
+				if(!empty($invoiceImages['name'][$i])) 
+				{
+					$fileName = time()."_".$invoiceImages['name'][$i];
+					$fileTmpName = $invoiceImages['tmp_name'][$i];
+				
+					if($invoiceImages['error'][$i] == 0)
+					{
+						$move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/purchase-invoice-images/".$fileName);
+						$this->data['Order']['BookingItem'][$i]['invoice_image'] = 	$fileName;
+					}
+					
+				}	
 				$this->Order->BookingItem->create();
 				$this->Order->BookingItem->save($this->data['Order']['BookingItem'][$i]);
+
 				$total += $this->data['Order']['BookingItem'][$i]['quantity']*
 						  $this->data['Order']['BookingItem'][$i]['price'] -
 						  $this->data['Order']['BookingItem'][$i]['discount'] +
@@ -559,7 +572,7 @@ class OrdersController extends AppController
 		{
 			$up_query = "UPDATE `ace_rp_customers` as `arc` set `arc`.`campaign_id` =".$campId."  WHERE id=".$cusId.";";
 			$up_result = $db->_execute($up_query);
-			
+
 			$query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`o_campaign_id` =".$campId." WHERE customer_id=".$cusId.";";
 			$up_order = $db->_execute($query_order_up);
 		
@@ -1914,12 +1927,14 @@ class OrdersController extends AppController
 
 		if (!empty($this->data['Order']))
 		{
+
 			//If order information is submitted - save the order
 			
 			$isDialer = isset($_POST['from_dialer'])?$_POST['from_dialer']
 			:0;
 			$file = isset($_FILES['uploadFile'])? $_FILES['uploadFile'] : null;
-			$this->saveOrder(1, $isDialer, $file);
+			$invoiceImages = isset($_FILES['uploadInvoice'])? $_FILES['uploadInvoice'] : null;
+			$this->saveOrder(1, $isDialer, $file, $invoiceImages);
 		}
 		else
 		{
@@ -2421,8 +2436,8 @@ class OrdersController extends AppController
 
 		        $h_booked='';
 		        $h_tech='';
-            $b_actions = false;
-            $s_actions = false;
+            	$b_actions = false;
+            	$s_actions = false;
 						if (($this->Common->getLoggedUserID()==$this->data['Order']['booking_source_id'])
 								||($this->Common->getLoggedUserID()==$this->data['Order']['booking_source2_id']))
                 $b_actions = true;
@@ -6430,6 +6445,17 @@ class OrdersController extends AppController
 		$h .= '<div>Supplier</div><input type="text" id="data[Order][BookingItem]['.$index.'][supplier]" name="data[Order][BookingItem]['.$index.'][supplier]" value="'.$item['supplier'].'"/>';
 	}
 	elseif($item['item_id']==1227) {
+		if(!empty($item['invoice_image']))
+		{
+			$imgPath =  '/acesys/app/webroot/purchase-invoice-images/'.$item['invoice_image']; 
+			$h.='<img class="invoice-openImg" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">';
+			$h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][invoice-image]" name="data[Order][BookingItem]['.$index.'][invoice-image]" value="'.$item['invoice_image'].'"/>';
+		} else
+		{
+			$h.='<div class="cls-acecare-td-adjust">
+			<label for="Fileinput" >Upload Invoice</label>
+			<input type="file" name="uploadInvoice['.$index.']" id="Fileinput1"></div>';
+		}
 		$h .= '<div>Description</div><input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value="'.$item['name'].'"/>';
 		$h .= '<div>SKU</div><input type="text" id="data[Order][BookingItem]['.$index.'][serial_number]" name="data[Order][BookingItem]['.$index.'][serial_number]" value="'.$item['serial_number'].'"/>';
 		$h .= '<div>Supplier</div><input type="text" id="data[Order][BookingItem]['.$index.'][supplier]" name="data[Order][BookingItem]['.$index.'][supplier]" value="'.$item['supplier'].'"/>';
