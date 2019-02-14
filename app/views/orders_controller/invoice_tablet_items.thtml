@@ -230,7 +230,7 @@
         <div class="right">Deposit: <input type="text" class="right" id="current_deposit" name="data[Order][deposit]" value="<?php echo $job['Order']['customer_deposit']==""?"0":$job['Order']['customer_deposit'] ?>" /></div>   
         <div class="right">Balance: <input type="text" class="right" id="current_balance" name="data[Order][balance]" value="0" /></div>   
         <br />        
-        <div class="right" id="payment_box">
+   <!--      <div class="right" id="payment_box">
         	<div class="center" id="payment_details">
         	</div>
             <div class="clear_this"></div>
@@ -238,7 +238,7 @@
         	<div>Auth#: <input type="text" class="right" id="auth_number" name="data[Payment][auth_number]" value="" /></div>
         	<div>Amount: <input type="text" class="right" id="paid_by_amount" name="data[Payment][amount]" value="0" /></div>
             <div><input type="button" value="Add Payment" id="save_payment" /></div>
-        </div>
+        </div> -->
         
         </div><!--END of order_div-->
         <div class="order_div">
