@@ -355,8 +355,10 @@ function addSupplierItem(container) {
 	temp += '<tr class="' + bookingDetail + ' supplier_item" item_index="'+index+'">';
     		
 	temp += '	<td class="left" style="padding:5px">';
-	
+
 	temp += '	<div style="background-color:#FFFFFF;padding:5px;border-radius:5px;width:210px;">';
+	temp +=	'<div class="cls-acecare-td-adjust"><label for="Fileinput1" >Upload Invoice</label>';
+	temp +=	'<input type="file" name="uploadInvoice1[' + index + ']" id="Fileinput1"></div>';
 	temp += '		<div style="width:200px;text-align:left;font-size:8px;">Part Name</div>';
 	temp += '		<div><input type="text" style="width:200px;text-align:left" value="" name="data[' + bookingItem + '][' + index + '][name]"></div>';	
 	temp += '		<div style="width:200px;text-align:left;font-size:8px;">Model</div>';

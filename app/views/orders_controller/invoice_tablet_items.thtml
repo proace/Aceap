@@ -15,7 +15,35 @@
 
 
 </head>
+<style type="text/css">
+.cls-acecare-td-adjust {
+  position: relative;
+  height: 20px;
+}
 
+.acecare-td-adjust > input[type="file"], .cls-acecare-td-adjust > input[type="file"]{
+  position: absoulte;
+  opacity: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0
+}
+
+.acecare-td-adjust > label, .cls-acecare-td-adjust > label {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: lightgrey;
+  color: #000;
+  border-radius: 5px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer
+}
+</style>>
 <body>
 <ul id="nav">	
     <li><a id="jobs_link" class="buttons"><div>Jobs</div></a></li>
@@ -88,7 +116,7 @@
     </p>
     </div>
     <div id="items_div">
-    <form id="items_form" action="<?php echo BASE_URL ?>/orders/saveInvoiceTabletItems" method="post">    
+    <form id="items_form" action="<?php echo BASE_URL ?>/orders/saveInvoiceTabletItems" method="post" enctype='multipart/form-data'>    
         <?php echo $html->input('Invoice/order_id', array('type'=>'hidden', 'value'=>$job['Order']['id'])); ?>
          <?php echo $html->input('Invoice/order_status_id', array('type'=>'hidden', 'value'=>$job['Order']['order_status_id'])); ?>
         <?php echo $html->input('Invoice/order_type_id', array('type'=>'hidden', 'value'=>$job['Order']['order_type_id'])); ?>
@@ -156,6 +184,7 @@
             <?php if($item['class'] == 1) { ?>
         	<tr class="item_detail">
             	<td class="left"><?php echo $item['name'] ?>
+                <input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][invoice_image]" value="<?php echo $item['invoice_image'] ?>" />
                 	<input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][name]" value="<?php echo $item['name'] ?>" />
                     <input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][price_purchase]" value="<?php echo $item['price_purchase'] ?>" />
                 	<input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][item_category_id]" value="<?php echo $item['item_category_id'] ?>" />       <input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][addition]" value="<?php echo $item['addition'] ?>" />

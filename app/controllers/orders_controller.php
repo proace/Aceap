@@ -331,8 +331,6 @@ class OrdersController extends AppController
 			$result = $db->_execute($queryUpdate);
 
 		}
-
-
 		// Save booked items
 		  for ($i = 0; $i < count($this->data['Order']['BookingItem']); $i++)
 		{
@@ -2000,7 +1998,6 @@ class OrdersController extends AppController
 				// Read the order's data from database
 				$this->Order->id = $order_id;
 				$this->data = $this->Order->read();
-
 				$h_booked='';
 				$h_tech='';
 				foreach ($this->data['BookingItem'] as $oi)
@@ -6449,6 +6446,17 @@ class OrdersController extends AppController
 	}
 
 	elseif($item['item_id']==1218) {
+		if(!empty($item['invoice_image']))
+		{
+			$imgPath =  '/acesys/app/webroot/purchase-invoice-images/'.$item['invoice_image']; 
+			$h.='<img class="invoice-openImg" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">';
+			$h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][invoice_image]" name="data[Order][BookingItem]['.$index.'][invoice_image]" value="'.$item['invoice_image'].'"/>';
+		} else
+		{
+			$h.='<div class="cls-acecare-td-adjust">
+			<label for="Fileinput" >Upload Invoice</label>
+			<input type="file" name="uploadInvoice['.$index.']" id="Fileinput1"></div>';
+		}
 		$h .= '<div>Description</div><input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value="'.$item['name'].'"/>';
 		$h .= '<div>Model</div><input type="text" id="data[Order][BookingItem]['.$index.'][model_number]" name="data[Order][BookingItem]['.$index.'][model_number]" value="'.$item['model_number'].'"/>';
 		$h .= '<div>Serial</div><input type="text" id="data[Order][BookingItem]['.$index.'][serial_number]" name="data[Order][BookingItem]['.$index.'][serial_number]" value="'.$item['serial_number'].'"/>';
@@ -6460,7 +6468,7 @@ class OrdersController extends AppController
 		{
 			$imgPath =  '/acesys/app/webroot/purchase-invoice-images/'.$item['invoice_image']; 
 			$h.='<img class="invoice-openImg" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">';
-			$h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][invoice-image]" name="data[Order][BookingItem]['.$index.'][invoice-image]" value="'.$item['invoice_image'].'"/>';
+			$h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][invoice_image]" name="data[Order][BookingItem]['.$index.'][invoice_image]" value="'.$item['invoice_image'].'"/>';
 		} else
 		{
 			$h.='<div class="cls-acecare-td-adjust">
@@ -10613,12 +10621,8 @@ class OrdersController extends AppController
 		$delete_this = $this->data['delete_this'];
 		$saved_booking = $this->data['saved_booking'];
 		$customer_deposit = $this->data['Order']['deposit'];
-
-		// $cemail = $this->getCustomerEmailAdd($this->data['Invoice']['customer_id']);
-		//echo "EMAIL =><pre>"; print_r($this->data); echo "</pre>"; exit;
-		//echo "<pre>";
-
-
+		$invoiceImages	=	isset($_FILES['uploadInvoice1']) ? $_FILES['uploadInvoice1']:null;
+		
 		$newEmail 	= isset($_POST['newEmail']) && !empty($_POST['newEmail']) ? filter_var($_POST['newEmail'], FILTER_SANITIZE_EMAIL) : null;		
 
 		$cemail 	= $newEmail ? $newEmail : $this->getCustomerEmailAdd($this->data['Invoice']['customer_id']);
@@ -10663,7 +10667,17 @@ class OrdersController extends AppController
 			$discount = $item['discount'];
 			$addition = $item['addition'];
 			$installed = 1;
+			$fileName = isset($item['invoice_image']) ? $item['invoice_image'] : null;
+			if(!empty($invoiceImages['name'][$item_index])) 
+			{
+				$fileName = time()."_".$invoiceImages['name'][$item_index];
+				$fileTmpName = $invoiceImages['tmp_name'][$item_index];
 
+				if($invoiceImages['error'][$item_index] == 0)
+				{
+					$move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/purchase-invoice-images/".$fileName);
+				}
+			}
 			//echo "<div>$order_id, $item_id, $class, $name, $price, $quantity, $item_category_id, $price_purchase, $discount, $addition, $installed</div>";
 
 			if($item_id == 1218) {
@@ -10676,11 +10690,9 @@ class OrdersController extends AppController
 			}
 
 			$query = "
-				INSERT INTO ace_rp_order_items (order_id, item_id, class, name, price, quantity, item_category_id, price_purchase, discount, addition, installed, print_it, model_number, brand, supplier)
-				VALUES ($order_id, '$item_id', $class, '$name', $price, $quantity, $item_category_id, $price_purchase, $discount, $addition, $installed, 'on', '".$item['part_model']."', '".$item['part_brand']."', '".$item['part_supplier']."')
+				INSERT INTO ace_rp_order_items (order_id, item_id, class, name, price, quantity, item_category_id, price_purchase, discount, addition, installed, print_it, model_number, brand, supplier, invoice_image)
+				VALUES ($order_id, '$item_id', $class, '$name', $price, $quantity, $item_category_id, $price_purchase, $discount, $addition, $installed, 'on', '".$item['part_model']."', '".$item['part_brand']."', '".$item['part_supplier']."', '".$fileName."')
 			";
-
-			//echo $query;
 
 			$result = $db->_execute($query);
 		}

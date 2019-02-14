@@ -3,7 +3,8 @@ var G_CONTAINER;
 var G_NEW = false;
 $(function() {
 	var test_server = "http://acesys.ace1.ca/acetest/acesys-2.0/index.php/";
-	var live_server = "http://acesys.ace1.ca/index.php/";
+	//var live_server = "http://acesys.ace1.ca/index.php/";
+	var live_server = "/acesys/index.php/";
 	
 	var l = $(location).attr('href');
 
@@ -71,8 +72,7 @@ function computeValues() {
 		$(this).find(".price_payable").val(payable);
 	});
 	
-	$("#booking_item_detail").each(function(){
-		alert("hello");
+	$("#booking_item_detail").each(function(){ 
 		discount = parseFloat($(this).find(".discount_presets").val());
 		quantity = parseInt($(this).find(".quantity_presets").val());
 		price = parseFloat($(this).find(".base_price").val());
