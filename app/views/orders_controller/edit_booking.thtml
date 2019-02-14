@@ -1130,40 +1130,41 @@ function checkText() {
 		$("#s" + suggestion_id).removeAttr("disabled", "disabled");
 	});
 }
-$(function(){
-    $("#sortpicture1").change(function(){
-        upload_photo(1);
-    });
-    $("#sortpicture2").change(function(){
-        upload_photo(2);
-    });
-});
-function upload_photo(i) {
-	if($('input[id="sortpicture'+i+'"]').val().length == 0) {
-		return;
-	}
-	var formData = new FormData();
-	formData.append('section', 'general');
-	formData.append('action', 'previewImg');
-	// Main magic with files here
-	formData.append('image', $('input[id="sortpicture'+i+'"]')[0].files[0]);
-	$('#uploading_' + i).show();
+// $(function(){
+//     $("#sortpicture1").change(function(){
+//         upload_photo(1);
+//     });
+//     $("#sortpicture2").change(function(){
+//         upload_photo(2);
+//     });
+// });
 
-	$.ajax({
-		url: '<?=BASE_URL?>/orders/uploadPhoto/<?=$this->data['Order']['id'] ?>/'+i,
-		dataType: 'text',
-		cache: false,
-		contentType: false,
-		processData: false,
-		data: formData,
-		type: 'post',
-		success: function(data) {
-			$('#photo_' + i).attr('src', data);
-			$('#big_photo_' + i).attr('src', data);
-			$('#uploading_' + i).hide();
-		}
-	});
-}
+// function upload_photo(i) {
+// 	if($('input[id="sortpicture'+i+'"]').val().length == 0) {
+// 		return;
+// 	}
+// 	var formData = new FormData();
+// 	formData.append('section', 'general');
+// 	formData.append('action', 'previewImg');
+// 	// Main magic with files here
+// 	formData.append('image', $('input[id="sortpicture'+i+'"]')[0].files[0]);
+// 	$('#uploading_' + i).show();
+
+// 	$.ajax({
+// 		url: '<?=BASE_URL?>/orders/uploadPhoto/<?=$this->data['Order']['id'] ?>/'+i,
+// 		dataType: 'text',
+// 		cache: false,
+// 		contentType: false,
+// 		processData: false,
+// 		data: formData,
+// 		type: 'post',
+// 		success: function(data) {
+// 			$('#photo_' + i).attr('src', data);
+// 			$('#big_photo_' + i).attr('src', data);
+// 			$('#uploading_' + i).hide();
+// 		}
+// 	});
+// }
 $(document).ready(function(){
 	//$('input:text').setMask();
 	$("#dialer_callback").dialog({
@@ -2494,12 +2495,31 @@ function get_data($url)
                     <td></td>
 					<td></td>
                     <td>
-						<?php if ($this->data['Order']['photo_1']) { ?>
-							<img id="photo_1" onclick="$('#dialog').dialog({height:'auto', width:'auto'});$('#dialog2').dialog('close');" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_1'];?>" style="max-height:100px;height:auto;cursor:pointer;">
-							<div id="dialog" title="Photo" style="display:none;">
-								<img id="big_photo_1" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_1'];?>" style="max-height:600px;max-width:600px">
+						<?php if (!empty($this->data['Order']['photo_1']) || $this->data['Order']['photo_1'] != '') { ?>
+							<img id="photo_1" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_1'];?>" style="max-height:28px;height:auto;cursor:pointer;">
+							 
+						<?php } else {?>
+							<div class="cls-acecare-td-adjust">
+								<label for="sortpicture1" >Upload</label>
+								<input type="file" name="sortpic1" id="sortpicture1">
 							</div>
-						<?php } ?>
+							<?php }?>
+					</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+					<td></td>
+                    <td>
+						<?php if (!empty($this->data['Order']['photo_2']) || $this->data['Order']['photo_2'] != '') { ?>
+							<img id="photo_2" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_2'];?>" style="max-height:28px;height:auto;cursor:pointer;">
+
+						<?php } else {?>
+							<div class="cls-acecare-td-adjust">
+								<label for="sortpicture2" >Upload</label>
+								<input type="file" name="sortpic2" id="sortpicture2">
+							</div>
+							<?php }?>
 					</td>
                 </tr>
         <?php /* ?><tr>
@@ -3347,7 +3367,7 @@ function get_data($url)
 <input type="hidden" id="ConnectionStatus">  
 <input type="hidden" id="currentCallNum">  
 <div class="invoice-img-enlarge" title="Photo">
-<img src="'.$imgPath.'" style="width:100%;">
+<img src="<?=$imgPath?>" style="width:100%;">
 </div>
 <script>
 	$(function () {

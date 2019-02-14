@@ -25,6 +25,40 @@ class CommonComponent extends Object
 			return $result; 
 		}
     }
+    function uploadPhoto($file,$order_id, $config, $i)
+	{
+		date_default_timezone_set('America/Los_Angeles');
+
+		$year = date('Y', time());
+		if (!file_exists($year)) {
+			mkdir('upload_photos/'.$year, 0755);
+		}
+		$month = date('Y/m', time());
+		if (!file_exists($month)) {
+			mkdir('upload_photos/'.$month, 0755);
+		}
+
+		$day = date('Y/m/d', time());
+		if (!file_exists($day)) {
+			mkdir('upload_photos/'.$day, 0755);
+		}
+
+		$path = $file['name'];
+		$ext = pathinfo($path, PATHINFO_EXTENSION);
+		$name = date('Ymdhis', time()).$order_id.'.'.$ext;
+
+		if ( 0 < $file['error'] ) {
+	        // echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
+	    } else {
+	        move_uploaded_file($file['tmp_name'], 'upload_photos/'.$day.'/'.$name);
+	    }
+
+		$sql = "UPDATE ace_rp_orders SET photo_".$i." = '".$name."' WHERE id = ".$order_id;
+		$db =& ConnectionManager::getDataSource($config);
+		$result = $db->_execute($sql);
+
+		return $result;
+	}
     /** end common function for save image into ace_rp_orders field payment_image*/
 	function getMenuItems()
 	{

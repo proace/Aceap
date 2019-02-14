@@ -142,7 +142,7 @@ class OrdersController extends AppController
 
     // Method saves order's data that was recieved from the order's page.
     // Created: 06/02/2010, Anthony Chernikov
-    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null)
+    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null)
     {
     	if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
 			$this->preViewEstimate($_POST);
@@ -296,6 +296,16 @@ class OrdersController extends AppController
              
 			$imageResult = $this->Common->commonSavePaymentImage($file, $order_id , $config = $this->User->useDbConfig);
 		}	
+		if(!empty($photoImage2['name'] ))
+		{
+			$imageResult = $this->Common->uploadPhoto($photoImage2, $order_id , $config = $this->User->useDbConfig, 2);
+
+		}
+		if(!empty($photoImage1['name']))
+		{       
+			$imageResult = $this->Common->uploadPhoto($photoImage1, $order_id , $config = $this->User->useDbConfig, 1);
+
+		}
 		$this->Order->BookingItem->execute("DELETE FROM " . $this->Order->BookingItem->tablePrefix . "order_items WHERE order_id = '".$order_id."'");
 		$total = 0;
 
@@ -1917,6 +1927,7 @@ class OrdersController extends AppController
 	// Hardcoded:	* User Roles
 	function editBooking()
 	{   
+		// error_reporting(E_ALL);
 		$this->layout='edit';
 		$hotlist = isset($this->params['url']['hotlist'])?$this->params['url']['hotlist']:0;
 		;
@@ -1929,12 +1940,13 @@ class OrdersController extends AppController
 		{
 
 			//If order information is submitted - save the order
-			
 			$isDialer = isset($_POST['from_dialer'])?$_POST['from_dialer']
 			:0;
 			$file = isset($_FILES['uploadFile'])? $_FILES['uploadFile'] : null;
 			$invoiceImages = isset($_FILES['uploadInvoice'])? $_FILES['uploadInvoice'] : null;
-			$this->saveOrder(1, $isDialer, $file, $invoiceImages);
+			$photoImage1 = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
+			$photoImage2 = isset($_FILES['sortpic2'])? $_FILES['sortpic2'] : null;
+			$this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2);
 		}
 		else
 		{
@@ -2398,7 +2410,7 @@ class OrdersController extends AppController
 	function getPhotoPath($name)
 	{
 		if (!$name)
-			return "upload_icon.png";
+			return "";
 		$year = substr($name, 0, 4);
 		$mon = substr($name, 4, 2);
 		$day = substr($name, 6, 2);
@@ -3377,13 +3389,12 @@ class OrdersController extends AppController
 		if (!file_exists($day)) {
 			mkdir('upload_photos/'.$day, 0755);
 		}
-
 		$path = $_FILES['image']['name'];
 		$ext = pathinfo($path, PATHINFO_EXTENSION);
 		$name = date('Ymdhis', time()).$order_id.'.'.$ext;
 
 		if ( 0 < $_FILES['image']['error'] ) {
-	    //    echo 'Error: ' . $_FILES['image']['error'] . '<br>';
+	        // echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
 	    } else {
 	        move_uploaded_file($_FILES['image']['tmp_name'], 'upload_photos/'.$day.'/'.$name);
 	    }
