@@ -4646,7 +4646,7 @@ class OrdersController extends AppController
 
 			$route_type = isset($_REQUEST['route_type'])?$_REQUEST['route_type']:"";
 
-			header("Location: http://acecare.ca/acesys/index.php/orders/mapSchedule?p_code=".$_REQUEST['p_code']."&city=".$_REQUEST['city']."&route_type=".$route_type);
+			header("Location: http://hvacproz.ca/acesys/index.php/orders/mapSchedule?p_code=".$_REQUEST['p_code']."&city=".$_REQUEST['city']."&route_type=".$route_type);
 		}
 		$this->layout='edit';
 		$p_code = strtoupper(substr($_REQUEST['p_code'],0,3));

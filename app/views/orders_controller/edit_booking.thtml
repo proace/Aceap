@@ -71,17 +71,22 @@ function showCallBack()
 {  
 	$( "#dialer_callback" ).dialog("open");
 }
-function emailInvoice(order_id){
-
-	 var email = $('#emailinput').val();
-	 var emailInvoice = document.getElementById("emailinvoicelink").value;
-	if(emailInvoice == "emailinvoice"){
-	
-		window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office', '_new');
-	}
-	if(emailInvoice == "emailinvoicereview"){
-		window.open('<?=BASE_URL?>/orders/emailInvoiceReviewLinks?order_id='+ order_id +'&email='+ email +'&type=office', '_new');
-	}
+function emailInvoice(order_id, i=0){
+	var email = $('#emailinput').val();
+	 if(0 == i)
+	 {
+	 	window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office', '_new');
+	 	return false;
+	 } else if(1 == i)
+	 {
+	 	var URL = '<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office';
+	 } else {
+	 	var URL = '<?=BASE_URL?>/orders/emailInvoiceReviewLinks?order_id='+ order_id +'&email='+ email +'&type=office';
+	 }
+	 
+	 $.get(URL, function(data){
+	 	console.log(data);
+	 });
 }
 
 function invoiceprint(order_id) {
@@ -1589,12 +1594,12 @@ function clickNo(){
 function verification_type(Order){	
 	var card_type = $("input[type='radio'].radioBtnClass:checked").val();
     if(card_type == 1){
-    	emailInvoice(Order);
+    	emailInvoice(Order , 1);
     	//window.location.reload(true);
     	window.location.href='scheduleView';
     	hideInvoiceReview();
     }else if(card_type == 2){
-    	emailInvoice(Order);
+    	emailInvoice(Order, 2);
     	window.location.href='scheduleView';
     	hideInvoiceReview();
     }else if(card_type == 3){
@@ -2130,13 +2135,6 @@ function get_data($url)
 
 				<?php if ($_SESSION['user']['role_id'] == 6) {?>
 				<td class="special_section" >
-				Email:
-				  	<select id="emailinvoicelink" onchange="emailInvoice(<?=$this->data["Order"]["id"]?>);">
-				  		<option value=""></option>
-				  		<option value="emailinvoice">Email Invoice</option>
-				  		<option value="emailinvoicereview">Email Invoice/Review links</option>	
-				  	</select>
-				  </td>
 				  <!--<?php if (!isset($_GET['hotlist'])) {?>
                   <td class="special_section" onclick="window.open('<?=BASE_URL?>/orders/printBlank?job_type='+$('#OrderOrderTypeId').val());return false;">
 							  <u style="color:blue;cursor:pointer">Print Blank</u>
@@ -2147,7 +2145,9 @@ function get_data($url)
 							  <u style="color:blue;cursor:pointer">Recording</u>
 				  </td>
                   <?php } ?>-->
+                  <input type="button" value="Email" onclick="emailInvoice(<?=$this->data["Order"]["id"]?>);" name="invoice-email">
                   <?php }?>
+              </td>
 				</tr>
 			</table>
 			<table id="JobHistory" class="special_section" style="display:none;" cellspacing=0 cellpadding=0>
