@@ -1135,42 +1135,32 @@ function checkText() {
 		$("#s" + suggestion_id).removeAttr("disabled", "disabled");
 	});
 }
-// $(function(){
-//     $("#sortpicture1").change(function(){
-//         upload_photo(1);
-//     });
-//     $("#sortpicture2").change(function(){
-//         upload_photo(2);
-//     });
-// });
 
-// function upload_photo(i) {
-// 	if($('input[id="sortpicture'+i+'"]').val().length == 0) {
-// 		return;
-// 	}
-// 	var formData = new FormData();
-// 	formData.append('section', 'general');
-// 	formData.append('action', 'previewImg');
-// 	// Main magic with files here
-// 	formData.append('image', $('input[id="sortpicture'+i+'"]')[0].files[0]);
-// 	$('#uploading_' + i).show();
 
-// 	$.ajax({
-// 		url: '<?=BASE_URL?>/orders/uploadPhoto/<?=$this->data['Order']['id'] ?>/'+i,
-// 		dataType: 'text',
-// 		cache: false,
-// 		contentType: false,
-// 		processData: false,
-// 		data: formData,
-// 		type: 'post',
-// 		success: function(data) {
-// 			$('#photo_' + i).attr('src', data);
-// 			$('#big_photo_' + i).attr('src', data);
-// 			$('#uploading_' + i).hide();
-// 		}
-// 	});
-// }
+function upload_photo(cur,i) {	
+	//var file = $('input[id="sortpicture'+i+'"]')[0];
+	if (cur.files && cur.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      $('.pre-image_'+i+'')
+        .attr('src', e.target.result)
+        .width(86)
+        .height(50);
+    };
+    reader.readAsDataURL(cur.files[0]);
+  }
+	// formData.append('image', $('input[id="sortpicture'+i+'"]')[0].files[0]);
+	// $('#uploading_' + i).show();
+}
 $(document).ready(function(){
+	$(".disply_preview").live("change",function(e){
+		console.log("hua");
+	    var img_ct = $(this).attr("data-ct").trim();
+	    var cur = $(this);
+	    console.log("img_ct",img_ct );
+	    console.log("div=",cur );
+	   upload_photo(cur[0],img_ct);
+	});
 	//$('input:text').setMask();
 	$("#dialer_callback").dialog({
           autoOpen: false, 
@@ -2493,20 +2483,36 @@ function get_data($url)
                 <tr>
                     <td></td>
                     <td></td>
-					<td></td>
-                    <td>
+<!-- 					<td></td>
+ -->                    <td>
 						<?php if (!empty($this->data['Order']['photo_1']) || $this->data['Order']['photo_1'] != '') { ?>
 							<img id="photo_1" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_1'];?>" style="max-height:28px;height:auto;cursor:pointer;">
 							 
 						<?php } else {?>
+							<img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
 							<div class="cls-acecare-td-adjust">
 								<label for="sortpicture1" >Upload</label>
-								<input type="file" name="sortpic1" id="sortpicture1">
+								<input type="file" name="sortpic1" id="sortpicture1" class="disply_preview" data-ct="photo1">
+								
+							</div>
+							<?php }?>
+					</td>
+					<td>
+						<?php if (!empty($this->data['Order']['photo_2']) || $this->data['Order']['photo_2'] != '') { ?>
+							<img id="photo_2" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_2'];?>" style="max-height:28px;height:auto;cursor:pointer;">
+
+						<?php } else {?>
+							<img id="pre-image_photo2" class="pre-image_photo2 invoice-openImg" src="#" alt="your image" />
+							<div class="cls-acecare-td-adjust">
+								<label for="sortpicture2" >Upload</label>
+								<input type="file" name="sortpic2" id="sortpicture_" class="disply_preview" data-ct="photo2">
+								
+								
 							</div>
 							<?php }?>
 					</td>
                 </tr>
-                <tr>
+                <!-- <tr>
                     <td></td>
                     <td></td>
 					<td></td>
@@ -2521,7 +2527,8 @@ function get_data($url)
 							</div>
 							<?php }?>
 					</td>
-                </tr>
+                </tr> -->
+
         <?php /* ?><tr>
                     <td align="right">Door Hanger:</td>
                     <td> <?php echo $html->selectTag('Order/is_door_hanger',$yesOrNo, $this->data['Order']['is_door_hanger']);?></td>
@@ -2834,9 +2841,10 @@ function get_data($url)
 						 		<?php 
 					 		}else{
 					 			?>
+					 			<img id="pre-image_photo1" class="pre-image_payment openImg" src="#" alt="your image" />
 					 			<div class="acecare-td-adjust">
 						 			<label for="Fileinput" >Upload</label>
-					 				<input type="file" name="uploadFile" id="Fileinput">
+					 				<input type="file" name="uploadFile" id="Fileinput" class="disply_preview" data-ct="payment">
 					 			</div>	
 					 			<?php
 					 		}
@@ -3392,7 +3400,7 @@ function get_data($url)
 	        width: 800,
 	        height: 600,
 	    });
-	    $(".invoice-openImg").click(function () {
+	    $(".invoice-openImg").live("click",function () {
 	    	var imgPath = $(this).attr('src');
 	    	$('.invoice-img-enlarge img').attr('src', imgPath);
 	        $('.invoice-img-enlarge').dialog('open');

@@ -6453,9 +6453,10 @@ class OrdersController extends AppController
 			$h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][invoice_image]" name="data[Order][BookingItem]['.$index.'][invoice_image]" value="'.$item['invoice_image'].'"/>';
 		} else
 		{
+			$h.='<img  class="pre-image_'.$index.' invoice-openImg" src="#" alt="your image" />';
 			$h.='<div class="cls-acecare-td-adjust">
 			<label for="Fileinput" >Upload Invoice</label>
-			<input type="file" name="uploadInvoice['.$index.']" id="Fileinput1"></div>';
+			<input type="file" name="uploadInvoice['.$index.']" id="Fileinput1" class="disply_preview" data-ct="'.$index.'"></div>';
 		}
 		$h .= '<div>Description</div><input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value="'.$item['name'].'"/>';
 		$h .= '<div>Model</div><input type="text" id="data[Order][BookingItem]['.$index.'][model_number]" name="data[Order][BookingItem]['.$index.'][model_number]" value="'.$item['model_number'].'"/>';
@@ -6471,9 +6472,10 @@ class OrdersController extends AppController
 			$h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][invoice_image]" name="data[Order][BookingItem]['.$index.'][invoice_image]" value="'.$item['invoice_image'].'"/>';
 		} else
 		{
+			$h.='<img  class="pre-image_'.$index.' invoice-openImg" src="#" alt="your image" />';
 			$h.='<div class="cls-acecare-td-adjust">
 			<label for="Fileinput" >Upload Invoice</label>
-			<input type="file" name="uploadInvoice['.$index.']" id="Fileinput1"></div>';
+			<input type="file" name="uploadInvoice['.$index.']" id="Fileinput1" class="disply_preview" data-ct="'.$index.'"></div>';
 		}
 		$h .= '<div>Description</div><input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value="'.$item['name'].'"/>';
 		$h .= '<div>SKU</div><input type="text" id="data[Order][BookingItem]['.$index.'][serial_number]" name="data[Order][BookingItem]['.$index.'][serial_number]" value="'.$item['serial_number'].'"/>';
