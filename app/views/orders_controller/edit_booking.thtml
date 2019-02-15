@@ -1146,6 +1146,7 @@ function upload_photo(cur,i) {
         .attr('src', e.target.result)
         .width(86)
         .height(50);
+        $('.pre-image_'+i+'').css("display","block");
     };
     reader.readAsDataURL(cur.files[0]);
   }
@@ -3384,8 +3385,8 @@ function get_data($url)
 	        autoOpen: false,
 	        title: "Photo",
 	        autoOpen: false,
-	        width: 800,
-	        height: 600,
+	        width: 1024,
+	        height: 786,
 	    });
 	    $("#openImg").click(function () {
 	        $('#img-enlarge').dialog('open');
@@ -3397,8 +3398,8 @@ function get_data($url)
 	        autoOpen: false,
 	        title: "Photo",
 	        autoOpen: false,
-	        width: 800,
-	        height: 600,
+	        width: 1024,
+	        height: 786,
 	    });
 	    $(".invoice-openImg").live("click",function () {
 	    	var imgPath = $(this).attr('src');
@@ -3558,5 +3559,8 @@ $(document).ready(function(){
   line-height: 20px;
   text-align: center;
   cursor: pointer
+}
+[class^="pre-image_"] {
+    display: none;
 }
 </style>

@@ -7,6 +7,28 @@ $(function() {
 	
 	var l = $(location).attr('href');
 
+	$(".disply_preview").live("change",function(e){
+		console.log("hua");
+	    var img_ct = $(this).attr("data-ct").trim();
+	    var cur = $(this);
+	   upload_photo(cur[0],img_ct);
+	});
+	 $(function () {
+	    $(".invoice-img-enlarge").dialog({
+	        modal: true,
+	        autoOpen: false,
+	        title: "Photo",
+	        autoOpen: false,
+	        width: 1024,
+	        height: 786,
+	    });
+	    $(".invoice-openImg").live("click",function () {
+	    	var imgPath = $(this).attr('src');
+	    	$('.invoice-img-enlarge img').attr('src', imgPath);
+	        $('.invoice-img-enlarge').dialog('open');
+	    });
+    });
+
 	if(l.indexOf("acesys-2.0") != -1) G_URL = test_server;
 	else G_URL = live_server;
 	
@@ -258,6 +280,24 @@ $(function() {
 	
 });
 
+
+function upload_photo(cur,i) {	
+	//var file = $('input[id="sortpicture'+i+'"]')[0];
+	if (cur.files && cur.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      $('.pre-image_'+i+'')
+        .attr('src', e.target.result)
+        .width(86)
+        .height(50);
+        $('.pre-image_'+i+'').css("display","block");
+    };
+    reader.readAsDataURL(cur.files[0]);
+  }
+	// formData.append('image', $('input[id="sortpicture'+i+'"]')[0].files[0]);
+	// $('#uploading_' + i).show();
+}
+
 function addItem(container, item_id, name, item_category_id, price, price_purchase, isNew) {
 	var temp = '';
 	var five = Math.round((parseFloat(price)*0.05)*10)/10;
@@ -357,8 +397,10 @@ function addSupplierItem(container) {
 	temp += '	<td class="left" style="padding:5px">';
 
 	temp += '	<div style="background-color:#FFFFFF;padding:5px;border-radius:5px;width:210px;">';
+	temp += '<img id="pre-image_photo1" class="pre-image_'+index+' invoice-openImg" src="#" alt="your image" />';
+
 	temp +=	'<div class="cls-acecare-td-adjust"><label for="Fileinput1" >Upload Invoice</label>';
-	temp +=	'<input type="file" name="uploadInvoice1[' + index + ']" id="Fileinput1"></div>';
+	temp +=	'<input type="file" name="uploadInvoice1[' + index + ']" id="Fileinput1" class="disply_preview" data-ct="'+index+'"></div>';
 	temp += '		<div style="width:200px;text-align:left;font-size:8px;">Part Name</div>';
 	temp += '		<div><input type="text" style="width:200px;text-align:left" value="" name="data[' + bookingItem + '][' + index + '][name]"></div>';	
 	temp += '		<div style="width:200px;text-align:left;font-size:8px;">Model</div>';

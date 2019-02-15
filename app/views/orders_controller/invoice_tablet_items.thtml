@@ -16,6 +16,9 @@
 
 </head>
 <style type="text/css">
+[class^="pre-image_"] {
+    display: none;
+}
 .cls-acecare-td-adjust {
   position: relative;
   height: 20px;
@@ -415,6 +418,10 @@
     </tr>
 </table>
 </div>
+<div class="invoice-img-enlarge" title="Photo">
+<img src="<?=$imgPath?>" style="width:100%;">
+</div>
+
 <?php echo $query ?>
 </body>
 </html>
