@@ -2841,7 +2841,7 @@ function get_data($url)
 						 		<?php 
 					 		}else{
 					 			?>
-					 			<img id="pre-image_photo1" class="pre-image_payment openImg" src="#" alt="your image" />
+					 			<img id="pre-image_photo1" class="pre-image_payment invoice-openImg" src="#" alt="your image" />
 					 			<div class="acecare-td-adjust">
 						 			<label for="Fileinput" >Upload</label>
 					 				<input type="file" name="uploadFile" id="Fileinput" class="disply_preview" data-ct="payment">
