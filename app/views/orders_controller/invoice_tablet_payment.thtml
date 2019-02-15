@@ -14,7 +14,37 @@
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
 
 
+<style type="text/css">
 
+.acecare-td-adjust {
+  position: relative;
+  height: 20px;
+  width: 148px;
+}
+
+.acecare-td-adjust > input[type="file"]{
+  position: absoulte;
+  opacity: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0
+}
+
+.acecare-td-adjust > label{
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: #969090;
+  color: #000;
+  border-radius: 5px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer
+}
+</style>
 </head>
 
 <body>
@@ -209,7 +239,7 @@
         <div class="right">Deposit: <input type="text" class="right" id="current_deposit" name="data[Order][deposit]" value="<?php echo $job['Order']['customer_deposit']==""?"0":$job['Order']['customer_deposit'] ?>" /></div>   
         <div class="right">Balance: <input type="text" class="right" id="current_balance" name="data[Order][balance]" value="0" /></div>   
         <br /> 
-        <div class="right">Payment photo:
+        <div class="right" style="margin-bottom: 10px;">Payment photo:
             <?php 
                 if(isset($invoice_payment_photo) && !empty($invoice_payment_photo)){                              
                     $imgPath =  '/acesys/app/webroot/payment-images/'.$invoice_payment_photo; 
@@ -221,14 +251,16 @@
                     <?php 
                 }else{
                     ?>
-                    <div class="acecare-td-adjust">
+                    <div class="acecare-td-adjust" style="float: right;">
                         <label for="Fileinput">Upload</label>
-                        <input type="file" name="uploadFile" id="Fileinput" class="right">
+                        <input type="file" name="uploadFile" id="FileinputImg" class="right">
                     </div>  
                     <?php
                 }
             ?> 
-        </div>        
+        </div>  
+    <div class="right"><input type="button" value="Save" id="save-payment-image" style=" margin-right: 30px;width: 100px;" /></div>
+            
         <div class="right" id="payment_box">
         	<div class="center" id="payment_details">
         	</div>

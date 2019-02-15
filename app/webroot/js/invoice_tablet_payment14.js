@@ -238,7 +238,9 @@ $(function() {
 	$("#save_payment").click(function(){
 		SavePayment();	
 	});
-
+	$("#save-payment-image").click(function(){
+		SaveTechPaymentImg();	
+	});
 	showPayments();
 	
 	
@@ -472,7 +474,7 @@ function SavePayment(){
 	$("#PaymentPaymentMethodId").attr("readonly","readonly");
 	$("#paid_by_amount").attr("readonly","readonly");
 	$("#auth_number").attr("readonly","readonly");
-	$("#save_payment").attr("disabled","disabled");
+	//$("#save_payment").attr("disabled","disabled");
 	
 	if (!method) {alert('A payment method should be selected!'); return;}
 	if ((method>2)&&(method<6)&&(!auth_number)) {alert('An authorization number is required!'); return;}
@@ -483,12 +485,6 @@ function SavePayment(){
 	formdata.append("amount",amount);
 	formdata.append("payment_type",1);
 	formdata.append("auth_number",auth_number);
-	var fileval = $('#Fileinput')[0].files[0];
-	if(fileval)
-	{
-		formdata.append('payment_image', fileval); 
-	}
-	
 	$.ajax({
 		url: G_URL + "payments/savePayment",
 		type: "post",
@@ -529,7 +525,31 @@ function SavePayment(){
 	// 	$("#auth_number").val("");
  //  });
 }
-
+function SaveTechPaymentImg()
+{
+	var id = $('#InvoiceOrderId').val();
+	var formdata = new FormData();
+	formdata.append("order_id",id);
+	var fileval = $('#FileinputImg')[0].files[0];
+	if(fileval)
+	{
+		formdata.append('payment_image', fileval); 
+	} else {
+		alert('Payment Image is required!');
+	}
+	$.ajax({
+		url: G_URL + "payments/savePaymentImg",
+		type: "post",
+		data: formdata,
+		contentType: false,
+		processData: false,
+		cache: false,
+		success: function(data)
+		{
+			// showPayments();
+		}
+	});
+}
 function ErasePayment(payment_id){
   $.post(G_URL +"payments/deletePayment",{payment_id:payment_id},function(data){
     showPayments();

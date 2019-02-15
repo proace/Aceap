@@ -181,15 +181,6 @@ class PaymentsController extends AppController
 		$creator = $this->Common->getLoggedUserID();
 		
 		$isDialer 	= isset($_POST['from_dialer'])?$_POST['from_dialer'] :0;
-		$file 		= isset($_FILES['payment_image'])? $_FILES['payment_image'] : null;
-		
-
-		if($file !== null)
-		{
-			$loggedUserId 	= $this->Common->getLoggedUserID();
-            $this->User->id = $loggedUserId;
-			$imageResult 	= $this->Common->commonSavePaymentImage($file, $order_id , $config = $this->User->useDbConfig);
-		}
 
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		//$payment_date = date("Y-m-d", strtotime($dat['payment_date']));
@@ -207,6 +198,19 @@ class PaymentsController extends AppController
 			}				
 		$db->_execute($query);
 		
+		echo 'ok';
+		exit;
+	}
+	function savePaymentImg()
+	{
+		$order_id = $_REQUEST['order_id'];
+		$file 	= isset($_FILES['payment_image'])? $_FILES['payment_image'] : null;
+		if($file !== null)
+		{
+			$loggedUserId 	= $this->Common->getLoggedUserID();
+            $this->User->id = $loggedUserId;
+			$imageResult 	= $this->Common->commonSavePaymentImage($file, $order_id , $config = $this->User->useDbConfig);
+		}
 		echo 'ok';
 		exit;
 	}
