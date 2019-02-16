@@ -3408,6 +3408,7 @@ class OrdersController extends AppController
 
 	function searchList()
 	{
+		//error_reporting(E_ALL);
 		$conditions = array();
 		$is_campaing = 0;
 		$campaignId = 0;
@@ -3466,7 +3467,7 @@ class OrdersController extends AppController
 			$this->set('is_campaing', $isCampaing);
 			$data = explode('-', $_GET['sq_str']);
 			if(isset($data[0]) && isset($data[1]) && isset($data[2])){
-
+				$this->set('campId', 0);
 				$allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
 				if(!empty($allCampList)) {
 					$arrayString = implode(',', $allCampList);
@@ -3505,8 +3506,18 @@ class OrdersController extends AppController
 							$callWhere .= '';
 						}
 					}
-					
-			$sql = "SELECT * FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere;
+			
+			$countSql = "SELECT count(*) as total FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere;
+			
+			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+					$result = $db->_execute($countSql);
+
+			$row = mysql_fetch_array($result, MYSQL_ASSOC);
+			$totalCus = $row ['total']; 
+			$this->set('totalCus', $totalCus);
+			$totalPages = ceil($totalCus / 1000);
+			$this->set('totalPages', $totalPages);
+			$sql = "SELECT * FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere." limit ".$limit;
 					$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 					$result = $db->_execute($sql);
 

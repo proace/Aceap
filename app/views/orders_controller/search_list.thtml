@@ -34,11 +34,23 @@
 	  </div>
 <input type="button" name="call-back-result" value="Go" onclick="searchList('Campaign_data',<?php echo $campId ?>);">
 <?php }?>
+
+<?php if($totalPages > 1){?>
+		<div style="margin-top: 10px;">
+	<?php 
+	$j = 1;
+	for( $j; $j <= $totalPages; $j++){ ?>
+		<a href="javascript:void(0)" onclick="searchList('Campaign_data',<?php echo $campId ?>, <?php echo $j ?> );"><?php echo $j ?></a>
+				
+ 	<?php } ?>
+ 	</div>
+<?php }?>
 <div style="width: 1250px; float: left;  margin-top: 70px;">
 <input type="hidden" id ="first_call" name="first_call" value="0">
 <input type="hidden" id ="call_mode" name="call_mode" value="3">
 <input type="hidden" id="currentUserId" val="">
 <input type="hidden" id="currentUserPhoneNo" val="">
+
 <? 
 if ($add == 0) { ?>
 <div style="clear: both; float: left;">
@@ -59,6 +71,7 @@ if ($add == 0) { ?>
 </div>
 
 <? } ?>
+
 <?php $r=1; $cus_count=0;
 	foreach ($cust as $obj): 
 		++$cus_count;
@@ -126,7 +139,7 @@ if ($add == 0) { ?>
 	<div class="dcell" style="width: 95px;<? echo $color?>"><?=$obj["User"]["address_unit"].' '.$obj["User"]["address_street_number"].' '.$obj["User"]["address_street"]; ?></div>
 </div>
 <?php endforeach; ?>
-<input type="hidden" name="count_of_cust" id='count_of_cust' value="<?php echo $cus_count;?>">
+<input type="hidden" name="count_of_cust" id='count_of_cust' value="<?php echo $totalCus;?>">
 </form>
 <script language="JavaScript">
 	

@@ -31,7 +31,7 @@
 	var last_sq_crit, last_sq_str, last_dates;
 	var lpp = 1000;	//lines per page
 	var maxpage = 1;
-	 function searchList (sq_crit,sq_str,page) {
+	 function searchList (sq_crit,sq_str='',page) {
 		 	
 		
 	 	var fromDate = $("#datepicker1").val();
@@ -72,7 +72,7 @@
 			last_sq_crit = sq_crit;
 			maxpage = 1;
 		}
-		if (!sq_str)
+		if (sq_str == 0)
 			sq_str = last_sq_str;
 		else
 		{
