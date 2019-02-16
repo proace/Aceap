@@ -3515,7 +3515,7 @@ class OrdersController extends AppController
 			$row = mysql_fetch_array($result, MYSQL_ASSOC);
 			$totalCus = $row ['total']; 
 			$this->set('totalCus', $totalCus);
-			$totalPages = ceil($totalCus / 1000);
+			$totalPages = ceil($totalCus / 500);
 			$this->set('totalPages', $totalPages);
 			$sql = "SELECT * FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere." limit ".$limit;
 					$db =& ConnectionManager::getDataSource($this->User->useDbConfig);

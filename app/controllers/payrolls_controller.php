@@ -1,5 +1,6 @@
-<?
-error_reporting(1);
+<? ob_start();
+//error_reporting(1);
+
 
 class PayrollsController extends AppController
 {
@@ -106,6 +107,7 @@ class PayrollsController extends AppController
 
 	function saveItem()
 	{
+
 		$this->data['PayPeriods']['start_date'] = date('Y-m-d', strtotime($this->data['PayPeriods']['start_date']));
 		$this->data['PayPeriods']['end_date'] = date('Y-m-d', strtotime($this->data['PayPeriods']['end_date']));
 		$this->PayPeriods->id = $this->data['PayPeriods']['id'];
@@ -119,7 +121,6 @@ class PayrollsController extends AppController
 		if($this->data['PayPeriods']['isAdmin'])
 		{
 			$_SESSION['user']['tech_popup'] = $this->data['PayPeriods']['isAdmin'];
-
 			$this->redirect('/orders/scheduleView');
 		}else
 		{

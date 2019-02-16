@@ -29,7 +29,7 @@
 	 	}
 	 }
 	var last_sq_crit, last_sq_str, last_dates;
-	var lpp = 1000;	//lines per page
+	var lpp = 500;	//lines per page
 	var maxpage = 1;
 	 function searchList (sq_crit,sq_str='',page) {
 		 	
