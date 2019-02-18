@@ -1,4 +1,4 @@
-<?
+<? ob_start();
 
 error_reporting(E_PARSE  ^ E_ERROR );
 
