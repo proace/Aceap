@@ -1849,6 +1849,7 @@ function get_data($url)
 
 <form name="editBookingform" action="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
 <!-- This tag creates our form tag -->
+<input type="hidden" name="from_tech" id="from_tech"value="<?= $from_tech?>">
 <input type="hidden" name="recordingName" id="recordingName" value=""/>
 <input type="hidden" name="havetoprint" id="havetoprint" value="0"/>
 <input type="hidden" id="NumberOfItems" value="<?=$num_items;?>">
@@ -2416,10 +2417,10 @@ function get_data($url)
                     </td>
                 </tr>
                 <tr>
-					<td align="right"><?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13) echo 'Confirmation:';?></td>
+					<td align="right"><?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13 || $_SESSION['user']['role_id'] == 1) echo 'Confirmation:';?></td>
                     <td>
                     <?php
-						if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13)
+						if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13 || $_SESSION['user']['role_id'] == 1)
 						{
 							echo $html->selectTag('Order/order_substatus_id', $sub_status, $this->data['Order']['order_substatus_id'], array("onchange" => "onSubstatusChange(this);"));
 							echo $html->tagErrorMsg('Order/order_substatus_id','Please enter confirmation status.');
@@ -2435,10 +2436,10 @@ function get_data($url)
                 </tr>
                 	<!-- add campaing drop down -->
                 <tr>
-					<td align="right"><?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13) echo 'Campaing:';?></td>
+					<td align="right"><?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13 || $_SESSION['user']['role_id'] == 1) echo 'Campaing:';?></td>
                     <td>
                     <?php
-						if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13)
+						if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13 || $_SESSION['user']['role_id'] == 1)
 						{?>
 						<select name="data[Order][order_campaing_id]" id="campaing-select">
 							<option value=""></option>	
@@ -2763,15 +2764,16 @@ function get_data($url)
 								<?php //echo $html->input('Order/labor_warranty', array('style' => 'width: 70px; cursor: hand; cursor: pointer;'));?>
 								</td>
 							</tr>
-
+							<?php }?>
+							<?php if ($_SESSION['user']['role_id'] == 6 || $_SESSION['user']['role_id'] == 1) {?>
 							<tr>
 								<td>
 	                	    		<span>Estimate:</span><img  style="width: 33px;position: relative;top: 10px" onclick="showestimateSubmit()" src="<?=ROOT_URL?>/app/webroot/img/icon-lg-all-bookings.png"/>
 	                	    		<span id ="LastCallHistory" style="margin: 0px 0px 0px 15px;"></span>
 								</td>
 							</tr>
-							
 							<?php }?>
+							
 						</table>
 									</td>
 									<td style="vertical-align:top">
@@ -3272,6 +3274,7 @@ function get_data($url)
 <?php //print_r($this->data['Order']) ?>
 <!--<input type="button" onclick="alert(document.getElementById('CustomerId').value);" value="test customer" />-->
 <input type="hidden" name="from_dialer" id="from_dialer"value="<?= $from_dialer?>">
+
 
 </form>
 <div  id="dialer_callback" >      

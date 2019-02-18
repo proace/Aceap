@@ -573,7 +573,7 @@ $(document).ready(function(){
 	//if(l.indexOf("acesys-2.0") != -1) G_URL = test_server;
 	//else G_URL = live_server;
 
-	G_URL = "http://acecare.ca/acesys/index.php/";
+	G_URL = "/acesys/index.php/";
 
   //tree view for the items
 	storeTreeInitialize(); 
@@ -585,7 +585,7 @@ $(document).ready(function(){
 	});
 	
 	$('#addBookedItemsTree').click(function(){
-		G_URL = "http://acecare.ca/acesys/index.php/";
+		G_URL = "/acesys/index.php/";
 		var url = G_URL + "iv_items/storeTree?mode=0";
 		$('#addBookedItems').hide();
 		$('#book_loading').show();
@@ -606,7 +606,7 @@ $(document).ready(function(){
 	});
 	
 	$('#addBookedItemsList').click(function(){
-		G_URL = "http://acecare.ca/acesys/index.php/";
+		G_URL = "/acesys/index.php/";
 		var url = G_URL + "iv_items/storeList?mode=0";
 		
 		$('#addBookedItems').hide();

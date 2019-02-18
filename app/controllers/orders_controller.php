@@ -142,7 +142,7 @@ class OrdersController extends AppController
 
     // Method saves order's data that was recieved from the order's page.
     // Created: 06/02/2010, Anthony Chernikov
-    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null)
+    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null)
     {
     	if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
 			$this->preViewEstimate($_POST);
@@ -627,7 +627,7 @@ class OrdersController extends AppController
 			$result = $db->_execute($queryUpdate);
 			*/
 			//Forward user where they need to be - if this is a single action per view
-			if($_POST['havetoprint'] == 0 && $_SESSION['user']['role_id']==6){
+			if($_POST['havetoprint'] == 0 && ($_SESSION['user']['role_id']==6 || $_SESSION['user']['role_id']==1)){
 				//REDIRECT FOR SEND ESTIMATE TEMPLATE
 				$this->orderEstimate($order_id, $this->data['Order']['BookingItem']);
 			}else{
@@ -636,12 +636,16 @@ class OrdersController extends AppController
 					$custId = $this->data['Customer']['id'];
 					$orderNumber = $this->data['Order']['order_number'];
 					$this->redirect('orders/editBooking?hotlist=1&customer_id='.$custId.'&is_booking=1&orderNo='.$orderNumber);
+				} else if($fromTech)
+				{
+					$this->redirect('/orders/invoiceTabletNewBooking');
 				} else {
 				if($_POST['havetoprint'] == 3 && $_SESSION['user']['role_id']==6)
 					$this->redirect('/orders/scheduleView');
 				elseif (($old_status == 1)&&($this->data['Order']['order_status_id'] == 2))
 					$this->reschedule();
 				elseif ($this->data['rurl'][0])
+
 					$this->redirect($this->data['rurl'][0]);
 				else
 					$this->redirect('/orders/scheduleView');
@@ -1927,6 +1931,8 @@ class OrdersController extends AppController
 	{   
 		// error_reporting(E_ALL);
 		$this->layout='edit';
+		$fromTech = isset($this->params['url']['from_tech_page']) ? $this->params['url']['from_tech_page'] :0;
+
 		$hotlist = isset($this->params['url']['hotlist'])?$this->params['url']['hotlist']:0;
 		;
 		$isDialer = isset($this->params['url']['is_dialer'])?$this->params['url']['is_dialer']:0;
@@ -1940,11 +1946,12 @@ class OrdersController extends AppController
 			//If order information is submitted - save the order
 			$isDialer = isset($_POST['from_dialer'])?$_POST['from_dialer']
 			:0;
+			$fromTech = isset($_POST['from_tech']) ? $_POST['from_tech'] :0;
 			$file = isset($_FILES['uploadFile'])? $_FILES['uploadFile'] : null;
 			$invoiceImages = isset($_FILES['uploadInvoice'])? $_FILES['uploadInvoice'] : null;
 			$photoImage1 = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
 			$photoImage2 = isset($_FILES['sortpic2'])? $_FILES['sortpic2'] : null;
-			$this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2);
+			$this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2, $fromTech);
 		}
 		else
 		{
@@ -1957,7 +1964,6 @@ class OrdersController extends AppController
 			// 3. we are being asked to create a completely new customer ($order_id=='', $customer_id=='')
 			// Check submitted data for any special parameters to be set
 			$order_id = $this->params['url']['order_id'];
-			// print_r($order_id);die;
 			$customer_id = $this->params['url']['customer_id'];
 			$num_items = 0;
 			$show_app_order='display:none';
@@ -2145,6 +2151,7 @@ class OrdersController extends AppController
 		}
 		$this->set('num_items', $num_items);
 		$this->set('from_dialer',$isDialer);
+		$this->set('from_tech',$fromTech);
 		// New call history records are callbacks by default
 		$this->data['CallRecord']['call_result_id'] = 2;
 		$this->data['CallRecord']['call_date'] = date("d M Y");
