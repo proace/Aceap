@@ -629,7 +629,8 @@ class OrdersController extends AppController
 			//Forward user where they need to be - if this is a single action per view
 			if($_POST['havetoprint'] == 0 && ($_SESSION['user']['role_id']==6 || $_SESSION['user']['role_id']==1)){
 				//REDIRECT FOR SEND ESTIMATE TEMPLATE
-				$this->orderEstimate($order_id, $this->data['Order']['BookingItem']);
+
+				$this->orderEstimate($order_id, $this->data['Order']['BookingItem'], $fromTech);
 			}else{
 				
 				if($isDialer) {
@@ -913,9 +914,7 @@ class OrdersController extends AppController
 
 	}
 
-    function orderEstimate($order_id , $bookingItem ){
-
-		
+    function orderEstimate($order_id , $bookingItem, $fromTech=null ){
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		// Read the order's data from database
 
@@ -1332,7 +1331,8 @@ class OrdersController extends AppController
 			'note_message'=>$note,
 			'order_id' => $ref,
 			'email'=>'',
-			'preViewEstimate' => "false" 
+			'preViewEstimate' => "false",
+			'fromTech' => $fromTech 
 		));
 
 		}else{
@@ -1344,17 +1344,16 @@ class OrdersController extends AppController
 				'template'=>$template,
 				'order_id'=> $order_id,
 				'email'=>'',
-				'preViewEstimate' => "false" 
+				'preViewEstimate' => "false",
+				'fromTech' => $fromTech
 			));
 		}
-
 		$this->render('orderestimate');
 
 	}
 
 	function saveAndSendEstimateForOrder(){
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-
 		if(isset($_POST['print'])){
 
 			$query = "SELECT * FROM ace_rp_order_estimation WHERE order_id=".$_POST['order_id'];

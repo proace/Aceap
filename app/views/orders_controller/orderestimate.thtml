@@ -151,7 +151,7 @@
 				type: 'POST',
 				data: {'editor':data,'order_id':order_id},
 				success: function(data) {
-        			document.location.href="editBooking?order_id=<?= $order_id ?>";
+        			document.location.href="editBooking?order_id=<?= $order_id ?>&from_tech_page=<?= $fromTech ?>";
         			/*window.location.href= "/thankyou.html";*/
     			}
 			});
