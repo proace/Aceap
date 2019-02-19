@@ -2435,8 +2435,9 @@ class OrdersController extends AppController
 		$this->layout='edit';
 		if (!empty($this->data['Order']))
 		{
+			$file = isset($_FILES['uploadFile1'])? $_FILES['uploadFile1'] : null;
 			//If order information is submitted - save the order
-			$this->saveOrder(0);
+			$this->saveOrder(0,'',$file);
 		}
 		else
 		{
@@ -2448,7 +2449,7 @@ class OrdersController extends AppController
 			$order_id = $this->params['url']['order_id'];
 			$customer_id = $this->params['url']['customer_id'];
 		    $num_items = 0;
-
+		    $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 			// If order ID is submitted, prepare order's data to be displayed
 			if ($order_id)
 			{
@@ -2494,7 +2495,12 @@ class OrdersController extends AppController
 		        }
 		        $this->set('booked_items', $h_booked);
 		        $this->set('tech_items', $h_tech);
-
+		        $queryPayment 	= "select payment_image from ace_rp_orders where id='".$order_id."'";
+				$resultPayment 	= $db->_execute($queryPayment);
+				$rowPayment 	= mysql_fetch_array($resultPayment, MYSQL_ASSOC);
+				if($rowPayment){
+					$this->set('invoice_image_path', $rowPayment['payment_image']);
+				}
 		        //Load current questions
             $this->set('CurrentQuestionsTextOffice', $this->_showQuestions($order_id, 0));
             $this->set('CurrentQuestionsTextTech', $this->_showQuestions($order_id, 1));

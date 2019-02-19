@@ -11,8 +11,68 @@ document.title += " :: Edit Booking";
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/store_tree.js"></script>
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<style type="text/css">
+ .acecare-td-adjust {
+  position: relative;
+  height: 20px;
+  width: 50px;
+}
 
+.acecare-td-adjust > input[type="file"]{
+  position: absoulte;
+  opacity: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0
+}
+
+.acecare-td-adjust > label{
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: lightgrey;
+  color: #000;
+  border-radius: 5px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer
+}
+[class^="pre-image_"] {
+    display: none;
+}   
+</style>
 <script language="JavaScript">
+    $(function () {
+        $("#img-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 1024,
+            height: 786,
+        });
+        $("#openImg").click(function () {
+            $('#img-enlarge').dialog('open');
+            });
+    });
+    $(function () {
+        $(".invoice-img-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 1024,
+            height: 786,
+        });
+        $(".invoice-openImg").live("click",function () {
+            var imgPath = $(this).attr('src');
+            $('.invoice-img-enlarge img').attr('src', imgPath);
+            $('.invoice-img-enlarge').dialog('open');
+        });
+    }); 
 var PrevState = <?=$this->data['Order']['order_status_id']?>;
 var CurState = <?=$this->data['Order']['order_status_id']?>;
 var CheckPrcCount=0;
@@ -527,6 +587,31 @@ function checkText() {
 }
 
 $(document).ready(function(){
+function upload_photo(cur,i) {  
+    //var file = $('input[id="sortpicture'+i+'"]')[0];
+    if (cur.files && cur.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      $('.pre-image_'+i+'')
+        .attr('src', e.target.result)
+        .width(86)
+        .height(50);
+        $('.pre-image_'+i+'').css("display","block");
+    };
+    reader.readAsDataURL(cur.files[0]);
+  }
+    // formData.append('image', $('input[id="sortpicture'+i+'"]')[0].files[0]);
+    // $('#uploading_' + i).show();
+}
+
+ $(".disply_preview").live("change",function(e){
+        console.log("hua");
+        var img_ct = $(this).attr("data-ct").trim();
+        var cur = $(this);
+        console.log("img_ct",img_ct );
+        console.log("div=",cur );
+       upload_photo(cur[0],img_ct);
+    });
   last_jt='<?=$this->data['Order']['order_type_id']?>';
   <?php if (!isset($_GET['order_id'])&&isset($_GET['job_truck'])) {?>
 				showClients();
@@ -827,7 +912,7 @@ input[type=text] {
 }
 
 </style>
-<form name="editBookingform" action="<?=BASE_URL;?>/orders/techBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post">
+<form name="editBookingform" action="<?=BASE_URL;?>/orders/techBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
 <!-- This tag creates our form tag -->
 <input type="hidden" name="havetoprint" id="havetoprint" value="0"/>
 <input type="hidden" id="NumberOfItems" value="<?=$num_items;?>">
@@ -1357,8 +1442,31 @@ input[type=text] {
 							</td></tr>
 						    <tr><td colspan=2 id='PaymentsDetails'></td></tr>
 					    </table>
+
+                        <span>Payment photo:</span>
+                        <?php 
+
+                            if(isset($invoice_image_path) && !empty($invoice_image_path)){                              
+                                $imgPath =  '/acesys/app/webroot/payment-images/'.$invoice_image_path; 
+                                ?>
+                                <div id="img-enlarge" title="Photo">
+                                  <img src="<?php echo $imgPath; ?>" style="width:100%;">
+                                </div>
+                                <img id="openImg" src="<?php echo $imgPath; ?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">                         
+                                <?php 
+                            }else{
+                                ?>
+                                <img id="pre-image_photo1" class="pre-image_payment invoice-openImg" src="#" alt="your image" />
+                                <div class="acecare-td-adjust">
+                                    <label for="Fileinput" >Upload</label>
+                                    <input type="file" name="uploadFile1" id="Fileinput" class="disply_preview" data-ct="payment">
+                                </div>  
+                                <?php
+                            }
+                        ?>
 					</td>
                 </tr>
+                
             </table>
 			<br/>
 			<div style="float: left; text-align: left;">
@@ -1391,4 +1499,7 @@ input[type=text] {
 <?php echo " Customer ID: ".$this->data['Customer']['id']?>
 <? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
 <?php //print_r($this->data['Order']) ?>
+<div class="invoice-img-enlarge" title="Photo">
+    <img src="<?=$imgPath?>" style="width:100%;">
+</div>
 </form>

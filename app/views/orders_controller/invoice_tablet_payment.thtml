@@ -108,8 +108,6 @@ function upload_photo(cur,i) {
     };
     reader.readAsDataURL(cur.files[0]);
   }
-    // formData.append('image', $('input[id="sortpicture'+i+'"]')[0].files[0]);
-    // $('#uploading_' + i).show();
 }
 //function payFun(orderId){
 //   //alert(orderId);
@@ -313,7 +311,7 @@ function upload_photo(cur,i) {
         <div class="right" id="payment_box">
             <div class="clear_this"></div>
         	<div>Paid by: <?php echo $html->selectTag('Payment/payment_method_id', $payment_methods); ?></div>
-            <div>Amount: <input type="text" class="right" id="paid_by_amount" name="data[Payment][amount]" value="0" /></div>
+            <div>Amount: <input type="text" class="right" id="paid_by_amount" name="data[Payment][amount]" value="" /></div>
         	<div>Auth#: <input type="text" class="right" id="auth_number" name="data[Payment][auth_number]" value="" /></div>
             <div><input type="button" value="Save" id="save_payment" /></div>
         </div>

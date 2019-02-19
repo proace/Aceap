@@ -1150,8 +1150,6 @@ function upload_photo(cur,i) {
     };
     reader.readAsDataURL(cur.files[0]);
   }
-	// formData.append('image', $('input[id="sortpicture'+i+'"]')[0].files[0]);
-	// $('#uploading_' + i).show();
 }
 $(document).ready(function(){
 	$(".disply_preview").live("change",function(e){
