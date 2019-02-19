@@ -1850,6 +1850,7 @@ function get_data($url)
 <form name="editBookingform" action="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
 <!-- This tag creates our form tag -->
 <input type="hidden" name="from_tech" id="from_tech"value="<?= $from_tech?>">
+<input type="hidden" name="techOrderId" id="techOrderId"value="<?= $techOrderId?>">
 <input type="hidden" name="recordingName" id="recordingName" value=""/>
 <input type="hidden" name="havetoprint" id="havetoprint" value="0"/>
 <input type="hidden" id="NumberOfItems" value="<?=$num_items;?>">

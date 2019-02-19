@@ -142,7 +142,7 @@ class OrdersController extends AppController
 
     // Method saves order's data that was recieved from the order's page.
     // Created: 06/02/2010, Anthony Chernikov
-    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null)
+    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null, $techOrderId=null)
     {
     	if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
 			$this->preViewEstimate($_POST);
@@ -637,9 +637,13 @@ class OrdersController extends AppController
 					$custId = $this->data['Customer']['id'];
 					$orderNumber = $this->data['Order']['order_number'];
 					$this->redirect('orders/editBooking?hotlist=1&customer_id='.$custId.'&is_booking=1&orderNo='.$orderNumber);
-				} else if($fromTech)
+				} else if($fromTech == 1)
 				{
 					$this->redirect('/orders/invoiceTabletNewBooking');
+				} else if($fromTech == 2)
+				{
+					
+					$this->redirect('orders/invoiceTabletPayment?order_id='.$techOrderId);
 				} else {
 				if($_POST['havetoprint'] == 3 && $_SESSION['user']['role_id']==6)
 					$this->redirect('/orders/scheduleView');
@@ -1931,6 +1935,7 @@ class OrdersController extends AppController
 		// error_reporting(E_ALL);
 		$this->layout='edit';
 		$fromTech = isset($this->params['url']['from_tech_page']) ? $this->params['url']['from_tech_page'] :0;
+		$techOrderId = isset($this->params['url']['techOrderId']) ? $this->params['url']['techOrderId'] :0;
 
 		$hotlist = isset($this->params['url']['hotlist'])?$this->params['url']['hotlist']:0;
 		;
@@ -1946,11 +1951,12 @@ class OrdersController extends AppController
 			$isDialer = isset($_POST['from_dialer'])?$_POST['from_dialer']
 			:0;
 			$fromTech = isset($_POST['from_tech']) ? $_POST['from_tech'] :0;
+			$techOrderId = isset($_POST['techOrderId']) ? $_POST['techOrderId'] :0;
 			$file = isset($_FILES['uploadFile'])? $_FILES['uploadFile'] : null;
 			$invoiceImages = isset($_FILES['uploadInvoice'])? $_FILES['uploadInvoice'] : null;
 			$photoImage1 = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
 			$photoImage2 = isset($_FILES['sortpic2'])? $_FILES['sortpic2'] : null;
-			$this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2, $fromTech);
+			$this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2, $fromTech, $techOrderId);
 		}
 		else
 		{
@@ -2151,6 +2157,7 @@ class OrdersController extends AppController
 		$this->set('num_items', $num_items);
 		$this->set('from_dialer',$isDialer);
 		$this->set('from_tech',$fromTech);
+		$this->set('techOrderId', $techOrderId);
 		// New call history records are callbacks by default
 		$this->data['CallRecord']['call_result_id'] = 2;
 		$this->data['CallRecord']['call_date'] = date("d M Y");
