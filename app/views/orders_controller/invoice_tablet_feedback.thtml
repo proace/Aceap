@@ -11,8 +11,34 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/eff_calculator.js"></script>
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.21.custom.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
+<style type="text/css">
+[class^="pre-image_"] {
+    display: none;
+} 
+</style>
 <script language="JavaScript">
-
+$(document).ready(function(){
+    $(".disply_preview").live("change",function(e){
+        var img_ct = $(this).attr("data-ct").trim();
+        var cur = $(this);
+       upload_photo_preview(cur[0],img_ct);
+    }); 
+});
+$(function () {
+        $(".invoice-img-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 1024,
+            height: 786,
+        });
+        $(".invoice-openImg").live("click",function () {
+            var imgPath = $(this).attr('src');
+            $('.invoice-img-enlarge img').attr('src', imgPath);
+            $('.invoice-img-enlarge').dialog('open');
+        });
+    }); 
 $(function(){
     $("#sortpicture1").change(function(){
         upload_photo(1);
@@ -21,6 +47,20 @@ $(function(){
         upload_photo(2);
     });
 });
+function upload_photo_preview(cur,i) {  
+    //var file = $('input[id="sortpicture'+i+'"]')[0];
+    if (cur.files && cur.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      $('.pre-image_'+i+'')
+        .attr('src', e.target.result)
+        .height(100);
+        $('.pre-image_'+i+'').css("display","block");
+    };
+    reader.readAsDataURL(cur.files[0]);
+  }
+}
+
 function upload_photo(i) {
 	if($('input[id="sortpicture'+i+'"]').val().length == 0) {
 		return;
@@ -178,30 +218,36 @@ function upload_photo(i) {
 
         <h3>Upload Pictures</h3>
         <div>
+            
             <div style="display:inline-block;padding-right:50px;">
                 <?php if ($order['Order']['photo_1']) { ?>
                     <img id="photo_1" onclick="$('#dialog1').dialog({height:'auto', width:'auto'});$('#dialog2').dialog('close');" src="<?php echo ROOT_URL.'/upload_photos/'.$order['Order']['photo_1'];?>" style="max-height:100px;height:auto;cursor:pointer;padding:10px">
                     <div id="dialog1" title="Photo" style="display:none;">
                         <img id="big_photo_1" src="<?php echo ROOT_URL.'/upload_photos/'.$order['Order']['photo_1'];?>" style="max-height:600px;max-width:600px">
                     </div>
-                <?php } ?>
+                <?php } else{?>
+                    <img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
+                    <?php }?>
                 <div style="padding:10px;">
                     <label for="sortpicture1" class="ui-button ui-widget ui-corner-all" style="cursor:pointer;padding:5px;background:#c5c5c5">Upload</label>
-                    <input id="sortpicture1" type="file" name="sortpic1" style="visibility:hidden;"/>
+                    <input id="sortpicture1" type="file" name="sortpic1" style="visibility:hidden;"/ class="disply_preview" data-ct="photo1">
             <!--        <button onclick="upload_photo(1);return false;">Upload</button> -->
                 </div>
             </div>
-
+            
             <div style="display:inline-block">
                 <?php if ($order['Order']['photo_2']) { ?>
+
                     <img id="photo_2" onclick="$('#dialog2').dialog({height:'auto', width:'auto'});$('#dialog1').dialog('close');" src="<?php echo ROOT_URL.'/upload_photos/'.$order['Order']['photo_2'];?>" style="max-height:100px;height:auto;cursor:pointer;padding:10px">
                     <div id="dialog2" title="Photo" style="display:none;">
                         <img id="big_photo_2" src="<?php echo ROOT_URL.'/upload_photos/'.$order['Order']['photo_2'];?>" style="max-height:600px;max-width:600px">
                     </div>
-                <?php } ?>
+                <?php } else {?>
+                        <img id="pre-image_photo2" class="pre-image_photo2 invoice-openImg" src="#" alt="your image" />
+                    <?php }?>
                 <div style="padding:10px;">
                     <label for="sortpicture2" class="ui-button ui-widget ui-corner-all" style="cursor:pointer;padding:5px;background:#c5c5c5">Upload</label>
-                    <input id="sortpicture2" type="file" name="sortpic2" style="visibility:hidden;"/>
+                    <input id="sortpicture2" type="file" name="sortpic2" style="visibility:hidden;"/ class="disply_preview" data-ct="photo2">
             <!--        <button onclick="upload_photo(2);return false;">Upload</button> -->
                 </div>
             </div>
@@ -346,6 +392,8 @@ function upload_photo(i) {
     </tr>
 </table>
 </div>
-
+<div class="invoice-img-enlarge" title="Photo">
+    <img src="<?=$imgPath?>" style="width:100%;">
+</div>
 </body>
 </html>

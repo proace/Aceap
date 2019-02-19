@@ -176,6 +176,13 @@ class PaymentsController extends AppController
 		$payment_type = $_REQUEST['payment_type'];
 		$auth_number = $_REQUEST['auth_number'];
 		$note = $_REQUEST['notes'];
+		$file 	= isset($_FILES['payment_image'])? $_FILES['payment_image'] : null;
+		if($file !== null)
+		{
+			$loggedUserId 	= $this->Common->getLoggedUserID();
+            $this->User->id = $loggedUserId;
+			$imageResult 	= $this->Common->commonSavePaymentImage($file, $order_id , $config = $this->User->useDbConfig);
+		}
 		//$date = date("Y-m-d", strtotime($_REQUEST['date']));
 		$date = date("Y-m-d");
 		$creator = $this->Common->getLoggedUserID();

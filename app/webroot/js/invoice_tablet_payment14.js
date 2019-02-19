@@ -470,14 +470,15 @@ function SavePayment(){
 	var method = $("#PaymentPaymentMethodId").val();	
 	var amount = $("#paid_by_amount").val();	
 	var auth_number = $("#auth_number").val();
+	var fileval = $('#FileinputImg')[0].files[0];
 	
-	$("#PaymentPaymentMethodId").attr("readonly","readonly");
-	$("#paid_by_amount").attr("readonly","readonly");
-	$("#auth_number").attr("readonly","readonly");
+	//$("#PaymentPaymentMethodId").attr("readonly","readonly");
+	//$("#paid_by_amount").attr("readonly","readonly");
+	//$("#auth_number").attr("readonly","readonly");
 	//$("#save_payment").attr("disabled","disabled");
 	
 	if (!method) {alert('A payment method should be selected!'); return;}
-	if ((method>2)&&(method<6)&&(!auth_number)) {alert('An authorization number is required!'); return;}
+	//if ((method>2)&&(method<6)&&(!auth_number)) {alert('An authorization number is required!'); return;}
 
 	var formdata = new FormData();
 	formdata.append("order_id",id);
@@ -485,6 +486,13 @@ function SavePayment(){
 	formdata.append("amount",amount);
 	formdata.append("payment_type",1);
 	formdata.append("auth_number",auth_number);
+	if(fileval)
+	{
+		formdata.append('payment_image', fileval); 
+	} else {
+		alert('Payment Image is required!');
+		return;
+	}
 	$.ajax({
 		url: G_URL + "payments/savePayment",
 		type: "post",

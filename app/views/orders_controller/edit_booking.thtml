@@ -3380,7 +3380,7 @@ function get_data($url)
 <input type="hidden" id="ConnectionStatus">  
 <input type="hidden" id="currentCallNum">  
 <div class="invoice-img-enlarge" title="Photo">
-<img src="<?=$imgPath?>" style="width:100%;">
+	<img src="<?=$imgPath?>" style="width:100%;">
 </div>
 <script>
 	$(function () {

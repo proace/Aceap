@@ -15,7 +15,9 @@
 
 
 <style type="text/css">
-
+[class^="pre-image_"] {
+    display: none;
+}
 .acecare-td-adjust {
   position: relative;
   height: 20px;
@@ -56,6 +58,14 @@
 
 <div id="invoice">
 <script>
+    $(document).ready(function(){
+    $(".disply_preview").live("change",function(e){
+        var img_ct = $(this).attr("data-ct").trim();
+        var cur = $(this);
+       upload_photo(cur[0],img_ct);
+    }); 
+});
+
    $(function () {
         $("#img-enlarge").dialog({
             modal: true,
@@ -69,11 +79,44 @@
             $('#img-enlarge').dialog('open');
             });
     });
+    $(function () {
+        $(".invoice-img-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 1024,
+            height: 786,
+        });
+        $(".invoice-openImg").live("click",function () {
+            var imgPath = $(this).attr('src');
+            console.log(imgPath);
+            $('.invoice-img-enlarge img').attr('src', imgPath);
+            $('.invoice-img-enlarge').dialog('open');
+        });
+    }); 
+function upload_photo(cur,i) {  
+    //var file = $('input[id="sortpicture'+i+'"]')[0];
+    if (cur.files && cur.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      $('.pre-image_'+i+'')
+        .attr('src', e.target.result)
+        .width(86)
+        .height(50);
+        $('.pre-image_'+i+'').css("display","block");
+    };
+    reader.readAsDataURL(cur.files[0]);
+  }
+    // formData.append('image', $('input[id="sortpicture'+i+'"]')[0].files[0]);
+    // $('#uploading_' + i).show();
+}
 //function payFun(orderId){
 //   //alert(orderId);
 //   window.location="https://www.acecare.ca/test-page-1?id="+orderId;
 //}
 </script>
+
 	<!--<div id="items_container"><div id="loading_text">LOADING ITEMS...</div></div>-->
 	<ul id="job_list">
     	<?php foreach($jobs as $job) { ?>
@@ -239,6 +282,11 @@
         <div class="right">Deposit: <input type="text" class="right" id="current_deposit" name="data[Order][deposit]" value="<?php echo $job['Order']['customer_deposit']==""?"0":$job['Order']['customer_deposit'] ?>" /></div>   
         <div class="right">Balance: <input type="text" class="right" id="current_balance" name="data[Order][balance]" value="0" /></div>   
         <br /> 
+        <div class="center" id="payment_details">
+            </div>
+            <div class="clear_this"></div>  
+         <img id="pre-image_photo1" style="float: right;" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
+         <div class="clear_this"></div>
         <div class="right" style="margin-bottom: 10px;">Payment photo:
             <?php 
                 if(isset($invoice_payment_photo) && !empty($invoice_payment_photo)){                              
@@ -251,24 +299,23 @@
                     <?php 
                 }else{
                     ?>
+                    
                     <div class="acecare-td-adjust" style="float: right;">
                         <label for="Fileinput">Upload</label>
-                        <input type="file" name="uploadFile" id="FileinputImg" class="right">
+                        <input type="file" name="uploadFile" id="FileinputImg" class="right disply_preview" data-ct="photo1">
                     </div>  
                     <?php
                 }
             ?> 
         </div>  
-    <div class="right"><input type="button" value="Save" id="save-payment-image" style=" margin-right: 30px;width: 100px;" /></div>
+    <!-- <div class="right"><input type="button" value="Save" id="save-payment-image" style=" margin-right: 30px;width: 100px;" /></div> -->
             
         <div class="right" id="payment_box">
-        	<div class="center" id="payment_details">
-        	</div>
             <div class="clear_this"></div>
         	<div>Paid by: <?php echo $html->selectTag('Payment/payment_method_id', $payment_methods); ?></div>
+            <div>Amount: <input type="text" class="right" id="paid_by_amount" name="data[Payment][amount]" value="0" /></div>
         	<div>Auth#: <input type="text" class="right" id="auth_number" name="data[Payment][auth_number]" value="" /></div>
-        	<div>Amount: <input type="text" class="right" id="paid_by_amount" name="data[Payment][amount]" value="0" /></div>
-            <div><input type="button" value="Add Payment" id="save_payment" /></div>
+            <div><input type="button" value="Save" id="save_payment" /></div>
         </div>
         
         </div><!--END of order_div-->
@@ -455,5 +502,8 @@
 </table>
 </div>
 <pre><?php //print_r($jobs) ?></pre>
+<div class="invoice-img-enlarge" title="Photo">
+    <img src="<?=$imgPath?>" style="width:100%;">
+</div>    
 </body>
 </html>
