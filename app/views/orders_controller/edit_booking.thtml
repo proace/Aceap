@@ -533,7 +533,8 @@ function ValidateFields(jobstatus)
 		errorMsg += "Spoke to must be filled in\n";
 	}
 	if(jobstatus == 3) {
-	var valg = $("#NoteMessage").val();
+		var valg = $("#NoteMessage").val();
+		$("#send_cancalled_email").val(1);
 	if (valg == '') {
 		submitForm = false;
 		errorMsg += "Put a reason for cancellation on the notes\n";
@@ -1847,6 +1848,7 @@ function get_data($url)
 
 <form name="editBookingform" action="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
 <!-- This tag creates our form tag -->
+<input type="hidden" name="send_cancalled_email" id="send_cancalled_email"value="0">
 <input type="hidden" name="from_tech" id="from_tech"value="<?= $from_tech?>">
 <input type="hidden" name="techOrderId" id="techOrderId"value="<?= $techOrderId?>">
 <input type="hidden" name="recordingName" id="recordingName" value=""/>

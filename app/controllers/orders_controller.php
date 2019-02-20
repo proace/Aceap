@@ -142,7 +142,7 @@ class OrdersController extends AppController
 
     // Method saves order's data that was recieved from the order's page.
     // Created: 06/02/2010, Anthony Chernikov
-    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null, $techOrderId=null)
+    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null, $techOrderId=null, $send_cancalled_email = null)
     {
     	if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
 			$this->preViewEstimate($_POST);
@@ -461,7 +461,7 @@ class OrdersController extends AppController
 			}
 
 			if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==1 && $mail_sent== false ){
-				$this->emailCustomerBooking($order_id);
+				$this->emailCustomerBooking($order_id, $send_cancalled_email);
 			}
 		}
 	//die('Loadings...');
@@ -1948,6 +1948,8 @@ class OrdersController extends AppController
 		{
 
 			//If order information is submitted - save the order
+			$send_cancalled_email = isset($_POST['send_cancalled_email'])?$_POST['send_cancalled_email']
+			:0;
 			$isDialer = isset($_POST['from_dialer'])?$_POST['from_dialer']
 			:0;
 			$fromTech = isset($_POST['from_tech']) ? $_POST['from_tech'] :0;
@@ -1956,7 +1958,7 @@ class OrdersController extends AppController
 			$invoiceImages = isset($_FILES['uploadInvoice'])? $_FILES['uploadInvoice'] : null;
 			$photoImage1 = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
 			$photoImage2 = isset($_FILES['sortpic2'])? $_FILES['sortpic2'] : null;
-			$this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2, $fromTech, $techOrderId);
+			$this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2, $fromTech, $techOrderId, $send_cancalled_email);
 		}
 		else
 		{
@@ -5195,7 +5197,7 @@ class OrdersController extends AppController
 	}
 
 
-	function emailCustomerBooking($id)
+	function emailCustomerBooking($id, $send_cancalled_email = 0)
 	{
 
 		//Get E-mail Settings
@@ -5205,10 +5207,19 @@ class OrdersController extends AppController
 		$settings = $this->Setting->find(array('title'=>'email_fromname'));
 		$from_name = $settings['Setting']['valuetxt'];
 
-		$settings = $this->Setting->find(array('title'=>'email_template_bookingnotification'));
-		$template = $settings['Setting']['valuetxt'];
+		if($send_cancalled_email)
+		{
+			$settings = $this->Setting->find(array('title'=>'email_template_cancelbookingnotification'));
+			$template = $settings['Setting']['valuetxt'];
 
-		$settings = $this->Setting->find(array('title'=>'email_template_jobnotification_subject'));
+			$settings = $this->Setting->find(array('title'=>'email_template_canceljobnotification_subject'));	
+		} else {
+			$settings = $this->Setting->find(array('title'=>'email_template_bookingnotification'));
+			$template = $settings['Setting']['valuetxt'];
+
+			$settings = $this->Setting->find(array('title'=>'email_template_jobnotification_subject'));
+		}
+		
 		$template_subject = $settings['Setting']['valuetxt'];
 
 
