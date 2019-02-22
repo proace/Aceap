@@ -157,7 +157,7 @@ if( $_SESSION['user']['id'] > 0 ) {
 				echo "<div class='icon'>";
 				$img = ROOT_URL."/app/webroot/img/".$tbi['img'];
 				// $url = $linkPrefix.$tbi['url'];
-				$url = 'https://support.acecare.ca/lhc_web/doc/autologin/autologin.php?username='.$userName;
+				$url = 'http://support.hvacproz.ca/lhc_web/doc/autologin/autologin.php?username='.$userName;
 				$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
 				$onclick = "";
 				if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";

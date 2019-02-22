@@ -316,7 +316,7 @@ function showChat()
     if((userRoleId == 6 || userRoleId == 3 || userRoleId == 7) && openChat == 1) {
         <?php $_SESSION['user']['open_chat'] = 2;?>
         
-        var openUrl = 'https://support.acecare.ca/lhc_web/doc/autologin/autologin.php?username='+username;
+        var openUrl = 'http://support.hvacproz.ca/lhc_web/doc/autologin/autologin.php?username='+username;
         var win = window.open(openUrl);
         win.focus();
     }

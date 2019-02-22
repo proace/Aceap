@@ -13823,6 +13823,42 @@ function deleteUserFromCampaign()
  		exit();
  	}
  }
- 
+
+ function showPaymentImages()
+ {
+ 	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+ 	
+ 	$query = "SELECT id, payment_image from ace_rp_orders where payment_image != '' OR payment_image != NULL";
+ 		$result = $db->_execute($query);
+ 		$payment_image = array();
+ 		while($row = mysql_fetch_array($result)) {
+			$payment_image[] = $row;
+		}
+		$this->set('paymentImages', $payment_image);
+ }
+ function deletePaymentImages()
+ {
+ 	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+ 	
+  	foreach($_POST['paymentImages'] as $orderId)
+ 	{
+		$query = "SELECT payment_image from ace_rp_orders where id=".$orderId."";
+ 		$result = $db->_execute($query);
+
+ 		while($row = mysql_fetch_array($result))
+ 		 {
+			$filename = ROOT.'/app/webroot/payment-images/'.$row['payment_image'];
+			$query = "UPDATE ace_rp_orders set payment_image = '' where id =".$orderId."";
+			$result = $db->_execute($query);
+				if (file_exists($filename)) 
+				{
+				    unlink($filename);
+				    echo 'File '.$filename.' has been deleted';
+				} 
+		}
+	}
+ 	$this->redirect('/orders/showPaymentImages');
+ 	exit();
+ }
 }
 ?>

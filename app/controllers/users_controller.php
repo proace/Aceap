@@ -1,4 +1,5 @@
-<?php //error_reporting(E_ALL);
+<?php ob_start();
+//error_reporting(E_ALL);
 //error_reporting(1);
 //include 'adminchat/database_connection.php';
 include 'adminchat/database_connection.php';
