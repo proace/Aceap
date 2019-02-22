@@ -17,8 +17,14 @@ document.title += " :: Edit Booking";
   height: 20px;
   width: 50px;
 }
-
-.acecare-td-adjust > input[type="file"]{
+.cls-acecare-td-adjust {
+    position: relative;
+    height: 16;
+    width: 99px;
+    /* padding: 1; */
+    margin: 2px 0px 4px 0px;
+}
+.acecare-td-adjust > input[type="file"] , .cls-acecare-td-adjust > input[type="file"]{
   position: absoulte;
   opacity: 0;
   top: 0;
@@ -27,7 +33,7 @@ document.title += " :: Edit Booking";
   bottom: 0
 }
 
-.acecare-td-adjust > label{
+.acecare-td-adjust > label , .cls-acecare-td-adjust > label{
   position: absolute;
   top: 0;
   right: 0;
@@ -1277,6 +1283,7 @@ input[type=text] {
                         <input type="button" value="Close Section" id="closeBookedItems" /> 
                         <a id="addBookedItemsList" title="View Items in a List"></a>
                         <a id="addBookedItemsTree" title="View Items in a Tree"></a>
+                        <input type="button" value="From Supplier" onclick="addItem(1227, '', '0', 0, 1, '', '')" />
                         <div class="clear_this"></div>
 						<div id="item_selector0" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
 						<table>
@@ -1329,6 +1336,7 @@ input[type=text] {
                                 <input type="button" value="Close Section" id="closeTechnicianSales" />
                                 <a id="addTechnicianSalesList" title="View Items in a List"></a>
                                 <a id="addTechnicianSalesTree" title="View Items in a Tree"></a>
+                                <input type="button" value="From Supplier" onclick="addItem(1227, '', '0', 1, 1, '', '')" />
                                 <div class="clear_this"></div>
 								<div id="item_selector1" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
 								<table id="CurrentItemsTableTech" cellspacing=0 colspacing=0 class="inResultsBooking">

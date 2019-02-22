@@ -2438,8 +2438,9 @@ class OrdersController extends AppController
 		if (!empty($this->data['Order']))
 		{
 			$file = isset($_FILES['uploadFile1'])? $_FILES['uploadFile1'] : null;
+			$invoiceImages	=	isset($_FILES['uploadInvoice']) ? $_FILES['uploadInvoice']:null;
 			//If order information is submitted - save the order
-			$this->saveOrder(0,'',$file);
+			$this->saveOrder(0,'',$file, $invoiceImages);
 		}
 		else
 		{
