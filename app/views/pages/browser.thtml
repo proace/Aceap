@@ -16,6 +16,9 @@
 	function showSelectBar(nval)
 	 {
 			$("#current-seleted-button").val(nval);
+			$('#selected-str').val('today');
+			$('#call-back-select option[value="today"]').attr("selected","selected");
+			document.getElementById('missed_callback_dates').style.display = 'none';
 	 		$('#call-back-select').show();
 	 }
 	 function callbackSourceType(callType)
@@ -218,7 +221,8 @@
 	}
 
 </script>
-
+<input type="hidden" id = "current-seleted-button" name="current-seleted-button" value="">
+<input type="hidden" id = "selected-str" name="selected-str" value="">
 <div id='append_count_div' style="display: none;margin-left: 10px;">
 	<div style="float: left;display:inline-block;">No. of count - </div>
 	<div style="float: left;display:inline-block;" id="count_of_cust_div1"></div>

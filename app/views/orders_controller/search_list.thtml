@@ -10,8 +10,8 @@
 }
 </style>
 <?php if($is_campaing == 1) { ?>
-<input type="hidden" id = "current-seleted-button" name="current-seleted-button" value="">
-<input type="hidden" id = "selected-str" name="selected-str" value="today">
+<!-- <input type="hidden" id = "current-seleted-button" name="current-seleted-button" value="">
+<input type="hidden" id = "selected-str" name="selected-str" value="today"> -->
 
 <div class="new-btn">
 <input class="new-btn-input" type="button" id="call-back" value="Call Back" onclick="showSelectBar(1);">
@@ -139,7 +139,12 @@ if ($add == 0) { ?>
 	<div class="dcell" style="width: 95px;<? echo $color?>"><?=$obj["User"]["address_unit"].' '.$obj["User"]["address_street_number"].' '.$obj["User"]["address_street"]; ?></div>
 </div>
 <?php endforeach; ?>
-<input type="hidden" name="count_of_cust" id='count_of_cust' value="<?php echo $totalCus;?>">
+<?php if(isset($totalCus)) { ?>
+	<input type="hidden" name="count_of_cust" id='count_of_cust' value="<?php echo $totalCus;?>">
+<?php  } else {?>
+	<input type="hidden" name="count_of_cust" id='count_of_cust' value="<?php echo $cus_count;?>">
+<?php } ?>
+
 </form>
 <script language="JavaScript">
 	
