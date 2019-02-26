@@ -109,10 +109,6 @@ class OrdersController extends AppController
 			$this->data['Customer']['next_service']=date('Y-m-d',strtotime($this->data['Customer']['next_service']));
 		// /Added by Maxim Kudryavtsev - for booking member cards
 
-		// 		echo "<pre>";
-		// var_dump($this->data['Customer']);die;
-
-
 		$this->Order->Customer->save($this->data['Customer']);
 		$last_id = $this->Order->Customer->getLastInsertId();
 		if( $this->data['Customer']['id'] == '')
@@ -13846,8 +13842,13 @@ function deleteUserFromCampaign()
  function showPaymentImages()
  {
  	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
- 	
- 	$query = "SELECT id, payment_image from ace_rp_orders where payment_image != '' OR payment_image != NULL";
+ 	$search = isset($_GET['search-image']) ? $_GET['search-image'] : '';
+ 	if(!empty($search))
+ 	{
+ 		$query = "SELECT id, order_number, payment_image from ace_rp_orders where order_number=".$search;
+ 	} else {
+ 		$query = "SELECT id, order_number, payment_image from ace_rp_orders where payment_image != '' OR payment_image != NULL";
+ 	 }
  		$result = $db->_execute($query);
  		$payment_image = array();
  		while($row = mysql_fetch_array($result)) {
@@ -13858,16 +13859,15 @@ function deleteUserFromCampaign()
  function deletePaymentImages()
  {
  	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
- 	
   	foreach($_POST['paymentImages'] as $orderId)
  	{
-		$query = "SELECT payment_image from ace_rp_orders where id=".$orderId."";
+		$query = "SELECT payment_image from ace_rp_orders where order_number=".$orderId."";
  		$result = $db->_execute($query);
 
  		while($row = mysql_fetch_array($result))
  		 {
 			$filename = ROOT.'/app/webroot/payment-images/'.$row['payment_image'];
-			$query = "UPDATE ace_rp_orders set payment_image = '' where id =".$orderId."";
+			$query = "UPDATE ace_rp_orders set payment_image = '' where order_number =".$orderId."";
 			$result = $db->_execute($query);
 				if (file_exists($filename)) 
 				{

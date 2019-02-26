@@ -15,6 +15,7 @@ th, td {
 }
 .table-class {
   width: 100%;
+  margin-top: 10px;
 }
 
  </style> 
@@ -38,7 +39,13 @@ th, td {
  </script>
 </head>
 <body>
+  <form name="search-image" action="<?=BASE_URL;?>/orders/showPaymentImages" method="get" enctype="multipart/form-data" >
+     <b>Search:<b><input type="text" id ="search-image" name="search-image">
+    <input type="submit" name="image-submit" value="Submit">
+  </form>
+  
   <form name="deletePaymentImages" action="<?=BASE_URL;?>/orders/deletePaymentImages" method="post" enctype="multipart/form-data">
+   
     <table  class="table-class" align="left" border="0" cellspacing="1" cellpadding="0"> 
      <th>Check</th>
      <th>Order Id</th>
@@ -47,14 +54,14 @@ th, td {
         $imgPath =  '/acesys/app/webroot/payment-images/'. $images['payment_image']; 
       ?>
     <tr>
-      <td><input type="checkbox" name="paymentImages[]" value="<?php echo $images['id'] ?>"></td>
-       <td><?php echo $images['id'] ?></td>
+      <td><input type="checkbox" name="paymentImages[]" value="<?php echo $images['order_number'] ?>"></td>
+       <td><?php echo $images['order_number'] ?></td>
        <td>
           <img id="openImg" class="invoice-openImg" src="<?php echo $imgPath; ?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">  
        </td> 
     </tr>
    
-<?php }?>
+  <?php }?>
    <tr>
      <td colspan="2" align="left"><br/>
         <input type="submit" name="submit" value="Delete" class="buttons">&nbsp;
