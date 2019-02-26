@@ -4,6 +4,10 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/meio.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+ -->
+<!--  <script type="text/javascript" src="http://beneposto.pl/jqueryrotate/js/jQueryRotateCompressed.js"> -->
+</script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.quicksearch.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/store_tree.js"></script>
@@ -14,7 +18,9 @@
 <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
 <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/layout.css" rel="stylesheet" type="text/css">
 <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/media-queries.css" rel="stylesheet" type="text/css">
+
 <script>
+
 //*** SET PAGE TITLE ***
 document.title += " :: Edit Booking";
 //**********************
@@ -839,6 +845,7 @@ function SaveDialerCallRecord(){
 		 customer_card_number:$('#CustomerCardNumber').val(),
 		 customer_card_exp:$('#data[Customer][card_exp]').val(),
 		 customer_next_service:$('#data[Customer][next_service]').val(),
+		 customer_campaing_id:$('#CuscampaingId').val(),
 		 callresult:callResultId,
 		 callback_reason:'',
 		 callback_date:callbackDate,
@@ -945,6 +952,7 @@ function SaveCallRecord(){
 		 callback_date:$('#CallRecordCallbackDate').val(),
 		 callback_time:$('#CallRecordCallbackTimeHour').val()+':'+$('#CallRecordCallbackTimeMin').val(),
 		 callback_user:$('#CallRecordCallbackUserId').val(),
+		 customer_campaing_id:$('#CuscampaingId').val(),
 		 call_id:0,
 		 dialer_id:'web'
 		}, function(data){
@@ -1153,6 +1161,18 @@ function upload_photo(cur,i) {
   }
 }
 $(document).ready(function(){
+	// var degree = 0
+ //    $(".img").rotate({ 
+ //       bind: 
+ //         { 
+ //            click: function(){
+ //                degree +=90;
+ //                $(this).rotate({ animateTo:value})
+ //            }
+ //         } 
+       
+ //    });
+
 	$(".disply_preview").live("change",function(e){
 		console.log("hua");
 	    var img_ct = $(this).attr("data-ct").trim();
@@ -1848,6 +1868,8 @@ function get_data($url)
 
 <form name="editBookingform" action="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
 <!-- This tag creates our form tag -->
+
+<input type="hidden" name="campaingId" id="CuscampaingId"value="<?= $campaingId ?>">
 <input type="hidden" name="send_cancalled_email" id="send_cancalled_email"value="0">
 <input type="hidden" name="from_tech" id="from_tech"value="<?= $from_tech?>">
 <input type="hidden" name="techOrderId" id="techOrderId"value="<?= $techOrderId?>">
@@ -2841,7 +2863,7 @@ function get_data($url)
 						 		<div id="img-enlarge" title="Photo">
 								  <img src="<?php echo $imgPath; ?>" style="width:100%;">
 								</div>
-								<img id="openImg" src="<?php echo $imgPath; ?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">					 		
+								<img id="openImg" class="img" src="<?php echo $imgPath; ?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">					 		
 						 		<?php 
 					 		}else{
 					 			?>

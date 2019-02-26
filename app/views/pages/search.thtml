@@ -177,7 +177,7 @@
 			parent.frames['frame_browser'].missing_callbacks_searchlist(document.getElementById('sq_crit').value, document.getElementById('sq_str').value, document.getElementById('sq_str_missed_dates').value);
 		}
 		else{
-			parent.frames['frame_browser'].searchList(document.getElementById('sq_crit').value, document.getElementById('sq_str').value);
+			parent.frames['frame_browser'].searchList(document.getElementById('sq_crit').value, document.getElementById('sq_str').value,'',1);
 		}
 	}
 

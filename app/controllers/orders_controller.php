@@ -83,7 +83,12 @@ class OrdersController extends AppController
     // NOTE: for now this method is invisible from the page. May be it should stay invisible forever
     // Created: 06/02/2010, Anthony Chernikov
     function _SaveCustomer()
-    {  //error_reporting(E_ALL);
+    {  
+    	if(!empty($this->data['Customer']['campaign_id'])) 
+    	{
+    		$this->data['Customer']['campaign_id'] = $this->data['Customer']['campaign_id'];
+    	}
+    	
 		$this->data['Customer']['phone'] = $this->data['Customer']['phone']!= '' ? $this->Common->preparePhone($this->data['Customer']['phone']):'';
 		$this->data['Customer']['cell_phone'] = $this->data['Customer']['cell_phone'] != '' ? $this->Common->preparePhone($this->data['Customer']['cell_phone']) : '';
 		$this->data['Customer']['postal_code'] = $this->data['Customer']['postal_code'] != '' ? $this->Common->prepareZip($this->data['Customer']['postal_code']) : '';
@@ -104,9 +109,10 @@ class OrdersController extends AppController
 			$this->data['Customer']['next_service']=date('Y-m-d',strtotime($this->data['Customer']['next_service']));
 		// /Added by Maxim Kudryavtsev - for booking member cards
 
-//var_dump($this->data['Customer']);
-//die;
-		//var_dump($this->data['Customer']);
+		// 		echo "<pre>";
+		// var_dump($this->data['Customer']);die;
+
+
 		$this->Order->Customer->save($this->data['Customer']);
 		$last_id = $this->Order->Customer->getLastInsertId();
 		if( $this->data['Customer']['id'] == '')
@@ -1972,6 +1978,14 @@ class OrdersController extends AppController
 			// Check submitted data for any special parameters to be set
 			$order_id = $this->params['url']['order_id'];
 			$customer_id = $this->params['url']['customer_id'];
+			if($customer_id)
+			{
+				$this->Customer->id = $customer_id;
+				$cus = $this->Customer->read(); 	
+				$this->set('campaingId',$cus['Customer']['campaign_id']);
+			}
+			
+			
 			$num_items = 0;
 			$show_app_order='display:none';
 			$show_permits = 'display:none';
@@ -3462,7 +3476,11 @@ class OrdersController extends AppController
 		if ($_GET['sq_crit'] == 'phone')
 		{
 			if($this->Common->getLoggedUserRoleID() != 6) {
-				$telem_clause = " AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = c.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
+				// $telem_clause = " AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = c.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
+				
+				$allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
+				$arrayString = implode(',', $allCampList);
+				$telem_clause = " AND c.campaign_id IN ('".$arrayString."') AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = c.id AND order_status_id IN(1,3,5))";
 			}
 			$sql = "SELECT c.id, c.card_number, `c`.`first_name`, c.last_name,
 						c.postal_code, c.email, c.address_unit, c.address_street_number, c.address_street, c.city,
@@ -7431,7 +7449,7 @@ class OrdersController extends AppController
         {
             $this->data['Customer']['id'] = $customer_id;
         }
-
+        $this->data['Customer']['campaign_id']    			= isset($_GET['customer_campaing_id']) ? $_GET['customer_campaing_id'] : '';
         $this->data['Customer']['first_name']    			= $_GET['customer_first_name'];
         $this->data['Customer']['last_name']     			= $_GET['customer_last_name'];
         $this->data['Customer']['email']         			= $_GET['customer_email'];
@@ -7460,21 +7478,21 @@ class OrdersController extends AppController
             $customer_id = $this->data['Customer']['id'];
         }
 
-        $query = "select * from ace_rp_call_history ach WHERE ach.id IN (SELECT MAX(id) FROM ace_rp_call_history WHERE customer_id = $customer_id)";
-		$result = $db->_execute($query);
+  //       $query = "select * from ace_rp_call_history ach WHERE ach.id IN (SELECT MAX(id) FROM ace_rp_call_history WHERE customer_id = $customer_id)";
+		// $result = $db->_execute($query);
 
-		while($row = mysql_fetch_assoc($result))
-		{
-			$his_customer_id = $row['customer_id'];
-		    if($row['call_result_id'] != $_GET['callresult'] || $row['callresult'] != 6){
-			  	$query = "update ace_rp_customers set campaign_id = NULL WHERE id = $his_customer_id";
-				$db->_execute($query);
-				$up_query = "update ace_rp_orders set o_campaign_id = NULL WHERE customer_id = $his_customer_id";
-				$db->_execute($up_query);
-				$query = "update ace_rp_call_history as arc set arc.call_campaign_id = NULL WHERE customer_id = $his_customer_id";
-				$db->_execute($query);
-		    }
-		}
+		// while($row = mysql_fetch_assoc($result))
+		// {
+		// 	$his_customer_id = $row['customer_id'];
+		//     if($row['call_result_id'] != $_GET['callresult'] || $row['callresult'] != 6){
+		// 	  	$query = "update ace_rp_customers set campaign_id = NULL WHERE id = $his_customer_id";
+		// 		$db->_execute($query);
+		// 		$up_query = "update ace_rp_orders set o_campaign_id = NULL WHERE customer_id = $his_customer_id";
+		// 		$db->_execute($up_query);
+		// 		$query = "update ace_rp_call_history as arc set arc.call_campaign_id = NULL WHERE customer_id = $his_customer_id";
+		// 		$db->_execute($query);
+		//     }
+		// }
        
         if($_GET['savedata']==0) {
         	  $this->AddCallToHistory(

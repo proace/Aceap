@@ -6,7 +6,47 @@ class CommonComponent extends Object
 	function startup(&$controller){
       $this->controller =& $controller;
     }
+    /**
+		common function to save images
+    */
+    function saveImages($file, $filename, $degree)
+    {
+    	// error_reporting(E_ALL);
+    	$fileExt = @strtolower(@end(explode('.',$file['name'])));
+    	$src = $file['tmp_name'];
+		if($fileExt == "png")
+		{
+		    $img_r =  imagecreatefrompng($src); 
+		} 
+		else if($fileExt == "gif")
+		{
+		    $img_r =  imagecreatefromgif($src); 
+		} 
+		else if($fileExt == "jpeg" || $fileExt == 'jpg')
+		{
+		    $img_r = imagecreatefromjpeg($src); 
+		}
 
+		if(isset($degree))
+		{
+		    $img_r = imagerotate($img_r, $degree, 0);
+		}
+
+
+		if($fileExt == "png")
+		{
+		    imagepng($img_r, $filename);
+		} 
+		else if($fileExt == "gif")
+		{
+		    imagegif($img_r, $filename);
+		} 
+		else if($fileExt == "jpeg" || $fileExt == 'jpg')
+		{
+		    imagejpeg($img_r, $filename);
+		} 
+
+    }
      /** common function for save image into ace_rp_orders field payment_image
 	  *  Need to pass three parameter $file, $order_id, $config in the component 
       */
@@ -14,9 +54,10 @@ class CommonComponent extends Object
     {    	
     	$fileName = time()."_".$file['name'];
 		$fileTmpName = $file['tmp_name'];
-		
+		$orgFileName = ROOT."/app/webroot/payment-images/".$fileName;
 		if($file['error'] == 0)
 		{
+			//$move = $this->saveImages($file, $orgFileName, 90);
 			$move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/payment-images/".$fileName);
 			$query = "UPDATE ace_rp_orders SET payment_image ='".$fileName."' WHERE id=".$order_id;
 			$db =& ConnectionManager::getDataSource($config);
@@ -253,8 +294,18 @@ class CommonComponent extends Object
 						array(
 
 							'name' => 'Chat',
-							'url' => 'http://support.acecare.ca/lhc_web/index.php/site_admin/',
+							// 'url' => 'http://support.acecare.ca/lhc_web/index.php/site_admin/',
+							'url' => 'http://support.hvacproz.ca/lhc_web/index.php/site_admin/',
 							'img' => 'comments.png'
+						),
+
+						array(
+
+							'name' => 'Payment-Image',
+							'url' => BASE_URL.'/orders/showPaymentImages',
+							
+							'img' => 'images1.png'
+							// 'img' => 'image-icon.png'
 						)
 
 
@@ -1477,7 +1528,7 @@ class CommonComponent extends Object
 						array(
 
 							'name' => 'Chat',
-							'url' => 'http://support.acecare.ca/lhc_web/index.php/site_admin/',
+							'url' => 'http://support.hvacproz.ca/lhc_web/index.php/site_admin/',
 							'img' => 'comments.png'
 						)
 /*
@@ -2078,7 +2129,7 @@ class CommonComponent extends Object
 						array(
 
 							'name' => 'Chat',
-							'url' => 'http://support.acecare.ca/lhc_web/index.php/site_admin/',
+							'url' => 'http://support.hvacproz.ca/lhc_web/index.php/site_admin/',
 							'img' => 'comments.png'
 						)
 					),

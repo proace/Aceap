@@ -34,16 +34,20 @@
 	var last_sq_crit, last_sq_str, last_dates;
 	var lpp = 500;	//lines per page
 	var maxpage = 1;
-	 function searchList (sq_crit,sq_str='',page) {
+	 function searchList (sq_crit,sq_str='',page, fromTop='') {
 		 	
 		
 	 	var fromDate = $("#datepicker1").val();
 	 	var toDate = $("#datepicker2").val(); 	
-	 	var is_call_res = $("#current-seleted-button").val();
-	 	if( 0 <is_call_res)
+	 	if(fromTop != 1)
 	 	{
-	 		var selectedStr = $("#selected-str").val();
+	 		var is_call_res = $("#current-seleted-button").val();
+		 	if( 0 <is_call_res)
+		 	{
+		 		var selectedStr = $("#selected-str").val();
+		 	}
 	 	}
+	 	
 		//TODO:Make system work with pages, not limits, remove limit logic from PHP
 		// if(fromDate == '' || toDate == '')
 		// {
@@ -61,7 +65,7 @@
 		{
 			toDate = '';	
 		}
-		if (typeof(page) == 'undefined')
+		if (typeof(page) == 'undefined' || page == '')
 			page = 1;
 		if (typeof(is_call_res) == 'undefined')
 			is_call_res = 0;
