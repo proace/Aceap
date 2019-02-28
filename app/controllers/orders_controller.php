@@ -301,12 +301,10 @@ class OrdersController extends AppController
 		if(!empty($photoImage2['name'] ))
 		{
 			$imageResult = $this->Common->uploadPhoto($photoImage2, $order_id , $config = $this->User->useDbConfig, 2);
-
 		}
 		if(!empty($photoImage1['name']))
 		{       
 			$imageResult = $this->Common->uploadPhoto($photoImage1, $order_id , $config = $this->User->useDbConfig, 1);
-
 		}
 		$this->Order->BookingItem->execute("DELETE FROM " . $this->Order->BookingItem->tablePrefix . "order_items WHERE order_id = '".$order_id."'");
 		$total = 0;
@@ -2449,8 +2447,10 @@ class OrdersController extends AppController
 		{
 			$file = isset($_FILES['uploadFile1'])? $_FILES['uploadFile1'] : null;
 			$invoiceImages	=	isset($_FILES['uploadInvoice']) ? $_FILES['uploadInvoice']:null;
+			$photoImage1 = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
+			$photoImage2 = isset($_FILES['sortpic2'])? $_FILES['sortpic2'] : null;
 			//If order information is submitted - save the order
-			$this->saveOrder(0,'',$file, $invoiceImages);
+			$this->saveOrder(0,'',$file, $invoiceImages, $photoImage1, $photoImage2 );
 		}
 		else
 		{
@@ -2674,6 +2674,14 @@ class OrdersController extends AppController
 		}
 
 		$this->set('use_template_questions',$use_template_questions);
+		if(!empty($order_id)) {
+			$query = "SELECT photo_1, photo_2 FROM ace_rp_orders WHERE id = ".$order_id;
+			$result = $db->_execute($query);
+			while($row = mysql_fetch_array($result)) {
+					$this->data['Order']['photo_1'] = $this->getPhotoPath($row['photo_1']);
+					$this->data['Order']['photo_2'] = $this->getPhotoPath($row['photo_2']);
+			}
+		}
 	}
 
 	function techCustomerInterest()
@@ -2900,7 +2908,7 @@ class OrdersController extends AppController
         session_write_close(); // It added to remove delay in ajax response
         $customer_id = $_GET['customer_id'];
         $phone = $_GET['phone'];
-
+        $isDialer = $_GET['is_dialer'];
         if ((!$customer_id)&&(!$phone)) exit;
 
             $phone = preg_replace("/[- \.]/", "", $phone);
@@ -2928,9 +2936,14 @@ class OrdersController extends AppController
 		if ($customer_id) $query = "select * from ace_rp_call_history where ".$ans." customer_id='".$customer_id."'";
 //		else if ($phone) $query = "select * from ace_rp_call_history where ".$ans." customer_id in (select id from ace_rp_users where phone='".$phone."')";
 		else if ($phone) $query = "select * from ace_rp_call_history where ".$ans." phone='".$phone."'";
- 
-        $query .= " order by call_date desc, call_time desc limit 1";
 
+ 		if($isDialer == 1)
+ 		{
+ 			$query .= " order by call_date desc, call_time desc limit 1";
+ 		} else {
+ 			$query .= " order by call_date desc, call_time desc";
+ 		}
+        
 		$r = 1;
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         $result = $db->_execute($query);

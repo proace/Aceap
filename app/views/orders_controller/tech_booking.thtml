@@ -17,6 +17,9 @@ document.title += " :: Edit Booking";
   height: 20px;
   width: 50px;
 }
+[class^="pre-image_"] {
+    display: none;
+}
 .cls-acecare-td-adjust {
     position: relative;
     height: 16;
@@ -1273,6 +1276,34 @@ input[type=text] {
                 <tr>
                 	<td align="right">Door Hanger:</td>
                 	<td><?php echo $this->data['Order']['is_door_hanger']==1?"Yes":"No"; ?>
+                    </td>
+                  <!--   <td></td>    -->                 
+                     <td>
+                        <?php if (!empty($this->data['Order']['photo_1']) || $this->data['Order']['photo_1'] != '') { ?>
+                            <img id="photo_1" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_1'];?>" style="max-height:28px;height:auto;cursor:pointer;">
+                             
+                        <?php } else {?>
+                            <img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
+                            <div class="cls-acecare-td-adjust">
+                                <label for="sortpicture1" >Upload</label>
+                                <input type="file" name="sortpic1" id="sortpicture1" class="disply_preview" data-ct="photo1">
+                                
+                            </div>
+                            <?php }?>
+                    </td>
+                    <td>
+                        <?php if (!empty($this->data['Order']['photo_2']) || $this->data['Order']['photo_2'] != '') { ?>
+                            <img id="photo_2" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_2'];?>" style="max-height:28px;height:auto;cursor:pointer;">
+
+                        <?php } else {?>
+                            <img id="pre-image_photo2" class="pre-image_photo2 invoice-openImg" src="#" alt="your image" />
+                            <div class="cls-acecare-td-adjust">
+                                <label for="sortpicture2" >Upload</label>
+                                <input type="file" name="sortpic2" id="sortpicture_" class="disply_preview" data-ct="photo2">
+                                
+                                
+                            </div>
+                            <?php }?>
                     </td>
                 </tr>
                 <tr>

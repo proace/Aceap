@@ -6,6 +6,7 @@
 <!--<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
 <meta name="apple-mobile-web-app-capable" content="yes">-->
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.js`"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_feedback.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/eff_calculator.js"></script>
@@ -230,7 +231,7 @@ function upload_photo(i) {
                     <?php }?>
                 <div style="padding:10px;">
                     <label for="sortpicture1" class="ui-button ui-widget ui-corner-all" style="cursor:pointer;padding:5px;background:#c5c5c5">Upload</label>
-                    <input id="sortpicture1" type="file" name="sortpic1" style="visibility:hidden;"/ class="disply_preview" data-ct="photo1">
+                    <input id="sortpicture1" type="file" name="sortpic1" style="visibility:hidden;"/ class="disply_preview" data-ct="photo1" accept="image/*">
             <!--        <button onclick="upload_photo(1);return false;">Upload</button> -->
                 </div>
             </div>
@@ -247,7 +248,7 @@ function upload_photo(i) {
                     <?php }?>
                 <div style="padding:10px;">
                     <label for="sortpicture2" class="ui-button ui-widget ui-corner-all" style="cursor:pointer;padding:5px;background:#c5c5c5">Upload</label>
-                    <input id="sortpicture2" type="file" name="sortpic2" style="visibility:hidden;"/ class="disply_preview" data-ct="photo2">
+                    <input id="sortpicture2" type="file" name="sortpic2" style="visibility:hidden;"/ class="disply_preview" data-ct="photo2" accept="image/*">
             <!--        <button onclick="upload_photo(2);return false;">Upload</button> -->
                 </div>
             </div>

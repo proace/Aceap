@@ -83,10 +83,9 @@ class CommonComponent extends Object
 		if (!file_exists($day)) {
 			mkdir('upload_photos/'.$day, 0755);
 		}
-
 		$path = $file['name'];
 		$ext = pathinfo($path, PATHINFO_EXTENSION);
-		$name = date('Ymdhis', time()).$order_id.'.'.$ext;
+		$name = date('Ymdhis', time()).$order_id.$i.'.'.$ext;
 
 		if ( 0 < $file['error'] ) {
 	        // echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 

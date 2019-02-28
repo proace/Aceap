@@ -215,6 +215,17 @@ function SaveCustomerData(){
     }
   );
 }
+
+ function showToalJobHistory()
+  {
+  		$.get("<?=BASE_URL;?>/orders/showCustomerJobs",
+			{customer_id:$('#CustomerId').val(),
+			 order_id:'<?=$html->tagValue("Order/id")?>',
+			 phone:'<?=$html->tagValue("Customer/phone")?>'},
+			function(data){
+        $("#TotalJobHistory").html(data);
+			});
+  }
 function OpenJobsHistory(){
 $("#JobHistoryWorking").show();
 $.get("<?=BASE_URL;?>/orders/showCustomerJobs",
@@ -725,13 +736,21 @@ function ShowChangeDetails(row_id,cust_id,ord_id,user_id,change_date,change_time
 }
 function ShowCallHistory(){
 $.get("<?=BASE_URL;?>/orders/getCallHistory",
-			{phone:$('#CustomerPhone').val()},
+			{phone:$('#CustomerPhone').val(),
+			is_dialer:0},
 			function(data){
         $("#CallHistory").html(data);
-        $("#Dialler-Call-History").html(data);
     });
 }
-
+function DiallerCallHistory(){
+$.get("<?=BASE_URL;?>/orders/getCallHistory",
+			{phone:$('#CustomerPhone').val(),
+			is_dialer:1},
+			function(data){
+	$("#Dialler-Call-History").html(data);
+    });
+}
+ 
 function ShowLastCallHistory(){
 
 $.get("<?=BASE_URL;?>/orders/getLastCallHistory",
@@ -1190,7 +1209,8 @@ $(document).ready(function(){
       });
     GetUserHotList();
 	DiallerJobsHistory();
-	//DiallerCallHistory();
+	DiallerCallHistory();
+	showToalJobHistory();
 	var callResultId = $("#answer_reply").val();
 	if(callResultId == 1) {
 		$("#new_booking").addClass("current-selected-button");
@@ -1894,7 +1914,7 @@ function get_data($url)
    <?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 3) {?>
 	<div class="tabtrigger <?=$tab10?>" id="trigger10" onclick="openTab(10);">Recordings</div>
 	<?php }?>
-   <!--  <div class="tabtrigger <?=$tab3?>" id="trigger3" onclick="openTab(3);">Calls History</div> -->
+    <div class="tabtrigger <?=$tab3?>" id="trigger3" onclick="openTab(3);">Calls History</div>
     <?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 3) {?>
     <div class="tabtrigger <?=$tab7?>" id="trigger7" onclick="openTab(7);">Dialer</div>
     <?php }?>
@@ -3032,6 +3052,8 @@ function get_data($url)
                                     <?php //} ?>
 						     <!--  -->
 				<div id="CallHistory"></div>
+				<div></div>
+				<div id="TotalJobHistory"></div>
             </div><!--frame-body-->
         </div><!--frame-wrap-->
     </div>
