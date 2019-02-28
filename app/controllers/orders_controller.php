@@ -3470,7 +3470,6 @@ class OrdersController extends AppController
 		$conditions = array();
 		$is_campaing = 0;
 		$campaignId = 0;
-
 		if ($_GET['sq_crit'] == 'phone')
 		{
 			$sq_str = preg_replace("/[- \.]/", "", $_GET['sq_str']);
@@ -3601,7 +3600,10 @@ class OrdersController extends AppController
 		else if ($_GET['sq_crit'] == 'REF')
 		{
 			if($this->Common->getLoggedUserRoleID() != 6) {
-				$telem_clause = ' AND o.booking_source_id='.$this->Common->getLoggedUserID();
+				$allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
+				$arrayString = implode(',', $allCampList);
+				// $telem_clause = ' AND o.booking_source_id='.$this->Common->getLoggedUserID();
+				$telem_clause = ' AND c.campaign_id IN ('.$arrayString.')';
 			}
 
 			$sql = "SELECT o.id order_id, o.job_date,
@@ -3886,9 +3888,12 @@ class OrdersController extends AppController
 		else if (($_GET['sq_crit'] != 'booking_source_id') && ($_GET['sq_crit'] != 'order_type_id') && ($_GET['sq_crit'] != 'callback_date'))
 		{
 			//$cust = $this->User->findAll($conditions, null, $sort, $limit);
-
 			if($this->Common->getLoggedUserRoleID() != 6) {
-				$telem_clause = " AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = u.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
+				$allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
+				$arrayString = implode(',', $allCampList);
+				// $telem_clause = " AND c.campaign_id IN ('".$arrayString."') AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = u.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
+				
+				$telem_clause = " AND c.campaign_id IN (".$arrayString.") AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = u.id AND order_status_id IN(1,3,5))";
 			}
 
 			$criteria = 'c.'.$_GET['sq_crit'];
