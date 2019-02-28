@@ -583,7 +583,20 @@ class OrdersController extends AppController
 
 			$query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`o_campaign_id` =".$campId." WHERE customer_id=".$cusId.";";
 			$up_order = $db->_execute($query_order_up);
-		
+
+			$get_user = "SELECT id from ace_rp_all_campaigns where call_history_ids=".$cusId;
+			$user_result = $db->_execute($get_user);
+			$row = mysql_fetch_array($user_result);
+			// print_r($row);die("hua");
+			if(empty($row['id']))
+			{
+
+				$get_camp = "SELECT campaign_name from ace_rp_reference_campaigns where id=".$campId;
+				$camp_result = $db->_execute($get_camp);
+				$row = mysql_fetch_array($camp_result);
+				$up_camp_data = "INSERT INTO ace_rp_all_campaigns(campaign_name, call_history_ids, transfer_call_jobs_flag, last_inserted_id, disposition_id, created_date) VALUES ('".$row['campaign_name']."',".$cusId.", 1,".$campId.", 1,CURDATE())";
+				$up_camp_res = $db->_execute($up_camp_data);
+			}
 		}
 		
 		
@@ -3536,25 +3549,25 @@ class OrdersController extends AppController
 					$callWhere = ' AND ec.last_inserted_id ='.$id.''; 
 				}	
 			}
-			if($callResult == 1)
-					{
-						$callWhere .= " AND u2.callresult IN (1,2)";
-					} else if($callResult == 2) {
-						$callWhere .= " AND u2.callresult IN (6,4,8,9,11)";
-					}
-					if(!empty($seletedStr)) 
-					{
-						if($seletedStr == 'today')
-						{
-							$callWhere .= " AND u2.callback_date = CURDATE()"; 
-						} else if ($seletedStr == 'missed-call-date') {
-							// $fdate1 = date_create($fromDate);
-						 //   $fromDate = date_format($date,"Y-m-d");
-							$callWhere .= " AND u2.callback_date BETWEEN'".$fromDate."' AND '". $toDate."'";
-						} else {
-							$callWhere .= '';
-						}
-					}
+			if($callResult == 1) 
+			{
+				$callWhere .= " AND u2.callresult IN (1,2)";
+			} else if($callResult == 2) {
+				$callWhere .= " AND u2.callresult IN (6,4,8,9,11)";
+			}
+			if(!empty($seletedStr)) 
+			{
+				if($seletedStr == 'today')
+				{
+					$callWhere .= " AND u2.callback_date = CURDATE()"; 
+				} else if ($seletedStr == 'missed-call-date') {
+					// $fdate1 = date_create($fromDate);
+				 //   $fromDate = date_format($date,"Y-m-d");
+					$callWhere .= " AND u2.callback_date BETWEEN'".$fromDate."' AND '". $toDate."'";
+				} else {
+					$callWhere .= '';
+				}
+			}
 			
 			$countSql = "SELECT count(*) as total FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere;
 			
