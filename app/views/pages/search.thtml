@@ -1,5 +1,17 @@
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
 	<script language="JavaScript">
-
+		$(document).ready(function(){
+			$("#sq_str").on("keyup",function(e){
+				if(e.which == 13)
+				{
+					submitRequest();
+				}
+			});
+		});
+	
 	function callbackSearch()
 	{
 		var current_role_id =  document.getElementById('current_role_id').value;
