@@ -13,6 +13,19 @@
 <script language="JavaScript" type="text/javascript">
 
     // $( "#datepicker2" ).datepicker();
+	// #LOKI- Sort customer data
+	sortType = '';
+	sortBy = '';
+    $(".sort_data").live("click", function()
+    {
+    	// var sort_type = $(this).attr('sort_type');
+    	var sort_type =  $("#sort_type").val();
+    	sortBy = $(this).attr('sort_val');
+    	sortType = ((sort_type == "")? 'desc' : ((sort_type == 'desc')? 'asc' : 'desc'));
+    	$("#sort_type").val(sortType);
+    	$("#user_serch_go").trigger("click");
+    });
+
 	function showSelectBar(nval)
 	 {
 			$("#current-seleted-button").val(nval);
@@ -35,8 +48,8 @@
 	var lpp = 500;	//lines per page
 	var maxpage = 1;
 	 function searchList (sq_crit,sq_str='',page, fromTop='') {
-		 	
-		
+		 
+		var sortType =  $("#sort_type").val();
 	 	var fromDate = $("#datepicker1").val();
 	 	var toDate = $("#datepicker2").val(); 	
 	 	if(fromTop != 1)
@@ -47,7 +60,11 @@
 		 		var selectedStr = $("#selected-str").val();
 		 	}
 	 	}
-	 	
+	 	if(typeof(sortType) == 'undefined') 
+		{
+			sortType = '';	
+		}
+
 		//TODO:Make system work with pages, not limits, remove limit logic from PHP
 		// if(fromDate == '' || toDate == '')
 		// {
@@ -89,7 +106,7 @@
 		//alert("requested page "+page+"\nmaxpage "+maxpage+"\nlimit "+limit);
 		divID = document.getElementById('listbox');
 		divID2 = document.getElementById('count_of_cust_div1');
-		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&add=0&curpage='+page+'&is_call_result='+is_call_res+'&seletedStr='+selectedStr+'&fromDate='+fromDate+'&toDate='+toDate,
+		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&add=0&curpage='+page+'&is_call_result='+is_call_res+'&seletedStr='+selectedStr+'&fromDate='+fromDate+'&toDate='+toDate+'&sortType='+sortType+'&sortBy='+sortBy,
 				function(data){
 					divID.innerHTML=data;
 					count_of_cust = document.getElementById('count_of_cust').value;
@@ -227,6 +244,7 @@
 </script>
 <input type="hidden" id = "current-seleted-button" name="current-seleted-button" value="">
 <input type="hidden" id = "selected-str" name="selected-str" value="">
+<input type="hidden" id = "sort_type" name="sort_type" value="">
 <div id='append_count_div' style="display: none;margin-left: 10px;">
 	<div style="float: left;display:inline-block;">No. of count - </div>
 	<div style="float: left;display:inline-block;" id="count_of_cust_div1"></div>

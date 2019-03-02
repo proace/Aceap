@@ -3521,6 +3521,8 @@ class OrdersController extends AppController
 		}
 		else if ($_GET['sq_crit'] == 'Campaign_data')
 		{
+			$sortBy = $_GET['sortBy'];
+			$sortType = $_GET['sortType'];
 			$seletedStr = $_GET['seletedStr'];
 			$fromDate = $_GET['fromDate'];
 			$toDate = $_GET['toDate'];
@@ -3568,7 +3570,17 @@ class OrdersController extends AppController
 					$callWhere .= '';
 				}
 			}
-			
+			if(!empty($sortBy))
+			{
+				if($sortBy == "call-result")
+				{
+					$orderBy = " ORDER BY u2.callresult ".$sortType;
+				} else if($sortBy == "call-back") {
+					$orderBy = " ORDER BY u2.callback_date ".$sortType;
+				} else {
+					$orderBy = " ORDER BY u2.lastcall_date ".$sortType;
+				}
+			}
 			$countSql = "SELECT count(*) as total FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere;
 			
 			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
@@ -3579,7 +3591,7 @@ class OrdersController extends AppController
 			$this->set('totalCus', $totalCus);
 			$totalPages = ceil($totalCus / 500);
 			$this->set('totalPages', $totalPages);
-			$sql = "SELECT * FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere." limit ".$limit;
+			$sql = "SELECT * FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere.$orderBy." limit ".$limit;
 					$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 					$result = $db->_execute($sql);
 

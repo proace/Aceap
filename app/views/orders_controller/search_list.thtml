@@ -32,7 +32,7 @@
 	      &nbsp;&nbsp;
 		  <input type="text" id="datepicker2" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($tdate) echo $tdate; else echo ''; ?>">
 	  </div>
-<input type="button" name="call-back-result" value="Go" onclick="searchList('Campaign_data',<?php echo $campId ?>);">
+<input type="button" name="call-back-result" id="user_serch_go" value="Go" onclick="searchList('Campaign_data',<?php echo $campId ?>);">
 <?php }?>
 
 <?php if($totalPages > 1){?>
@@ -57,9 +57,9 @@ if ($add == 0) { ?>
 	<div class="dhcell" style="width: 110px;">Last Name<?=$last_name?></div>
 	<div class="dhcell" style="width: 85px;"><b>First Name<?=$first_name?></b></div>
 	<div class="dhcell" style="width: 95px;">Source</div>
-	<div class="dhcell" style="width: 70px;">Call Result</div>
-	<div class="dhcell" style="width: 80px;">Last Call</div>
-	<div class="dhcell" style="width: 80px;">Callback</div>
+	<div class="dhcell sort_data" style="width: 70px;"  sort_type='' sort_val="call-result"><a>Call Result</a></div>
+	<div class="dhcell sort_data" style="width: 80px;"  sort_type='' sort_val="last-call">Last Call</div>
+	<div class="dhcell sort_data" style="width: 80px;"  sort_type='' sort_val="call-back">Callback</div>
 	<?php if($callback_search_head == 'yes'){?>
 	<div class="dhcell" style="width: 125px;">Job Type</div>
 	<div class="dhcell" style="width: 125px;">Last Job Date</div>
