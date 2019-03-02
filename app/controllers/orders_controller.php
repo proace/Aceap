@@ -3563,8 +3563,10 @@ class OrdersController extends AppController
 				{
 					$callWhere .= " AND u2.callback_date = CURDATE()"; 
 				} else if ($seletedStr == 'missed-call-date') {
-					// $fdate1 = date_create($fromDate);
-				 //   $fromDate = date_format($date,"Y-m-d");
+					 $fdate1 = date_create($fromDate);
+				   $fromDate = date_format($fdate1,"Y-m-d");
+				   $fdate2 = date_create($toDate);
+				   $toDate =  date_format($fdate2,"Y-m-d");
 					$callWhere .= " AND u2.callback_date BETWEEN'".$fromDate."' AND '". $toDate."'";
 				} else {
 					$callWhere .= '';

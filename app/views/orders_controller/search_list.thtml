@@ -1,4 +1,5 @@
-<style type="text/css">
+<!-- <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
+ --><style type="text/css">
 .new-btn {
 	position: relative;
     display: block;
@@ -26,11 +27,12 @@
 <div id='missed_callback_dates' style="display: none;">
 	      from: 
 	      &nbsp;&nbsp;
-
-		  <input type="text" id="datepicker1" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($fdate) echo $fdate; else echo ''; ?>">
+		  <!-- <input type="text" id="datepicker1" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($fdate) echo $fdate; else echo ''; ?>"> -->
+		  <input type="text" name="ffromdate" id="datepicker1" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
 	      to:
 	      &nbsp;&nbsp;
-		  <input type="text" id="datepicker2" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($tdate) echo $tdate; else echo ''; ?>">
+		 <!--  <input type="text" id="datepicker2" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($tdate) echo $tdate; else echo ''; ?>"> -->
+		  <input type="text" name="ftodate" id="datepicker2" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
 	  </div>
 <input type="button" name="call-back-result" id="user_serch_go" value="Go" onclick="searchList('Campaign_data',<?php echo $campId ?>);">
 <?php }?>
