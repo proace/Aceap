@@ -15,6 +15,13 @@
 
 
 <style type="text/css">
+.success {
+ background-color: red;
+ }
+ .error_message {
+    font-size: 20px;
+    text-align: center;
+ }
 [class^="pre-image_"] {
     display: none;
 }
@@ -177,8 +184,16 @@ function upload_photo(cur,i) {
         </a>
     </p>
     </div>
+
+    <?php if(!empty($_GET['payment_image_error'])) {?>
+        <div class="success" >
+            <p class="error_message">
+                <?php echo $_GET['payment_image_error']; ?>
+            </p>
+        </div>
+     <?php }?>  
     <div id="items_div">
-    <form id="items_form" action="<?php echo BASE_URL ?>/orders/saveInvoiceTabletItems" method="post">    
+    <form id="items_form" action="<?php echo BASE_URL ?>/orders/saveInvoiceTabletItems?fromTech=1" method="post">    
         <?php echo $html->input('Invoice/order_id', array('type'=>'hidden', 'value'=>$job['Order']['id'])); ?>
         <?php echo $html->input('Invoice/order_type_id', array('type'=>'hidden', 'value'=>$job['Order']['order_type_id'])); ?>
         <?php echo $html->input('Invoice/customer_id', array('type'=>'hidden', 'value'=>$job['Order']['customer_id'])); ?> 
@@ -502,6 +517,7 @@ function upload_photo(cur,i) {
 <pre><?php //print_r($jobs) ?></pre>
 <div class="invoice-img-enlarge" title="Photo">
     <img src="<?=$imgPath?>" style="width:100%;">
-</div>    
+</div> 
+
 </body>
 </html>

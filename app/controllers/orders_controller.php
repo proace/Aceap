@@ -7,13 +7,14 @@ class OrdersController extends AppController
 	//To avoid possible PHP4 problemfss
 	var $name = "OrdersController";
 
+
 	var $uses = array('OrderEstimate','Order', 'CallRecord', 'User', 'Customer', 'OrderItem',
                     'Timeslot', 'OrderStatus', 'OrderType', 'Item',
                     'Zone','PaymentMethod','ItemCategory','InventoryLocation',
 					'OrderSubstatus','Coupon','Setting','CallResult','Invoice', 'Question', 'Payment', 'Invoice');
 
-	var $helpers = array('Common');
-	var $components = array('HtmlAssist', 'Common', 'Lists');
+	var $helpers = array('Common', 'Session');
+	var $components = array('HtmlAssist', 'Common', 'Lists', 'Session');
 	var $itemsToShow = 20;
 	var $pagesToDisplay = 10;
 
@@ -10698,6 +10699,8 @@ class OrdersController extends AppController
 	}
 	function saveInvoiceTabletItems() {
 		//echo '<BR>REQUEST<BR><pre>';print_r($_REQUEST);exit;
+		
+		$fromTech = isset($_GET['fromTech']) ? $_GET['fromTech'] : 0;
 		if(isset($_REQUEST['order_id'])){
 			$order_id = $_REQUEST['order_id'];	
 		}else{
@@ -10867,7 +10870,31 @@ class OrdersController extends AppController
 			//echo $query;
 			$db->_execute($query);
 		}
-
+		// #LOKI- Check payment is null or not for send Invoice
+		if($fromTech)
+		{
+			$query = "select rp.idorder, rp.payment_method, o.payment_image from ace_rp_payments rp  INNER JOIN ace_rp_orders o ON rp.idorder = o.id where rp.idorder='".$order_id."'";
+			$result = $db->_execute($query);
+        	$row = mysql_fetch_array($result, MYSQL_ASSOC);
+        	if(!empty($row))
+        	{
+	        	$paymentMethod = $row['payment_method'];
+	        	$paymentImage = $row['payment_image'];
+	        	$paymentMethodArray = array(2,3,4,5);
+	        	if(in_array($paymentMethod, $paymentMethodArray))
+	        	{
+	        		if(empty($paymentImage) || $paymentImage == '')
+	        		{
+	  	    			 $this->redirect('orders/invoiceTabletPayment?order_id='.$order_id.'&payment_image_error=Please add payment image!');
+		    			 exit;
+	        		}
+	        	}
+        		
+        	} else {
+        		$this->redirect('orders/invoiceTabletPayment?order_id='.$order_id.'&payment_image_error=Please add payment!');
+		    			 exit;
+        	}
+		} 
 		if(isset($_REQUEST['review'])){
 			//echo 'OID='.$order_id.' == ='.$cemail;exit;
 			$return = $this->emailInvoiceReviewLinks($order_id,$cemail);

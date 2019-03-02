@@ -470,15 +470,9 @@ function SavePayment(){
 	var method = $("#PaymentPaymentMethodId").val();	
 	var amount = $("#paid_by_amount").val();	
 	var auth_number = $("#auth_number").val();
-	var fileval = $('#FileinputImg')[0].files[0];
-	
-	//$("#PaymentPaymentMethodId").attr("readonly","readonly");
-	//$("#paid_by_amount").attr("readonly","readonly");
-	//$("#auth_number").attr("readonly","readonly");
-	//$("#save_payment").attr("disabled","disabled");
+	//var fileval = $('#FileinputImg')[0].files[0];
 	
 	if (!method) {alert('A payment method should be selected!'); return;}
-	//if ((method>2)&&(method<6)&&(!auth_number)) {alert('An authorization number is required!'); return;}
 
 	var formdata = new FormData();
 	formdata.append("order_id",id);
@@ -486,12 +480,16 @@ function SavePayment(){
 	formdata.append("amount",amount);
 	formdata.append("payment_type",1);
 	formdata.append("auth_number",auth_number);
-	if(fileval)
+	if(method == 2 || method == 3 || method == 4 || method == 5)
 	{
-		formdata.append('payment_image', fileval); 
-	} else {
-		alert('Payment Image is required!');
-		return;
+		var fileval = $('#FileinputImg')[0].files[0];
+		if(fileval)
+		{
+			formdata.append('payment_image', fileval); 
+		} else {
+			alert('Payment Image is required!');
+			return;
+		}
 	}
 	$.ajax({
 		url: G_URL + "payments/savePayment",
@@ -513,25 +511,6 @@ function SavePayment(){
 			$("#auth_number").val("");
 		}
 	});
-	// $.post(G_URL + "payments/savePayment",
-	// 	{
-	// 		order_id:id, 
-	// 		method:method, 
-	// 		amount:amount, 
-	// 		payment_type:1, 
-	// 		auth_number:auth_number
-	// 	},
-	// 	function(data){    		
-	// 	showPayments();
-	// 	$("#PaymentPaymentMethodId").removeAttr("readonly");
-	// 	$("#paid_by_amount").removeAttr("readonly");
-	// 	$("#auth_number").removeAttr("readonly");
-	// 	$("#save_payment").removeAttr("disabled");
-		
-	// 	$("#PaymentPaymentMethodId").val(0);
-	// 	$("#paid_by_amount").val(0);
-	// 	$("#auth_number").val("");
- //  });
 }
 function SaveTechPaymentImg()
 {
