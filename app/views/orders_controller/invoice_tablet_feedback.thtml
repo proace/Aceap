@@ -16,15 +16,13 @@
 [class^="pre-image_"] {
     display: none;
 } 
+
+.overlay1 , .overlay2,.statistics_overlay, .statistic_overlay {
+        display: none;
+    }
 </style>
+
 <script language="JavaScript">
-$(document).ready(function(){
-    $(".disply_preview").live("change",function(e){
-        var img_ct = $(this).attr("data-ct").trim();
-        var cur = $(this);
-       upload_photo_preview(cur[0],img_ct);
-    }); 
-});
 $(function () {
         $(".invoice-img-enlarge").dialog({
             modal: true,
@@ -71,7 +69,7 @@ function upload_photo(i) {
 	formData.append('action', 'previewImg');
 	// Main magic with files here
 	formData.append('image', $('input[id="sortpicture'+i+'"]')[0].files[0]);
-
+    $(".overlay"+i).show();
 	$.ajax({
 		url: '<?=BASE_URL?>/orders/uploadPhoto/<?=$order['Order']['id'] ?>/'+i,
 		dataType: 'text',
@@ -81,8 +79,12 @@ function upload_photo(i) {
 		data: formData,
 		type: 'post',
 		success: function(data) {
-			$('#photo_' + i).attr('src', data);
+            var img_ct = $("#sortpicture"+i).attr("data-ct").trim();
+            var cur = $("#sortpicture"+i);
+            upload_photo_preview(cur[0],img_ct);
+            $('#photo_' + i).attr('src', data);
 			$('#big_photo_' + i).attr('src', data);
+            $(".overlay"+i).hide();
 		}
 	});
 }
@@ -227,6 +229,7 @@ function upload_photo(i) {
                         <img id="big_photo_1" src="<?php echo ROOT_URL.'/upload_photos/'.$order['Order']['photo_1'];?>" style="max-height:600px;max-width:600px">
                     </div>
                 <?php } else{?>
+                    <img id="" class="overlay1"  src="<?=ROOT_URL;?>/app/webroot/img/loader.gif" alt="your image" />
                     <img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
                     <?php }?>
                 <div style="padding:10px;">
@@ -244,6 +247,7 @@ function upload_photo(i) {
                         <img id="big_photo_2" src="<?php echo ROOT_URL.'/upload_photos/'.$order['Order']['photo_2'];?>" style="max-height:600px;max-width:600px">
                     </div>
                 <?php } else {?>
+                     <img id="" class="overlay2"  src="<?=ROOT_URL;?>/app/webroot/img/loader.gif" alt="your image" />
                         <img id="pre-image_photo2" class="pre-image_photo2 invoice-openImg" src="#" alt="your image" />
                     <?php }?>
                 <div style="padding:10px;">
