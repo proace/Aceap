@@ -750,12 +750,11 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
         $hint = "";
         $print_this = "";
     }*/
-
     if ($common->getLoggedUserRoleID() == "6")
     {
         $edit_button = '&nbsp;'.$order['order_number'];
         if (!$order['appliance_ordered']) $border2 = 'background-color:#FF77FF';
-        if (!$order['permit_ordered']) $color = 'background-color: #5555FF';
+        //if (!$order['permit_ordered']) $color = 'background-color: #5555FF';
         if ($order['tech_visible'] == '0') $color = 'background-color: #555555';
     }
     //echo '<BR>RESPONSE<BR><pre>';print_r($order);exit;

@@ -851,7 +851,18 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-jobs.png'
 
+						),
+
+						array(
+
+							'name' => 'User Monitoring',
+
+							'url' => BASE_URL.'/users/userMonitoring',
+
+							'img' => 'monitoring-images.png'
+
 						)
+
 
 					),
 

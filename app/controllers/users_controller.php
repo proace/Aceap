@@ -1135,5 +1135,18 @@ $h .= ' <tr>
 		$this->set('rows_count', $rows_count);
 	}
 
+	// #LOKI- User monitoring 
+	function userMonitoring()
+	{ 
+	 	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+	 	
+ 		$query = "SELECT u.first_name, u.extension_id, r.name from ace_rp_users u INNER JOIN ace_rp_roles r on r.id = u.role_id where u.is_login=1";
+ 		$result = $db->_execute($query);
+ 		$users = array();
+ 		while($row = mysql_fetch_array($result)) {
+			$users[] = $row;
+		}
+		$this->set('users', $users);
+ 	}
 }
 ?>
