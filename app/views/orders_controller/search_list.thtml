@@ -10,6 +10,8 @@
 	margin-left: 6px;
 }
 </style>
+
+
 <?php if($is_campaing == 1) { ?>
 <!-- <input type="hidden" id = "current-seleted-button" name="current-seleted-button" value="">
 <input type="hidden" id = "selected-str" name="selected-str" value="today"> -->
@@ -59,9 +61,10 @@ if ($add == 0) { ?>
 	<div class="dhcell" style="width: 110px;">Last Name<?=$last_name?></div>
 	<div class="dhcell" style="width: 85px;"><b>First Name<?=$first_name?></b></div>
 	<div class="dhcell" style="width: 95px;">Source</div>
-	<div class="dhcell sort_data" style="width: 70px;"  sort_type='' sort_val="call-result"><a>Call Result</a></div>
-	<div class="dhcell sort_data" style="width: 80px;"  sort_type='' sort_val="last-call">Last Call</div>
-	<div class="dhcell sort_data" style="width: 80px;"  sort_type='' sort_val="call-back">Callback</div>
+
+	<div class="dhcell sort_data" style="width: 70px;"  sort_type='' sort_val="call-result">Call Result <?php if($sort_by == 'call-result'){ echo $sortTypeImg ?> <?php } ?></div>
+	<div class="dhcell sort_data" style="width: 80px;"  sort_type='' sort_val="last-call">Last Call <?php if($sort_by == 'last-call') { echo $sortTypeImg ?> <?php } ?></div>
+	<div class="dhcell sort_data" style="width: 80px;"  sort_type='' sort_val="call-back">Callback <?php if($sort_by == 'call-back') { echo $sortTypeImg ?> <?php } ?></div>
 	<?php if($callback_search_head == 'yes'){?>
 	<div class="dhcell" style="width: 125px;">Job Type</div>
 	<div class="dhcell" style="width: 125px;">Last Job Date</div>

@@ -109,6 +109,7 @@ class LoginController extends AppController
 						exit;
 				}
 				elseif ($logged_in) {
+
 					$user_agent = $_SERVER['HTTP_USER_AGENT'];
 					$findme   = 'Mobile';
 					$pos = strpos($user_agent, $findme);
@@ -175,8 +176,12 @@ class LoginController extends AppController
 								$db->_execute("update ace_rp_login_log set last_date=now() where work_date='$date' and user_id='$userid' and record_type=0 and login_type=$external_login");
 						}
 						else
+						{
 								$db->_execute("insert into ace_rp_login_log (work_date, user_id, record_type, login_type) VALUES (now(), '$userid', 1, $external_login)");
+						}
+					$db->_execute("UPDATE ace_rp_users set is_login = 0 where id=".$userid);	
 				}
+
 		}
 
 		function logout()
@@ -184,6 +189,7 @@ class LoginController extends AppController
 				$this->checkout();
 				session_destroy();
 				session_regenerate_id();
+
 				$this->redirect("login/index?logout';");
 		}
 

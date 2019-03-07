@@ -2185,7 +2185,7 @@ function get_data($url)
 							  <u style="color:blue;cursor:pointer">Recording</u>
 				  </td>
                   <?php } ?>-->
-                  <input type="button" value="Email" onclick="emailInvoice(<?=$this->data["Order"]["id"]?>);" name="invoice-email">
+                  <input type="button" value="Email Invoice" onclick="emailInvoice(<?=$this->data["Order"]["id"]?>);" name="invoice-email">
                   <?php }?>
               </td>
 				</tr>

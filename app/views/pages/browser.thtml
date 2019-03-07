@@ -17,7 +17,6 @@
 	sortBy = '';
     $(".sort_data").live("click", function()
     {
-    	// var sort_type = $(this).attr('sort_type');
     	var sort_type =  $("#sort_type").val();
     	sortBy = $(this).attr('sort_val');
     	sortType = ((sort_type == "")? 'desc' : ((sort_type == 'desc')? 'asc' : 'desc'));
@@ -239,7 +238,6 @@
 			<? } ?>
 		}
 	}
-
 </script>
 <input type="hidden" id = "current-seleted-button" name="current-seleted-button" value="">
 <input type="hidden" id = "selected-str" name="selected-str" value="">

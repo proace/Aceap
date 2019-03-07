@@ -1,5 +1,5 @@
 <? ob_start();
-//error_reporting(E_PARSE ^ E_ERROR );
+//error_reporting(E_ALL );
 //error_reporting(2047);
 
 class OrdersController extends AppController
@@ -13,8 +13,8 @@ class OrdersController extends AppController
                     'Zone','PaymentMethod','ItemCategory','InventoryLocation',
 					'OrderSubstatus','Coupon','Setting','CallResult','Invoice', 'Question', 'Payment', 'Invoice');
 
-	var $helpers = array('Common', 'Session');
-	var $components = array('HtmlAssist', 'Common', 'Lists', 'Session');
+	var $helpers = array('Common');
+	var $components = array('HtmlAssist', 'Common', 'Lists');
 	var $itemsToShow = 20;
 	var $pagesToDisplay = 10;
 
@@ -36,6 +36,7 @@ class OrdersController extends AppController
 		}
 		//echo '<pre>';print_r($_REQUEST['ordid']);exit;
 	}
+
 	function checkAccess()
 	{
 	  //if( $this->action == 'index' ) {
@@ -3574,6 +3575,7 @@ class OrdersController extends AppController
 			}
 			if(!empty($sortBy))
 			{
+				$this->set('sort_by', $sortBy);
 				if($sortBy == "call-result")
 				{
 					$orderBy = " ORDER BY u2.callresult ".$sortType;
@@ -3581,6 +3583,15 @@ class OrdersController extends AppController
 					$orderBy = " ORDER BY u2.callback_date ".$sortType;
 				} else {
 					$orderBy = " ORDER BY u2.lastcall_date ".$sortType;
+				}
+			}
+			if(!empty($sortType))
+			{
+				if($sortType == 'desc')
+				{
+					$this->set('sortTypeImg', 'v');
+				} else {
+					$this->set('sortTypeImg', '^');
 				}
 			}
 			$countSql = "SELECT count(*) as total FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere;
@@ -13894,22 +13905,43 @@ function deleteUserFromCampaign()
  	exit();
 }
 
- function saveCallRecording()
- {
- 	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
- 	$recordingName = $_POST['recording_name'];
- 	$phoneNumber = $_POST['phone_number'];
- 	$orderNumber = !empty($_POST['order_num']) ? $_POST['order_num'] : 'null';
- 	$date = date("Y-m-d h:i:s");
+// #LOKI- save callRecordings
+ // function saveCallRecording()
+ // {
+ //         // print_r("fsjkf");die;
+ // 	// $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+ // 	// $recordingName = $_POST['recording_name'];
+ // 	// $phoneNumber = $_POST['phone_number'];
+ // 	// $orderNumber = !empty($_POST['order_num']) ? $_POST['order_num'] : 'null';
+ // 	// $date = date("Y-m-d h:i:s");
 
- 	$query = "INSERT into ace_rp_call_recordings (phone_no, recording_name, record_date, order_number) values ('".$phoneNumber."', '".$recordingName."', '".$date."',".$orderNumber.")";
- 		$result = $db->_execute($query);
- 	if($result)
- 	{
- 		echo "OK";
- 		exit();
- 	}
- }
+ // 	// $query = "INSERT into ace_rp_call_recordings (phone_no, recording_name, record_date, order_number) values ('".$phoneNumber."', '".$recordingName."', '".$date."',".$orderNumber.")";
+ // 	// 	$result = $db->_execute($query);
+ // 	// if($result)
+ // 	// {
+ // 	// 	echo "OK";
+ // 	// 	exit();
+ // 	// }
+
+	// // $putdata = fopen("php://input", "r");
+
+	// // print_r($putdata);die;
+	// // $from = $_GET["from"];
+	// // $from = substr($from, 0, strpos($from, '@'));
+	// // $to = $_GET["to"];
+	// // $to = substr($to, 0, strpos($to, '@'));
+	// // $ext = $_SERVER['REQUEST_URI'];
+	// // $ext = substr($ext, strpos($ext, '?') - 3, 3);
+	// // $r = $_GET["call_id"];
+	//  // $d = date("YmdHis");
+	//  // $fp = fopen("$d.JPG", "w");
+	//  //  while ($data = fread($putdata, 1024))
+ //  //   fwrite($fp, $data);
+ 
+ //  // /* Close the streams */
+ //  // fclose($fp);
+ //  // fclose($putdata);
+ // }
 
  function showPaymentImages()
  {
