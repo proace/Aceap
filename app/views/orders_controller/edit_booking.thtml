@@ -771,6 +771,7 @@ function GetUserHotList()
 }
 function SaveDialerCallRecord(){
 	var selectedButton = window.parent.frame_browser.document.getElementById("current-seleted-button").value;
+
 	if(selectedButton == '')
 	{
 		var showDefault = 1;
@@ -2495,7 +2496,7 @@ function get_data($url)
 					<td align="right"><?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13 || $_SESSION['user']['role_id'] == 1) echo 'Campaing:';?></td>
                     <td>
                     <?php
-						if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13 || $_SESSION['user']['role_id'] == 1)
+						if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13 || $_SESSION['user']['role_id'] == 1 || $_SESSION['user']['role_id'] == 3 )
 						{?>
 						<select name="data[Order][order_campaing_id]" id="campaing-select">
 							<option value=""></option>	

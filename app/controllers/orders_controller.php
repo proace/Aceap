@@ -652,7 +652,7 @@ class OrdersController extends AppController
 
 					$custId = $this->data['Customer']['id'];
 					$orderNumber = $this->data['Order']['order_number'];
-					$query = "UPDATE ace_rp_all_campaigns set show_default =".$showDefault." where call_history_ids = ".$custId;
+					$query = "UPDATE ace_rp_all_campaigns set show_default =1 where call_history_ids = ".$custId;
        				$db->_execute($query);
 					$this->redirect('orders/editBooking?hotlist=1&customer_id='.$custId.'&is_booking=1&orderNo='.$orderNumber);
 				} else if($fromTech == 1)
@@ -3947,7 +3947,6 @@ class OrdersController extends AppController
 					WHERE $criteria LIKE '%$sq_str%'
 						$telem_clause
 					LIMIT ".$limit;
-
 			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 			$result = $db->_execute($sql);
 
