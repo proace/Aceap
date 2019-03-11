@@ -7802,7 +7802,7 @@ class OrdersController extends AppController
 			{
 				// Set the date to now
 				//$callback_date
-				$scheduled_date = 'now() + INTERVAL 2 DAY';
+				$scheduled_date = 'now() + INTERVAL 1 MONTH';
 				$scheduled_time = 'current_time()';
 				$callback_reason = 'Answering machine';
 		    	$callback_user = 57145; //ACE
