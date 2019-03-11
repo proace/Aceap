@@ -770,6 +770,11 @@ function GetUserHotList()
     });
 }
 function SaveDialerCallRecord(){
+	var selectedButton = window.parent.frame_browser.document.getElementById("current-seleted-button").value;
+	if(selectedButton == '')
+	{
+		var showDefault = 1;
+	}
 	var orderNo = $("#orderNo").val();
 	var callId = $('#end_current_call').attr("call_id");
 	var callResultId = $("#answer_reply").val();
@@ -872,7 +877,8 @@ function SaveDialerCallRecord(){
 		 callback_user:'',
 		 call_id:0,
 		 call_date:lastCall,
-		 dialer_id:'web'
+		 dialer_id:'web',
+		 selected_button: showDefault
 		}
 	, function(data){
 		 AddCustomerNote();
@@ -941,6 +947,11 @@ function callRecord(){
  }
 
 function SaveCallRecord(){
+var selectedButton = window.parent.frame_browser.document.getElementById("current-seleted-button").value;
+	if(selectedButton == '')
+	{
+		var showDefault = 1;
+	}
 	// Check if all the fields are filld up
 	if ($('#CallRecordCallResultId').val()=='') {alert('Please select a CALL RESULT');return;}
 	if ($('#CallRecordCallNote').val()=='') {alert('Please add a CALL NOTE');return;}
@@ -973,7 +984,8 @@ function SaveCallRecord(){
 		 callback_user:$('#CallRecordCallbackUserId').val(),
 		 customer_campaing_id:$('#CuscampaingId').val(),
 		 call_id:0,
-		 dialer_id:'web'
+		 dialer_id:'web',
+		 selected_button:  showDefault
 		}, function(data){
 			
 			  AddCustomerNote();
@@ -1180,17 +1192,12 @@ function upload_photo(cur,i) {
   }
 }
 $(document).ready(function(){
-	// var degree = 0
- //    $(".img").rotate({ 
- //       bind: 
- //         { 
- //            click: function(){
- //                degree +=90;
- //                $(this).rotate({ animateTo:value})
- //            }
- //         } 
-       
- //    });
+	var selectedButtonVal = window.parent.frame_browser.document.getElementById("current-seleted-button").value;
+	if(selectedButtonVal == '')
+	{
+		$("#show-default").val(1);
+		//var showDefault = 1;
+	}
 
 	$(".disply_preview").live("change",function(e){
 		console.log("hua");
@@ -1893,7 +1900,8 @@ function get_data($url)
 
 <form name="editBookingform" action="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
 <!-- This tag creates our form tag -->
-
+ <!-- Set booking from campaing value -->
+<input type="hidden" name="showDefault" id="show-default" value="">
 <input type="hidden" name="campaingId" id="CuscampaingId"value="<?= $campaingId ?>">
 <input type="hidden" name="send_cancalled_email" id="send_cancalled_email"value="0">
 <input type="hidden" name="from_tech" id="from_tech"value="<?= $from_tech?>">

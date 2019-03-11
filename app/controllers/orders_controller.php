@@ -90,7 +90,8 @@ class OrdersController extends AppController
     	{
     		$this->data['Customer']['campaign_id'] = $this->data['Customer']['campaign_id'];
     	}
-    	
+    	// #LOKI- Set the filter 
+    	$this->data['Customer']['show_default'] = $this->data['Customer']['selected_button'];
 		$this->data['Customer']['phone'] = $this->data['Customer']['phone']!= '' ? $this->Common->preparePhone($this->data['Customer']['phone']):'';
 		$this->data['Customer']['cell_phone'] = $this->data['Customer']['cell_phone'] != '' ? $this->Common->preparePhone($this->data['Customer']['cell_phone']) : '';
 		$this->data['Customer']['postal_code'] = $this->data['Customer']['postal_code'] != '' ? $this->Common->prepareZip($this->data['Customer']['postal_code']) : '';
@@ -110,7 +111,6 @@ class OrdersController extends AppController
 		if (isset($this->data['Customer']['next_service']))
 			$this->data['Customer']['next_service']=date('Y-m-d',strtotime($this->data['Customer']['next_service']));
 		// /Added by Maxim Kudryavtsev - for booking member cards
-
 		$this->Order->Customer->save($this->data['Customer']);
 		$last_id = $this->Order->Customer->getLastInsertId();
 		if( $this->data['Customer']['id'] == '')
@@ -146,7 +146,7 @@ class OrdersController extends AppController
 
     // Method saves order's data that was recieved from the order's page.
     // Created: 06/02/2010, Anthony Chernikov
-    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null, $techOrderId=null, $send_cancalled_email = null)
+    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null, $techOrderId=null, $send_cancalled_email = null, $showDefault=null)
     {
     	if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
 			$this->preViewEstimate($_POST);
@@ -649,8 +649,11 @@ class OrdersController extends AppController
 			}else{
 				
 				if($isDialer) {
+
 					$custId = $this->data['Customer']['id'];
 					$orderNumber = $this->data['Order']['order_number'];
+					$query = "UPDATE ace_rp_all_campaigns set show_default =".$showDefault." where call_history_ids = ".$custId;
+       				$db->_execute($query);
 					$this->redirect('orders/editBooking?hotlist=1&customer_id='.$custId.'&is_booking=1&orderNo='.$orderNumber);
 				} else if($fromTech == 1)
 				{
@@ -1961,7 +1964,7 @@ class OrdersController extends AppController
 
 		if (!empty($this->data['Order']))
 		{
-
+			$showDefault = isset($_POST['showDefault'])?$_POST['showDefault']:0;
 			//If order information is submitted - save the order
 			$send_cancalled_email = isset($_POST['send_cancalled_email'])?$_POST['send_cancalled_email']
 			:0;
@@ -1973,7 +1976,7 @@ class OrdersController extends AppController
 			$invoiceImages = isset($_FILES['uploadInvoice'])? $_FILES['uploadInvoice'] : null;
 			$photoImage1 = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
 			$photoImage2 = isset($_FILES['sortpic2'])? $_FILES['sortpic2'] : null;
-			$this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2, $fromTech, $techOrderId, $send_cancalled_email);
+			$this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2, $fromTech, $techOrderId, $send_cancalled_email, $showDefault);
 		}
 		else
 		{
@@ -3552,11 +3555,17 @@ class OrdersController extends AppController
 					$callWhere = ' AND ec.last_inserted_id ='.$id.''; 
 				}	
 			}
-			if($callResult == 1) 
+			if(!empty($callResult))
 			{
-				$callWhere .= " AND u2.callresult IN (1,2)";
-			} else if($callResult == 2) {
-				$callWhere .= " AND u2.callresult IN (6,4,8,9,11)";
+				// $callWhere .= " AND ec.show_default > 0";
+				if($callResult == 1) 
+				{
+					$callWhere .= " AND u2.callresult IN (1,2)";
+				} else if($callResult == 2) {
+					$callWhere .= " AND u2.callresult IN (6,4,8,9,11)";
+				}
+			} else {
+				$callWhere .= " AND ec.show_default = 0";
 			}
 			if(!empty($seletedStr)) 
 			{
@@ -3594,6 +3603,7 @@ class OrdersController extends AppController
 					$this->set('sortTypeImg', '^');
 				}
 			}
+			$callWhere .= " AND u2.callresult NOT IN (7, 3)";
 			$countSql = "SELECT count(*) as total FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere;
 			
 			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
@@ -7502,6 +7512,8 @@ class OrdersController extends AppController
         {
             $this->data['Customer']['id'] = $customer_id;
         }
+   		$selected_button    = isset($_GET['selected_button']) ? $_GET['selected_button'] : 0;
+
         $this->data['Customer']['campaign_id']    			= isset($_GET['customer_campaing_id']) ? $_GET['customer_campaing_id'] : '';
         $this->data['Customer']['first_name']    			= $_GET['customer_first_name'];
         $this->data['Customer']['last_name']     			= $_GET['customer_last_name'];
@@ -7530,7 +7542,8 @@ class OrdersController extends AppController
         {
             $customer_id = $this->data['Customer']['id'];
         }
-
+        $query = "UPDATE ace_rp_all_campaigns set show_default =".$selected_button." where call_history_ids = ".$customer_id;
+       	$db->_execute($query);
   //       $query = "select * from ace_rp_call_history ach WHERE ach.id IN (SELECT MAX(id) FROM ace_rp_call_history WHERE customer_id = $customer_id)";
 		// $result = $db->_execute($query);
 
