@@ -1,6 +1,45 @@
 <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />	
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+<style type="text/css">
+.acecare-td-adjust {
+  position: relative;
+  height: 20px;
+  width: 50px;
+}
+.submitBtn {
+	float: right;
+    height: 28px;
+    margin-top: 10px;
+    margin-right: 50px;
+    width: 91px;
+}
 
+.acecare-td-adjust > input[type="file"] {
+  position: absoulte;
+  opacity: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0
+}
+
+.acecare-td-adjust > label {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: lightgrey;
+  color: #000;
+  border-radius: 5px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer
+}	
+[class^="pre-image_"] {
+    display: none;
+}
+</style>
 <script>
 	$(function () {
 	    $(".img-enlarge1").dialog({
@@ -16,7 +55,22 @@
 	    	$('.img-enlarge1 img').attr('src', imgPath);
 	        $('.img-enlarge1').dialog('open');
 	    });
-    });	
+    });
+     $(function () {
+	    $(".invoice-img-enlarge").dialog({
+	        modal: true,
+	        autoOpen: false,
+	        title: "Photo",
+	        autoOpen: false,
+	        width: 1024,
+	        height: 786,
+	    });
+	    $(".invoice-openImg").live("click",function () {
+	    	var imgPath = $(this).attr('src');
+	    	$('.invoice-img-enlarge img').attr('src', imgPath);
+	        $('.invoice-img-enlarge').dialog('open');
+	    });
+    });		
 function SelectTech(techId)
 {
 	if(techId > 0){
@@ -41,7 +95,7 @@ function GoChangeCommission(){
 	var TechId=document.getElementById("ftechid").value;
 	top.frames['main_view'].location.href='<? echo $html->url("/commissions/editTech/"); ?>'+TechId+'?rurl=<?=urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING'])?>';
 }
-function MarkVerified(job_id,data_in,element){
+function MarkVerified(job_id,data_in,element, is_tech=null){
   if (element.checked){
 				$.get("<?=BASE_URL;?>/commissions/setVerified",
 					{order_id:job_id,
@@ -100,6 +154,64 @@ function ShowMessages(job_id, message_to){
   var answer = window.showModalDialog("<?=BASE_URL?>/messages/ShowMessages?job_id="+job_id,'', 
   "dialogWidth:600px; dialogHeight:350px; dialogLeft:300px; dialogTop:200px;");
 }
+function upload_photo(cur,i) {	
+	//var file = $('input[id="sortpicture'+i+'"]')[0];
+	if (cur.files && cur.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+    	console.log('pre-image'+i);
+      $('.pre-image'+i+'')
+        .attr('src', e.target.result)
+        .width(86)
+        .height(50);
+        $('.pre-image'+i+'').css("display","block");
+    };
+    reader.readAsDataURL(cur.files[0]);
+  }
+}
+
+function techMarkVerified(job_id,status,element,status_val,total )
+{
+	if(status_val == 1)
+	{
+		var tech_confirm_total = $("#confirm-total").val();
+		console.log("confirm=",tech_confirm_total);
+	}else {
+		var tech_not_confirm_total = $("#not-confirm-total").val();
+		console.log("notconfirm=",tech_not_confirm_total);
+	}
+
+  if (element.checked){
+  	
+  					$.get("<?=BASE_URL;?>/commissions/setTechVerified",
+					{order_id:job_id,
+					 tech_num:status,
+					 tech_status_val: status_val,
+					 total_comm:total,
+					 old_total_comm: tech_confirm_total
+					},
+					function(data){document.forms['viewform'].submit();});
+	}
+	else{
+		
+		$.get("<?=BASE_URL;?>/commissions/setTechUnVerified",
+					{order_id:job_id,
+					 tech_num:status,
+					 tech_status_val: status_val,
+					 old_total_comm: tech_not_confirm_total
+					},
+					function(data){document.forms['viewform'].submit();});
+	}			
+}
+$(document).ready(function()
+{
+	$(".disply_preview").live("change",function(e){
+	    var img_ct = $(this).attr("data-ct").trim();
+	    var cur = $(this);
+	   upload_photo(cur[0],img_ct);
+	});
+
+});
 </script>
 
 <style type="text/css">
@@ -210,6 +322,15 @@ function ShowMessages(job_id, message_to){
 	</tr>
 </table>
 </form>
+<form method="POST" action="<?=BASE_URL;?>/commissions/saveTechCommission" name="techCommission" id="techCommission" enctype="multipart/form-data">
+<input type="hidden" name="techId" id="techId" value="<?=$techid?>" />
+<input type="hidden" name="fromDate" id="fromDate" value="<?=$fdate?>" />
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+<input type="hidden" name="currentRef" value="<?=$cur_ref?>">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="jobOption" value="<?= $joboption?>">
 <!--<div style="overflow: auto; height: 390px;">-->
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
     <tr style="height:25px;">
@@ -236,6 +357,10 @@ function ShowMessages(job_id, message_to){
 		<th rowspan=2 width="16" style="background-color:#ffff80;"><?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
 		<th rowspan=2 colspan=2 width="100" style="background-color:#ffff80;">Payments</th>
 		<th rowspan=2 colspan=2 width="100" style="background-color:#ffff80;">Purchase</th>
+		<th rowspan=2 width="100" style="background-color:#ffff80;">Notes</th>
+		<th rowspan=2 width="16" style="background-color:#ffff80;">Confirmed<?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
+		<th rowspan=2 width="16" style="background-color:#ffff80;">Not Confirmed<?='<img src="'.ROOT_URL.'/app/webroot/img/cross-icon.jpeg" heignt="16 px" width="16 px" >'?></th>
+
     </tr>
     <tr style="height:25px;">
         <th width="60" style="background-color:#53ffff;">jobs</th>
@@ -248,6 +373,8 @@ function ShowMessages(job_id, message_to){
 	$r = 1;
 	$total_sum = 0;
 	$approved_sum = 0;
+	$techApprovedSum = 0;
+	$techNotApprovedSum = 0;
 	foreach ($orders as $obj):
 		$class = 'cell'.(++$r%2);
 		$comm_calculated_class='color:red;';
@@ -333,6 +460,16 @@ function ShowMessages(job_id, message_to){
 					  &nbsp;
 					<?php } ?>
 				</td>
+				<?php
+					if(!empty($rows_persons[1]['tech_verified']) || $rows_persons[1]['tech_verified'] != '')
+					{
+						$techApprovedSum = $techApprovedSum + $rows_persons[1]['total_comm'];
+					} 
+					if(!empty($rows_persons[1]['tech_unverified']) || $rows_persons[1]['tech_unverified'] != '')
+					{
+						$techNotApprovedSum = $techNotApprovedSum + $rows_persons[1]['total_comm'];
+					} 
+				?>
         <td <? if ($message_to) echo 'rowspan=4';?> align="center" valign="top">
 								<? if ($obj['tech1_name']) { ?>
 								<img src="<?=ROOT_URL;?>/app/webroot/img/icon-vsm-edit.png" onclick="ShowMessages(<?=$obj['id']?>,<?=($message_to)?$message_to:$rows_persons[1]['id']?>)"/>
@@ -353,11 +490,50 @@ function ShowMessages(job_id, message_to){
 						$imgPath =  '/acesys/app/webroot/payment-images/'.$obj['orderNumber_image_path']; 
 						
 					 	echo '<img class="openImg1" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">'	;			
-					 } 		
-			 	?>	
+					 } else { ?>
+					 	<img id="pre-image_photo3" class="pre-image_<?php echo $obj['id'] ?>_photo3 invoice-openImg" src="#" alt="your image" />
+					 			<div class="acecare-td-adjust">
+						 			<label for="Fileinput" >Upload</label>
+					 				<input type="file" name="techCommArr[<?php echo $obj['id'] ?>][uploadFile]" id="Fileinput" class="disply_preview" data-ct="_<?php echo $obj['id'] ?>_photo3">
+					 			</div>	
+					 <?php } ?>	
 				</td>
 				<td rowspan="4" colspan="2" width="100">
-					
+					<?php 
+						if(!empty($obj['order_purchase_image1']))
+						{
+							$imgPath = ROOT_URL.'/upload_photos/'.$obj['order_purchase_image1'];
+							echo '<img class="openImg1" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">'	;	
+						} else { ?>
+							<img id="pre-image_photo1" class="pre-image_<?php echo $obj['id'] ?>_photo1 invoice-openImg" src="#" alt="your image" />
+							<div class="acecare-td-adjust">
+								<label for="sortpicture1" >Upload</label>
+								<input type="file" name="techCommArr[<?php echo $obj['id'] ?>][sortpic1]" id="sortpicture1" class="disply_preview" data-ct="_<?php echo $obj['id'] ?>_photo1">
+							</div>
+					<?php }	?>
+				<br>
+				<?php
+					if(!empty($obj['order_purchase_image2']))
+					{
+						$imgPath =  ROOT_URL.'/upload_photos/'.$obj['order_purchase_image2'];
+						echo '<img class="openImg1" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">'	;	
+					} else { ?>
+							<img id="pre-image_photo2" class="pre-image_<?php echo $obj['id'] ?>_photo2 invoice-openImg" src="#" alt="your image" />
+							<div class="acecare-td-adjust">
+								<label for="sortpicture2" >Upload</label>
+								<input type="file" name="techCommArr[<?php echo $obj['id'] ?>][sortpic2]" id="sortpicture2" class="disply_preview" data-ct="_<?php echo $obj['id'] ?>_photo2">
+							</div>
+					<?php } ?>
+				</td>
+				<td><input type="text" name="techCommArr[<?php echo $obj['id'] ?>][tech-notes]" placeholder="Notes"></td>
+				<!-- <td width="100">
+				  <input type="checkbox" name= "techCommArr[<?php echo $obj['id'] ?>]tech-confirm1"onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[1]);?>,this);'/>
+				</td>
+ -->			<td width="100">
+				  <input type="checkbox" <?=$rows_persons[1]['tech_verified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,1,this, 1, <?=($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->totalPrPrice($rows_persons[1]['total_comm']) ?>);' />
+				</td>
+ 				<td width="100">
+				  <input type="checkbox" <?=$rows_persons[1]['tech_unverified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-not-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,1,this, 0, <?php echo ($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->totalPrPrice($rows_persons[1]['total_comm']) ?>);'/>
 				</td>
     </tr>
     <tr class="<?=$class?>">
@@ -398,6 +574,16 @@ function ShowMessages(job_id, message_to){
 					  &nbsp;
 					<?php } ?>
 				</td>
+				<?php
+					if(!empty($rows_persons[2]['tech_verified']) || $rows_persons[2]['tech_verified'] != '')
+					{
+						$techApprovedSum = $techApprovedSum + $rows_persons[2]['total_comm'];
+					} 
+					if(!empty($rows_persons[2]['tech_unverified']) || $rows_persons[2]['tech_unverified'] != '')
+					{
+						$techNotApprovedSum = $techNotApprovedSum + $rows_persons[2]['total_comm'];
+					} 
+				?>
         <? if (!$message_to) {?>
 				<td align="center" valign="top">
 								<? if ($obj['tech2_name']) { ?>
@@ -412,6 +598,19 @@ function ShowMessages(job_id, message_to){
 				<td>
 				  <input type="checkbox" <?=$disable_inputs?> <?=$rows_persons[2]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[2]);?>,this);'/>
 				</td>
+				<td></td>
+				<td width="100">
+				  <input type="checkbox" <?=$rows_persons[2]['tech_verified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,2,this, 1, <?=($rows_persons[2]['total_comm']==0||$disable_tech[2])?'':$HtmlAssist->totalPrPrice($rows_persons[2]['total_comm']) ?>);' />
+				</td>
+ 				<td width="100">
+				  <input type="checkbox" <?=$rows_persons[2]['tech_unverified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-not-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,2,this, 0, <?php echo ($rows_persons[2]['total_comm']==0||$disable_tech[2])?'':$HtmlAssist->totalPrPrice($rows_persons[2]['total_comm']) ?>);'/>
+				</td>
+				<!-- <td >
+				  <input type="checkbox" name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm2]" />
+				</td>
+				<td width="100">
+				  <input type="checkbox" name= "techCommArr[<?php echo $obj['id'] ?>][tech-not-confirm2]"/>
+				</td> -->
     </tr>
     <tr class="<?= $class ?>">
         <td rowspan=2 align="center"><b><?php echo $obj['order_type']; ?></b></td>
@@ -440,6 +639,16 @@ function ShowMessages(job_id, message_to){
 				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[3]['helper_ded']==0||$disable_tech[3])?'':$HtmlAssist->prPrice($rows_persons[3]['helper_ded'])?>&nbsp;</td>
 				
 				<td>
+				<?php
+					if(!empty($rows_persons[3]['tech_verified']) || $rows_persons[2]['tech_verified'] != '')
+					{
+						$techApprovedSum = $techApprovedSum + $rows_persons[3]['total_comm'];
+					} 
+					if(!empty($rows_persons[3]['tech_unverified']) || $rows_persons[3]['tech_unverified'] != '')
+					{
+						$techNotApprovedSum = $techNotApprovedSum + $rows_persons[3]['total_comm'];
+					} 
+				?>
 				  <?php
 					if ($rows_persons[3]['verified']&&!$disable_tech[3]) {
 					if ($disable_inputs) echo '&nbsp;<b>'.$rows_persons[3]['adjustment'].'</b>';
@@ -461,6 +670,13 @@ function ShowMessages(job_id, message_to){
 				
 				<td>
 				  <input type="checkbox" <?=$disable_inputs?> <?=$rows_persons[3]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[3]);?>,this);'/>
+				</td>
+				<td></td>
+			<td width="100">
+				  <input type="checkbox" <?=$rows_persons[3]['tech_verified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,3,this, 1, <?=($rows_persons[3]['total_comm']==0||$disable_tech[3])?'':$HtmlAssist->totalPrPrice($rows_persons[3]['total_comm']) ?>);' />
+				</td>
+ 				<td width="100">
+				  <input type="checkbox" <?=$rows_persons[3]['tech_unverified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-not-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,3,this, 0, <?php echo ($rows_persons[3]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->totalPrPrice($rows_persons[3]['total_comm']) ?>);'/>
 				</td>
     </tr>
     <tr class="<?= $class ?>">
@@ -488,6 +704,16 @@ function ShowMessages(job_id, message_to){
 				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[4]['helper_ded']==0||$disable_tech[4])?'':$HtmlAssist->prPrice($rows_persons[4]['helper_ded'])?>&nbsp;</td>
 				
 				<td>
+				<?php
+					if(!empty($rows_persons[4]['tech_verified']) || $rows_persons[4]['tech_verified'] != '')
+					{
+						$techApprovedSum = $techApprovedSum + $rows_persons[4]['total_comm'];
+					} 
+					if(!empty($rows_persons[4]['tech_unverified']) || $rows_persons[4]['tech_unverified'] != '')
+					{
+						$techNotApprovedSum = $techNotApprovedSum + $rows_persons[4]['total_comm'];
+					} 
+				?>
 				  <?php
 					if ($rows_persons[4]['verified']&&!$disable_tech[4]) {
 					if ($disable_inputs) echo '&nbsp;<b>'.$rows_persons[4]['adjustment'].'</b>';
@@ -510,6 +736,13 @@ function ShowMessages(job_id, message_to){
 				<td>
 				  <input type="checkbox" <?=$disable_inputs?> <?=$rows_persons[4]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[4]);?>,this);'/>
 				</td>
+				<td></td>
+				<td width="100">
+				  <input type="checkbox" <?=$rows_persons[4]['tech_verified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,4,this, 1, <?=($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->totalPrPrice($rows_persons[4]['total_comm']) ?>);' />
+				</td>
+ 				<td width="100">
+				  <input type="checkbox" <?=$rows_persons[4]['tech_unverified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-not-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,4,this, 0, <?php echo ($rows_persons[4]['total_comm']==0||$disable_tech[4])?'':$HtmlAssist->totalPrPrice($rows_persons[4]['total_comm']) ?>);'/>
+				</td>		
     </tr>
 <?php endforeach; ?>
 <?php if ($techid) {?>
@@ -517,12 +750,25 @@ function ShowMessages(job_id, message_to){
 				<td colspan=10 style="border-top:1px solid #9f9f9f;">&nbsp;</td>
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b>Total:</b></td>
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($total_sum);?></b></td>
-				<td colspan=3 align="right" style="border-top:1px solid #9f9f9f;"><b>Approved by office:</b></td>
+				<td colspan=1 align="right" style="border-top:1px solid #9f9f9f;"><b>Approved by office:</b></td>
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($approved_sum);?></b></td>
+				</td>
+				<!-- <td></td> -->
+				
+				<td colspan=5 style="border-top:1px solid #9f9f9f;">&nbsp;</td>
+				<td  align="right" style="border-top:1px solid #9f9f9f;"><b> Tech confirmed by office:</b></td>
+				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($techApprovedSum);?></b></td>
+				</td>
+				<td  align="right" style="border-top:1px solid #9f9f9f;"><b>Not confirmed by office:</b></td>
+				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($techNotApprovedSum);?></b></td>
 				</td>
     </tr>
 <?php }?>
+
 </table>
+<input type="hidden" id="confirm-total" name="confirm-total" value="<?= $techApprovedSum?>">
+<input type="hidden" id="not-confirm-total" name="not-confirm-total" value="<?=$techNotApprovedSum?>">
+<input class="submitBtn" type="submit" name="submitForm">
 <table width="100%">
 <tr>
 	<td width="100%" align="center">
@@ -535,3 +781,7 @@ function ShowMessages(job_id, message_to){
 <div class="img-enlarge1" title="Photo">
   <img src="" style="width:100%;">
 </div>
+<div class="invoice-img-enlarge" title="Photo">
+	<img src="<?=$imgPath?>" style="width:100%;">
+</div>
+</form>

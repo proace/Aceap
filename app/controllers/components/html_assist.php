@@ -51,6 +51,10 @@ class HtmlAssistComponent extends Object
 	{
 		return '<nobr>$' . number_format($val, 2, '.', ' ') . '</nobr>';
 	}
+	function totalPrPrice($val)
+	{
+		return  number_format($val, 2, '.', ' ');
+	}
 	
 	function getOrderGoogleMap($pCustomer) {
 		$returnValue = '';

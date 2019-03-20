@@ -115,12 +115,15 @@ function get_total_unread_chat(){
     data:{admin_id:<?php echo $_SESSION['user']['id'];?>,action:'total_all_unread_msg'}, 
     success:function(result){ 
                       var result = JSON.parse(result); 
+                       var oldRes = $("#total_unread_msg").html().trim();
                   if(result['unread'] !== '0') {
-                        isRead = result['unread'];
-                        console.log('unread=',result['unread']);
-                        $('#total_unread_msg').html(result['unread']).show();
-                        showChat();
-                    } else {
+                        if( oldRes !== result['unread'] && oldRes !== 0)
+                        {
+                            isRead = result['unread'];
+                            $('#total_unread_msg').html(result['unread']).show();
+                            showChat(); 
+                        }
+                   } else {
                         $('#total_unread_msg').html('').hide();
                     }
 	 }

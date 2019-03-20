@@ -66,6 +66,7 @@ class CommonComponent extends Object
 			return $result; 
 		}
     }
+
     function uploadPhoto($file,$order_id, $config, $i)
 	{
 		date_default_timezone_set('America/Los_Angeles');
@@ -99,6 +100,57 @@ class CommonComponent extends Object
 
 		return $result;
 	}
+	//# LOKI- Techinician upload pictures from commission page.
+	function techUploadPhoto($imageName, $imageTempName, $order_id, $config, $i)
+	{
+		date_default_timezone_set('America/Los_Angeles');
+
+		$year = date('Y', time());
+		if (!file_exists($year)) {
+			mkdir('upload_photos/'.$year, 0755);
+		}
+		$month = date('Y/m', time());
+		if (!file_exists($month)) {
+			mkdir('upload_photos/'.$month, 0755);
+		}
+
+		$day = date('Y/m/d', time());
+		if (!file_exists($day)) {
+			mkdir('upload_photos/'.$day, 0755);
+		}
+		$path = $imageName;
+		$ext = pathinfo($path, PATHINFO_EXTENSION);
+		$name = date('Ymdhis', time()).$order_id.$i.'.'.$ext;
+
+		if ( 0 < $file['error'] ) {
+	        // echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
+	    } else {
+	        move_uploaded_file($imageTempName, 'upload_photos/'.$day.'/'.$name);
+	    }
+
+		$sql = "UPDATE ace_rp_orders SET photo_".$i." = '".$name."' WHERE id = ".$order_id;
+		$db =& ConnectionManager::getDataSource($config);
+		$result = $db->_execute($sql);
+
+		return $result;
+	}
+	// Upload payment image from technician commision page.
+	function TechCommonSavePaymentImage($imageName, $imageTempName, $order_id, $config)
+    {    	
+    	$fileName = time()."_".$imageName;
+		$fileTmpName = $imageTempName;
+		$orgFileName = ROOT."/app/webroot/payment-images/".$fileName;
+		if($file['error'] == 0)
+		{
+			//$move = $this->saveImages($file, $orgFileName, 90);
+			$move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/payment-images/".$fileName);
+			$query = "UPDATE ace_rp_orders SET payment_image ='".$fileName."' WHERE id=".$order_id;
+			$db =& ConnectionManager::getDataSource($config);
+
+			$result = $db->_execute($query);
+			return $result; 
+		}
+    }
     /** end common function for save image into ace_rp_orders field payment_image*/
 	function getMenuItems()
 	{

@@ -1,5 +1,5 @@
-<?
-
+<? ob_start();
+// error_reporting(E_ALL);
 error_reporting(1);
 
 class CommissionsController extends AppController
@@ -272,7 +272,9 @@ class CommissionsController extends AppController
 
 			'total_comm' => 0,
 
-			'verified' => ''
+			'verified' => '',
+			'tech_verified' => '',
+			'tech_unverified' => ''
 
 		);
 
@@ -292,7 +294,9 @@ class CommissionsController extends AppController
 
 			'total_comm' => 0,
 
-			'verified' => ''
+			'verified' => '',
+			'tech_verified' => '',
+			'tech_unverified' => ''
 
 		);
 
@@ -328,7 +332,9 @@ class CommissionsController extends AppController
 
 			'total_comm' => 0,
 
-			'verified' => ''
+			'verified' => '',
+			'tech_verified' => '',
+			'tech_unverified' => ''
 
 		);
 
@@ -348,7 +354,9 @@ class CommissionsController extends AppController
 
 			'total_comm' => 0,
 
-			'verified' => ''
+			'verified' => '',
+			'tech_verified' => '',
+			'tech_unverified' => ''
 
 		);
 
@@ -795,13 +803,20 @@ class CommissionsController extends AppController
 			$rows_persons[$row_ver['tech_num']]['total_comm']=$row_ver['total_comm'];
 
 			$rows_persons[$row_ver['tech_num']]['adjustment']=$row_ver['adjustment'];
-
-			$rows_persons[$row_ver['tech_num']]['verified']='checked';
-
+			$rows_persons[$row_ver['tech_num']]['verified'] = 'checked';
+			if(!empty($row_ver['tech_confirm']) || $row_ver['tech_confirm'] != '')
+			{
+				if($row_ver['tech_confirm'] != NULL && $row_ver['tech_confirm'] == 1)
+				{
+					$rows_persons[$row_ver['tech_num']]['tech_verified'] = 'checked';
+				}else if( $row_ver['tech_confirm'] != NULL && $row_ver['tech_confirm'] == 0)
+				{
+					$rows_persons[$row_ver['tech_num']]['tech_unverified'] = 'checked';
+				}	
+			}
 		}
-
-
-
+		// echo "<pre>";
+		// print_r($rows_persons);die;
 		return $rows_persons;
 
 	}
@@ -1072,6 +1087,10 @@ class CommissionsController extends AppController
 
 						a.t2_method,
 						a.payment_image,
+						a.photo_1,
+						a.photo_2,
+						a.tech_confirm_total,
+						a.tech_not_confirm_total,
 					   
 
 						t1.first_name as tech1_first_name,
@@ -1140,6 +1159,10 @@ class CommissionsController extends AppController
 
 				
 				$orders[$row['id']]['orderNumber_image_path'] = $row['payment_image'];
+				$orders[$row['id']]['order_purchase_image1'] = $this->getPhotoPath($row['photo_1']);
+				$orders[$row['id']]['order_purchase_image2'] = $this->getPhotoPath($row['photo_2']);	
+				$orders[$row['id']]['tech_confirm_total'] = $row['tech_confirm_total'];	
+				$orders[$row['id']]['tech_not_confirm_total'] = $row['tech_not_confirm_total'];				
 				$orders[$row['id']]['order_status'] = $allJobStatuses[$row['order_status_id']];
 
 				$orders[$row['id']]['order_type'] = $row['order_type'];
@@ -1159,6 +1182,8 @@ class CommissionsController extends AppController
 				//COMMISSIONS CALCULATION
 
 				$rows_persons = $this->_calculate(&$orders[$row['id']], &$comm_settings);
+				// echo "<pre>";
+				// print_r($rows_persons);die;
 
 				$orders[$row['id']]['comm'] = $rows_persons;
 
@@ -1229,6 +1254,16 @@ class CommissionsController extends AppController
 	}
 
 
+	function getPhotoPath($name)
+	{
+		if (!$name)
+			return "";
+		$year = substr($name, 0, 4);
+		$mon = substr($name, 4, 2);
+		$day = substr($name, 6, 2);
+		$name = $year.'/'.$mon.'/'.$day.'/'.$name;
+		return $name;
+	}
 
 	function allCommissions()
 
@@ -2490,12 +2525,9 @@ class CommissionsController extends AppController
 
 		//Delete previous records
 
-		$db->_execute("DELETE FROM ace_rp_orders_comm WHERE order_id=".$order_id." and tech_num=".$tech_num);
-
-		
+		// $db->_execute("DELETE FROM ace_rp_orders_comm WHERE order_id=".$order_id." and tech_num=".$tech_num);
 
 		//Save new data
-
 	  $db->_execute("INSERT INTO ace_rp_orders_comm (order_id, tech_num, booking_comm,
 
 													sales_job_comm, sales_appl_comm, driving_comm,
@@ -3426,6 +3458,601 @@ class CommissionsController extends AppController
 
 	}
 
+	public function saveTechCommission()
+	{
+		error_reporting(E_ALL);
+		$data = $_POST;
+		$techId = $data['techId'];
+		$fromDate = $data['fromDate'];
+		$sort = $data['sort'];
+		$jobOption = $data['jobOption'];
+		$currentRef = $data['currentRef'];
+		$currentPage = $data['currentPage'];
+		foreach ($data["techCommArr"] as $key => $value) {
+
+			if(!empty($_FILES['techCommArr']['name'][$key]['uploadFile']))
+			{
+			    $imageName = $_FILES['techCommArr']['name'][$key]['uploadFile'];
+				$imageTempName = $_FILES['techCommArr']['tmp_name'][$key]['uploadFile'];
+				$imageResult = $this->Common->TechCommonSavePaymentImage($imageName, $imageTempName, $key, $config = $this->User->useDbConfig);
+			}	
+			if(!empty($_FILES['techCommArr']['name'][$key]['sortpic2']))
+			{
+				$imageName = $_FILES['techCommArr']['name'][$key]['sortpic2'];
+				$imageTempName = $_FILES['techCommArr']['tmp_name'][$key]['sortpic2'];
+				$imageResult = $this->Common->techUploadPhoto($imageName, $imageTempName ,$key , $config = $this->User->useDbConfig, 2);
+			}
+			if(!empty($_FILES['techCommArr']['name'][$key]['sortpic1']))
+			{   
+				$imageName = $_FILES['techCommArr']['name'][$key]['sortpic1'];
+				$imageTempName = $_FILES['techCommArr']['tmp_name'][$key]['sortpic1'];    
+				$imageResult = $this->Common->techUploadPhoto($imageName, $imageTempName, $key, $config = $this->User->useDbConfig, 1);
+			}
+		}
+		// $test = $this->testing();
+		// pr($test);
+		// $bodyRes = $this->techcalculateCommissions($techId, $fromDate, $sort, $currentPage, $currentRef, $jobOption);
+		// $to = "lokendra.k@cisinlabs.com";
+		// $subject = "Test email";
+		// $header = "Content-Type: text/html; charset=iso-8859-1\n" ;
+		// $this->sendEmailUsingMailgun($to,$subject, $bodyRes, $header);
+		//$this->redirect('/commissions/calculateCommissions');
+		$this->redirect('/commissions/calculateCommissions?action=view&order=&sort='..'&currentPage='.$currentPage.'&comm_oper=&techId='.$techId.'&selected_job=&selected_commission_type=&job_option='.$jobOption.'&ffromdate='.$fromDate.'&cur_ref=');
+		exit();
+	}
+
+	function sendEmailUsingMailgun($to,$subject,$body, $header){
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".$body);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+
+		// receive server response ...
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$msgid = curl_exec ($ch);//exit;
+		curl_close ($ch);
+
+		//$this->manageMailgunEmailLogs($msgid, $subject, $order_id);
+
+		//var_export($response);
+		//$this->verifyEmailUsingMailgun($to,$subject,$order_id,$msgid);
+	}
+	# LOKI- This function is used to set the technician commision confirmation.
+	public function setTechVerified()
+	{
+		$order_id = $_GET['order_id'];
+		$tech_num = $_GET['tech_num'];
+		$tech_status_val = $_GET['tech_status_val'];
+		$total_comm = $_GET['total_comm'];	
+		$old_total_comm = $_GET['old_total_comm'];
+		//$new_total_comm = 0;
+		$new_total_comm = $total_comm + $old_total_comm;
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+		$query = "UPDATE ace_rp_orders_comm set tech_confirm= ".$tech_status_val." where order_id= ".$order_id." AND tech_num=".$tech_num."";
+		$result = $db->_execute($query);
+		$total_field = 'tech_not_confirm_total';
+		if($tech_status_val == 1)
+		{
+			$total_field = 'tech_confirm_total';
+		}
+		// $query = "UPDATE ace_rp_orders SET ".$total_field."= ".$new_total_comm." where id=".$order_id."";
+		// $result = $db->_execute($query);
+		exit();
+	}
+	# LOKI- This function is used to unset the technician commision confirmation.
+	public function setTechUnVerified()
+	{
+		$order_id = $_GET['order_id'];
+		$tech_num = $_GET['tech_num'];
+		$total_comm = $_GET['total_comm'];	
+		$old_total_comm = $_GET['old_total_comm'];
+		$tech_status_val = $_GET['tech_status_val'];
+		$new_total_comm = 0;
+		$total_field = 'tech_not_confirm_total';
+		if($tech_status_val == 1)
+		{
+			$total_field = 'tech_confirm_total';
+		}
+		
+		$new_total_comm = $old_total_comm - $total_comm;
+		
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+		$query = "UPDATE ace_rp_orders_comm set tech_confirm = NULL where order_id= ".$order_id." AND tech_num=".$tech_num."";
+		$result = $db->_execute($query);
+
+		// $query = "UPDATE ace_rp_orders SET ".$total_field."= ".$new_total_comm." where id=".$order_id."";
+		// $result = $db->_execute($query);
+		exit();
+	}
+
+
+	// public function testing(){
+
+	// $this->Email->to = 'lokendra.k@cisinlabs.com';
+ //    $this->Email->subject = 'Welcome to our really cool thing';
+ //    $this->Email->from = 'jayendra.s@cisinlabs.com';
+ //    $this->Email->template = 'flowtesr'; // note no '.ctp'
+ //    //Send as 'html', 'text' or 'both' (default is 'text')
+ //    $this->Email->sendAs = 'both'; // because we like to send pretty mail
+ //    //Set view variables as normal
+ //    $this->set('loki', 'hiiii');
+ //    $this->Email->delivery = 'debug';
+ //    //Do not pass any args to send()
+ //    $this->Email->send();
+	// 	// $this->autoRender = false;
+ //  //   	$content = $this->element('testing');
+ //  //   	pr($content->body());die('asdasd');
+	// }
+
+
+
+	function techcalculateCommissions($techId, $fromDate, $sort, $currentPage, $currentRef, $jobOption)
+
+	{
+		// error_reporting(E_ALL);
+		$this->layout="list";
+
+	 // TECHNICIAN=1, ACCOuntant=4, administrator=6
+
+			
+
+			//CUSTOM PAGING
+
+			//*************s
+
+			$itemsCount = 20;
+
+			$currentPage = 0;
+
+			$previousPage = 0;
+
+			$nextPage = 1;
+
+			
+
+			// if(isset($_GET['page'])){
+
+			// 	if(is_numeric($_GET['page'])){
+
+			// 		$currentPage = $_GET['page'];
+
+			// 	}
+
+			// }
+
+			$sqlPaging = " LIMIT 0,".$itemsCount;
+
+			if($currentPage > 0){
+
+				$firstItem = ($currentPage*$itemsCount)+1;
+
+				$sqlPaging = " LIMIT ".$firstItem.",".$itemsCount;
+
+			
+
+				$previousPage = $currentPage -1;
+
+				$nextPage = $currentPage +1;
+
+			}
+
+			//********************
+
+			//END OF CUSTOM PAGING
+
+			
+
+			//**********
+
+			//CONDITIONS
+
+			//Convert date from date picker to SQL format
+
+			if ( $fromDate != '')
+
+				$fdate = date("Y-m-d", strtotime($fromDate));
+	
+
+			//Pick today's date if no date
+
+			
+
+
+			$cur_ref = ( $currentRef != '' ? $currentRef : '');
+
+			$single = ($this->params['url']['single'] != '' ? $this->params['url']['single'] : 0);
+
+			$techid = $techId;
+
+			$job_option = $jobOption;
+
+			if (!$job_option) $job_option = 1;
+
+
+
+			//If user is Technician - role id=1
+
+			//then show only orders that belongs to him
+
+			// if (($_SESSION['user']['role_id'] == 1) ) { // TECHNICIAN=1
+
+			// 	//show data only for current technician
+
+			// 	$techid = $this->Common->getLoggedUserID();
+
+			// }
+
+						
+
+			//The list of all technicians in the system. We'll need it anyway
+
+			// $allTechnicians = $this->Lists->Technicians();
+
+			
+
+			//Addintional lists
+
+			// $allSources = $this->Lists->BookingSources();
+
+			// $allJobStatuses = $this->Lists->ListTable('ace_rp_order_statuses');
+
+			
+
+			//This array is being used for the commission settings.
+
+			$comm_settings = array();
+
+			
+
+			//Fill out commissions settings for the technicians.
+
+			//If we've logged in as a technician - we just need our own settings
+
+			foreach ($allTechnicians as $cur_id => $cur_value)
+
+				$comm_settings[$cur_id] = $this->getCommissionSettings($cur_id);
+
+			
+
+			//CONDITIONS
+
+			//**********	
+
+			$db =& ConnectionManager::getDataSource('default');
+
+			if(($fdate != '')&&(!$cur_ref))
+
+				if ($job_option==1)
+
+					$sqlConditions .= " AND order_status_id IN (1,5) AND a.job_date = '".$this->Common->getMysqlDate($fdate)."'"; 			
+
+				elseif ($job_option==3)
+
+					$sqlConditions .= " AND order_status_id=3 AND a.job_date = '".$this->Common->getMysqlDate($fdate)."'"; 			
+
+				elseif ($job_option==2)
+
+					$sqlConditions .= " AND order_status_id IN (1,5) AND a.booking_date = '".$this->Common->getMysqlDate($fdate)."'"; 			
+
+			
+
+			if(($techid > 0)&&(!$cur_ref))
+
+				if (($job_option==1)||($job_option==3))
+
+					$sqlConditions .= " AND (a.booking_source_id=".$techid." OR a.booking_source2_id=".$techid." OR a.job_technician1_id=".$techid." OR a.job_technician2_id=".$techid.") ";
+
+				elseif ($job_option==2)
+
+					$sqlConditions .= " AND (a.booking_source_id=".$techid." OR a.booking_source2_id=".$techid.") ";
+
+			
+
+			if($cur_ref)
+
+				$sqlConditions .= " AND a.order_number = '".$cur_ref."'"; 
+
+
+
+			//The route visibility was added on 2011-04-17. All jobs before this date are excluded.
+
+			if($this->Common->getMysqlDate($fdate) > $this->Common->getMysqlDate("2011-04-17") && $this->Common->getLoggedUserRoleID()==1) {				
+
+				$routeVisibilityConstraint =  "
+
+				AND (
+
+					rv.route_id IS NOT NULL 
+
+					OR a.job_technician1_id = a.booking_source_id
+
+					OR a.job_technician2_id = a.booking_source_id
+
+					OR $techid = a.booking_source_id
+
+					OR $techid = a.booking_source2_id
+
+					OR $techid = a.job_technician1_id
+
+					OR $techid = a.job_technician2_id
+
+					)
+
+				";
+
+				
+
+				$routeVisibilityConstraint =  "
+
+				AND (
+
+					a.job_technician1_id = a.booking_source_id
+
+					OR a.job_technician2_id = a.booking_source_id
+
+					OR $techid = a.booking_source_id
+
+					OR $techid = a.booking_source2_id
+
+					OR $techid = a.job_technician1_id
+
+					OR $techid = a.job_technician2_id
+
+					)
+
+				";
+
+				
+
+			} else {
+
+				$routeVisibilityConstraint = "";	
+
+			}
+
+			
+
+			$orders = array();
+
+			$query = "
+
+				SELECT  a.id, a.job_date, a.order_number, a.order_type_id, a.order_status_id,
+
+						at.name as order_type, at.category_id as job_type_category,
+
+					   
+
+						a.fact_job_beg, a.fact_job_end,
+
+						
+
+						a.booking_source_id,
+
+						a.booking_source2_id,
+
+						a.job_technician1_id,
+
+						a.job_technician2_id,
+
+						a.t1_method,
+
+						a.t2_method,
+						a.payment_image,
+						a.photo_1,
+						a.photo_2,
+						a.tech_confirm_total,
+						a.tech_not_confirm_total,
+					   
+
+						t1.first_name as tech1_first_name,
+
+						t1.last_name as tech1_last_name,
+
+						t1.commission_type as t1_commission_type,
+
+					   
+
+						t2.first_name as tech2_first_name,
+
+						t2.last_name as tech2_last_name,
+
+						t2.commission_type as t2_commission_type
+
+
+
+				FROM 				`ace_rp_orders` as a
+
+				INNER JOIN	`ace_rp_order_types` as at ON (a.order_type_id = at.id)
+
+				LEFT JOIN		`ace_rp_users` as t1 on ( a.job_technician1_id = t1.id )
+
+				LEFT JOIN		`ace_rp_users` as t2 on ( a.job_technician2_id = t2.id )
+
+				LEFT JOIN ace_rp_route_visibility rv ON a.job_truck = rv.route_id AND a.job_date = rv.job_date
+
+				WHERE 1=1
+
+				AND tech_visible = 1
+
+				$routeVisibilityConstraint
+
+				$sqlConditions
+
+				ORDER BY a.job_date desc 
+
+				$sqlPaging
+
+				";
+
+	
+
+			$result = $db->_execute($query);
+
+			while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+
+			{
+
+				//Transfer all fields from the query result
+
+				foreach ($row as $k => $v)
+
+				$orders[$row['id']][$k] = $v;
+
+				
+
+				//Calculate/set special fields
+
+				$orders[$row['id']]['job_time_payable'] =
+
+					(strtotime($row['job_date'].' '.$row['fact_job_end'])-
+
+					strtotime($row['job_date'].' '.$row['fact_job_beg']))/3600;
+
+				
+				$orders[$row['id']]['orderNumber_image_path'] = $row['payment_image'];
+				$orders[$row['id']]['order_purchase_image1'] = $this->getPhotoPath($row['photo_1']);
+				$orders[$row['id']]['order_purchase_image2'] = $this->getPhotoPath($row['photo_2']);	
+				$orders[$row['id']]['tech_confirm_total'] = $row['tech_confirm_total'];	
+				$orders[$row['id']]['tech_not_confirm_total'] = $row['tech_not_confirm_total'];				
+				$orders[$row['id']]['order_status'] = $allJobStatuses[$row['order_status_id']];
+
+				$orders[$row['id']]['order_type'] = $row['order_type'];
+
+							
+
+				$orders[$row['id']]['source_name'] = $allTechnicians[$row['booking_source_id']];
+
+				$orders[$row['id']]['source2_name'] = $allTechnicians[$row['booking_source2_id']];
+
+				$orders[$row['id']]['tech1_name'] = $row['tech1_first_name'].' '.$row['tech1_last_name'];
+
+				$orders[$row['id']]['tech2_name'] = $row['tech2_first_name'].' '.$row['tech2_last_name'];
+
+
+
+				//COMMISSIONS CALCULATION
+
+				$rows_persons = $this->_calculate(&$orders[$row['id']], &$comm_settings);
+				$orders[$row['id']]['comm'] = $rows_persons;
+
+			}	
+			$comm_roles = $this->Lists->ListTable('ace_rp_commissions_roles');
+			
+			 // $this->Email->to = 'lokendra.k@cisinlabs.com';
+			 //   // $this->Email->bcc = array('secret@example.com');
+			 //    $this->Email->subject = 'Welcome to our really cool thing';
+			 //   // $this->Email->replyTo = 'support@example.com';
+			 //    $this->Email->from = 'jayendra.s@cisinlabs.com';
+			 //     $this->set('orders', $orders);
+			 //    $this->Email->template = 'flowtest'; // note no '.ctp'
+			 //    //Send as 'html', 'text' or 'both' (default is 'text')
+			 //   $this->Email->sendAs = 'both'; // because we like to send pretty mail
+			 //    //Set view variables as normal
+			   
+			 //    //Do not pass any args to send()
+			 //    $this->Email->send();
+
+
+				//$this->autoRender = false;
+
+/* Set up new view that won't enter the ClassRegistry */
+
+			// $view = new View($this, false);
+			// Cake\View\View::set('orders', $orders);
+			// $view->viewPath = 'elements';
+
+			/* Grab output into variable without the view actually outputting! */
+			// $view_output = $view->render('tech_comm_email');
+
+
+				// $view = new View($this, false);
+				// $html = $view->render('tech_comm_email', 'ajax');
+				// die('jzdfhj');
+
+			    //   $response = $this->render('tech_comm_email', 'ajax');
+			    // $body = $response->body();
+			     // $response->body('');
+			      // pr($response);die('bhbhb');
+			// $view = new View($this, false);
+			// $content = $view->element('tech_comm_email');
+			// pr($content);die('asd');
+
+
+
+		// $this->set('comm_roles', $techid);
+		// $this->set('techid', $techid);
+		// $this->set('orders', $orders);
+		// $this->output = '';
+		// $this->layout = false;
+		// $html = $this->render('tech_comm_email');
+		// $this->output('');
+		
+		//print_r($html);die;
+
+
+
+
+
+		 
+		/* Set up new view that won't enter the ClassRegistry */
+		// $view = new View($this, false);
+		//$view->set('orders', $orders);
+		// $view->viewPath = 'elements';
+		 
+		/* Grab output into variable without the view actually outputting! */
+		// $view_output = $view->render('tech_comm_email');
+
+
+		// $html = (new ViewBuilder())->layout('ajax')->build($data)->render($template);
+
+
+			// $this->autoRender = false;
+			// $this->layout = false;
+			// $this->view = 'tech_comm_email';
+
+
+
+		 	// $this->layout = false;
+		  //   $this->view = 'tech_comm_email';
+
+    // Call the render() method returns the current CakeResponse object
+ 		   // $response = $this->render();
+
+
+
+		// 	$view = new View($this,false);
+		// 	$view->viewPath='commissions_controller';  // Directory inside view directory to search for .ctp files
+		// 	$view->layout=false; // if you want to disable layout
+		// //	$view->set ('variable_name','variable_value'); // set your variables for view here
+		// 	$view->set('comm_roles', $techid);
+		// 	$view->set('techid', $techid);
+		// 	$view->set('orders', $orders);
+		// 	$html=$view->render('tech_comm_email');
+
+			// pr( $response->body()); die("uhsb ");
+			// $this->set('comm_roles', $techid);
+			// $this->set('techid', $techid);
+			// $this->set('orders', $orders);
+			// $html = $this->render();
+			// $body =  $html->body();
+			// echo "jjhbhdb";
+			// echo "<pre>";
+			//echo $body;
+			// print_r($html);die;
+			// echo "<pre>";
+			// print_r($comm_roles);die;
+
+			//$this->autoRender = false;
+
+
+			// $view = new View($this, false);
+			// $content = $view->element('tech_comm_email', array('orders' => $orders, 'techid'=>$techid, 'comm_roles' => $comm_roles));
+		
+			 //$this->set("orders", $orders);
+			// return $this->Email->template = 'tech_commission_email.thtml';
+			//return $view_output;
+		}
 
 
 }
