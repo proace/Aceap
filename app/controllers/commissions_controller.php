@@ -836,8 +836,6 @@ class CommissionsController extends AppController
 					$tech_comm_confirm[$row_comm['tech_num']]['tech_unverified'] = 'checked';
 				}
 		}
-		// echo "<pre>";
-		// print_r($rows_persons);die;
 		return array($rows_persons, $tech_comm_confirm);
 
 	}
@@ -849,7 +847,7 @@ class CommissionsController extends AppController
 	function calculateCommissions()
 
 	{
-
+		// error_reporting(E_ALL);
 		$this->layout="list";
 
 		if (($_SESSION['user']['role_id'] == 1) || ($_SESSION['user']['role_id'] == 4) || ($_SESSION['user']['role_id'] == 6)) 
@@ -1157,7 +1155,7 @@ class CommissionsController extends AppController
 	
 
 			$result = $db->_execute($query);
-
+			$tech_comm_conf = array();
 			while($row = mysql_fetch_array($result, MYSQL_ASSOC))
 
 			{
@@ -1205,12 +1203,11 @@ class CommissionsController extends AppController
 
 				$all_data = $this->_calculate(&$orders[$row['id']], &$comm_settings);
 				$rows_persons = $all_data[0];
-				$tech_comm_conf = $all_data[1];
+				$tech_comm_conf[$row['id']] = $all_data[1];
 
 				$orders[$row['id']]['comm'] = $rows_persons;
 
-			}				
-
+			}	
 			//SET PAGE OPTIONS			
 
 			//$techid = 2; $this->set("loggedUserIsTech",1);
@@ -3577,7 +3574,7 @@ class CommissionsController extends AppController
 		$new_total_comm = $old_total_comm - $total_comm;
 		
 		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
-		$query = "UPDATE ace_rp_tech_comm_confirm set tech_confirm = NULL where order_id= ".$order_id." AND tech_num=".$tech_num."";
+		$query = "DELETE from  ace_rp_tech_comm_confirm where order_id= ".$order_id." AND tech_num=".$tech_num."";
 		$result = $db->_execute($query);
 		exit();
 	}
