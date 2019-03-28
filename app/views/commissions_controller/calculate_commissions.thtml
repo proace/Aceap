@@ -13,7 +13,13 @@
     margin-right: 50px;
     width: 91px;
 }
-
+.adminSubmit {
+	float: left;
+    height: 28px;
+    margin-top: 10px;
+    margin-right: 50px;
+    width: 91px;
+}
 .acecare-td-adjust > input[type="file"] {
   position: absoulte;
   opacity: 0;
@@ -352,11 +358,11 @@ $(document).ready(function()
         
         <th rowspan=2 colspan=2 width="100" style="background-color:#ffff80;">Adjustment</th>
         <th rowspan=2 width="60" style="background-color:#ffff80;">Total Comm</th>
-        
+        <th rowspan=2 width="100" style="background-color:#ffff80;">Admin Notes</th>
 		<th rowspan=2 width="16" style="background-color:#ffff80;"><?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
 		<th rowspan=2 colspan=2 width="100" style="background-color:#ffff80;">Payments</th>
 		<th rowspan=2 colspan=2 width="100" style="background-color:#ffff80;">Purchase</th>
-		<th rowspan=2 width="100" style="background-color:#ffff80;">Notes</th>
+		<th rowspan=2 width="100" style="background-color:#ffff80;">Tech Notes</th>
 		<th rowspan=2 width="16" style="background-color:#ffff80;">Confirmed<?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
 		<th rowspan=2 width="16" style="background-color:#ffff80;">Not Confirmed<?='<img src="'.ROOT_URL.'/app/webroot/img/cross-icon.jpeg" heignt="16 px" width="16 px" >'?></th>
 
@@ -477,6 +483,9 @@ $(document).ready(function()
 								<? }?>
 				</td>
 				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['total_comm']) ?>&nbsp;</td>
+				
+				<td rowspan="4"><input  type="text" name="techCommArr[<?php echo $obj['id'] ?>][admin-notes]" placeholder="Notes" value="<?php echo $obj['admin_notes']?>">
+				</td>
 				
 				<td>
 				  <input type="checkbox" <?=$disable_inputs?> <?=$rows_persons[1]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[1]);?>,this);'/>
@@ -740,9 +749,9 @@ $(document).ready(function()
 				</td>		
     </tr>
 <?php endforeach; ?>
-<?php if ($techid) {?>
-    <tr>
-				<td colspan=10 style="border-top:1px solid #9f9f9f;">&nbsp;</td>
+<!-- <?php if ($techid) {?>
+ -->    <tr>
+				<td colspan=11 style="border-top:1px solid #9f9f9f;">&nbsp;</td>
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b>Total:</b></td>
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($total_sum);?></b></td>
 				<td colspan=1 align="right" style="border-top:1px solid #9f9f9f;"><b>Approved by office:</b></td>
@@ -756,14 +765,23 @@ $(document).ready(function()
 				</td>
 				<td  align="right" style="border-top:1px solid #9f9f9f;"><b>Not confirmed by office:</b></td>
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($techNotApprovedSum);?></b></td>
-				</td>
     </tr>
-<?php }?>
-
+<!-- <?php }?>
+ -->
 </table>
 <input type="hidden" id="confirm-total" name="confirm-total" value="<?= $techApprovedSum?>">
 <input type="hidden" id="not-confirm-total" name="not-confirm-total" value="<?=$techNotApprovedSum?>">
-<input class="submitBtn" type="submit" name="submitForm">
+
+<?php if ($common->getLoggedUserRoleID() != "6") {?>
+	<input class="submitBtn" type="submit" name="submitForm">
+<input type="hidden" name="isAdmin" value="0">
+<?php }?>
+
+<?php if ($common->getLoggedUserRoleID() == "6") {?>
+<input type="hidden" name="isAdmin" value="1">
+<input class="adminSubmit" type="submit" name="Reply" value="Reply">
+<?php }?>
+
 <table width="100%">
 <tr>
 	<td width="100%" align="center">

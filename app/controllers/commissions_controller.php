@@ -937,7 +937,6 @@ class CommissionsController extends AppController
 			if (!$job_option) $job_option = 1;
 
 
-
 			//If user is Technician - role id=1
 
 			//then show only orders that belongs to him
@@ -1109,6 +1108,7 @@ class CommissionsController extends AppController
 						a.photo_1,
 						a.photo_2,
 						a.tech_notes,
+						a.admin_notes,
 						
 					   
 
@@ -1182,7 +1182,8 @@ class CommissionsController extends AppController
 				$orders[$row['id']]['order_purchase_image2'] = $this->getPhotoPath($row['photo_2']);	
 				$orders[$row['id']]['tech_confirm_total'] = $row['tech_confirm_total'];	
 				$orders[$row['id']]['tech_not_confirm_total'] = $row['tech_not_confirm_total'];		
-				$orders[$row['id']]['tech_notes'] = $row['tech_notes'];			
+				$orders[$row['id']]['tech_notes'] = $row['tech_notes'];	
+				$orders[$row['id']]['admin_notes'] = $row['admin_notes'];			
 				$orders[$row['id']]['order_status'] = $allJobStatuses[$row['order_status_id']];
 
 				$orders[$row['id']]['order_type'] = $row['order_type'];
@@ -3487,6 +3488,7 @@ class CommissionsController extends AppController
 		$jobOption = $data['jobOption'];
 		$currentRef = $data['currentRef'];
 		$currentPage = $data['currentPage'];
+		$isAdmin = $data['isAdmin'];
 		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
 
 		foreach ($data["techCommArr"] as $key => $value) {
@@ -3514,17 +3516,40 @@ class CommissionsController extends AppController
 				$query = "UPDATE ace_rp_orders set tech_notes='".$value['tech-notes']."' where id=".$key."";
 				$result = $db->_execute($query);
 			}
+			if(!empty($value['admin-notes']))
+			{
+				$query = "UPDATE ace_rp_orders set admin_notes='".$value['admin-notes']."' where id=".$key."";
+				$result = $db->_execute($query);
+			}
 		}
 		 
-		 $url = urlencode('action=view&order=&sort='.$sort.'&currentPage='.$currentPage.'&comm_oper=&techId='.$techId.'&selected_job=&selected_commission_type=&job_option='.$jobOption.'&ffromdate='.$fromDate.'&cur_ref=');
-		 $body = 'Hi Admin,<br><br> Please find the URL for Todays Commission Confirmation.<br><br>';
-		 $body .= '<a href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?'.$url.'">Click Here</a>';
-		
-		$to = "lokendra.k@mailinator.com";
-		$subject = "Tech Commission Invoice";
-		$header = "Content-Type: text/html; charset=iso-8859-1\n" ;
-		$this->sendEmailUsingMailgun($to,$subject, $bodyRes, $header);
-		$this->redirect('/commissions/calculateCommissions?action=view&order=&sort='.$sort.'&currentPage='.$currentPage.'&comm_oper=&techId='.$techId.'&selected_job=&selected_commission_type=&job_option='.$jobOption.'&ffromdate='.$fromDate.'&cur_ref=');
+		 $url = urlencode('action=view&order=&sort='.$sort.'&currentPage='.$currentPage.'&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option='.$jobOption.'&ffromdate='.$fromDate.'&cur_ref=');
+		if($isAdmin == 0)
+		{
+			 $body = 'Hi Admin,<br><br> Please find the URL for Todays Commission Confirmation.<br><br>';
+			 $body .= '<a href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?'.$url.'">Click Here</a>';
+			// $body .= '<a href="http://localhost/acesys/index.php/commissions/calculateCommissions?'.$url.'">Click Here</a>';
+			
+			$to = "lokendra.k@cisinlabs.com";
+			$subject = "Tech Commission Invoice";
+		} else {
+			$query = "SELECT first_name, email from ace_rp_users where id=".$techId."";
+			$result = $db->_execute($query);
+			while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+				$techName = $row['first_name'];			
+				$techEmail = $row['email'];
+			}
+			$body = 'Hi '.$techName.',<br><br> Please find the URL for Todays Commission Confirmation.<br><br>';
+			 $body .= '<a href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?'.$url.'">Click Here</a>';
+			
+			// $to = $techEmail;
+			 $to = "lokendra.k@cisinlabs.com";
+			 $subject = "Admin Confirm Commission";
+		}
+		 
+		// $header = "Content-Type: text/html; charset=iso-8859-1\n" ;
+		$this->sendEmailUsingMailgun($to,$subject, $body, $header);
+		$this->redirect('/commissions/calculateCommissions?action=view&order=&sort='.$sort.'&currentPage='.$currentPage.'&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option='.$jobOption.'&ffromdate='.$fromDate.'&cur_ref=');
 		exit();
 	}
 	function sendEmailUsingMailgun($to,$subject,$body, $header){
