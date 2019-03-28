@@ -3489,6 +3489,8 @@ class CommissionsController extends AppController
 		$currentRef = $data['currentRef'];
 		$currentPage = $data['currentPage'];
 		$isAdmin = $data['isAdmin'];
+		$adminEmail = isset($data['adminEmail']) ? $data['adminEmail'] : '';
+		
 		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
 
 		foreach ($data["techCommArr"] as $key => $value) {
@@ -3530,8 +3532,8 @@ class CommissionsController extends AppController
 			 $body .= '<a href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?'.$url.'">Click Here</a>';
 			// $body .= '<a href="http://localhost/acesys/index.php/commissions/calculateCommissions?'.$url.'">Click Here</a>';
 			
-			$to = "lokendra.k@cisinlabs.com";
-			$subject = "Tech Commission Invoice";
+			$to = $adminEmail ;
+			$subject = "Commission";
 		} else {
 			$query = "SELECT first_name, email from ace_rp_users where id=".$techId."";
 			$result = $db->_execute($query);
@@ -3542,9 +3544,9 @@ class CommissionsController extends AppController
 			$body = 'Hi '.$techName.',<br><br> Please find the URL for Todays Commission Confirmation.<br><br>';
 			 $body .= '<a href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?'.$url.'">Click Here</a>';
 			
-			// $to = $techEmail;
-			 $to = "lokendra.k@cisinlabs.com";
-			 $subject = "Admin Confirm Commission";
+			$to = $techEmail;
+			 // $to = "lokendra.k@cisinlabs.com";
+			 $subject = "Commission";
 		}
 		 
 		// $header = "Content-Type: text/html; charset=iso-8859-1\n" ;

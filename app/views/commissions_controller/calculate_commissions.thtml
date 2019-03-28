@@ -1,6 +1,12 @@
 <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />	
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
 <style type="text/css">
+.adminEmail {
+	float: right;
+    margin-right: 10px;
+    margin-top: 10px;
+    height: 26px;
+}
 .acecare-td-adjust {
   position: relative;
   height: 20px;
@@ -774,7 +780,9 @@ $(document).ready(function()
 
 <?php if ($common->getLoggedUserRoleID() != "6") {?>
 	<input class="submitBtn" type="submit" name="submitForm">
-<input type="hidden" name="isAdmin" value="0">
+	<input class= "adminEmail" type="text" name="adminEmail" placeholder="Email" value="techs@acecare.ca">
+	<input type="hidden" name="isAdmin" value="0">
+
 <?php }?>
 
 <?php if ($common->getLoggedUserRoleID() == "6") {?>
