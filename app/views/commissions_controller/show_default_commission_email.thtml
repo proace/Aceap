@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Add Email</title>
+<style type="text/css">
+ .textbox {
+    margin-left: 10px;
+    height: 27px;
+    width: 190px;
+    text-align: center;
+    font-size: 14px;
+}   
+
+</style>
+</head>
+<body>
+<form method="POST" action="<?=BASE_URL;?>/commissions/saveDefaultEmail" name="emailForm" id="viewform">
+  <b>Email :&nbsp</b><input class="textbox" type="text" name="email" value="<?=$email?>">
+  <input style="height: 27px;" type="submit" name="formSubmit">
+</form>
+
+</body>
+</html>

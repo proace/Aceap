@@ -3606,7 +3606,26 @@ class CommissionsController extends AppController
 		exit();
 	}
 
+	function showDefaultCommissionEmail()
+	{
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+		$query = "SELECT email FROM ace_rp_commission_email where id=1";
+		$result = $db->_execute($query);
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+			$email = $row['email'];
+		}
+		$this->set('email', $email);
+	}
 
+	public function saveDefaultEmail()
+	{
+		$email = $_POST['email'];
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+		$query = "UPDATE ace_rp_commission_email set email = '".$email."' where id=1";
+		$result = $db->_execute($query);
+		$this->redirect('/commissions/showDefaultCommissionEmail');
+		exit();
+	}
 }
 
 ?>

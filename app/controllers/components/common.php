@@ -352,16 +352,6 @@ class CommonComponent extends Object
 
 						array(
 
-							'name' => 'Payment-Image',
-							'url' => BASE_URL.'/orders/showPaymentImages',
-							
-							'img' => 'images1.png'
-							// 'img' => 'image-icon.png'
-						)
-						,
-
-						array(
-
 							'name' => 'Monitoring',
 
 							'url' => BASE_URL.'/users/userMonitoring',
@@ -987,6 +977,22 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-report.png'
 
+						),
+						array(
+
+							'name' => 'Payment-Image',
+							'url' => BASE_URL.'/orders/showPaymentImages',
+							
+							'img' => 'images1.png'
+							// 'img' => 'image-icon.png'
+						)
+						,
+						array(
+
+							'name' => 'Email commission',
+							'url' => BASE_URL.'/commissions/showDefaultCommissionEmail',
+							'img' => 'email1.png'
+							// 'img' => 'image-icon.png'
 						)
 
 					),

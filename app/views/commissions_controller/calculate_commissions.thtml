@@ -285,8 +285,16 @@ $(document).ready(function()
 <input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
 
 <table width="100%" border="0" cellspacing="3" cellpadding="0">
+	
 	<tr>
-		<td class="sectionTitle" colspan=3>Technicians' Commissions</td>
+		<? 
+			foreach($allTechnician as $k => $v) {
+				if($k == $techid)
+				{
+					echo '<td class="sectionTitle" colspan=3>'.$v.' Commissions</td>';
+				}
+			}
+		?>
 	</tr>
 	<tr>
 		<td>Technician:</td>
