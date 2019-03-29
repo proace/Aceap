@@ -1220,8 +1220,12 @@ class CommissionsController extends AppController
 				$this->set("loggedUserIsTech",1);
 
 			}
-
-			
+			$query = "SELECT email FROM ace_rp_commission_email where id=1";
+			$result = $db->_execute($query);
+			while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+				$defaultEmail = $row['email'];
+			}			
+			$this->set("defaultEmail", $defaultEmail);
 			$this->set("tech_comm_conf",$tech_comm_conf);
 			$this->set("previousPage",$previousPage);
 

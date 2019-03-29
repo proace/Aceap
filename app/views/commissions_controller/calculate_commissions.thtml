@@ -1,6 +1,10 @@
 <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />	
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
 <style type="text/css">
+
+.thborder {
+    border-top: 1px solid #9f9f9f;
+}
 .adminEmail {
 	float: right;
     margin-right: 10px;
@@ -283,7 +287,7 @@ $(document).ready(function()
 <input type="hidden" name="order" value="<?=$_GET['order']?>">
 <input type="hidden" name="sort" value="<?=$_GET['sort']?>">
 <input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
-
+<div style="margin-bottom: 35px;"></div>
 <table width="100%" border="0" cellspacing="3" cellpadding="0">
 	
 	<tr>
@@ -337,7 +341,8 @@ $(document).ready(function()
 		<td colspan=2>REF #: 
 			<input name="cur_ref" id="cur_ref" type="text" value="<?=$cur_ref?>" style="font-size: 8pt;">
 		<input type="submit" name="submit2" onclick="return SearchRecords();" id="submit2" value="Update" class="buttons">
-		</td>			
+		</td>	
+
 	</tr>
 </table>
 </form>
@@ -351,34 +356,39 @@ $(document).ready(function()
 <input type="hidden" name="order" value="<?=$_GET['order']?>">
 <input type="hidden" name="jobOption" value="<?= $joboption?>">
 <!--<div style="overflow: auto; height: 390px;">-->
+<!-- <div><h4 >Technician</h4></div> -->
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
+	<tr>
+		<td colspan="17"></td>
+		<td colspan="8"><h4>Technician</h4></td>
+	</tr>
     <tr style="height:25px;">
-        <th rowspan=2 width="60" style="background-color:#ffffff;border-left:0px">Date</th>        
-        <th rowspan=2 width="60" style="background-color:#ffffff;">Job</th> 
+        <th class="thborder" rowspan=2 width="60" style="background-color:#ffffff;border-left:0px; border-top: 1px solid #9f9f9f;">Date</th>        
+        <th class="thborder" rowspan=2 width="60" style="background-color:#ffffff; border-top: 1px solid #9f9f9f;">Job</th> 
              
-        <th rowspan=2 width="100" style="background-color:#ffffff;">Tech / Source</th>
-        <th rowspan=2 style="background-color:#ffffff;">Commission type</th>
+        <th  class="thborder" rowspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#ffffff;">Tech / Source</th>
+        <th class="thborder" rowspan=2 style="border-top: 1px solid #9f9f9f; background-color:#ffffff;">Commission type</th>
 
-        <th rowspan=2 width="60" style="background-color:#caffca;">Booking</th>
+        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#caffca;">Booking</th>
 
-        <th rowspan=2 width="60" style="background-color:#caffff;">Extra Sales</th>
-        <th colspan=2 width="60" style="background-color:#53ffff;">Sales Comm</th>
+        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#caffff;">Extra Sales</th>
+        <th class="thborder" colspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#53ffff;">Sales Comm</th>
 
    <!--     <th rowspan=2 width="60" style="background-color:#C5BE97;">Time Payable</th>-->
-        <th rowspan=2 width="60" style="background-color:#80ff80;">Booking Paid</th>
-        <th rowspan=2 width="60" style="background-color:#c0c0c0;">Driving</th>
+        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#80ff80;">Booking Paid</th>
+        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f;background-color:#c0c0c0;">Driving</th>
 
-				<th colspan=2 width="60" style="background-color:#ff7d7d;">Deductions</th>
+				<th class="thborder" colspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#ff7d7d;">Deductions</th>
         
-        <th rowspan=2 colspan=2 width="100" style="background-color:#ffff80;">Adjustment</th>
-        <th rowspan=2 width="60" style="background-color:#ffff80;">Total Comm</th>
-        <th rowspan=2 width="100" style="background-color:#ffff80;">Admin Notes</th>
-		<th rowspan=2 width="16" style="background-color:#ffff80;"><?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
-		<th rowspan=2 colspan=2 width="100" style="background-color:#ffff80;">Payments</th>
-		<th rowspan=2 colspan=2 width="100" style="background-color:#ffff80;">Purchase</th>
-		<th rowspan=2 width="100" style="background-color:#ffff80;">Tech Notes</th>
-		<th rowspan=2 width="16" style="background-color:#ffff80;">Confirmed<?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
-		<th rowspan=2 width="16" style="background-color:#ffff80;">Not Confirmed<?='<img src="'.ROOT_URL.'/app/webroot/img/cross-icon.jpeg" heignt="16 px" width="16 px" >'?></th>
+        <th class="thborder" rowspan=2 colspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#ffff80;">Adjustment</th>
+        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#ffff80;">Total Comm</th>
+        <th class="thborder" rowspan=2 width="100" style="border-top: 1px solid #9f9f9f;background-color:#ffff80;">Admin Notes</th>
+		<th class="thborder" rowspan=2 width="16" style="border-top: 1px solid #9f9f9f; background-color:#ffff80;"><?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
+		<th class="thborder" rowspan=2 colspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#dec787;">Payments</th>
+		<th class="thborder"rowspan=2 colspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#dec787;">Purchase</th>
+		<th class="thborder" rowspan=2 width="100" style="border-top: 1px solid #9f9f9f;background-color:#dec787;">Tech Notes</th>
+		<th class="thborder" rowspan=2 width="16" style="border-top: 1px solid #9f9f9f;background-color:#dec787;">Confirmed<?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
+		<th class="thborder" rowspan=2 width="16" style="border-top: 1px solid #9f9f9f; background-color:#dec787;">Not Confirmed<?='<img src="'.ROOT_URL.'/app/webroot/img/cross-icon.jpeg" heignt="16 px" width="16 px" >'?></th>
 
     </tr>
     <tr style="height:25px;">
@@ -788,7 +798,7 @@ $(document).ready(function()
 
 <?php if ($common->getLoggedUserRoleID() != "6") {?>
 	<input class="submitBtn" type="submit" name="submitForm">
-	<input class= "adminEmail" type="text" name="adminEmail" placeholder="Email" value="techs@acecare.ca">
+	<input class= "adminEmail" type="text" name="adminEmail" placeholder="Email" value="<?=$defaultEmail?>">
 	<input type="hidden" name="isAdmin" value="0">
 
 <?php }?>
