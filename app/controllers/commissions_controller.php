@@ -1153,7 +1153,6 @@ class CommissionsController extends AppController
 				";
 
 	
-
 			$result = $db->_execute($query);
 			$tech_comm_conf = array();
 			while($row = mysql_fetch_array($result, MYSQL_ASSOC))
@@ -1927,7 +1926,11 @@ class CommissionsController extends AppController
 
 				//COMMISSIONS CALCULATION
 
-				$rows_persons = $this->_calculate(&$order, &$comm_settings);
+				//$rows_persons = $this->_calculate(&$order, &$comm_settings);
+
+				$data = $this->_calculate(&$order, &$comm_settings);
+
+				$rows_persons = $data[0];
 
 				$temp = array();
 
@@ -2241,11 +2244,11 @@ class CommissionsController extends AppController
 
 				//COMMISSIONS CALCULATION
 
-				$rows_persons = $this->_calculate(&$orders[$row['id']], &$comm_settings);
+				$data = $this->_calculate(&$orders[$row['id']], &$comm_settings);
 
-				$orders[$row['id']]['comm'] = $rows_persons;
+				$orders[$row['id']]['comm'] = $data[0];
 
-				
+				$rows_persons = $data[0];
 
 				//Summary calculation
 
@@ -3484,7 +3487,6 @@ class CommissionsController extends AppController
 
 	public function saveTechCommission()
 	{
-		error_reporting(E_ALL);
 		$data = $_POST;
 		$techId = $data['techId'];
 		$fromDate = $data['fromDate'];
@@ -3560,7 +3562,7 @@ class CommissionsController extends AppController
 	}
 	function sendEmailUsingMailgun($to,$subject,$body, $header){
 	
-		error_reporting(E_ALL);
+		// error_reporting(E_ALL);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
 		curl_setopt($ch, CURLOPT_POST, 1);
