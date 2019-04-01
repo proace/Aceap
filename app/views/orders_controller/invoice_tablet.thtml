@@ -11,7 +11,23 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/eff_calculator.js"></script>	
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.21.custom.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
-<body>
+<style type="text/css">
+   .no-close .ui-dialog-titlebar-close {
+  display: none;
+}
+ .button {
+    width: 21px;
+    height: 12px;
+    background: #F7B647;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+
+}
+</style>
+<body>    
 <ul id="nav">
     <li><a id="jobs_link" class="buttons"><div>Jobs</div></a></li>      
     <li><a href="<?php echo BASE_URL;?>/pages/main" id="home_link" class="buttons"><div>ACESYS</div></a></li>
@@ -99,6 +115,32 @@
     </tr>
 </table>
 </div>
-
+<div id= "show-dialog" style="display: none; text-align: center;">
+   <div><span> You can not access your jobs until you complete your commission page.</span>
+    <br><br><br>
+    <span>Click here to complete the <br>
+    Your commission page<span>
+    <br><br><br></div>
+    <div style="text-align: center">
+    <a  class="button" href="http://localhost/acesys/index.php/commissions/calculateCommissions?<?=$URL?>" target="_blank">GO</a></div>
+</div>
+<script type="text/javascript">
+$(document).ready(function()
+{
+       <?php if($isShow == 1) {?>
+        $("#show-dialog").dialog({
+            modal: true,
+            autoOpen: true,
+            title: "Commission",
+            width: 500,
+            height: 200,
+            dialogClass: "no-close",
+            color:"yellow"
+        });
+        <?php }?>   
+ 
+});
+ 
+</script>
 </body>
 </html>

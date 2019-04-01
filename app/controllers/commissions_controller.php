@@ -3530,8 +3530,21 @@ class CommissionsController extends AppController
 				$result = $db->_execute($query);
 			}
 		}
-		 
+		$techCommDate = date("Y-m-d", strtotime($fromDate));
+
+		 $query = "SELECT comm_date from ace_rp_tech_done_comm where comm_date='".$techCommDate."' AND tech_id=".$techId;
+		 $result = $db->_execute($query);
+		 $row = mysql_fetch_array($result, MYSQL_ASSOC);		 
+		 $commDate = $row['comm_date'];
+		 if(empty($commDate) || $commDate == '')
+		 {   
+			$inserData = "INSERT INTO ace_rp_tech_done_comm (tech_id,comm_date, status) values (".$techId.",'".$techCommDate."', 1)";
+			$result = $db->_execute($inserData);
+		 }			
+				
+
 		 $url = urlencode('action=view&order=&sort='.$sort.'&currentPage='.$currentPage.'&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option='.$jobOption.'&ffromdate='.$fromDate.'&cur_ref=');
+
 		if($isAdmin == 0)
 		{
 			 $body = 'Hi Admin,<br><br> Please find the URL for Todays Commission Confirmation.<br><br>';

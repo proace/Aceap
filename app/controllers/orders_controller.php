@@ -10338,6 +10338,35 @@ class OrdersController extends AppController
              $this->redirect(BASE_PATH."pages/main");exit;
         }
         else{
+         $todayDate = date('Y-m-d')	;
+		 $db =& ConnectionManager::getDataSource($this->User->useDbConfig);        	
+         $techId = $_SESSION['user']['id'];
+         $query = "SELECT MAX(job_date) as max_job_date from ace_rp_orders where (booking_source_id=".$techId." OR booking_source2_id=".$techId." OR job_technician1_id=".$techId." OR job_technician2_id=".$techId.") AND tech_visible = 1";
+         
+         $result = $db->_execute($query);
+		 $getCommDate = mysql_fetch_array($result, MYSQL_ASSOC);
+
+		 $commDate1 = $getCommDate['max_job_date'];
+		 // print_r($commDate1);die;
+		 if($commDate1 == $todayDate) {
+		 	$commDate1 = $this->checkJobAssigned($techId, $commDate1);
+		 	//'2019-03-29'
+		 }
+		 $query = "SELECT comm_date from ace_rp_tech_done_comm where comm_date='".$commDate1."' AND tech_id=".$techId;
+		 $result = $db->_execute($query);
+		 $row = mysql_fetch_array($result, MYSQL_ASSOC);		 
+		 $commDate = $row['comm_date'];
+		// $this->set('isShow','0');
+		// $this->set('URL','');
+		 // if((empty($commDate) || $commDate == '') && ($todayDate != $commDate1))
+		 if((empty($commDate) || $commDate == ''))
+		 {
+		 	$urlEncode = 'action=view&order=&sort=&currentPage=&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option=1&ffromdate='.date('d M Y',strtotime($commDate1)).'&cur_ref=';
+		 	$this->set('isShow','1');
+
+		 	$this->set('URL', $urlEncode);
+		 }
+
 			$this->layout = "blank";
 
 			$this->set('jobs', $this->Order->findAll(array(
@@ -13995,5 +14024,29 @@ function deleteUserFromCampaign()
  	$this->redirect('/orders/showPaymentImages');
  	exit();
  }
+
+ function checkJobAssigned($techId, $commDate ) {
+ 	$i = 0;
+	// $commDate = date('Y-m-d',strtotime("-1 days"));
+	$commDate = date("Y-m-d", strtotime("-1 days", strtotime($commDate)));
+	// print_r($commDate);die;
+		$techId = $techId;
+ 	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+    $query = "SELECT job_date as max_job_date from ace_rp_orders where job_date ='".$commDate."' AND ( booking_source_id=".$techId." OR booking_source2_id=".$techId." OR job_technician1_id=".$techId." OR job_technician2_id=".$techId.") AND tech_visible = 1 limit 1"; 	
+    $result = $db->_execute($query);
+    $getCommDate = mysql_fetch_array($result, MYSQL_ASSOC);
+	 $commDate1 = $getCommDate['max_job_date'];
+	  if (!empty($commDate1) || $commDate1 != '') {
+	    // end the recursion
+	    // print_r($i); 
+	    // print_r($commDate1);die;
+	    return $commDate1;
+	  } else {
+	  	$i++;
+	    // continue the recursion
+	   $commDate1 = $this->checkJobAssigned( $techId,$commDate);
+	   return $commDate1;
+		}
+	}
 }
 ?>
