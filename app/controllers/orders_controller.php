@@ -10348,10 +10348,12 @@ class OrdersController extends AppController
 
 		 $commDate1 = $getCommDate['max_job_date'];
 		 // print_r($commDate1);die;
-		 if($commDate1 == $todayDate) {
-		 	$commDate1 = $this->checkJobAssigned($techId, $commDate1);
+		 // #LOKI - If the max job date is equal to tady's date get the previous job date.
+		if(($commDate1 == $todayDate) || ($commDate1 > $todayDate)) {
+		 	$commDate1 = $this->checkJobAssigned($techId, $todayDate);
 		 	//'2019-03-29'
-		 }
+		 } 
+
 		 $query = "SELECT comm_date from ace_rp_tech_done_comm where comm_date='".$commDate1."' AND tech_id=".$techId;
 		 $result = $db->_execute($query);
 		 $row = mysql_fetch_array($result, MYSQL_ASSOC);		 
