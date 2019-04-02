@@ -54,6 +54,16 @@ document.title += " :: Edit Booking";
 }   
 </style>
 <script language="JavaScript">
+    function showestimateSubmit(){
+
+    document.getElementById('preViewEstimate').value=0;
+    document.getElementById('sendMailOnEstimate').value=0;
+    var status = ValidateFields(1);
+    if(status){
+        document.forms['editBookingform'].submit();     
+    }
+    
+}
     $(function () {
         $("#img-enlarge").dialog({
             modal: true,
@@ -925,6 +935,8 @@ input[type=text] {
 <!-- This tag creates our form tag -->
 <input type="hidden" name="havetoprint" id="havetoprint" value="0"/>
 <input type="hidden" id="NumberOfItems" value="<?=$num_items;?>">
+<input type="hidden" name="preViewEstimate" id="preViewEstimate" value="0"/>
+<input type="hidden" name="sendMailOnEstimate" id="sendMailOnEstimate" value="1"/>
 				
 <table id="MainTable" width=90% heigth=90%>
 <tr style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
@@ -1421,6 +1433,7 @@ input[type=text] {
                                                     <?php echo $html->textarea('Note/message', array('style' => "width:100%; height: 50px;")); ?>
                                                 </td>
                                             </tr>
+                                            <tr><td><span>Estimate:</span><img  style="width: 33px;position: relative;top: 10px" onclick="showestimateSubmit()" src="<?=ROOT_URL?>/app/webroot/img/icon-lg-all-bookings.png"/></td></tr>
                                         </tbody>
                                     </table>                        	
                                 </div>
@@ -1441,6 +1454,9 @@ input[type=text] {
 							</tr>-->
 						</table>
                     </td>
+                   <!--  <tr> -->
+                       
+                    <!-- </tr> -->
 					<td style="vertical-align:top">
 						<table>
 							<tr><td id="CurrentItemsTotal" style="vertical-align:top"></td></tr>
@@ -1482,6 +1498,7 @@ input[type=text] {
 						    <tr><td colspan=2 id='PaymentsDetails'></td></tr>
 					    </table>
 
+                        
                         <span>Payment photo:</span>
                         <?php 
 

@@ -3570,7 +3570,8 @@ class CommissionsController extends AppController
 		 
 		// $header = "Content-Type: text/html; charset=iso-8859-1\n" ;
 		$this->sendEmailUsingMailgun($to,$subject, $body, $header);
-		$this->redirect('/commissions/calculateCommissions?action=view&order=&sort='.$sort.'&currentPage='.$currentPage.'&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option='.$jobOption.'&ffromdate='.$fromDate.'&cur_ref=');
+		// $this->redirect('/commissions/calculateCommissions?action=view&order=&sort='.$sort.'&currentPage='.$currentPage.'&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option='.$jobOption.'&ffromdate='.$fromDate.'&cur_ref=');
+		$this->redirect('/orders/invoiceTablet');
 		exit();
 	}
 	function sendEmailUsingMailgun($to,$subject,$body, $header){

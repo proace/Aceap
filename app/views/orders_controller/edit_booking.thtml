@@ -3336,7 +3336,7 @@ function get_data($url)
 
 
 </form>
-<div  id="dialer_callback" >      
+<div  id="dialer_callback" style="display: none">      
 	<!-- Modal content -->
 	<!-- <div class="modal-content"> -->
 	    <!-- <span class="close">&times;</span> -->
@@ -3437,7 +3437,7 @@ function get_data($url)
 </div>
 <input type="hidden" id="ConnectionStatus">  
 <input type="hidden" id="currentCallNum">  
-<div class="invoice-img-enlarge" title="Photo">
+<div class="invoice-img-enlarge" title="Photo" style="display: none">
 	<img src="<?=$imgPath?>" style="width:100%;">
 </div>
 <script>

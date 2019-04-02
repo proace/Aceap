@@ -122,12 +122,14 @@
     Your commission page<span>
     <br><br><br></div>
     <div style="text-align: center">
-    <a  class="button" href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?<?=$URL?>" target="_blank">GO</a></div>
+    <a  class="button" href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?<?=$URL?>" target="">GO</a></div>
+    <!-- <a  class="button" href="http://localhost/acesys/index.php/commissions/calculateCommissions?<?=$URL?>" target="">GO</a></div> -->
 </div>
 <script type="text/javascript">
 $(document).ready(function()
 {
        <?php if($isShow == 1) {?>
+        $("#invoice").hide();
         $("#show-dialog").dialog({
             modal: true,
             autoOpen: true,
