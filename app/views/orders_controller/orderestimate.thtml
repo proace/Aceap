@@ -146,12 +146,19 @@
 			var save = false;
 			var data = tinyMCE.activeEditor.getContent();
 			var order_id = <?= $order_id ?>;
+			var fromTech = <?= $fromTech ?>;
 			$.ajax({
 				url: '<?=BASE_URL?>/orders/saveAndSendEstimateForOrder/',
 				type: 'POST',
 				data: {'editor':data,'order_id':order_id},
 				success: function(data) {
-        			document.location.href="editBooking?order_id=<?= $order_id ?>&from_tech_page=<?= $fromTech ?>";
+					console.log("fromtech",fromTech);
+					if(fromTech == 3){
+						document.location.href="techBooking?order_id=<?= $order_id ?>&from_tech_page=<?= $fromTech ?>";
+					}else {
+						document.location.href="editBooking?order_id=<?= $order_id ?>&from_tech_page=<?= $fromTech ?>";
+					}
+        			
         			/*window.location.href= "/thankyou.html";*/
     			}
 			});

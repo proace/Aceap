@@ -56,14 +56,31 @@ document.title += " :: Edit Booking";
 <script language="JavaScript">
     function showestimateSubmit(){
 
-    document.getElementById('preViewEstimate').value=0;
-    document.getElementById('sendMailOnEstimate').value=0;
-    var status = ValidateFields(1);
-    if(status){
-        document.forms['editBookingform'].submit();     
-    }
+        document.getElementById('preViewEstimate').value=0;
+        document.getElementById('sendMailOnEstimate').value=0;
+        var status = ValidateFields(1);
+        if(status){
+            document.forms['techBookingform'].submit();     
+        }
     
-}
+    }
+     function sendEmail(order_id) {
+
+            var data = order_id;
+            if(order_id!=undefined){
+                var email = document.getElementById('emailinput').value;  
+                $.ajax({
+                    url: '<?=BASE_URL?>/orders/sendMailEstimate/',
+                    type: 'POST',
+                    data: {'order_id':data,'email':email},
+                    success: function(data) {
+                        document.getElementById("mailbut").value="Estimate Sent";
+                    }
+                }); 
+            }else{
+                alert("Just create estimate !! ");              
+            }
+        }
     $(function () {
         $("#img-enlarge").dialog({
             modal: true,
@@ -931,7 +948,7 @@ input[type=text] {
 }
 
 </style>
-<form name="editBookingform" action="<?=BASE_URL;?>/orders/techBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
+<form id="techBookingform" name="editBookingform" action="<?=BASE_URL;?>/orders/techBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
 <!-- This tag creates our form tag -->
 <input type="hidden" name="havetoprint" id="havetoprint" value="0"/>
 <input type="hidden" id="NumberOfItems" value="<?=$num_items;?>">
@@ -956,6 +973,10 @@ input[type=text] {
                 <tr>
                     <td align="right">Last Name:</td>
                     <td><b id="CustomerLastName"><?=$this->data['Customer']['last_name']?></b></td>
+                </tr>
+                <tr>
+                    <td align="right">E-Mail::</td>
+                    <td><b id="emailinput"><?=$this->data['Customer']['email']?></b></td>
                 </tr>
                 <tr>
                     <td align="right">Address:</td>
@@ -1535,7 +1556,7 @@ input[type=text] {
                 <?php if($this->data['Order']['id'] != 0) {
 					echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(); return false;" ));
 					?>
-                                         	
+                     <input type="button" id="mailbut" value="Send Estimate" onclick="sendEmail(<?php echo $this->data['Order']['id'] ?>)" class="buttons">                	
                 	<input type="button" value="Done" onclick="ValidateFields(5);" class="buttons">
                 	<input type="button" value="Cancelled" onclick="ValidateFields(3);" class="buttons">
                 <?php } else {  

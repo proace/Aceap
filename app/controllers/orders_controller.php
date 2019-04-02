@@ -2468,7 +2468,7 @@ class OrdersController extends AppController
 			$photoImage1 = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
 			$photoImage2 = isset($_FILES['sortpic2'])? $_FILES['sortpic2'] : null;
 			//If order information is submitted - save the order
-			$this->saveOrder(0,'',$file, $invoiceImages, $photoImage1, $photoImage2 );
+			$this->saveOrder(0,'',$file, $invoiceImages, $photoImage1, $photoImage2, 3);
 		}
 		else
 		{
