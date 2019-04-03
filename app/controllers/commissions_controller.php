@@ -394,6 +394,8 @@ class CommissionsController extends AppController
 
 		//	 items (class=1). Sources - only for the 'extra booking' items (class=0)
 
+		if($order['estimate_sent'] != 1 ) {
+
 		$query_items =
 
 			"select sum(if(i.is_appliance!=1,(oi.price-oi.price_purchase)*oi.quantity-oi.discount+oi.addition+oi.tech-oi.tech_minus,0)) sell_service,
@@ -836,6 +838,7 @@ class CommissionsController extends AppController
 					$tech_comm_confirm[$row_comm['tech_num']]['tech_unverified'] = 'checked';
 				}
 		}
+	}
 		return array($rows_persons, $tech_comm_confirm);
 
 	}
@@ -1109,7 +1112,7 @@ class CommissionsController extends AppController
 						a.photo_2,
 						a.tech_notes,
 						a.admin_notes,
-						
+						a.estimate_sent,
 					   
 
 						t1.first_name as tech1_first_name,
@@ -1183,6 +1186,7 @@ class CommissionsController extends AppController
 				$orders[$row['id']]['tech_not_confirm_total'] = $row['tech_not_confirm_total'];		
 				$orders[$row['id']]['tech_notes'] = $row['tech_notes'];	
 				$orders[$row['id']]['admin_notes'] = $row['admin_notes'];			
+				$orders[$row['id']]['estimate_sent'] = $row['estimate_sent'];			
 				$orders[$row['id']]['order_status'] = $allJobStatuses[$row['order_status_id']];
 
 				$orders[$row['id']]['order_type'] = $row['order_type'];

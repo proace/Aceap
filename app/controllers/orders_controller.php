@@ -1432,14 +1432,15 @@ class OrdersController extends AppController
 	}
 
 	function sendMailEstimate(){
+		$orderId = $_POST['order_id'];
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-		$query = "SELECT * FROM ace_rp_order_estimation WHERE order_id=".$_POST['order_id']; 
+		$query = "SELECT * FROM ace_rp_order_estimation WHERE order_id=".$orderId; 
 		$result = $db->_execute($query);
 
 		while ($row = mysql_fetch_array($result)){
 			$template = $row;
 		}
-
+		$db->_execute("UPDATE ace_rp_orders set estimate_sent = 1 where id=".$orderId);
 		$subject = 'Ace Services : Order Estimate';
 		$headers = "From: info@acecare.ca\n";
 		$headers .="Content-Type: text/html;charset=utf-8";
