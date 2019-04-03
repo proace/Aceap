@@ -832,11 +832,11 @@ $(document).ready(function()
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($approved_sum);?></b></td>
 				</td>
 				
-				<td colspan=5 style="border-top:1px solid #9f9f9f;">&nbsp;</td>
+				<td colspan=7 style="border-top:1px solid #9f9f9f;">&nbsp;</td>
 			
-				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($techApprovedSum);?></b></td>
+				<!-- <td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($techApprovedSum);?></b></td>
 				</td>
-				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($techNotApprovedSum);?></b></td>
+				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($techNotApprovedSum);?></b></td> -->
     </tr>
 <!-- <?php }?>
  -->
