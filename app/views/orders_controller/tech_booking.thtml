@@ -65,7 +65,6 @@ document.title += " :: Edit Booking";
     
     }
      function sendEmail(order_id) {
-
             var data = order_id;
             if(order_id!=undefined){
                 var email = document.getElementById('emailinput').value;  
@@ -954,7 +953,8 @@ input[type=text] {
 <input type="hidden" id="NumberOfItems" value="<?=$num_items;?>">
 <input type="hidden" name="preViewEstimate" id="preViewEstimate" value="0"/>
 <input type="hidden" name="sendMailOnEstimate" id="sendMailOnEstimate" value="1"/>
-				
+<input type="hidden" name="emailinput" id="emailinput" value="<?=$this->data['Customer']['email']?>"/>
+
 <table id="MainTable" width=90% heigth=90%>
 <tr style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
 <td width=260px style="text-align:left;vertical-align:top">
@@ -976,7 +976,7 @@ input[type=text] {
                 </tr>
                 <tr>
                     <td align="right">E-Mail::</td>
-                    <td><b id="emailinput"><?=$this->data['Customer']['email']?></b></td>
+                    <td><b><?=$this->data['Customer']['email']?></b></td>
                 </tr>
                 <tr>
                     <td align="right">Address:</td>

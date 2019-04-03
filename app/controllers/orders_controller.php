@@ -14029,10 +14029,8 @@ function deleteUserFromCampaign()
 
  function checkJobAssigned($techId, $commDate ) {
  	$i = 0;
-	// $commDate = date('Y-m-d',strtotime("-1 days"));
 	$commDate = date("Y-m-d", strtotime("-1 days", strtotime($commDate)));
-	// print_r($commDate);die;
-		$techId = $techId;
+	$techId = $techId;
  	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
     $query = "SELECT job_date as max_job_date from ace_rp_orders where job_date ='".$commDate."' AND ( booking_source_id=".$techId." OR booking_source2_id=".$techId." OR job_technician1_id=".$techId." OR job_technician2_id=".$techId.") AND tech_visible = 1 limit 1"; 	
     $result = $db->_execute($query);
@@ -14040,8 +14038,6 @@ function deleteUserFromCampaign()
 	 $commDate1 = $getCommDate['max_job_date'];
 	  if (!empty($commDate1) || $commDate1 != '') {
 	    // end the recursion
-	    // print_r($i); 
-	    // print_r($commDate1);die;
 	    return $commDate1;
 	  } else {
 	  	$i++;
@@ -14049,6 +14045,13 @@ function deleteUserFromCampaign()
 	   $commDate1 = $this->checkJobAssigned( $techId,$commDate);
 	   return $commDate1;
 		}
+	}
+
+	public function setChatResSession()
+	{
+		$res = $_POST['chatRes'];
+		$_SESSION['user']['old_chat_res'] = $res;
+		exit();
 	}
 }
 ?>

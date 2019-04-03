@@ -67,6 +67,8 @@ class LoginController extends AppController
                                      $_SESSION['user']['show_board'] = $row['show_board'];
                                      $_SESSION['user']['tech_popup'] = 0;
                                       $_SESSION['user']['open_chat'] = 1;
+                                      $_SESSION['user']['chat_open'] = 1;
+                                      $_SESSION['user']['old_chat_res'] = 0;
 									$this->_preloadValues();
 									$this->_preloadAccessRights($row['role_id']);
 									$IP = explode('.',getenv("REMOTE_ADDR"));
@@ -183,7 +185,14 @@ class LoginController extends AppController
 				}
 
 		}
-
+		// LOKI- logout user by Admin
+		public function logoutByAdmin()
+		{
+			$id =  $_POST['id'];
+			$db =& ConnectionManager::getDataSource('default');
+			$db->_execute("UPDATE ace_rp_users set is_login = 0 where id IN (".$id.")");
+			exit();
+		}
 		function logout()
 		{
 				$this->checkout();
@@ -266,5 +275,12 @@ function saveCallRecording()
   fclose($putdata);
   exit;
  }
+ #LOKI- reset the is_login value.
+ // function resetUserLoginVal()
+ // {
+ // 	$userId = $_GET['user_id'];
+ // 	$db =& ConnectionManager::getDataSource('default');
+	// $db->_execute("UPDATE ace_rp_users set is_login = 0 where id=".$userId); 	
+ // }
 }
 ?>

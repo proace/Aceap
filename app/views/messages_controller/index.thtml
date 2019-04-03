@@ -91,7 +91,8 @@ function showChat()
     var targetWin = window.open("", "winPop", "width=800,height=500");
     if(targetWin.location == 'about:blank'){
         //create new
-        targetWin.location.href = 'https://support.acecare.ca/lhc_web/doc/autologin/autologin.php?username='+username;
+        targetWin.location.href = 'http://support.hvacproz.ca/lhc_web/doc/autologin/autologin.php?username='+username;
+        // targetWin.location.href = 'http://localhost:81/livehelperchat-master/lhc_web/doc/autologin/autologin.php?username='+username;
         targetWin.focus();
     } else {
         //give it focus (in case it got burried)
@@ -104,7 +105,7 @@ $(document).ready(function(e){
         // get_total_unread_chat();
 	   setInterval( function(){     
 	   	get_total_unread_chat();	   
-	    }, 10000 );
+	    }, 20000 );
 
 });
 
@@ -114,16 +115,38 @@ function get_total_unread_chat(){
     url:"/acesys/adminchat/custom_functions.php", 
     data:{admin_id:<?php echo $_SESSION['user']['id'];?>,action:'total_all_unread_msg'}, 
     success:function(result){ 
-                      var result = JSON.parse(result); 
-                       var oldRes = $("#total_unread_msg").html().trim();
-                  if(result['unread'] !== '0') {
-                        if( oldRes !== result['unread'] && oldRes !== 0)
-                        {
-                            isRead = result['unread'];
-                            $('#total_unread_msg').html(result['unread']).show();
+                     var chat_open = "<?php echo $_SESSION['user']['chat_open']?>";
+                     var oldRes = "<?php echo $_SESSION['user']['old_chat_res']?>";
+                     var result = JSON.parse(result); 
+                     
+                    res = result['unread'];
+                  if(res !== '0' && chat_open == 1 ) {
+                     '<?php $_SESSION['user']['chat_open'] = 2;?>';
+                      $.ajax({
+                          url: "<?=BASE_URL;?>/orders/setChatResSession",
+                          type: "POST",
+                          cache: false,
+                          data:{chatRes:res },
+                          success: function(data){
+                          }
+                        });
+                        isRead = result['unread'];
+                        $('#total_unread_msg').html(result['unread']).show();
+                        showChat(); 
+                        
+                   } else if(chat_open == 2 && (oldRes !== res && oldRes !== 0)){
+                        $.ajax({
+                          url: "<?=BASE_URL;?>/orders/setChatResSession",
+                          type: "POST",
+                          cache: false,
+                          data:{chatRes:res },
+                          success: function(data){
+                          }
+                        });
+                        $('#total_unread_msg').html(result['unread']).show();
                             showChat(); 
-                        }
-                   } else {
+                   }
+                    else {
                         $('#total_unread_msg').html('').hide();
                     }
 	 }

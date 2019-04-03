@@ -41,8 +41,33 @@ th, td {
       bringToFront();
       placeCall('*81'+extId);
     });
+
+    $('.logout ').on('change', function(){
+        var userId = $(this).val();
+        logoutUser(userId);  
+    });
+
+    $('#logoutAll').on('change', function(){
+        var userId = '';
+        $(".logout").each(function(){
+            userId += (userId != "")? "," : "";
+            userId += $(this).val();
+        });
+        logoutUser(userId);
+    });
 });
   
+  function logoutUser(userId)
+  {
+      jQuery.ajax({
+      url: "<?=BASE_URL;?>/login/logoutByAdmin",
+      type: "POST",
+      data: {id : userId},
+      success: function(data){
+        location.href = "<?=BASE_URL;?>/users/userMonitoring";
+      }
+    });
+  }
 </script>
 
 </head>
@@ -54,15 +79,17 @@ th, td {
      <th>Position</th>
      <th>Name</th>
      <th>Extension</th>
-     <th>Status</th>   
+     <th>Status</th>  
+     <th> <input id="logoutAll" type="checkbox" name=""> Logout</th> 
     <?php foreach($users as $user) {
       ?>
     <tr>
       <td><?php echo $user['name'] ?></td>
        <td><?php echo $user['first_name'] ?></td>
        <td><?php echo $user['extension_id'] ?></td> 
-       <td><input type="button" class="listen-call" name="Listen" value="Listen" ext_id="<?php echo $user['extension_id'] ?>"> <input type="button" class="training-call" name="Training" value="Training" ext_id="<?php echo $user['extension_id'] ?>"> <input type="button" class="barging-call" name="Barging" value="Barging" ext_id="<?php echo $user['extension_id'] ?>"> 
-       </td> 
+       <td><input type="button" class="listen-call" name="Listen" value="Listen" ext_id="<?php echo $user['extension_id'] ?>"> <input type="button" class="training-call" name="Training" value="Training" ext_id="<?php echo $user['extension_id'] ?>"> <input type="button" class="barging-call" name="Barging" value="Barging" ext_id="<?php echo $user['extension_id'] ?>">
+       </td>
+       <td><input class="logout" type="checkbox" name="logout" value="<?=$user['id']?>"></td> 
     </tr>
    
   <?php }?>
