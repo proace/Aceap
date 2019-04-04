@@ -38,7 +38,10 @@ function addDialerUser(id) {
 		}
 	);	
 }
-
+jQuery('#role').live('change', function(){
+        var roleId = $(this).val();
+        $('#roleId').val(roleId);
+    });
 </script>
 
 <form method="GET" action="<?= $PHP_SELF?>" name="viewform">
@@ -46,7 +49,7 @@ function addDialerUser(id) {
 	<input type="hidden" name="order" value="<?=$_GET['order']?>">
 	<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
 	<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
-
+    <input type="hidden" name="roleId"  id="roleId" value="<?=$roleId?>">
 	<table border="0px" cellspacing="10" cellpadding="0">
 		<tr>
 			<td colspan=2 class="sectionTitle">Users</td>
@@ -89,16 +92,16 @@ function addDialerUser(id) {
 			$class = 'cell'.(++$r%2);
 	?>
     <tr class="<?=$class?>">
-		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['id']?></td>
-        <td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['username']?></td>
-		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['first_name']?></td>
-		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['last_name']?></td>
-		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['address']?></td>
-		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['city']?></td>
-		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['phone']?></td>
-		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['cell_phone']?></td>
-		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'>&nbsp;<?=$obj['email']?></td>
-      	<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>"'><input type="checkbox" <?php if ($obj['is_active']) echo 'checked'; ?> onclick="ChangeActive(<?=$obj['id']?>,this)"/></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>&roleId=<?=$roleId?>"'>&nbsp;<?=$obj['id']?></td>
+        <td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>&roleId=<?=$roleId?>"'>&nbsp;<?=$obj['username']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>&roleId=<?=$roleId?>"'>&nbsp;<?=$obj['first_name']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>&roleId=<?=$roleId?>"'>&nbsp;<?=$obj['last_name']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>&roleId=<?=$roleId?>"'>&nbsp;<?=$obj['address']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>&roleId=<?=$roleId?>"'>&nbsp;<?=$obj['city']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>&roleId=<?=$roleId?>"'>&nbsp;<?=$obj['phone']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>&roleId=<?=$roleId?>"'>&nbsp;<?=$obj['cell_phone']?></td>
+		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>&roleId=<?=$roleId?>"'>&nbsp;<?=$obj['email']?></td>
+      	<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>&roleId=<?=$roleId?>"'><input type="checkbox" <?php if ($obj['is_active']) echo 'checked'; ?> onclick="ChangeActive(<?=$obj['id']?>,this)"/></td>
         <td style="cursor:pointer;"><input type="checkbox" <?php if ($obj['show_board']) echo 'checked'; ?> onclick="ChangeBoardActive(<?=$obj['id']?>,this)"/></td>
         <?php if($role == 3) { ?>
         <td>

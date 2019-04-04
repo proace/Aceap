@@ -30,10 +30,10 @@ class UsersController extends AppController
 	function edit()
 	{
 		$id = $_REQUEST['id'];
-		
+		$roleID = $_REQUEST['roleId'];
 		$this->set('sm', 10);
 		$this->set('subtitle', 'Edit User');
-
+		//$this->set('roleId', $roleID);
 		//If we have no data, then we need to provide the data to the user for editing
 		if (empty($this->data['User']))
 		{
@@ -48,7 +48,7 @@ class UsersController extends AppController
 				$assignedTrucks[$eachAssignedTruck['TruckMap']['id']]=$eachAssignedTruck['TruckMap']['truck_id'];
 				$this->data['assigned_trucks'][]=$eachAssignedTruck['TruckMap']['truck_id'];
 			}
-			
+			$this->set('roleId', $roleID);
 			$this->set('data', $this->data);
 			$this->set('interfaces', $this->Lists->UserInterfaces());
 			$this->set('eprint', $this->Lists->EprintTerminals());
@@ -199,13 +199,17 @@ class UsersController extends AppController
 						
 						//die();
 					}
-					
-
+					$roleId = $_POST['roleId'];
 					//Forward user where they need to be - if this is a single action per view
 					if ($this->data['rurl'][0])
+					{	
 						$this->redirect($this->data['rurl'][0]);
-					else
+					}
+					else if(!empty($roleId)) {
+						$this->redirect('/users?action=view&order=&sort=&currentPage=&data%5Brole%5D%5B%5D='.$roleId.'&submit2=Update');
+					} else {
 						$this->redirect('/users/');
+					}
 					exit();
 				}
 				else
@@ -365,6 +369,7 @@ class UsersController extends AppController
 		
 		$sort = $_GET['sort'];
 		$order = $_GET['order'];
+		$roleId = $_GET['roleId'];
 		if (!$order) $order = 'username asc';
 		
 		$conditions = "and u.is_active=1";
@@ -393,7 +398,7 @@ class UsersController extends AppController
 		$this->set('role', $role);
 		$this->set('disable_roles', $disable_roles);
 		$this->set('items', $items);
-		
+		$this->set('roleId', $roleId);
 		$items = $this->Role->findAll();
 		foreach( $items as $item ) {
 			$items4select[$item['Role']['id']] = $item['Role']['name'];

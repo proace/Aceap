@@ -27,8 +27,9 @@ $(function() {
 </script>
 <?php echo $html->formTag('/users/edit/' . $html->tagValue('User/id')); ?>
 <?php echo $html->hidden ('User/id', array("value",$html->tagValue('User/id'))); ?>
+<?php echo $html->hidden ('User/roleId', array("value",$html->tagValue('User/roleId'))); ?>
 <? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
-
+<input type="hidden" name="roleId" value="<?=$roleId?>">
 <table align="left" border="0" cellspacing="1" cellpadding="0">	
 	<tr style="padding-bottom:20px;">
 		<td class="sectionTitle" colspan="4"><?=$subtitle ?></td>
