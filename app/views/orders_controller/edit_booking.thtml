@@ -77,24 +77,30 @@ function showCallBack()
 {  
 	$( "#dialer_callback" ).dialog("open");
 }
+// function emailInvoice(order_id, i=0){
+// 	var email = $('#emailinput').val();
+// 	 if(0 == i)
+// 	 {
+// 	 	window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office', '_new');
+// 	 	return false;
+// 	 } else if(1 == i)
+// 	 {
+// 	 	window.open('<?=BASE_URL?>/orders/invoiceTabletPrint?order_id='+ order_id +'&type=office', '_new');
+// 	 	return false;
+// 	 	// var URL = '<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office';
+// 	 } else {
+// 	 	var URL = '<?=BASE_URL?>/orders/emailInvoiceReviewLinks?order_id='+ order_id +'&email='+ email +'&type=office';
+// 	 }
+	 
+// 	 $.get(URL, function(data){
+// 	 	console.log(data);
+// 	 });
+// }
 function emailInvoice(order_id, i=0){
 	var email = $('#emailinput').val();
-	 if(0 == i)
-	 {
 	 	window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office', '_new');
-	 	return false;
-	 } else if(1 == i)
-	 {
-	 	var URL = '<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office';
-	 } else {
-	 	var URL = '<?=BASE_URL?>/orders/emailInvoiceReviewLinks?order_id='+ order_id +'&email='+ email +'&type=office';
-	 }
-	 
-	 $.get(URL, function(data){
-	 	console.log(data);
-	 });
+	 	return false;	 
 }
-
 function invoiceprint(order_id) {
     var print = document.getElementById("print_r").value;
     if(print == "invoiceprint"){
@@ -1639,15 +1645,15 @@ function verification_type(Order){
     if(card_type == 1){
     	emailInvoice(Order , 1);
     	//window.location.reload(true);
-    	window.location.href='scheduleView';
+    	//window.location.href='scheduleView';
     	hideInvoiceReview();
     }else if(card_type == 2){
     	emailInvoice(Order, 2);
-    	window.location.href='scheduleView';
+    	//window.location.href='scheduleView';
     	hideInvoiceReview();
     }else if(card_type == 3){
     	noInvoiceReviewLink(Order);
-    	window.location.href='scheduleView';
+    	//window.location.href='scheduleView';
     	hideInvoiceReview();
     }
 }
@@ -1708,7 +1714,7 @@ $(document).ready(function(){
     margin: auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%;
+    width: 30%;
 }
 
 .call_current {
@@ -1867,18 +1873,18 @@ function get_data($url)
     <span class="close" onclick="hideInvoiceReview()">&times;</span>
     <p id="msgbx"></p>
     <p id="confbtn">
-       	<table style="width: 100%;text-align: left;font-weight: bolder;">
+       	<table style="width: 50%;text-align: left;font-weight: bolder;">
     		<tr>
 	    		<td class="special_section ">
 					<input type="radio" id="emailinvoice" class="radioBtnClass" name="donetechby" value="1"> Email Invoice
 				</td>
 			</tr>
-			<tr>
+			<!-- <tr>
 				<td class="special_section ">
 					<input type="radio" id="emailInterviews" class="radioBtnClass" name="donetechby" value="2">
 					Email Invoice/Review links
 				</td>
-			</tr>
+			</tr> -->
 			<tr>	
 				<td class="special_section ">
 					<input type="radio" id="emailNoInterviews" class="radioBtnClass" name="donetechby" value="3">
