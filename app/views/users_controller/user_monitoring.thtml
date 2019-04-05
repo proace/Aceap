@@ -44,25 +44,30 @@ th, td {
 
     $('.logout ').on('change', function(){
         var userId = $(this).val();
-        logoutUser(userId);  
+        var sessionId = $(this).attr("sessionId");
+        logoutUser(userId, sessionId);  
     });
 
     $('#logoutAll').on('change', function(){
         var userId = '';
+        var sessionId = '';
         $(".logout").each(function(){
             userId += (userId != "")? "," : "";
             userId += $(this).val();
+            sessionId += (sessionId != "")? "," : "";
+            sessionId += $(this).attr("sessionId");
         });
-        logoutUser(userId);
+
+        logoutUser(userId,sessionId);
     });
 });
   
-  function logoutUser(userId)
+  function logoutUser(userId , sessionId)
   {
       jQuery.ajax({
       url: "<?=BASE_URL;?>/login/logoutByAdmin",
       type: "POST",
-      data: {id : userId},
+      data: {id : userId, sessionId:sessionId},
       success: function(data){
         location.href = "<?=BASE_URL;?>/users/userMonitoring";
       }
@@ -74,7 +79,6 @@ th, td {
 <body>
   
   <form name="user-monitoring" action="" method="post" enctype="multipart/form-data">
-   
     <table  class="table-class" align="left" border="0" cellspacing="1" cellpadding="0"> 
      <th>Position</th>
      <th>Name</th>
@@ -89,7 +93,7 @@ th, td {
        <td><?php echo $user['extension_id'] ?></td> 
        <td><input type="button" class="listen-call" name="Listen" value="Listen" ext_id="<?php echo $user['extension_id'] ?>"> <input type="button" class="training-call" name="Training" value="Training" ext_id="<?php echo $user['extension_id'] ?>"> <input type="button" class="barging-call" name="Barging" value="Barging" ext_id="<?php echo $user['extension_id'] ?>">
        </td>
-       <td><input class="logout" type="checkbox" name="logout" value="<?=$user['id']?>"></td> 
+       <td><input class="logout" type="checkbox" name="logout" value="<?=$user['id']?>" sessionId = "<?=$user['session_id']?>"></td> 
     </tr>
    
   <?php }?>

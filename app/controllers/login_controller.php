@@ -1,16 +1,15 @@
-<?php
+<?php ob_start();
 class LoginController extends AppController
 {
     var $name = 'Login';
 
     function index()
     {
-         
 
 				$external_login = 0;
 				$logged_in = false;
 				$this->layout = "login";
-                              
+
 				if (isset($_GET['external_username']))
 				{
 						$this->data['Login']['username'] = $_GET['external_username'];
@@ -72,6 +71,7 @@ class LoginController extends AppController
 									$this->_preloadValues();
 									$this->_preloadAccessRights($row['role_id']);
 									$IP = explode('.',getenv("REMOTE_ADDR"));
+               
 									//if (($row['role_id']!=1)&&($row['role_id']!=6)&&($row['role_id']!=9)&&($row['role_id']!=13)&&($IP[0].$IP[1].$IP[2]!="1921682")) {
 									//		$this->data['error'] = "You are not allowed to login remotely!";
 									//		$this->Session->write("message", "Remote login declined");
@@ -189,8 +189,18 @@ class LoginController extends AppController
 		public function logoutByAdmin()
 		{
 			$id =  $_POST['id'];
+			$userIdArray = explode(',', $id);
+			$sessionId = $_POST['sessionId'];
+			$sessionIdArray = explode(',', $sessionId);
+			$i = 0;
 			$db =& ConnectionManager::getDataSource('default');
-			$db->_execute("UPDATE ace_rp_users set is_login = 0 where id IN (".$id.")");
+			foreach ($userIdArray as $user) {
+				$db->_execute("UPDATE ace_rp_users set is_login = 0 where id=".$user);
+				session_id($sessionIdArray[$i]);
+				session_start();
+				session_destroy();
+				$i++;
+			}
 			exit();
 		}
 		function logout()
