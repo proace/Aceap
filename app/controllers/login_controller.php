@@ -9,6 +9,7 @@ class LoginController extends AppController
 				$external_login = 0;
 				$logged_in = false;
 				$this->layout = "login";
+				$sessionId = session_id();
 
 				if (isset($_GET['external_username']))
 				{
@@ -72,6 +73,8 @@ class LoginController extends AppController
 									$this->_preloadAccessRights($row['role_id']);
 									$IP = explode('.',getenv("REMOTE_ADDR"));
                
+									$query = "UPDATE ace_rp_users set session_id='".$sessionId."' where id=".$userid;
+									$db->_execute($query);
 									//if (($row['role_id']!=1)&&($row['role_id']!=6)&&($row['role_id']!=9)&&($row['role_id']!=13)&&($IP[0].$IP[1].$IP[2]!="1921682")) {
 									//		$this->data['error'] = "You are not allowed to login remotely!";
 									//		$this->Session->write("message", "Remote login declined");
