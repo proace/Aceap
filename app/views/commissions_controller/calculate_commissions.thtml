@@ -589,7 +589,7 @@ $(document).ready(function()
 					 	<img id="pre-image_photo3" class="pre-image_<?php echo $obj['id'] ?>_photo3 invoice-openImg" src="#" alt="your image" />
 					 			<div class="acecare-td-adjust">
 						 			<label for="Fileinput" >Upload</label>
-					 				<input class="paymentImage" type="file" name="techCommArr[<?php echo $obj['id'] ?>][uploadFile]" id="Fileinput" class="disply_preview" data-ct="_<?php echo $obj['id'] ?>_photo3" orderId="<?=$obj['order_number']?>">
+					 				<input class="paymentImage disply_preview" type="file" name="techCommArr[<?php echo $obj['id'] ?>][uploadFile]" id="Fileinput" data-ct="_<?php echo $obj['id'] ?>_photo3" orderId="<?=$obj['order_number']?>">
 					 			</div>	
 					 <?php } ?>	
 				</td>

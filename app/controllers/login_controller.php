@@ -184,7 +184,7 @@ class LoginController extends AppController
 						{
 								$db->_execute("insert into ace_rp_login_log (work_date, user_id, record_type, login_type) VALUES (now(), '$userid', 1, $external_login)");
 						}
-					$db->_execute("UPDATE ace_rp_users set is_login = 0 where id=".$userid);	
+					$db->_execute("UPDATE ace_rp_users set is_login = 0, session_id = NULL where id=".$userid);	
 				}
 
 		}
@@ -198,7 +198,7 @@ class LoginController extends AppController
 			$i = 0;
 			$db =& ConnectionManager::getDataSource('default');
 			foreach ($userIdArray as $user) {
-				$db->_execute("UPDATE ace_rp_users set is_login = 0 where id=".$user);
+				$db->_execute("UPDATE ace_rp_users set is_login = 0, session_id = NULL where id=".$user);
 				session_id($sessionIdArray[$i]);
 				session_start();
 				session_destroy();
