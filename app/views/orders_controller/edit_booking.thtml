@@ -1199,6 +1199,14 @@ function upload_photo(cur,i) {
   }
 }
 $(document).ready(function(){
+	$('#reminderMail').live("change", function(e) {
+		if($(this).is(":checked"))
+		{
+			$("#reminderMail").val(1);
+		}else if($(this).is(":not(:checked)")){
+			$("#reminderMail").val(0);
+        }
+	});
 	var selectedButtonVal = window.parent.frame_browser.document.getElementById("current-seleted-button").value;
 	if(selectedButtonVal == '')
 	{
@@ -1210,8 +1218,6 @@ $(document).ready(function(){
 		console.log("hua");
 	    var img_ct = $(this).attr("data-ct").trim();
 	    var cur = $(this);
-	    console.log("img_ct",img_ct );
-	    console.log("div=",cur );
 	   upload_photo(cur[0],img_ct);
 	});
 	//$('input:text').setMask();
@@ -2510,6 +2516,17 @@ function get_data($url)
 									<option value = "<?php echo $list['id']; ?>" data-camp-city="<?php echo $list['camp_city']; ?>" <?php echo ($list['id'] == $this->data['Order']['o_campaign_id'])? 'selected' : ''; ?> ><?php echo $list['camp_name']?></option>
 								<?php } ?>	
 						</select>
+						<?php } ?>
+                    </td>
+                </tr>
+                <tr>
+					<td align="right"><?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13 || $_SESSION['user']['role_id'] == 1) echo 'Do not send email reminder:';?></td>
+                    <td>
+                    <?php
+						if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13 || $_SESSION['user']['role_id'] == 1 || $_SESSION['user']['role_id'] == 3 )
+						{?>
+							<input type="hidden" id="reminderMail" name="data[Order][reminderMail]" value="0">
+							<input type="checkbox"<?php if ($this->data['Order']['reminderMail'] == 1) echo "checked"; ?> name="data[Order][reminderMail]" value="1" style="margin-left: 10px;">
 						<?php } ?>
                     </td>
                 </tr>

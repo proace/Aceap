@@ -31,7 +31,6 @@ class SettingsController extends AppController
 	}
 	
 	function editNewsletter(){
-		
 		if (empty($this->data['Setting']))
 		{
 			$this->data = $this->Setting->find(array("title" => $_GET['title']));
@@ -67,9 +66,10 @@ class SettingsController extends AppController
 				if($_POST['sent_to'] == 1){
 					//echo $_POST['email'];
 					if( ($_POST['email']!='') && $this->check_email($_POST['email']) ){
-						$msg = str_replace('{first_name}', email, $msg);
+						$msg = str_replace('{first_name}', 'Dear', $msg);
 						$msg = str_replace('{last_name}', '', $msg);
 						$res = mail($_POST['email'], $template_subject, $msg, $headers);
+						// print_r($res); die;
 					}
 				}
 				elseif($_POST['sent_to'] == 0)

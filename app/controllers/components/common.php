@@ -140,16 +140,14 @@ class CommonComponent extends Object
     	$fileName = time()."_".$imageName;
 		$fileTmpName = $imageTempName;
 		$orgFileName = ROOT."/app/webroot/payment-images/".$fileName;
-		if($file['error'] == 0)
-		{
+		
 			//$move = $this->saveImages($file, $orgFileName, 90);
-			$move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/payment-images/".$fileName);
-			$query = "UPDATE ace_rp_orders SET payment_image ='".$fileName."' WHERE id=".$order_id;
-			$db =& ConnectionManager::getDataSource($config);
+		$move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/payment-images/".$fileName);
+		$query = "UPDATE ace_rp_orders SET payment_image ='".$fileName."' WHERE id=".$order_id;
+		$db =& ConnectionManager::getDataSource($config);
 
-			$result = $db->_execute($query);
-			return $result; 
-		}
+		$result = $db->_execute($query);
+		return $result; 										
     }
     /** end common function for save image into ace_rp_orders field payment_image*/
 	function getMenuItems()
@@ -296,7 +294,7 @@ class CommonComponent extends Object
 
 						),*/
 
-						array(
+						/*array(
 
 							'name' => 'ACE Web Site',
 
@@ -306,7 +304,7 @@ class CommonComponent extends Object
 
 							'target' => '_blank'
 
-						),
+						),*/
 /*
 						array(
 
@@ -322,7 +320,7 @@ class CommonComponent extends Object
 
 						),
 */
-						array(
+						/*array(
 
 							'name' => 'Confirmation E-mails',
 
@@ -341,7 +339,7 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-mail.png'
 
 						),
-
+*/
 						array(
 
 							'name' => 'Chat',
