@@ -1113,7 +1113,7 @@ class CommissionsController extends AppController
 						a.tech_notes,
 						a.admin_notes,
 						a.estimate_sent,
-					   
+					   	a.order_type_id,
 
 						t1.first_name as tech1_first_name,
 
@@ -1190,6 +1190,7 @@ class CommissionsController extends AppController
 				$orders[$row['id']]['order_status'] = $allJobStatuses[$row['order_status_id']];
 
 				$orders[$row['id']]['order_type'] = $row['order_type'];
+				$orders[$row['id']]['order_type_id'] = $row['order_type_id'];
 
 							
 
