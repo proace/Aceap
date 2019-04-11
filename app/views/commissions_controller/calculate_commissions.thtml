@@ -506,7 +506,7 @@ $(document).ready(function()
 			?>
 		</td>        
         <td rowspan=2 align="center" title="<?="Booking date: ".date("Y-m-d",strtotime($obj['job_date']))."  Job date:". date("Y-m-d",strtotime($obj['job_date']))?>">&nbsp;
-        	<?php echo $html->link($obj['order_number'],'/orders/'.$method.'?order_id='.$obj['id'].'&rurl='.urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING']),array("title"=>"Booking date: ".date("Y-m-d",strtotime($obj['job_date']))."  Job date:". date("Y-m-d",strtotime($obj['job_date'])))); ?>
+        	<?php echo $html->link($obj['order_number'],'/orders/'.$method.'?order_id='.$obj['id'].'& job_date='.$obj["job_date"].'&rurl='.urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING']),array("title"=>"Booking date: ".date("Y-m-d",strtotime($obj['job_date']))."  Job date:". date("Y-m-d",strtotime($obj['job_date'])))); ?>
         	<br/><font color="<?=($obj['order_status_id']==5) ? 'green' : 'red'?>"><b><?=$obj['order_status']?></b></font>
         </td>
         

@@ -952,6 +952,8 @@ input[type=text] {
 <input type="hidden" name="havetoprint" id="havetoprint" value="0"/>
 <input type="hidden" id="NumberOfItems" value="<?=$num_items;?>">
 <input type="hidden" name="preViewEstimate" id="preViewEstimate" value="0"/>
+<input type="hidden" name="fromTech" id="fromTech" value="<?=$fromTech?>"/>
+<input type="hidden" name="jobDate" id="jobDate" value="<?=$jobDate?>"/>
 <input type="hidden" name="sendMailOnEstimate" id="sendMailOnEstimate" value="1"/>
 <input type="hidden" name="emailinput" id="emailinput" value="<?=$this->data['Customer']['email']?>"/>
 
@@ -1554,11 +1556,12 @@ input[type=text] {
 				<?php }?>-->
 				
                 <?php if($this->data['Order']['id'] != 0) {
-					echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(); return false;" ));
+                    echo $html->submit("Save", array("class" => "buttons","onclick" => "javascript:document.getElementById('havetoprint').value=1;ValidateFields(); return false;" ));
+					// echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(); return false;" ));
 					?>
                      <input type="button" id="mailbut" value="Send Estimate" onclick="sendEmail(<?php echo $this->data['Order']['id'] ?>)" class="buttons">                	
-                	<input type="button" value="Done" onclick="ValidateFields(5);" class="buttons">
-                	<input type="button" value="Cancelled" onclick="ValidateFields(3);" class="buttons">
+                	<input type="button" value="Done" onclick="javascript:document.getElementById('havetoprint').value=1;ValidateFields(5);" class="buttons">
+                	<input type="button" value="Cancelled" onclick="javascript:document.getElementById('havetoprint').value=1;ValidateFields(3);" class="buttons">
                 <?php } else {  
 					echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(); return false;" ));	
 				} ?>

@@ -146,7 +146,7 @@ class OrdersController extends AppController
 
     // Method saves order's data that was recieved from the order's page.
     // Created: 06/02/2010, Anthony Chernikov
-    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null, $techOrderId=null, $send_cancalled_email = null, $showDefault=null)
+    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null, $techOrderId=null, $send_cancalled_email = null, $showDefault=null, $jobDate = null)
     {
     	if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
 			$this->preViewEstimate($_POST);
@@ -642,9 +642,9 @@ class OrdersController extends AppController
 			$result = $db->_execute($queryUpdate);
 			*/
 			//Forward user where they need to be - if this is a single action per view
+
 			if($_POST['havetoprint'] == 0 && ($_SESSION['user']['role_id']==6 || $_SESSION['user']['role_id']==1)){
 				//REDIRECT FOR SEND ESTIMATE TEMPLATE
-
 				$this->orderEstimate($order_id, $this->data['Order']['BookingItem'], $fromTech);
 			}else{
 				
@@ -658,11 +658,18 @@ class OrdersController extends AppController
 				} else if($fromTech == 1)
 				{
 					$this->redirect('/orders/invoiceTabletNewBooking');
-				} else if($fromTech == 2)
+				} else if($fromTech == 2 )
 				{
 					
-					$this->redirect('orders/invoiceTabletPayment?order_id='.$techOrderId);
-				} else {
+					$this->redirect('orders/invoiceTabletPayment?order_id='.$this->data['Order']['id']);
+				} else if($fromTech == 3) {
+					$techId = $_SESSION['user']['id'];
+					$jobDate = date("dMY", strtotime($jobDate));
+					$url = 'action=view&order=&sort=&currentPage=1&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option=1&ffromdate='.urlencode($jobDate).'&cur_ref=';
+					// $this->redirect('orders/invoiceTabletPayment?order_id='.$this->data['Order']['id']);
+					$this->redirect('commissions/calculateCommissions?'.$url);
+				}
+				else {
 				if($_POST['havetoprint'] == 3 && $_SESSION['user']['role_id']==6)
 					$this->redirect('/orders/scheduleView');
 				elseif (($old_status == 1)&&($this->data['Order']['order_status_id'] == 2))
@@ -2468,8 +2475,10 @@ class OrdersController extends AppController
 			$invoiceImages	=	isset($_FILES['uploadInvoice']) ? $_FILES['uploadInvoice']:null;
 			$photoImage1 = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
 			$photoImage2 = isset($_FILES['sortpic2'])? $_FILES['sortpic2'] : null;
+			$fromTech = !empty($_POST['fromTech']) ? $_POST['fromTech'] : 3;
+			$jobDate = !empty($_POST['jobDate']) ? $_POST['jobDate'] : '';
 			//If order information is submitted - save the order
-			$this->saveOrder(0,'',$file, $invoiceImages, $photoImage1, $photoImage2, 3);
+			$this->saveOrder(0,'',$file, $invoiceImages, $photoImage1, $photoImage2, $fromTech,'','','',$jobDate);
 		}
 		else
 		{
@@ -2480,6 +2489,10 @@ class OrdersController extends AppController
 			// Check submitted data for any special parameters to be set
 			$order_id = $this->params['url']['order_id'];
 			$customer_id = $this->params['url']['customer_id'];
+			$fromTech = $_GET['fromTech'];
+			$jobDate = isset($_GET['job_date']) ? $_GET['job_date'] : '';
+			$this->set('jobDate', $jobDate);
+			$this->set('fromTech', $fromTech);
 		    $num_items = 0;
 		    $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 			// If order ID is submitted, prepare order's data to be displayed
