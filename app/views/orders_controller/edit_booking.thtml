@@ -1051,8 +1051,14 @@ function showChangePrevious()
 }
 function showClients()
 {
-  var new_item = window.open("<?=BASE_URL?>/users/showClients",'',
-  "width=400,height=400,left=200,top=100");
+	var customerId = $('#CustomerId').val();
+	var firstName = $('#CustomerFirstName').val();
+	var lastName = $('#CustomerLastName').val();
+	var email = $('#emailinput').val();
+	var phone = $('#CustomerPhone').val();
+	var currentUrl = $('#currentUrl').val();
+
+  var new_item = window.open("<?=BASE_URL?>/users/showClients?cusId="+customerId+"&cusPhone="+phone+"&cusFirstName="+firstName+"&cusLastName="+lastName+"&cusEmail="+email+"&currentUrl="+currentUrl,'',"width=400,height=400,left=200,top=100", "_self");
 
 $('#OrderCustomerId').val(new_item[0]);
 $('#CustomerId').val(new_item[0]);
@@ -1914,6 +1920,8 @@ function get_data($url)
 <form name="editBookingform" action="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
 <!-- This tag creates our form tag -->
  <!-- Set booking from campaing value -->
+
+<input type="hidden" name="currentUrl" id="currentUrl" value="<?=$currentUrl?>">
 <input type="hidden" name="showDefault" id="show-default" value="">
 <input type="hidden" name="campaingId" id="CuscampaingId"value="<?= $campaingId ?>">
 <input type="hidden" name="send_cancalled_email" id="send_cancalled_email"value="0">
@@ -3649,3 +3657,4 @@ $(document).ready(function(){
     display: none;
 }
 </style>
+ 

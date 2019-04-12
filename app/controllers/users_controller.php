@@ -554,7 +554,7 @@ class UsersController extends AppController
 
   // Method draws a wrap for the list of clients
 	// Created: Anthony Chernikov, 08/13/2010
-	function _ShowClients()
+	function _ShowClients($customerId = null, $cusPhone =null, $cusFirstName = null, $cusLastName = null, $cusEmail = null, $currentUrl=null)
 	{
 		$bg = 'background:#EEFFEE;';
 		$txt = 'color:#000000;';
@@ -597,50 +597,34 @@ class UsersController extends AppController
 				}
 				$(document).ready(function(){$("#ItemSearchString").focus();});
       </script>
-			<table>';
-		if ($this->Common->getLoggedUserRoleID() != 1)
-		{
+      <form method="post" action= "'.BASE_URL.'/users/editCustomerInfo" name="csform">
+      	<input type="hidden" name="cusId" value="'.$customerId.'">
+      	<input type="hidden" name="currentUrl" value="'.$currentUrl.'">
+      	
+
+		<table>';
+		// if ($this->Common->getLoggedUserRoleID() != 1)
+		// {
 			$h .= ' <tr>
 								<td><b>Phone/Cell:</b></td>
-								<td><input style="width:150px" type="text" id="ItemSearchString" onchange="SearchFilter(this,\'phone\')"/></td>
-								<td><input type="button" value="GO"/></td>
+								<td><input style="width:150px" type="text" name="phone" value="'.$cusPhone.'"/></td>
 							</tr>';
-		}	
-$h .= ' <tr>
-					<td><b>Name:</b></td>
-					<td><input style="width:150px" type="text" id="ItemSearchString" onchange="SearchFilter(this,\'name\')"/></td>
-					<td><input type="button" value="GO"/></td>
+		// }	
+$h .= ' 		<tr>
+					<td><b>First Name:</b></td>
+					<td><input style="width:150px" type="text" name="firstName" value="'.$cusFirstName.'"/></td>
 				</tr>
 				<tr>
-					<td><b>Street:</b></td>
-					<td><input style="width:150px" type="text" id="ItemSearchString" onchange="SearchFilter(this,\'address_street\')"/></td>
-					<td><input type="button" value="GO"/></td>
+					<td><b>Last Name:</b></td>
+					<td><input style="width:150px" type="text" name="lastName" value="'.$cusLastName.'"/></td>
 				</tr>
 				<tr>
-					<td><b>REF #:</b></td>
-					<td><input style="width:50px" type="text" id="ItemSearchString" onchange="SearchFilter(this,\'ref\')"/></td>
-					<td><input type="button" value="GO"/></td>
+					<td><b>Email:</b></td>
+					<td><input style="width:150px" type="text" name="email" value="'.$cusEmail.'"/></td>
 				</tr>
 			</table>
+			<input type="submit" value="submit"/>
 			<img id="Working" style="display:none" src="'.ROOT_URL.'/app/webroot/img/wait30trans.gif"/>';
-        
-		//Select all items related to the current job type
-		$db =& ConnectionManager::getDataSource('default');
-		$h .= '<table style="'.$bg.'" cellspacing=0 colspacing=0>';
-		$h .= '<tr>';
-		if ($this->Common->getLoggedUserRoleID() != 1)
-		{
-			$h .= ' <th width="100px" style="'.$bg.'">Phone</th>';
-			$h .= ' <th width="100px" style="'.$bg.'">Cell</th>';
-		}
-		$h .= ' <th width="100px" style="'.$bg.'">First Name</th>
-						<th width="100px" style="'.$bg.'">Last Name</th
-						<th width="150px" style="'.$bg.'">Address</th
-						<th width="60px" style="'.$bg.'">City</th
-					 </tr><tbody id="body_target"></tbody>';
-
-		$h .= '</table>';
-		
 		return $h;
 	}
 	
@@ -656,7 +640,13 @@ $h .= ' <tr>
 	
 	function showClients()
 	{
-		echo $this->_ShowClients();
+		$customerId = $_GET['cusId'];
+		$cusPhone = $_GET['cusPhone'];
+		$cusFirstName = $_GET['cusFirstName'];
+		$cusLastName = $_GET['cusLastName'];
+		$cusEmail = $_GET['cusEmail'];
+		$currentUrl = $_GET['currentUrl'];
+		echo $this->_ShowClients($customerId, $cusPhone, $cusFirstName, $cusLastName, $cusEmail, $currentUrl);
 		exit;
 	}
 	
@@ -870,7 +860,7 @@ $h .= ' <tr>
 		}
 
 		if (isset($_POST['onlyactive']) && $_POST['onlyactive']==1) {
-			$where.=' and i.is_active=1 ';
+			$where.=' and i.is_deactive !=1 and i.is_active = 1 ';
 			$onlyactive=1;
 		}
 
@@ -902,7 +892,7 @@ $h .= ' <tr>
 
 		// Prepare Active Members Count
 		$r = $db->_execute('select count(*) from ace_rp_customers i 
-					where card_number!="" and i.`card_exp`>NOW()');
+					where card_number!="" and i.`card_exp`>NOW() and i.is_deactive !=1');
 		$this->set('active_members_count', @mysql_result($r,0,0));
 
 		// Prepare Expired Members Count
@@ -936,7 +926,7 @@ $h .= ' <tr>
 		if ($page_number>1 && $page_number>$pages_count) $page_number=$pages_count;
 		$limit=$ppage*($page_number-1).','.$ppage;
 
-		$query='select i.id, i.first_name, i.last_name, i.email, i.phone, i.cell_phone, i.card_number, i.card_exp, i.next_service, CONCAT(i.address_unit," ",i.address_street_number," ",i.address_street) as address, i.city, i.callback_date from ace_rp_customers i where i.card_number!="" and i.card_exp > CURRENT_DATE '.$where.' group by (i.`id`)
+		$query='select i.id, i.first_name, i.last_name, i.email, i.phone, i.cell_phone, i.card_number, i.card_exp, i.next_service, CONCAT(i.address_unit," ",i.address_street_number," ",i.address_street) as address, i.city, i.callback_date, i.is_deactive from ace_rp_customers i where i.card_number!="" and i.card_exp > CURRENT_DATE '.$where.' group by (i.`id`)
 			order by '.$orderby.' limit '.$limit;
 
 		// print_r($query);die;
@@ -1153,5 +1143,35 @@ $h .= ' <tr>
 		}
 		$this->set('users', $users);
  	}
+ 	// #LOKI- Set user deactive for members report customers
+ 	function setUserDeactive()
+ 	{
+ 		$userId = $_GET['userId'];
+ 		$isDeactive = $_GET['isDeactive'];
+ 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+ 		$query = "UPDATE ace_rp_customers set is_deactive=".$isDeactive." where id=".$userId;
+ 		$result = $db->_execute($query);
+ 		exit;
+  	}
+
+  	function editCustomerInfo()
+  	{
+  		$phone = $_POST['phone'];
+		$email = $_POST['email'];
+		$firstName = $_POST['firstName'];
+		$lastName = $_POST['lastName'];  
+		$customerId = $_POST['cusId'];
+		$currentUrl = $_POST['currentUrl'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+ 		$query = "UPDATE ace_rp_customers set phone='".$phone."', first_name='".$firstName."', last_name='".$lastName."', email= '".$email."' where id=".$customerId;
+ 		$result = $db->_execute($query);
+ 		if ($result) {
+
+ 			echo "<script>window.close();</script>";
+ 			//$this->redirect($currentUrl);
+ 			//header('Location: '.$_SERVER['REQUEST_URI']);	
+ 		}
+		exit;
+  	}
 }
 ?>

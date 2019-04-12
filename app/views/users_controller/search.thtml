@@ -1,3 +1,5 @@
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
 <script>
 function resetForm() {
 	f=document.forms['csform'];
@@ -23,6 +25,23 @@ function change_search_value(e) {
 	show.style.display='inline-block';
 	show.name='search_value';
 }
+
+$(document).ready(function()
+{
+	$('.userInactive').click('onchange', function(event){
+	event.stopPropagation();
+	if($(this).is(":checked"))
+		{
+			userId = $(this).attr('userId');
+			$.get("<?=BASE_URL;?>/users/setUserDeactive",
+					{userId:userId,
+					 isDeactive:1  
+					},
+					function(data){});
+		}
+	});
+});
+
 </script>
 <form method="post" action="" name="csform">
 <table border="0" cellspacing="10" cellpadding="0">
@@ -106,6 +125,7 @@ function change_search_value(e) {
 		'address'=>'Address',
 		'city'=>'City',
 		'callback_date'=>'Callback Date',
+		'Deactive' =>'Deactive'
 		//'tech_name'=>'Technician'
 		);
 	if ($pages_count>1) {
@@ -129,7 +149,7 @@ function change_search_value(e) {
 	echo $pages;
 
 ?>
-<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%" id="cusData">
 	<tr>
 		<?php foreach ($fields as $f=>$v): ?>
 		<th><a href="<?=BASE_URL;?>/users/search/<?=$f?>/<?=( ($f==$sort_field && $sort_order=='asc') ? 'desc' : 'asc' )?>"><?=$v?></a> <?=($f==$sort_field ? ($sort_order=='asc' ? 'v' : '^') : '' )?></th>
@@ -152,6 +172,7 @@ function change_search_value(e) {
 		<td><?=$obj['address']?></td>
 		<td><?=$obj['city']?></td>
 		<td><nobr><?=$obj['callback_date']?></nobr></td>
+		<td><input type="checkbox" <?php if ($obj['is_deactive'] == 1) echo "checked"; ?> class="userInactive" name="userInactive" userId="<?=$obj['id']?>"></td>
 		<!-- <td><?=$obj['tname'].' '.$obj['tlname']?></td> -->
 	</tr>
 <?php endforeach; ?>

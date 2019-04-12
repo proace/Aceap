@@ -1991,6 +1991,8 @@ class OrdersController extends AppController
 		
 			$this->set('is_booking',$is_booking);
 			$this->set('orderNo',$orderNo);
+			$this->set('currentUrl', $_SERVER['REQUEST_URI']);
+
 			// If no order data is submitted, we'll have one of the following situations:
 			// 1. we are being asked to display an existing order's data ($order_id!='')
 			// 2. we are being asked to create a new order for an existing customer ($order_id=='', $customer_id!='')
