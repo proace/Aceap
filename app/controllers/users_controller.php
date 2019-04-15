@@ -1161,17 +1161,14 @@ $h .= ' 		<tr>
 		$firstName = $_POST['firstName'];
 		$lastName = $_POST['lastName'];  
 		$customerId = $_POST['cusId'];
-		$currentUrl = $_POST['currentUrl'];
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
  		$query = "UPDATE ace_rp_customers set phone='".$phone."', first_name='".$firstName."', last_name='".$lastName."', email= '".$email."' where id=".$customerId;
  		$result = $db->_execute($query);
  		if ($result) {
-
- 			echo "<script>window.close();</script>";
- 			//$this->redirect($currentUrl);
- 			//header('Location: '.$_SERVER['REQUEST_URI']);	
+ 			$response  = array("res" => "OK");
+ 			echo json_encode($response);
+ 			exit;
  		}
-		exit;
   	}
 }
 ?>

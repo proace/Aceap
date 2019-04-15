@@ -26,6 +26,29 @@ document.title += " :: Edit Booking";
 //**********************
 </script>
 <script language="JavaScript">
+function editUserInfo()
+{
+	var firstName = $('#editFirstName').val();
+	var lastName = $('#editLastName').val();
+	var email = $('#editEmail').val();
+	var phone = $('#editphone').val();
+	var customerId = $('#CustomerId').val();
+
+	$.ajax({
+		url: '<?=BASE_URL?>/users/editCustomerInfo',
+		dataType: 'html',
+		type: 'POST',
+		cache: false,
+		data:{phone:phone, firstName:firstName, lastName:lastName, email:email, cusId:customerId},
+		success: function(data) {
+			res = JSON.parse(data);
+			if(res.res == "OK")
+			{
+				window.location.reload();
+			}
+		}
+	});	
+}
 function call_cell_phone()
 {
 	var phone_number = $('#CustomerCellPhone').val();
@@ -76,6 +99,11 @@ function DiallerJobsHistory(){
 function showCallBack() 
 {  
 	$( "#dialer_callback" ).dialog("open");
+}
+
+function showEditUserInfo() 
+{  
+	$( "#editUserInfo" ).dialog("open");
 }
 // function emailInvoice(order_id, i=0){
 // 	var email = $('#emailinput').val();
@@ -1965,7 +1993,8 @@ function get_data($url)
 </tr>
 <tr style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
 <td width=260px style="text-align:left;vertical-align:top">
-    <input type="button" value="Change customer" onclick="showClients()"/>
+    <!-- <input type="button" value="Change customer" onclick="showClients()"/> -->
+    <input type="button" value="Change customer" onclick="showEditUserInfo()"/>
     <div class="frame-wrap">
         <div class="frame-header-left"></div>
         <div class="frame-header-title">Customer's information</div>
@@ -3466,6 +3495,34 @@ function get_data($url)
 	  	</table>
 	<!-- </div>   -->
 </div>
+<div id="editUserInfo">
+	<table>
+		<tr>
+			<td><b>Phone/Cell:</b>
+			</td>
+			<td><input style="width:150px" type="text" id="editphone" name="editphone" value="<?=$this->data['Customer']['phone']?>"/>
+			</td>
+		</tr>
+		<tr>
+			<td><b>First Name:</b></td>
+			<td><input style="width:150px" id="editFirstName" type="text" name="editFirstName" value="<?=$this->data['Customer']['first_name']?>"/></td>
+		</tr>
+		<tr>
+			<td><b>Last Name:</b></td>
+			<td><input style="width:150px" id="editLastName" type="text" name="editLastName" value="<?=$this->data['Customer']['last_name']?>"/></td>
+		</tr>
+		<tr>
+			<td><b>Email:</b></td>
+			<td><input style="width:150px" id="editEmail" type="text" name="editEmail" value="<?=$this->data['Customer']['email']?>"/></td>
+		</tr>
+		<tr>
+			<td>
+				<input type="button" value="Submit" onclick="javascript:editUserInfo();" class="buttons" style="padding: 5px;margin-top: 5px;"/>
+			</td>
+		</tr>
+		<!-- <input type="submit" value="submit"/> -->
+	</table>
+</div>
 <input type="hidden" id="ConnectionStatus">  
 <input type="hidden" id="currentCallNum">  
 <div class="invoice-img-enlarge" title="Photo" style="display: none">
@@ -3485,6 +3542,17 @@ function get_data($url)
 	        $('#img-enlarge').dialog('open');
 	        });
     });
+$(function () {
+	    $("#editUserInfo").dialog({
+	        modal: true,
+	        autoOpen: false,
+	        title: "Edit Customer",
+	        autoOpen: false,
+	        width: 300,
+	        height: 200,
+	    });
+    });
+
     $(function () {
 	    $(".invoice-img-enlarge").dialog({
 	        modal: true,
