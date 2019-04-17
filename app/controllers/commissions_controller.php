@@ -3552,12 +3552,19 @@ class CommissionsController extends AppController
 
 		if($isAdmin == 0)
 		{
+			$query = "SELECT first_name, email from ace_rp_users where id=".$techId."";
+			$result = $db->_execute($query);
+			while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+				$techName = $row['first_name'];			
+				$techEmail = $row['email'];
+			}				
 			 $body = 'Hi Admin,<br><br> Please find the URL for Todays Commission Confirmation.<br><br>';
 			 $body .= '<a href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?'.$url.'">Click Here</a>';
 			// $body .= '<a href="http://localhost/acesys/index.php/commissions/calculateCommissions?'.$url.'">Click Here</a>';
 			
 			$to = $adminEmail ;
 			$subject = "Commission";
+			$from = $techEmail;
 		} else {
 			$query = "SELECT first_name, email from ace_rp_users where id=".$techId."";
 			$result = $db->_execute($query);
@@ -3567,25 +3574,25 @@ class CommissionsController extends AppController
 			}
 			$body = 'Hi '.$techName.',<br><br> Please find the URL for Todays Commission Confirmation.<br><br>';
 			 $body .= '<a href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?'.$url.'">Click Here</a>';
-			
+			$from = 'info@acecare.ca';
 			$to = $techEmail;
 			 // $to = "lokendra.k@cisinlabs.com";
 			 $subject = "Commission";
 		}
 		 
 		// $header = "Content-Type: text/html; charset=iso-8859-1\n" ;
-		$this->sendEmailUsingMailgun($to,$subject, $body, $header);
+		$this->sendEmailUsingMailgun($to,$from,$subject, $body, $header);
 		// $this->redirect('/commissions/calculateCommissions?action=view&order=&sort='.$sort.'&currentPage='.$currentPage.'&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option='.$jobOption.'&ffromdate='.$fromDate.'&cur_ref=');
 		$this->redirect('/orders/invoiceTablet');
 		exit();
 	}
-	function sendEmailUsingMailgun($to,$subject,$body, $header){
+	function sendEmailUsingMailgun($to,$from,$subject,$body, $header){
 	
 		// error_reporting(E_ALL);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
 		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".$body);
+		curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".$body."&FROM=".$from);
 		
 		// receive server response ...
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
