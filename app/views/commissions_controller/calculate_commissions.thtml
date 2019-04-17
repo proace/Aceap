@@ -112,7 +112,11 @@ function GoChangeCommission(){
 	top.frames['main_view'].location.href='<? echo $html->url("/commissions/editTech/"); ?>'+TechId+'?rurl=<?=urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING'])?>';
 }
 function MarkVerified(job_id,data_in,element, is_tech=null){
+    var approvedSum = parseFloat($('#approved-office').attr('value'));
   if (element.checked){
+                approvedSum =  (approvedSum + parseFloat(data_in.total_comm));
+                $("#approved-office").attr('value',approvedSum);
+                $("#approved-office").html("$"+approvedSum.toFixed(2));
 				$.get("<?=BASE_URL;?>/commissions/setVerified",
 					{order_id:job_id,
 					 tech_num:data_in.tech_num,
@@ -125,14 +129,23 @@ function MarkVerified(job_id,data_in,element, is_tech=null){
 					 adjustment:data_in.adjustment,
 					 total_comm:data_in.total_comm
 					},
-					function(data){document.forms['viewform'].submit();});
+					function(data){
+                        // document.forms['viewform'].submit();
+                    });
 	}
-	else
-				$.get("<?=BASE_URL;?>/commissions/setUnVerified",
-					{order_id:job_id,
-					 tech_num:data_in.tech_num},
-					function(data){document.forms['viewform'].submit();});
-}
+	else {
+             approvedSum =  (approvedSum - parseFloat(data_in.total_comm));
+                $("#approved-office").attr('value',approvedSum);
+                $("#approved-office").html("$"+approvedSum);
+			$.get("<?=BASE_URL;?>/commissions/setUnVerified",
+				{order_id:job_id,
+				 tech_num:data_in.tech_num},
+				function(data){
+                    // document.forms['viewform'].submit();
+                });
+        }
+        
+    }
 function Adjust(job_id,data_in,element){
   val = element.value;
 	$.get("<?=BASE_URL;?>/commissions/setVerified",
@@ -511,16 +524,16 @@ $(document).ready(function()
         </td>
         
 			<?php
-			if ($techid)
-				if ($techid==$obj['job_technician1_id'])
-				{
+			// if ($techid)
+				// if ($techid==$obj['job_technician1_id'] )
+				// {
 					$local_class = 'active';
 					//Add total only for the done jobs
 					$total_sum = $total_sum + $rows_persons[1]['total_comm'];
 					if ($rows_persons[1]['verified'])
 						$approved_sum = $approved_sum + $rows_persons[1]['total_comm'];
-				}
-			else $local_class = 'inactive';
+			// 	}
+			// else $local_class = 'inactive';
 			?>
         <td class="<?=$local_class?>" onclick="javascript:SelectTech(<?php echo $obj['job_technician1_id']; ?>);" style="cursor:pointer;">
 			&nbsp;<?php echo $obj['tech1_name']; ?>
@@ -640,15 +653,15 @@ $(document).ready(function()
     </tr>
     <tr class="<?=$class?>">
 				<?php
-								if ($techid)
-												if ($techid==$obj['job_technician2_id'])
-												{
+								// if ($techid)
+												// if ($techid==$obj['job_technician2_id'])
+												// {
 																$local_class = ' active';
 																$total_sum = $total_sum + $rows_persons[2]['total_comm'];
 																if ($rows_persons[2]['verified'])
 																				$approved_sum = $approved_sum + $rows_persons[2]['total_comm'];
-												}
-												else $local_class = 'inactive';
+												// }
+												// else $local_class = 'inactive';
 				?> 
 				<td class="<?=$local_class?>" onclick="javascript:SelectTech(<?php echo $obj['job_technician2_id']; ?>);" style="cursor:pointer;">
 				  &nbsp;<?php echo $obj['tech2_name']; ?>
@@ -712,15 +725,15 @@ $(document).ready(function()
         <td rowspan=2 align="center"><b><?php echo $obj['order_type']; ?></b></td>
 				
 				<?php
-								if ($techid)
-												if ($techid==$obj['booking_source_id'])
-												{
+								// if ($techid)
+								// 				if ($techid==$obj['booking_source_id'])
+								// 				{
 																$local_class = ' active';
 																$total_sum = $total_sum + $rows_persons[3]['total_comm'];
 																if ($rows_persons[3]['verified'])
 																				$approved_sum = $approved_sum + $rows_persons[3]['total_comm'];
-												}
-												else  $local_class = 'inactive';
+												// }
+												// else  $local_class = 'inactive';
 				?> 
 		    <td class="<?=$local_class?>" onclick="javascript:SelectTech(<?php echo $obj['booking_source_id']; ?>);" style="cursor:pointer;">
 				  &nbsp;<?php echo $obj['source_name']; ?>
@@ -777,15 +790,15 @@ $(document).ready(function()
     </tr>
     <tr class="<?= $class ?>">
 				<?php
-								if ($techid)
-												if ($techid==$obj['booking_source2_id'])
-												{
+								// if ($techid)
+								// 				if ($techid==$obj['booking_source2_id'])
+								// 				{
 																$local_class = ' active';
 																$total_sum = $total_sum + $rows_persons[4]['total_comm'];
 																if ($rows_persons[4]['verified'])
 																				$approved_sum = $approved_sum + $rows_persons[4]['total_comm'];
-												}
-												else $local_class = 'inactive';
+												// }
+												// else $local_class = 'inactive';
 				?> 
 		    <td class="<?=$local_class?>" onclick="javascript:SelectTech(<?php echo $obj['booking_source2_id']; ?>);" style="cursor:pointer;">
 				  &nbsp;<?php echo $obj['source2_name']; ?>
@@ -841,14 +854,14 @@ $(document).ready(function()
 				</td>		
     </tr>
 <?php endforeach; ?>
-<!-- <?php if ($techid) {?>
- -->    <tr>
+<!-- <?php if ($techid) {?> -->
+    <tr>
 				<td colspan=13 style="border-top:1px solid #9f9f9f;">&nbsp;</td>
 				
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b>Total:</b></td>
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($total_sum);?></b></td>
 				<td colspan=1 align="right" style="border-top:1px solid #9f9f9f;"><b>Approved by office:</b></td>
-				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($approved_sum);?></b></td>
+				<td align="right" id="approved-office" style="border-top:1px solid #9f9f9f; font-weight: bold;" value="<?=$HtmlAssist->totalPrPrice($approved_sum);?>"><?php echo $HtmlAssist->prPrice($approved_sum);?></td>
 				</td>
 				
 				<td colspan=7 style="border-top:1px solid #9f9f9f;">&nbsp;</td>
@@ -857,8 +870,7 @@ $(document).ready(function()
 				</td>
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($techNotApprovedSum);?></b></td> -->
     </tr>
-<!-- <?php }?>
- -->
+ <!-- <?php }?> -->
 </table>
 <input type="hidden" id="confirm-total" name="confirm-total" value="<?= $techApprovedSum?>">
 <input type="hidden" id="not-confirm-total" name="not-confirm-total" value="<?=$techNotApprovedSum?>">
