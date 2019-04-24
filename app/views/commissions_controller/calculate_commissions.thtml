@@ -887,6 +887,7 @@ $(document).ready(function()
 <input type="hidden" name="isAdmin" value="1">
 <input class="adminSubmit" type="submit" name="Reply" value="Reply">
 <?php }?>
+<div style="margin-top: 20px;"><textarea rows="10" cols="50" name="adminCommonNotes" placeholder="Notes" value="<?=$adminCommonNotes?>"><?php echo $adminCommonNotes?></textarea></div>
 
 <table width="100%">
 <tr>
