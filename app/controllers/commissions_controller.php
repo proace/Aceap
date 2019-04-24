@@ -853,7 +853,7 @@ class CommissionsController extends AppController
 		// error_reporting(E_ALL);
 		$this->layout="list";
 
-		if (($_SESSION['user']['role_id'] == 1) || ($_SESSION['user']['role_id'] == 4) || ($_SESSION['user']['role_id'] == 6)) 
+		if (($_SESSION['user']['role_id'] == 1) || ($_SESSION['user']['role_id'] == 4) || (($_SESSION['user']['role_id'] == 6) && ($_SESSION['user']['active_commission'] != 0))) 
 
 		{ // TECHNICIAN=1, ACCOuntant=4, administrator=6
 

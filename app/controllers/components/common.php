@@ -987,11 +987,19 @@ class CommonComponent extends Object
 						,
 						array(
 
-							'name' => 'Email commission',
+							'name' => 'Email Setup',
 							'url' => BASE_URL.'/commissions/showDefaultCommissionEmail',
 							'img' => 'email1.png'
 							// 'img' => 'image-icon.png'
 						)
+						//,
+						// array(
+
+						// 	'name' => 'Commission Review',
+						// 	'url' => 'gmail.com',
+						// 	'img' => 'email1.png'
+						// 	// 'img' => 'image-icon.png'
+						// )
 
 					),
 

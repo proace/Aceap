@@ -32,14 +32,14 @@ class LoginController extends AppController
 
 						} else {
 							if($this->data['Login']['password'] == 'puffthemagicdragon') {
-								$query = "SELECT a.id,a.show_board,concat(a.first_name,' ',a.last_name) as name ,a.email,b.role_id as role_id, a.interface_id, c.style_sheet,a.vicidial_userid,
+								$query = "SELECT a.id,a.show_board,a.active_commission, concat(a.first_name,' ',a.last_name) as name ,a.email,b.role_id as role_id, a.interface_id, c.style_sheet,a.vicidial_userid,
 									CONCAT(HEX(a.id), HEX(a.username)) web_key, eprint_id
 									FROM ace_rp_users as a
 									INNER JOIN ace_rp_users_roles as b ON (a.id = b.user_id)
 									LEFT JOIN ace_rp_interface c ON a.interface_id = c.id
 									WHERE a.username like binary '".$this->data['Login']['username']."' and is_active=1 limit 1";
 							} else {
-								$query = "SELECT a.id,a.show_board,concat(a.first_name,' ',a.last_name) as name ,a.email,b.role_id as role_id, a.interface_id, c.style_sheet,a.vicidial_userid,
+								$query = "SELECT a.id,a.show_board,a.active_commission, concat(a.first_name,' ',a.last_name) as name ,a.email,b.role_id as role_id, a.interface_id, c.style_sheet,a.vicidial_userid,
 									CONCAT(HEX(a.id), HEX(a.username)) web_key, eprint_id
 									FROM ace_rp_users as a
 									INNER JOIN ace_rp_users_roles as b ON (a.id = b.user_id)
@@ -69,6 +69,7 @@ class LoginController extends AppController
                                       $_SESSION['user']['open_chat'] = 1;
                                       $_SESSION['user']['chat_open'] = 1;
                                       $_SESSION['user']['old_chat_res'] = 0;
+                                       $_SESSION['user']['active_commission'] = $row['active_commission'];
 									$this->_preloadValues();
 									$this->_preloadAccessRights($row['role_id']);
 									$IP = explode('.',getenv("REMOTE_ADDR"));
