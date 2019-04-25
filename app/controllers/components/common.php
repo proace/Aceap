@@ -992,14 +992,15 @@ class CommonComponent extends Object
 							'img' => 'email1.png'
 							// 'img' => 'image-icon.png'
 						)
-						//,
-						// array(
+						,
+						array(
 
-						// 	'name' => 'Commission Review',
-						// 	'url' => 'gmail.com',
-						// 	'img' => 'email1.png'
-						// 	// 'img' => 'image-icon.png'
-						// )
+							'name' => 'Commission Review',
+							'url' => 'https://mail.google.com',
+							'img' => 'gmial-icon.jpeg',
+							'target' => '_blank'	
+							// 'img' => 'image-icon.png'
+						)
 
 					),
 
