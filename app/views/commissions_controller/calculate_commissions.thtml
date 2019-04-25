@@ -500,16 +500,16 @@ $(document).ready(function()
 		$disable_tech[4] = false;
 		$message_to = 0;
 		
-		if (($_SESSION['user']['id'] != 44851)&&($_SESSION['user']['id'] != 52249)&&($_SESSION['user']['id'] != 231307)
-		  &&($_SESSION['user']['id'] != 58613)&&($_SESSION['user']['id'] != 68476))
-		{
-			if ($obj['job_technician1_id']!=$_SESSION['user']['id']) $disable_tech[1] = true;
-			if ($obj['job_technician2_id']!=$_SESSION['user']['id']) $disable_tech[2] = true;
-			if ($obj['booking_source_id']!=$_SESSION['user']['id']) $disable_tech[3] = true;
-			if ($obj['booking_source2_id']!=$_SESSION['user']['id']) $disable_tech[4] = true;
-			$disable_inputs = 'disabled';
-			$message_to = 11;
-		}
+		// if (($_SESSION['user']['id'] != 44851)&&($_SESSION['user']['id'] != 52249)&&($_SESSION['user']['id'] != 231307)
+		//   &&($_SESSION['user']['id'] != 58613)&&($_SESSION['user']['id'] != 68476))
+		// {
+		// 	if ($obj['job_technician1_id']!=$_SESSION['user']['id']) $disable_tech[1] = true;
+		// 	if ($obj['job_technician2_id']!=$_SESSION['user']['id']) $disable_tech[2] = true;
+		// 	if ($obj['booking_source_id']!=$_SESSION['user']['id']) $disable_tech[3] = true;
+		// 	if ($obj['booking_source2_id']!=$_SESSION['user']['id']) $disable_tech[4] = true;
+		// 	$disable_inputs = 'disabled';
+		// 	$message_to = 11;
+		// }
 ?>
     <tr class="<?= $class ?>">
         <td rowspan=4 style="cursor:pointer;border-left:0px">

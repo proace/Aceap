@@ -3586,9 +3586,14 @@ class CommissionsController extends AppController
 				$techName = $row['first_name'];			
 				$techEmail = $row['email'];
 			}
+			$query = "SELECT email FROM ace_rp_commission_email where id=1";
+			$result = $db->_execute($query);
+			while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+				$defaultEmail = $row['email'];
+			}	
 			$body = 'Hi '.$techName.',<br><br> Please find the URL for Todays Commission Confirmation.<br><br>';
 			 $body .= '<a href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?'.$url.'">Click Here</a>';
-			$from = 'info@acecare.ca';
+			$from = $defaultEmail;
 			$to = $techEmail;
 			 // $to = "lokendra.k@cisinlabs.com";
 			 $subject = "Commission";
