@@ -427,7 +427,14 @@ class UsersController extends AppController
 		$db->_execute("update ace_rp_users set show_board='".$is_active."' where id=".$item_id);
 		exit;
 	}
-	
+	function changeCommissionActive()
+	{
+		$user_id = $_GET['user_id'];
+		$is_active = $_GET['is_active'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$db->_execute("update ace_rp_users set active_commission='".$is_active."' where id=".$user_id);
+		exit;
+	}
 	function customer() {
 		$db =& ConnectionManager::getDataSource("default");
 		

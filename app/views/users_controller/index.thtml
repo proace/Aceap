@@ -26,7 +26,21 @@ function ChangeBoardActive(id,elem_chk){
                 console.log("User Board Deactived");
             });
 }
-
+function ChangeCommissiondActive(id,elem_chk){
+  if (elem_chk.checked){
+        $.get("<?=BASE_URL;?>/users/changeCommissionActive",
+            {user_id:id,is_active:1},
+            function(data){
+                console.log("User Commission Actived");
+            });
+    }
+    else
+        $.get("<?=BASE_URL;?>/users/changeCommissionActive",
+            {user_id:id,is_active:0},
+            function(data){
+                console.log("User Commission Deactived");
+            });
+}
 function addDialerUser(id) {
 	$.get("<?=BASE_URL;?>/users/addDialerUser",
 		{id:id},
@@ -83,6 +97,7 @@ jQuery('#role').live('change', function(){
         <th width="100px"><a href="javascript:setOrder('email');">Email</a></th>
         <th width="10px"><a href="javascript:setOrder('flagactive');">Active</a></th>
         <th width="10px"><a href="javascript:setOrder('flagactive');">Board</a></th>
+        <th width="10px"><a href="javascript:setOrder('flagactive');">Commission</a></th>
         <?php if($role == 3) { ?>
         <th>VICIDial</th>
         <?php } ?>
@@ -103,6 +118,7 @@ jQuery('#role').live('change', function(){
 		<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>&roleId=<?=$roleId?>"'>&nbsp;<?=$obj['email']?></td>
       	<td style="cursor:pointer;" onclick='document.location.href="<?=BASE_URL?>/users/edit?id=<?=$obj['id']?>&roleId=<?=$roleId?>"'><input type="checkbox" <?php if ($obj['is_active']) echo 'checked'; ?> onclick="ChangeActive(<?=$obj['id']?>,this)"/></td>
         <td style="cursor:pointer;"><input type="checkbox" <?php if ($obj['show_board']) echo 'checked'; ?> onclick="ChangeBoardActive(<?=$obj['id']?>,this)"/></td>
+         <td style="cursor:pointer;"><input type="checkbox" <?php if ($obj['active_commission']) echo 'checked'; ?> onclick="ChangeCommissiondActive(<?=$obj['id']?>,this)"/></td>
         <?php if($role == 3) { ?>
         <td>
         	<input type="hidden" class="user_id" value="<?=$obj['id']?>" />
