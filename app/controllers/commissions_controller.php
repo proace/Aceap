@@ -394,7 +394,7 @@ class CommissionsController extends AppController
 
 		//	 items (class=1). Sources - only for the 'extra booking' items (class=0)
 
-		if($order['estimate_sent'] != 1 ) {
+		if($order['show_commission'] != 0 ) {
 
 		$query_items =
 
@@ -1090,6 +1090,7 @@ class CommissionsController extends AppController
 				SELECT  a.id, a.job_date, a.order_number, a.order_type_id, a.order_status_id,
 
 						at.name as order_type, at.category_id as job_type_category,
+						at.show_commission,
 
 					   
 

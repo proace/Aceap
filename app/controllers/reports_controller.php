@@ -3186,74 +3186,74 @@ this function for trasfer jobs
 		$this->set('tdate', date("d M Y", strtotime($tdate)));		
 	}
 	
-	function salesRecording()
-	{
-		$this->layout="list";
-    	$sqlConditions = '';
+	// function salesRecording()
+	// {
+	// 	$this->layout="list";
+ //    	$sqlConditions = '';
     
-    $ShowInactive = $_GET['ShowInactive'];
-		$sort = $_GET['sort'];
-		$order = $_GET['order'];
-		if (!$order) $order = 'o.booking_date asc';
+ //    $ShowInactive = $_GET['ShowInactive'];
+	// 	$sort = $_GET['sort'];
+	// 	$order = $_GET['order'];
+	// 	if (!$order) $order = 'o.booking_date asc';
 				
-		//CONDITIONS
-		//Convert date from date picker to SQL format
-		//Pick today's date if no date
-		$fdate = ($this->params['url']['ffromdate'] != '' ? date("Y-m-d", strtotime($this->params['url']['ffromdate'])): date("Y-m-d") ) ;
-		$tdate = ($this->params['url']['ftodate'] != '' ? date("Y-m-d", strtotime($this->params['url']['ftodate'])): date("Y-m-d") ) ;
-		$telemid = $this->params['url']['ftelemid'];
-		$disposition = $this->params['url']['disposition'];
+	// 	//CONDITIONS
+	// 	//Convert date from date picker to SQL format
+	// 	//Pick today's date if no date
+	// 	$fdate = ($this->params['url']['ffromdate'] != '' ? date("Y-m-d", strtotime($this->params['url']['ffromdate'])): date("Y-m-d") ) ;
+	// 	$tdate = ($this->params['url']['ftodate'] != '' ? date("Y-m-d", strtotime($this->params['url']['ftodate'])): date("Y-m-d") ) ;
+	// 	$telemid = $this->params['url']['ftelemid'];
+	// 	$disposition = $this->params['url']['disposition'];
 		
 		
-		//vicidial connection
-		$db =& ConnectionManager::getDataSource('vicidial');
+	// 	//vicidial connection
+	// 	$db =& ConnectionManager::getDataSource('vicidial');
     
 
-		if($telemid != '')
-			$sqlConditions .= " AND u.user=".$telemid; 
+	// 	if($telemid != '')
+	// 		$sqlConditions .= " AND u.user=".$telemid; 
 			
-		if($disposition != '')
-			$sqlDisposition .= " AND al.status='".$disposition."'";
+	// 	if($disposition != '')
+	// 		$sqlDisposition .= " AND al.status='".$disposition."'";
 
-		$records = array();
-		//booking_telemarketer_id;booking_source_id
-		$query ="
-        	SELECT u.full_name, l.phone_number, rl.start_time event_time, al.status, rl.location 
-			FROM recording_log rl
-			LEFT JOIN vicidial_agent_log al
-			ON rl.lead_id = al.lead_id
-			LEFT JOIN vicidial_users u
-			ON u.user = rl.user
-			LEFT JOIN vicidial_list l
-			ON l.lead_id = al.lead_id
-			WHERE al.status IS NOT NULL
-			AND l.phone_number IS NOT NULL			
-			AND DATE(rl.start_time) >= '".$this->Common->getMysqlDate($fdate)."'
-			AND DATE(rl.start_time) <= '".$this->Common->getMysqlDate($tdate)."'
-			$sqlDisposition
-			$sqlConditions
-			ORDER BY rl.start_time DESC
-			";
+	// 	$records = array();
+	// 	//booking_telemarketer_id;booking_source_id
+	// 	$query ="
+ //        	SELECT u.full_name, l.phone_number, rl.start_time event_time, al.status, rl.location 
+	// 		FROM recording_log rl
+	// 		LEFT JOIN vicidial_agent_log al
+	// 		ON rl.lead_id = al.lead_id
+	// 		LEFT JOIN vicidial_users u
+	// 		ON u.user = rl.user
+	// 		LEFT JOIN vicidial_list l
+	// 		ON l.lead_id = al.lead_id
+	// 		WHERE al.status IS NOT NULL
+	// 		AND l.phone_number IS NOT NULL			
+	// 		AND DATE(rl.start_time) >= '".$this->Common->getMysqlDate($fdate)."'
+	// 		AND DATE(rl.start_time) <= '".$this->Common->getMysqlDate($tdate)."'
+	// 		$sqlDisposition
+	// 		$sqlConditions
+	// 		ORDER BY rl.start_time DESC
+	// 		";
 
-		$result = $db->_execute($query);
-		while($row = mysql_fetch_array($result)) {
-			$records[$row['location']]['full_name'] = $row['full_name'];
-			$records[$row['location']]['phone_number'] = $row['phone_number'];
-			$records[$row['location']]['event_time'] = $row['event_time'];    
-			$records[$row['location']]['status'] = $row['status'];   
-			$records[$row['location']]['location'] = $row['location'];  
-		}
+	// 	$result = $db->_execute($query);
+	// 	while($row = mysql_fetch_array($result)) {
+	// 		$records[$row['location']]['full_name'] = $row['full_name'];
+	// 		$records[$row['location']]['phone_number'] = $row['phone_number'];
+	// 		$records[$row['location']]['event_time'] = $row['event_time'];    
+	// 		$records[$row['location']]['status'] = $row['status'];   
+	// 		$records[$row['location']]['location'] = $row['location'];  
+	// 	}
 		
-		$this->set("items", $records);
-		$this->set("telemid", $telemid);
-		if($fdate!='')
-			$this->set('fdate', date("d M Y", strtotime($fdate)));
-		if($tdate!='')
-			$this->set('tdate', date("d M Y", strtotime($tdate)));
-		$this->set('allTelemarketers', $this->Lists->Telemarketers(true));
-		$this->set('vicidialStatuses', $this->Lists->VicidialStatuses());
-		$this->set('ShowInactive', $ShowInactive);	
-	}
+	// 	$this->set("items", $records);
+	// 	$this->set("telemid", $telemid);
+	// 	if($fdate!='')
+	// 		$this->set('fdate', date("d M Y", strtotime($fdate)));
+	// 	if($tdate!='')
+	// 		$this->set('tdate', date("d M Y", strtotime($tdate)));
+	// 	$this->set('allTelemarketers', $this->Lists->Telemarketers(true));
+	// 	$this->set('vicidialStatuses', $this->Lists->VicidialStatuses());
+	// 	$this->set('ShowInactive', $ShowInactive);	
+	// }
 	
 	function graphDone() {
 		$this->layout="html5";
@@ -3551,39 +3551,39 @@ this function for trasfer jobs
 		$this->set('allPayPeriods', $this->Lists->PayPeriods(1));
 	}
 	
-	function unattendedCallbacks() {
-		$this->layout='edit';
-		$db =& ConnectionManager::getDataSource("vicidial");	
-		$query = "
-			SELECT l.phone_number, c.campaign_id, c.status, c.callback_time, c.comments
-			FROM vicidial_callbacks c
-			LEFT JOIN vicidial_list l
-			ON c.lead_id = l.lead_id
-			LEFT JOIN vicidial_users u
-			ON u.user = c.user		
-			WHERE l.lead_id IS NOT NULL
-			AND l.phone_number IS NOT NULL 
-			AND c.status IN('ACTIVE','LIVE')
-			AND l.status IN ('CBHOLD')
-			AND CURDATE() >= c.callback_time
-			AND u.active = 'N'
-			AND l.phone_number NOT IN(SELECT * FROM active_callbacks)
-			GROUP BY l.phone_number
-			ORDER BY c.status DESC
-		";
+	// function unattendedCallbacks() {
+	// 	$this->layout='edit';
+	// 	$db =& ConnectionManager::getDataSource("vicidial");	
+	// 	$query = "
+	// 		SELECT l.phone_number, c.campaign_id, c.status, c.callback_time, c.comments
+	// 		FROM vicidial_callbacks c
+	// 		LEFT JOIN vicidial_list l
+	// 		ON c.lead_id = l.lead_id
+	// 		LEFT JOIN vicidial_users u
+	// 		ON u.user = c.user		
+	// 		WHERE l.lead_id IS NOT NULL
+	// 		AND l.phone_number IS NOT NULL 
+	// 		AND c.status IN('ACTIVE','LIVE')
+	// 		AND l.status IN ('CBHOLD')
+	// 		AND CURDATE() >= c.callback_time
+	// 		AND u.active = 'N'
+	// 		AND l.phone_number NOT IN(SELECT * FROM active_callbacks)
+	// 		GROUP BY l.phone_number
+	// 		ORDER BY c.status DESC
+	// 	";
 		
-		$result = $db->_execute($query);
+	// 	$result = $db->_execute($query);
 		
-		while($row = mysql_fetch_array($result)) {
-			$records[$row['phone_number']]['phone_number'] = $row['phone_number'];
-			$records[$row['phone_number']]['campaign_id'] = $row['campaign_id'];
-			$records[$row['phone_number']]['status'] = $row['status'];
-			$records[$row['phone_number']]['callback_time'] = $row['callback_time'];
-			$records[$row['phone_number']]['comments'] = $row['comments'];			
-		}
+	// 	while($row = mysql_fetch_array($result)) {
+	// 		$records[$row['phone_number']]['phone_number'] = $row['phone_number'];
+	// 		$records[$row['phone_number']]['campaign_id'] = $row['campaign_id'];
+	// 		$records[$row['phone_number']]['status'] = $row['status'];
+	// 		$records[$row['phone_number']]['callback_time'] = $row['callback_time'];
+	// 		$records[$row['phone_number']]['comments'] = $row['comments'];			
+	// 	}
 		
-		$this->set('records', $records);
-	}
+	// 	$this->set('records', $records);
+	// }
 	
 	function auditBookings() {
 		$this->layout = 'blank';
@@ -3979,51 +3979,51 @@ this function for trasfer jobs
   }
 	
 	
-	function vicidialTimeStats() {
-		$this->layout="list";
+	// function vicidialTimeStats() {
+	// 	$this->layout="list";
 				
-		//CONDITIONS
-		//Convert date from date picker to SQL format
-		//Pick today's date if no date
-		$fdate = ($this->params['url']['ffromdate'] != '' ? date("Y-m-d", strtotime($this->params['url']['ffromdate'])): date("Y-m-d") ) ;
-		$tdate = ($this->params['url']['ftodate'] != '' ? date("Y-m-d", strtotime($this->params['url']['ftodate'])): date("Y-m-d") ) ;
-		/*$telemid = $this->params['url']['ftelemid'];
-		$disposition = $this->params['url']['disposition'];*/
+	// 	//CONDITIONS
+	// 	//Convert date from date picker to SQL format
+	// 	//Pick today's date if no date
+	// 	$fdate = ($this->params['url']['ffromdate'] != '' ? date("Y-m-d", strtotime($this->params['url']['ffromdate'])): date("Y-m-d") ) ;
+	// 	$tdate = ($this->params['url']['ftodate'] != '' ? date("Y-m-d", strtotime($this->params['url']['ftodate'])): date("Y-m-d") ) ;
+	// 	/*$telemid = $this->params['url']['ftelemid'];
+	// 	$disposition = $this->params['url']['disposition'];*/
 		
-		//vicidial connection
-		$db =& ConnectionManager::getDataSource('vicidial');
+	// 	//vicidial connection
+	// 	$db =& ConnectionManager::getDataSource('vicidial');
 
-		$query = "
-			select l.user, u.full_name, 
-			SEC_TO_TIME(SUM(talk_sec)) talk, SEC_TO_TIME(SUM(wait_sec)) wait, SEC_TO_TIME(SUM(dispo_sec)) dispo, 
-			SEC_TO_TIME(SUM(pause_sec)) pause, SEC_TO_TIME(SUM(dead_sec)) dead,
-			SEC_TO_TIME(SUM(wait_sec)+SUM(talk_sec)) total  
-			from vicidial_agent_log l
-			LEFT JOIN vicidial_users u
-			ON l.user = u.user
-			WHERE event_time >= '".$this->Common->getMysqlDate($fdate)."'
-			and event_time <= '".$this->Common->getMysqlDate($tdate)."' 
-			group by l.user
-		";
+	// 	$query = "
+	// 		select l.user, u.full_name, 
+	// 		SEC_TO_TIME(SUM(talk_sec)) talk, SEC_TO_TIME(SUM(wait_sec)) wait, SEC_TO_TIME(SUM(dispo_sec)) dispo, 
+	// 		SEC_TO_TIME(SUM(pause_sec)) pause, SEC_TO_TIME(SUM(dead_sec)) dead,
+	// 		SEC_TO_TIME(SUM(wait_sec)+SUM(talk_sec)) total  
+	// 		from vicidial_agent_log l
+	// 		LEFT JOIN vicidial_users u
+	// 		ON l.user = u.user
+	// 		WHERE event_time >= '".$this->Common->getMysqlDate($fdate)."'
+	// 		and event_time <= '".$this->Common->getMysqlDate($tdate)."' 
+	// 		group by l.user
+	// 	";
 
-		$result = $db->_execute($query);
-		while($row = mysql_fetch_array($result)) {
-			$records[$row['user']]['name'] = $row['full_name'];
-			$records[$row['user']]['talk'] = $row['talk'];
-			$records[$row['user']]['wait'] = $row['wait'];    
-			$records[$row['user']]['pause'] = $row['pause'];
-			$records[$row['user']]['dispo'] = $row['dispo'];   
-			$records[$row['user']]['dead'] = $row['dead'];
-			$records[$row['user']]['total'] = $row['total'];
-		}
+	// 	$result = $db->_execute($query);
+	// 	while($row = mysql_fetch_array($result)) {
+	// 		$records[$row['user']]['name'] = $row['full_name'];
+	// 		$records[$row['user']]['talk'] = $row['talk'];
+	// 		$records[$row['user']]['wait'] = $row['wait'];    
+	// 		$records[$row['user']]['pause'] = $row['pause'];
+	// 		$records[$row['user']]['dispo'] = $row['dispo'];   
+	// 		$records[$row['user']]['dead'] = $row['dead'];
+	// 		$records[$row['user']]['total'] = $row['total'];
+	// 	}
 		
-		$this->set("records", $records);
+	// 	$this->set("records", $records);
 		
-		if($fdate!='')
-			$this->set('fdate', date("d M Y", strtotime($fdate)));
-		if($tdate!='')
-			$this->set('tdate', date("d M Y", strtotime($tdate)));	
-	}
+	// 	if($fdate!='')
+	// 		$this->set('fdate', date("d M Y", strtotime($fdate)));
+	// 	if($tdate!='')
+	// 		$this->set('tdate', date("d M Y", strtotime($tdate)));	
+	// }
 	
 } //end of reports controller
 ?>

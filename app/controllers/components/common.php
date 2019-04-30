@@ -659,35 +659,35 @@ class CommonComponent extends Object
 
 						),*/
 
-						array(
+						// array(
 
-							'name' => 'Agent Recording',
+						// 	'name' => 'Agent Recording',
 
-							'url' => BASE_URL.'/reports/salesRecording',
+						// 	'url' => BASE_URL.'/reports/salesRecording',
 
-							'img' => 'icon-lg-all-bookings.png'
+						// 	'img' => 'icon-lg-all-bookings.png'
 
-						),
+						// ),
 
-						array(
+						// array(
 
-							'name' => 'Agent Time Statistics',
+						// 	'name' => 'Agent Time Statistics',
 
-							'url' => BASE_URL.'/reports/vicidialTimeStats',
+						// 	'url' => BASE_URL.'/reports/vicidialTimeStats',
 
-							'img' => 'icon-lg-all-bookings.png'
+						// 	'img' => 'icon-lg-all-bookings.png'
 
-						),
+						// ),
 
-						array(
+						// array(
 
-							'name' => 'Unattended Callbacks',
+						// 	'name' => 'Unattended Callbacks',
 
-							'url' => BASE_URL.'/reports/unattendedCallbacks',
+						// 	'url' => BASE_URL.'/reports/unattendedCallbacks',
 
-							'img' => 'icon-lg-all-bookings.png'
+						// 	'img' => 'icon-lg-all-bookings.png'
 
-						),
+						// ),
 
 						/*array(
 

@@ -1076,5 +1076,18 @@ class JobsController extends AppController
 		//print_r($approval);
 		//print_r($noapproval);
 	}
+
+	// #Loki - Active/Inactive commission
+
+	function changeCommissionActive()
+	{
+		$jobtype_id = $_GET['jobtype_id'];
+		$is_active = $_GET['is_active'];
+		
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$db->_execute("update ace_rp_order_types set show_commission='".$is_active."' where id=".$jobtype_id);
+		exit;
+	}
+
 }
 ?>

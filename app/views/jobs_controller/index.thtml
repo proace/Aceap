@@ -28,7 +28,22 @@ function showScheduleDisplay(id) {
 	
 	var answer = window.showModalDialog(url,'', option);
 }
-
+function ChangeCommissionActive(id,elem_chk){
+  if (elem_chk.checked){
+        $.get("<?=BASE_URL;?>/jobs/changeCommissionActive",
+            {jobtype_id:id,is_active:1},
+            function(data){document.forms['viewform'].submit();});
+    }
+    else
+        $.get("<?=BASE_URL;?>/jobs/changeCommissionActive",
+            {jobtype_id:id,is_active:0},
+            function(data){document.forms['viewform'].submit();});
+}
+// $( document ).ready(function() {
+//    $('.showCommmission').live('change', function(){
+        
+//    });
+// });
 </script>
 <style>
 .question_button {
@@ -81,6 +96,7 @@ function showScheduleDisplay(id) {
         <th width="100"><a href="javascript:setOrder('category_id');">Category</a></th>
         <th><a href="javascript:setOrder('name');">Name</a></th>
         <th width="10"><a href="javascript:setOrder('flagactive');">Active</a></th>
+        <th width="10">Show Commission</th>
    </tr>
 		<?php $r=1;
 			foreach ($items as $obj) {
@@ -96,6 +112,7 @@ function showScheduleDisplay(id) {
       	<td>&nbsp;<?php echo $jobcategories[$obj['category_id']]; ?></td>
       	<td>&nbsp;<?php echo $obj['name']; ?></td>
       	<td><input type="checkbox" <?php if ($obj['flagactive']) echo 'checked'; ?> onclick="ChangeActive(<?=$obj['id']?>,this)"/></td>
+        <td><input type="checkbox" <?php if ($obj['show_commission']) echo 'checked'; ?>  name="showCommmission" class="showCommmission" onclick="ChangeCommissionActive(<?=$obj['id']?>,this)"></td>
     </tr>
     <? } ?>
 </table>
