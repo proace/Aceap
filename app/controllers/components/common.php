@@ -1064,8 +1064,17 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-price.png'
 
-						)
+						),
 
+						array(
+
+							'name' => 'Payment Type',
+
+							'url' => BASE_URL.'/payments/showPaymentTypes',
+
+							'img' => 'icon-lg-price.png'
+
+						)
 
 
 					),

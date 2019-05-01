@@ -389,5 +389,57 @@ class PaymentsController extends AppController
 		echo $res;
 		exit;
 	}
+
+	// Loki Show payment methods
+	function showPaymentTypes() 
+	{
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "SELECT * from ace_rp_payment_methods";
+		
+		$items = array();
+		$result = $db->_execute($query);
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			foreach ($row as $k => $v)
+			  $items[$row['id']][$k] = $v;
+		}
+		$this->set('paymentMethods', $items);
+	}
+
+	function deletePaymentType()
+	{
+
+		$data = $_POST['typeIds'];
+		$ids = implode(',', $data);
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "DELETE from  ace_rp_payment_methods WHERE id IN (".$ids.")";
+		$result = $db->_execute($query);
+		exit();
+	}
+
+	function changePictureActive()
+	{
+		$jobTypeId = $_GET['jobtype_id'];
+		$isActive = $_GET['is_active'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "UPDATE ace_rp_payment_methods set show_picture = ".$isActive." WHERE id=".$jobTypeId."";
+		$result = $db->_execute($query);
+		exit();
+	}
+	// Loki : show the add payment page. Don't remov this function
+	function showAddPaymentTypePage()
+	{
+
+	}
+	function addPaymentType()
+	{
+		$paymentTypeName = $_POST['typeName'];
+		$isActive = $_POST['isActive'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "INSERT INTO ace_rp_payment_methods (name,show_picture) values ('".$paymentTypeName."',".$isActive.")";
+		$result = $db->_execute($query);
+		$this->redirect('payments/showPaymentTypes');
+		exit();
+	}
 }
 ?>

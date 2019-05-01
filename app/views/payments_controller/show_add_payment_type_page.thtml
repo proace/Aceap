@@ -1,0 +1,23 @@
+<html> 
+<head>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_constants.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_js_sample.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<style type="text/css">
+    .comm-margin {
+        margin-top: 10px;
+    }
+</style>
+</head>
+<form action = "<?=BASE_URL?>/payments/addPaymentType" method = "post" >
+<h1>Add Payment Type</h1>
+<div ><b>Name:</b> <input type="text" name="typeName"> <br/></div>
+<div class="comm-margin"><b>Active:</b>
+</div> 
+ Yes:<input type="radio" name="isActive" value="1">
+ No :<input type="radio" name="isActive" value="0">
+<div class="comm-margin"><input type="submit" name="submit"></div>
+</form>
+</html>
