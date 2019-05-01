@@ -924,8 +924,12 @@ class CommissionsController extends AppController
 	
 
 			//Pick today's date if no date
-
-			$fdate = ($this->params['url']['ffromdate'] != '' ? $this->params['url']['ffromdate']: date("Y-m-d") );
+			if($_SESSION['user']['role_id'] == 6) {
+				$fdate = ($this->params['url']['ffromdate'] != '' ? $this->params['url']['ffromdate']: date("Y-m-d", strtotime('-1 days')) );
+			} else {
+				$fdate = ($this->params['url']['ffromdate'] != '' ? $this->params['url']['ffromdate']: date("Y-m-d"));
+			}
+			
 
 			$tdate = ($this->params['url']['ftodate'] != '' ? $this->params['url']['ftodate']: date("Y-m-d") );
 
