@@ -249,7 +249,7 @@ class ListsComponent extends Object
 		{
 				$db =& ConnectionManager::getDataSource($this->controller->User->useDbConfig);
 				
-				$result = $db->_execute("select id, name from ace_rp_pay_periods where period_type=$type order by start_date asc");
+				$result = $db->_execute("select id, name from ace_rp_pay_periods where period_type=$type order by start_date desc");
 				
 				$Ret = array();
 				while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {

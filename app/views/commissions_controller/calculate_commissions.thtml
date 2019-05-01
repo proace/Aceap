@@ -561,13 +561,15 @@ $(document).ready(function()
 				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[1]['helper_ded']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['helper_ded'])?>&nbsp;</td>
 
 				<td>
-				  <?php
-					if ($rows_persons[1]['verified']&&!$disable_tech[1]) {
-					if ($disable_inputs) echo '&nbsp;<b>'.$rows_persons[1]['adjustment'].'</b>';
-					else echo '<input type="text" style="width:40" value="'.$rows_persons[1]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[1]).',this);\'/>';
-					 }else{ ?>
-					  &nbsp;
-					<?php } ?>
+                <!-- <?php
+                    if ($rows_persons[1]['verified']&&!$disable_tech[1]) {
+                    if ($disable_inputs) echo '&nbsp;<b>'.$rows_persons[1]['adjustment'].'</b>';
+                    else echo '<input type="text" style="width:40" value="'.$rows_persons[1]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[1]).',this);\'/>';
+                     }else{ ?>
+                      &nbsp;
+                    <?php } ?>
+				 -->  <?php
+					 echo '<input type="text" style="width:40" value="'.$rows_persons[1]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[1]).',this);\'/>'; ?>
 				</td>
 				<?php
 					if(!empty($tech_comm_conf[$obj['id']][1]['tech_verified']) || $tech_comm_conf[$obj['id']][1]['tech_verified'] != '')
@@ -681,13 +683,16 @@ $(document).ready(function()
 				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[2]['helper_ded']==0||$disable_tech[2])?'':$HtmlAssist->prPrice($rows_persons[2]['helper_ded'])?>&nbsp;</td>
 
 				<td>
-				  <?php
+				 <!--  <?php
 					if ($rows_persons[2]['verified']&&!$disable_tech[2]) {
 					if ($disable_inputs) echo '&nbsp;<b>'.$rows_persons[2]['adjustment'].'</b>';
 					else echo '<input type="text" style="width:40" value="'.$rows_persons[2]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[2]).',this);\'/>';
 					}else{ ?>
 					  &nbsp;
-					<?php } ?>
+					<?php } ?> -->
+                    <?php 
+                    echo '<input type="text" style="width:40" value="'.$rows_persons[2]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[2]).',this);\'/>';
+                    ?>
 				</td>
 				<?php
 					if(!empty($tech_comm_conf[$obj['id']][2]['tech_verified']) || $tech_comm_conf[$obj['id']][2]['tech_verified'] != '')
@@ -758,13 +763,16 @@ $(document).ready(function()
 						$techNotApprovedSum = $techNotApprovedSum + $rows_persons[3]['total_comm'];
 					} 
 				?>
-				  <?php
+				 <!--  <?php
 					if ($rows_persons[3]['verified']&&!$disable_tech[3]) {
 					if ($disable_inputs) echo '&nbsp;<b>'.$rows_persons[3]['adjustment'].'</b>';
 					else echo '<input type="text" style="width:40" value="'.$rows_persons[3]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[3]).',this);\'/>';
 					}else{ ?>
 					  &nbsp;
-					<?php } ?>
+					<?php } ?> -->
+                    <?php 
+                        echo '<input type="text" style="width:40" value="'.$rows_persons[3]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[3]).',this);\'/>';
+                    ?>
 				</td>
         <? if (!$message_to) {?>
 				<td align="center" valign="top">
@@ -823,13 +831,17 @@ $(document).ready(function()
 						$techNotApprovedSum = $techNotApprovedSum + $rows_persons[4]['total_comm'];
 					} 
 				?>
-				  <?php
+				  <!-- <?php
 					if ($rows_persons[4]['verified']&&!$disable_tech[4]) {
 					if ($disable_inputs) echo '&nbsp;<b>'.$rows_persons[4]['adjustment'].'</b>';
 					else echo '<input type="text" style="width:40" value="'.$rows_persons[4]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[4]).',this);\'/>';
 					}else{ ?>
 					  &nbsp;
-					<?php } ?>
+					<?php } ?> -->
+                    <?php
+                        echo '<input type="text" style="width:40" value="'.$rows_persons[4]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[4]).',this);\'/>';
+                    ?>
+
 				</td>
         <? if (!$message_to) {?>
 				<td align="center" valign="top">
