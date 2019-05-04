@@ -100,7 +100,7 @@ $(document).ready(function()
 	</tr>
 	<tr>
 		<td colspan="2">
-			Show only active:&nbsp;<input type="checkbox" id="onlyactive" <?php if ($onlyactive) echo 'checked';?> name="onlyactive" onchange="document.forms['csform'].submit();" value="1" />
+			Show only deactive:&nbsp;<input type="checkbox" id="onlyactive" <?php if ($onlyactive) echo 'checked';?> name="onlyactive" onchange="document.forms['csform'].submit();" value="1" />
 			&nbsp;&nbsp;
 			Rows per page <input type="text" name="ppage" value="<?=$ppage?>" style="width:40px" />
 		</td>

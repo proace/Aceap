@@ -867,8 +867,10 @@ $h .= ' 		<tr>
 		}
 
 		if (isset($_POST['onlyactive']) && $_POST['onlyactive']==1) {
-			$where.=' and i.is_deactive !=1 and i.is_active = 1 ';
+			$where.=' and i.is_deactive =1 and i.is_active = 1 ';
 			$onlyactive=1;
+		} else {
+			$where.=' and i.is_deactive !=1';
 		}
 
 		if ( !empty($_POST['nsfrom']) && $d=strtotime($_POST['nsfrom']) ) {
