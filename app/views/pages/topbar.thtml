@@ -27,6 +27,30 @@
 <script language="JavaScript">
 var nopen = 1;
 
+$(document).ready(function(e){
+	   setInterval( function(){     
+        get_chat_count();
+	    }, 20000 );
+
+});
+function get_chat_count(){ 
+ $.ajax({
+    url:"<?=BASE_URL;?>/messages/getMessages", 
+    type: "GET",
+    success:function(result){ 
+            var res = JSON.parse(result);
+            count = res['unread'];
+            if(count == 1)
+            {
+                openChat();
+            }
+        }
+   });
+}
+function openChat()
+{
+  var answer = window.open("<?=BASE_URL?>/messages/ShowMessages",'',"width=600, height=500");  
+}
 function openTab(n)
 {
  $(".tabtrigger_sm").removeClass("menuOver").addClass("tabOff");

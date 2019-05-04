@@ -121,7 +121,34 @@ class MessagesController extends AppController
 		
 		$this->set('records', $records);
 	}
-	
+	function getMessages()
+	{
+		$toUser = $this->Common->getLoggedUserID();
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "SELECT state from ace_rp_messages where to_user=".$toUser." ORDER BY id DESC LIMIT 1";
+		$result = $db->_execute($query);
+		$row = mysql_fetch_array($result);
+		$state = $row['state'];
+    	if($state == 0) 
+    	{
+    		$data=array('unread'=>1);
+    		echo json_encode($data);
+    	} else {
+    		$data=array('unread'=>0);
+    		echo json_encode($data);
+    	}
+    	
+		exit();
+	}
+	function markAsRead()
+	{
+		$message_id=$_GET['message_id'];
+		
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "update ace_rp_messages set state=1 where id='".$message_id."'";
+		$result = $db->_execute($query);
+		exit;
+	}
 	function ShowMessages()
 	{
 		$this->layout='list';
@@ -134,7 +161,7 @@ class MessagesController extends AppController
 		$condition = "";
 		if ($job_id) $condition = " and m.file_link=$job_id ";
 
-		$query = "select m.id, m.from_date,
+		$query = "select m.id, m.from_date,m.state,
 										 m.from_user, concat(fu.first_name, ' ', fu.last_name) from_name,
 										 m.to_user, concat(tu.first_name, ' ', tu.last_name) to_name,
 										 m.txt, m.file_link, m.customer_link, m.state

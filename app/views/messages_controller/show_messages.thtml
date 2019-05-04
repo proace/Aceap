@@ -1,4 +1,9 @@
 <script>
+
+ function markAsRead(id){
+ 	$.get("<?=BASE_URL;?>/messages/markAsRead",
+		{message_id:id}, function(data){document.forms['viewform'].submit();});
+ }
 function respond(to_user_id)
 {
   var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id=<?=$_GET['job_id']?>&to_user_id="+to_user_id,'', 
@@ -91,6 +96,9 @@ function createMessage()
 					<td><?=$obj['from_date']?></td>
 					<td rowspan=4 style="border-left:1px solid #CCCCCC;text-align:left;width:400px">
 						<div style="width:400px"><?=$obj['txt']?></div>
+					</td>
+					<td rowspan="3" style="text-align:center;vertical-align:middle;">Read:</td><td rowspan=4 style="border-left:1px solid #CCCCCC;width:16px">
+						<input type="checkbox" <?php if($obj['state']){echo 'checked';}?> name="MarkRead" onclick="markAsRead(<?=$obj['id']?>)">
 					</td>
 					<td rowspan=4 style="border-left:1px solid #CCCCCC;width:16px" onclick="DeleteMsg(<?=$obj['id']?>)">
 						<img src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png" />
