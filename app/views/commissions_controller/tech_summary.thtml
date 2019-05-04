@@ -58,7 +58,7 @@ function GoChangeCommission(){
 		<td>Technician:</td>
 		<td>
 		<select name="ftechid" <?=($loggedUserIsTech == "1" ? "disabled='disabled'" : "")?> id="ftechid">
-			<option value="-1">-=All=-</option>
+			<option value="-1">--</option>
 			<? 
 			foreach($allTechnician as $k => $v) {
 				echo '<option value="'.$k.'"'.( $k == $techid ? ' selected' : '').'>'.$v.'</option>';
