@@ -911,6 +911,7 @@ class CommissionsController extends AppController
 
 			//Convert date from date picker to SQL format
 
+				
 			if ($this->params['url']['ffromdate'] != '')
 
 				$this->params['url']['ffromdate'] = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
@@ -1026,9 +1027,6 @@ class CommissionsController extends AppController
 			if($cur_ref)
 
 				$sqlConditions .= " AND a.order_number = '".$cur_ref."'"; 
-
-
-
 			//The route visibility was added on 2011-04-17. All jobs before this date are excluded.
 
 			if($this->Common->getMysqlDate($fdate) > $this->Common->getMysqlDate("2011-04-17") && $this->Common->getLoggedUserRoleID()==1) {				
@@ -1084,7 +1082,11 @@ class CommissionsController extends AppController
 				$routeVisibilityConstraint = "";	
 
 			}
-
+			if (isset($this->params['url']['orderId']))
+			{
+				$orderId = $this->params['url']['orderId'];
+				$sqlConditions .= " AND a.id='".$orderId."'";
+			}
 			
 
 			$orders = array();
@@ -1094,7 +1096,7 @@ class CommissionsController extends AppController
 				SELECT  a.id, a.job_date, a.order_number, a.order_type_id, a.order_status_id,
 
 						at.name as order_type, at.category_id as job_type_category,
-						at.show_commission,
+						at.show_commission,a.admin_commission_reply,
 
 					   
 
@@ -1161,7 +1163,7 @@ class CommissionsController extends AppController
 
 				";
 
-	
+	 //	print_r($query); die;
 			$result = $db->_execute($query);
 			$tech_comm_conf = array();
 			while($row = mysql_fetch_array($result, MYSQL_ASSOC))
@@ -1192,7 +1194,8 @@ class CommissionsController extends AppController
 				$orders[$row['id']]['tech_not_confirm_total'] = $row['tech_not_confirm_total'];		
 				$orders[$row['id']]['tech_notes'] = $row['tech_notes'];	
 				$orders[$row['id']]['admin_notes'] = $row['admin_notes'];			
-				$orders[$row['id']]['estimate_sent'] = $row['estimate_sent'];			
+				$orders[$row['id']]['estimate_sent'] = $row['estimate_sent'];	
+				$orders[$row['id']]['admin_commission_reply'] = $row['admin_commission_reply'];		
 				$orders[$row['id']]['order_status'] = $allJobStatuses[$row['order_status_id']];
 
 				$orders[$row['id']]['order_type'] = $row['order_type'];
@@ -1207,7 +1210,9 @@ class CommissionsController extends AppController
 				$orders[$row['id']]['tech1_name'] = $row['tech1_first_name'].' '.$row['tech1_last_name'];
 
 				$orders[$row['id']]['tech2_name'] = $row['tech2_first_name'].' '.$row['tech2_last_name'];
+				$orders[$row['id']]['tech1_id'] = $row['job_technician1_id'];
 
+				$orders[$row['id']]['tech2_id'] = $row['job_technician2_id'];
 
 
 				//COMMISSIONS CALCULATION
@@ -2020,8 +2025,6 @@ class CommissionsController extends AppController
 
 			ksort($summary);			
 
-			
-
 			$this->set("summary", $summary);
 
 			$this->set("job_option", $job_option);
@@ -2033,6 +2036,9 @@ class CommissionsController extends AppController
 			$this->set('comm_roles',$this->Lists->ListTable('ace_rp_commissions_roles'));
 
 			$this->set("ismobile", $this->Session->read("ismobile"));
+			$this->set('prev_fdate', date("d M Y", strtotime($fdate) - 24*60*60));
+
+			$this->set('next_tdate', date("d M Y", strtotime($fdate) + 24*60*60));
 
 
 
@@ -3502,7 +3508,46 @@ class CommissionsController extends AppController
 		$this->set('itemList', $itemList);
 
 	}
-
+	public function sendCommReviewMailToTech() {
+		$data = $_POST;
+		$fromDate = $data['fromDate'];
+		$sort = $data['sort'];
+		$jobOption = $data['jobOption'];
+		$currentRef = $data['currentRef'];
+		$currentPage = $data['currentPage'];
+		$orderId = $data['orderId'];
+		$adminNotes = isset($data['adminNotes']) ? $data['adminNotes'] : ''
+		;
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+		if(!empty($adminNotes))
+		{
+			$query = "UPDATE ace_rp_orders set admin_commission_reply='".$adminNotes."' where id=".$orderId;
+			$result = $db->_execute($query);
+		}
+		$url = urlencode('action=view&order=&sort='.$sort.'&currentPage='.$currentPage.'&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option='.$jobOption.'&ffromdate='.$fromDate.'&cur_ref=&orderId='.$orderId);
+		foreach($data['techIds'] as $tech)
+		{
+			$query = "SELECT first_name, email from ace_rp_users where id=".$tech."";
+			$result = $db->_execute($query);
+			while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+				$techName = $row['first_name'];			
+				$techEmail = $row['email'];
+			}
+			$query = "SELECT email FROM ace_rp_commission_email where id=1";
+			$result = $db->_execute($query);
+			while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+				$defaultEmail = $row['email'];
+			}	
+			$body = 'Hi '.$techName.',<br><br> Please find the URL for Todays Commission Confirmation.<br><br>';
+			 $body .= '<a href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?'.$url.'">Click Here</a>';
+			$from = $defaultEmail;
+			$to = $techEmail;
+			 // $to = "lokendra.k@cisinlabs.com";
+			 $subject = "Commission";
+			$this->sendEmailUsingMailgun($to,$from,$subject, $body, $header);
+		}
+		exit();
+	}
 	public function saveTechCommission()
 	{
 		$data = $_POST;

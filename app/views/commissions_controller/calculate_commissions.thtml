@@ -36,7 +36,9 @@
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0
+  bottom: 0;
+  /*width: 10 %;*/
+  width: 10px;
 }
 
 .acecare-td-adjust > label {
@@ -304,8 +306,45 @@ $(document).ready(function()
     			$("#techverify_"+seq_no+"_"+order_id).attr("disabled",false);
             }
     	});
-    });    
+    }); 
 
+    $(".order-reply-id").live("change", function(e){
+        $(".order-reply-id").attr("checked", false); //uncheck all checkboxes
+        $(this).attr("checked", true);
+        var tech1Id = $(this).attr("tech1-id");
+        var tech2Id = $(this).attr("tech2-id");
+        var orderId = $(this).attr("order-id");
+        $("#com-tech1-id").val(tech1Id);
+        $("#com-tech2-id").val(tech2Id);
+        $("#com-order-id").val(orderId);
+
+    });
+
+    $("#reply-to-tech").live("click", function(){
+        var tech1Id = $("#com-tech1-id").val();
+        var tech2Id = $("#com-tech2-id").val();
+        var orderId = $("#com-order-id").val();
+        var fromDate = $("#fromDate").val();
+        var sort = $("#com-sort").val();
+        var currentPage = $("#com-currentPage").val();
+        var cur_ref = $("#com-cur_ref").val();
+        var adminNotes = $("#adminCommonNotes").val();
+        var selected = [];
+        if(tech1Id) {
+            selected.push(tech1Id);
+        }
+        if(tech2Id) {
+            selected.push(tech2Id);   
+        }
+        jQuery.ajax({
+          url: "<?=BASE_URL;?>/commissions/sendCommReviewMailToTech",
+          type: "POST",
+          data: {techIds:selected,fromDate:fromDate,sort:sort,currentPage:currentPage,cur_ref:cur_ref, adminNotes:adminNotes, orderId:orderId},
+          success: function(data){
+             alert("Mail sent successfully");
+          }
+        });
+    });
 });
 </script>
 
@@ -429,9 +468,12 @@ $(document).ready(function()
 <form method="POST" action="<?=BASE_URL;?>/commissions/saveTechCommission" name="techCommission" id="techCommission" enctype="multipart/form-data">
 <input type="hidden" name="techId" id="techId" value="<?=$techid?>" />
 <input type="hidden" name="fromDate" id="fromDate" value="<?=$fdate?>" />
-<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
-<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
-<input type="hidden" name="currentRef" value="<?=$cur_ref?>">
+<input type="hidden" name="sort" id="com-sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" id="com-currentPage" value="<?=$_GET['currentPage']?>">
+<input type="hidden" name="com-tech1-id" id="com-tech1-id">
+<input type="hidden" name="com-tech2-id" id="com-tech2-id" >
+<input type="hidden" name="com-order-id" id="com-order-id" >
+<input type="hidden" name="currentRef" id="com-cur_ref" value="<?=$cur_ref?>">
 <input type="hidden" name="action" value="view" >
 <input type="hidden" name="order" value="<?=$_GET['order']?>">
 <input type="hidden" name="jobOption" value="<?= $joboption?>">
@@ -443,6 +485,7 @@ $(document).ready(function()
 		<td colspan="8"><h4>Technician</h4></td>
 	</tr>
     <tr style="height:25px;">
+        <th class="thborder" rowspan=2 width="60" style="background-color:#ffffff;border-left:0px; border-top: 1px solid #9f9f9f;">Reply</th>        
         <th class="thborder" rowspan=2 width="60" style="background-color:#ffffff;border-left:0px; border-top: 1px solid #9f9f9f;">Date</th>        
         <th class="thborder" rowspan=2 width="60" style="background-color:#ffffff; border-top: 1px solid #9f9f9f;">Job</th> 
              
@@ -512,6 +555,7 @@ $(document).ready(function()
 		// }
 ?>
     <tr class="<?= $class ?>">
+       <td rowspan="4" style="cursor:pointer;border-right:1px solid #CCCCCC "><input type="checkbox" name="order-reply-id" class= "order-reply-id" tech1-id="<?= $obj['tech1_id']?>" tech2-id="<?= $obj['tech2_id']?>" order-id="<?=$obj['id']?>"></td>
         <td rowspan=4 style="cursor:pointer;border-left:0px">
 			<?php
 			if ($common->getLoggedUserRoleID() == "1") $method = 'techBooking'; else $method = 'editBooking';
@@ -897,9 +941,16 @@ $(document).ready(function()
 
 <?php if ($common->getLoggedUserRoleID() == "6") {?>
 <input type="hidden" name="isAdmin" value="1">
-<input class="adminSubmit" type="submit" name="Reply" value="Reply">
+<!-- <input class="adminSubmit" type="submit" name="Reply" value="Reply"> -->
+<input class="adminSubmit" type="button" id="reply-to-tech" name="Reply" value="Reply">
 <?php }?>
-<div style="margin-top: 20px;"><textarea rows="10" cols="50" name="adminCommonNotes" placeholder="Notes" value="<?=$adminCommonNotes?>"><?php echo $adminCommonNotes?></textarea></div>
+<?php if ($common->getLoggedUserRoleID() == "6") {?>
+<div style="margin-top: 20px;"><textarea rows="10" cols="50" name="adminCommonNotes" id="adminCommonNotes" placeholder="Notes" value=""></textarea></div>
+<?php }?>
+<?php if ($common->getLoggedUserRoleID() == 1) {?>
+<div style="margin-top: 20px;"><textarea rows="10" cols="50" name="adminTechNotes" id="adminTechNotes" placeholder="Notes" value="<?=$obj['admin_commission_reply']?>"><?php echo $obj['admin_commission_reply']?></textarea></div>
+<?php }?>
+
 
 <table width="100%">
 <tr>
