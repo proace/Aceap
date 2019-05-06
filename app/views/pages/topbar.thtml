@@ -32,6 +32,10 @@ $(document).ready(function(e){
         get_chat_count();
 	    }, 20000 );
 
+	   var blink_speed = 500; 
+	   var t = setInterval(function () 
+	   	{ var ele = document.getElementById('showMessage');
+	   		ele.style.visibility = (ele.style.visibility == 'hidden' ? '' : 'hidden'); }, blink_speed);
 });
 function get_chat_count(){ 
  $.ajax({
@@ -39,10 +43,13 @@ function get_chat_count(){
     type: "GET",
     success:function(result){ 
             var res = JSON.parse(result);
-            count = res['unread'];
-            if(count == 1)
+            count = res['total'];
+            if(count >= 1 && count > 0)
             {
-                openChat();
+            	$('#showMessage').text(count);
+            } if( count == 0)
+            {
+            	$('#showMessage').text('');
             }
         }
    });
@@ -188,7 +195,19 @@ if( $_SESSION['user']['id'] > 0 ) {
 				echo "<a href='$url' target='_blank' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']."</a>";
 				echo "</div>";
 				
-		} else {
+		} else if ($tbi['name'] == 'Message')
+		{
+				echo "<div class='icon' >";
+				$img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+				$url = $linkPrefix.$tbi['url'];
+				$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
+				$onclick = "";
+				if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
+				echo "<a href='$url' target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']." <span id='showMessage' style='font-size:15px;'></span></a>";
+				echo "</div>";
+		}
+
+		 else {
 				echo "<div class='icon'>";
 				$img = ROOT_URL."/app/webroot/img/".$tbi['img'];
 				$url = $linkPrefix.$tbi['url'];

@@ -356,6 +356,14 @@ class CommonComponent extends Object
 
 							'img' => 'monitoring-images.png'
 
+						), 
+
+						array(
+
+							'name' => 'Message',
+							'url' => BASE_URL.'/messages/ShowMessages?fromMessage=1',
+							'img' => 'message2.png',
+							'id' => 'showMessage'
 						)
 
 
@@ -1981,6 +1989,13 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-callback.png',
 							'target' => '_top'
 
+						), 
+						array(
+
+							'name' => 'Message',
+							'url' => BASE_URL.'/messages/ShowMessages?fromMessage=1',
+							'img' => 'message2.png',
+							'id' => 'showMessage'
 						)
                                                /* ,
 						array(
@@ -2114,6 +2129,13 @@ class CommonComponent extends Object
 							'url' => BASE_URL.'/login/logout',
 							'img' => 'icon-lg-logout.png',
 							'target' => '_top'
+						),
+						array(
+
+							'name' => 'Message',
+							'url' => BASE_URL.'/messages/ShowMessages?fromMessage=1',
+							'img' => 'message2.png',
+							'id' => 'showMessage'
 						)
 						//,
 						//array(

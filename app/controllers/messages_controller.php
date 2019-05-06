@@ -124,19 +124,17 @@ class MessagesController extends AppController
 	function getMessages()
 	{
 		$toUser = $this->Common->getLoggedUserID();
+		$currentDate = date('Y-m-d');
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-		$query = "SELECT state from ace_rp_messages where to_user=".$toUser." ORDER BY id DESC LIMIT 1";
+		$query = "SELECT count(*) as total from ace_rp_messages where to_user=".$toUser." AND to_date='".$currentDate."' AND state= 0";
+		
 		$result = $db->_execute($query);
+
 		$row = mysql_fetch_array($result);
-		$state = $row['state'];
-    	if($state == 0) 
-    	{
-    		$data=array('unread'=>1);
-    		echo json_encode($data);
-    	} else {
-    		$data=array('unread'=>0);
-    		echo json_encode($data);
-    	}
+		$total = $row['total'];    	
+		$data=array('total'=>$total);
+		echo json_encode($data);
+    	
     	
 		exit();
 	}
@@ -151,9 +149,17 @@ class MessagesController extends AppController
 	}
 	function ShowMessages()
 	{
+		$fromMessage = isset($this->params['url']['fromMessage']) ? $this->params['url']['fromMessage'] :0;
+		$toUser = $this->Common->getLoggedUserID();
+		$currentDate = date('Y-m-d');
 		$this->layout='list';
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
+		if($fromMessage)
+		{
+			$query = "UPDATE ace_rp_messages set state=1 where to_user=".$toUser." AND to_date='".$currentDate."' AND state=0";
+			$result = $db->_execute($query);
+		}
 		$sort = $_GET['sort'];
 		$order = $_GET['order'];
 		$job_id = $_GET['job_id'];
