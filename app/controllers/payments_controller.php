@@ -175,11 +175,18 @@ class PaymentsController extends AppController
 		$amount = $_REQUEST['amount'];
 		$payment_type = $_REQUEST['payment_type'];
 		$auth_number = $_REQUEST['auth_number'];
+		$show_message = $_REQUEST['show_message'];
+		$userRole = $this->Common->getLoggedUserRoleID();
 		$note = $_REQUEST['notes'];
 		$file 	= isset($_FILES['payment_image'])? $_FILES['payment_image'] : null;
+		$loggedUserId 	= $this->Common->getLoggedUserID();
+		$anchor = '<a href="http://localhost/acesys/index.php/orders/editBooking?order_id='.$order_id.'&rurl=orders%2FscheduleView%3F">'.$order_id.'</a>';
+		$message = 'Please find the payment for '.$anchor;
+		$toDate = date('Y-m-d');
+		$fromDate = date('Y-m-d H:i:s');
 		if($file !== null)
 		{
-			$loggedUserId 	= $this->Common->getLoggedUserID();
+			
             $this->User->id = $loggedUserId;
 			$imageResult 	= $this->Common->commonSavePaymentImage($file, $order_id , $config = $this->User->useDbConfig);
 		}
@@ -191,6 +198,9 @@ class PaymentsController extends AppController
 
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		//$payment_date = date("Y-m-d", strtotime($dat['payment_date']));
+		$query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`payment_method_type` =".$method." WHERE arc.id=".$order_id."";
+		$up_order = $db->_execute($query_order_up);
+
 		$query="select * from ace_rp_payments where idorder='".$order_id."'";
 		$result = $db->_execute($query);
         $row =mysql_num_rows($result);
@@ -203,7 +213,30 @@ class PaymentsController extends AppController
 				$query = "UPDATE  ace_rp_payments set creator ='".$creator."',payment_method='".$method."',payment_date='".$date."' ,paid_amount='".$amount."',payment_type='".$payment_type."',auth_number='".$auth_number."',notes='".$note."' where idorder='".$order_id."'";
 				
 			}				
-		$db->_execute($query);
+		$res = $db->_execute($query);
+		if($res == 1 && $show_message == 1) 
+		{
+			$query = "SELECT id from ace_rp_users where role_id = 6";
+			$res = $db->_execute($query);
+			$query = "INSERT INTO ace_rp_messages (txt,state,to_user,from_user,to_date,from_date)";
+			$i=1;
+			while($row = mysql_fetch_array($res, MYSQL_ASSOC))
+			{
+				// // Send message to all office role user's.
+				if($i == 1){
+					$values .= " VALUES ('".$message."',0,".$row['id'].", ".$loggedUserId.", '".$toDate."','".$fromDate."')"; 	
+				} else {
+					$values .= ", ('".$message."',0,".$row['id'].", ".$loggedUserId.", '".$toDate."','".$fromDate."')"; 
+				}
+				$i++;
+				
+			}
+			
+			$query = $query.$values;
+			$db->_execute($query);
+
+
+		}
 		
 		echo 'ok';
 		exit;
@@ -423,6 +456,24 @@ class PaymentsController extends AppController
 		$isActive = $_GET['is_active'];
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$query = "UPDATE ace_rp_payment_methods set show_picture = ".$isActive." WHERE id=".$jobTypeId."";
+		$result = $db->_execute($query);
+		exit();
+	}
+	function changePaymentActive()
+	{
+		$jobTypeId = $_GET['jobtype_id'];
+		$isActive = $_GET['is_active'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "UPDATE ace_rp_payment_methods set show_payment = ".$isActive." WHERE id=".$jobTypeId."";
+		$result = $db->_execute($query);
+		exit();
+	}
+	function changeMessageActive()
+	{
+		$jobTypeId = $_GET['jobtype_id'];
+		$isActive = $_GET['is_active'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "UPDATE ace_rp_payment_methods set message_to_office = ".$isActive." WHERE id=".$jobTypeId."";
 		$result = $db->_execute($query);
 		exit();
 	}

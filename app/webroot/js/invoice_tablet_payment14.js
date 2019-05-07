@@ -468,19 +468,30 @@ function showPayments(){
 function SavePayment(){
     var id = $('#InvoiceOrderId').val();
 	var method = $("#PaymentPaymentMethodId").val();	
+	var element = $("#PaymentPaymentMethodId").find('option:selected'); 
+	var option = element.attr("show-picture"); 
+	var paymentOption = element.attr("show-payment"); 
+	var MessageOption = element.attr("show-message"); 
 	var amount = $("#paid_by_amount").val();	
 	var auth_number = $("#auth_number").val();
-	//var fileval = $('#FileinputImg')[0].files[0];
+	var orderId = $("#remOrderId").val();
 	
 	if (!method) {alert('A payment method should be selected!'); return;}
-
+	if(amount == '' && paymentOption == 1 )
+	{
+		alert("Payment amount can't be blank"); return;
+	}
+	
 	var formdata = new FormData();
 	formdata.append("order_id",id);
 	formdata.append("method",method);
 	formdata.append("amount",amount);
 	formdata.append("payment_type",1);
 	formdata.append("auth_number",auth_number);
-	if(method == 2 || method == 3 || method == 4 || method == 5)
+	formdata.append("show_message",MessageOption);
+	// if(method == 2 || method == 3 || method == 4 || method == 5)
+	// {
+	if(option == 1)
 	{
 		var fileval = $('#FileinputImg')[0].files[0];
 		if(fileval)
@@ -489,6 +500,12 @@ function SavePayment(){
 		} else {
 			alert('Payment Image is required!');
 			return;
+		}
+	}else {
+		var fileval = $('#FileinputImg')[0].files[0];
+		if(fileval)
+		{
+			formdata.append('payment_image', fileval); 
 		}
 	}
 	$.ajax({
@@ -509,6 +526,7 @@ function SavePayment(){
 			$("#PaymentPaymentMethodId").val(0);
 			$("#paid_by_amount").val(0);
 			$("#auth_number").val("");
+			showInvoiceReview();
 		}
 	});
 }
@@ -541,4 +559,14 @@ function ErasePayment(payment_id){
   $.post(G_URL +"payments/deletePayment",{payment_id:payment_id},function(data){
     showPayments();
   });
+}
+
+function hideInvoiceReview(){
+	// document.getElementById("myModalNew").style.display = "none";
+	document.getElementById("reminderEmail").style.display = "none";
+}
+
+function showInvoiceReview(){
+	document.getElementById("reminderEmail").style.display = "block";
+	// document.getElementById("reminderEmail").style.display = "block";
 }

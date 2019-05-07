@@ -35,6 +35,34 @@ jQuery( document ).ready(function($) {
                 function(data){document.forms['viewform'].submit();});
             }
         });
+
+       $('.messageTo').on('change', function(elem_chk){
+        var jobtype_id = $(this).attr('type_id');
+        if ($(this).is(':checked')){
+            $.get("<?=BASE_URL;?>/payments/changeMessageActive",
+            {jobtype_id:jobtype_id,is_active:1},
+            function(data){document.forms['viewform'].submit();});
+         }
+        else {
+                $.get("<?=BASE_URL;?>/payments/changeMessageActive",
+                {jobtype_id:jobtype_id,is_active:0},
+                function(data){document.forms['viewform'].submit();});
+            }
+        });
+
+        $('.showPayment').on('change', function(elem_chk){
+        var jobtype_id = $(this).attr('type_id');
+        if ($(this).is(':checked')){
+            $.get("<?=BASE_URL;?>/payments/changePaymentActive",
+            {jobtype_id:jobtype_id,is_active:1},
+            function(data){document.forms['viewform'].submit();});
+         }
+        else {
+                $.get("<?=BASE_URL;?>/payments/changePaymentActive",
+                {jobtype_id:jobtype_id,is_active:0},
+                function(data){document.forms['viewform'].submit();});
+            }
+        });
 });
 
 </script>
@@ -96,6 +124,8 @@ th, td {
         <th width="50"><b>ID</b></td>
         <th width="50">Name</th>
         <th width="10">Show Picture</th>
+        <th width="10">Show Payment</th>
+        <th width="10">Message To Office</th>
         <th width="10">Delete Payment</th>
    </tr>
         <?php $r=1;
@@ -105,6 +135,9 @@ th, td {
         <td class="firstcol">&nbsp;<?php echo $obj['id']; ?></td>
         <td>&nbsp;<?php echo $obj['name']; ?></td>
         <td><input type="checkbox" <?php if($obj['show_picture']) {echo 'checked';}?> name="showPicture" class="showPicture" type_id = "<?=$obj['id']?>"></td>
+        <td><input type="checkbox" <?php if($obj['show_payment']) {echo 'checked';}?> class="showPayment" name="payment_<?=$obj['id']?>" id="payment_<?=$obj['id']?>" type_id = "<?=$obj['id']?>"></td>
+        <td><input type="checkbox" <?php if($obj['message_to_office']) {echo 'checked';}?> class="messageTo" name="message_<?=$obj['id']?>" id="message_<?=$obj['id']?>" type_id = "<?=$obj['id']?>"></td>
+         
         <td><input type="checkbox" class="checkboxes" name="remove_<?=$obj['id']?>" id="remove_<?=$obj['id']?>" type_id = "<?=$obj['id']?>"></td>
     </tr>
     <? } ?>
