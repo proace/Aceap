@@ -527,6 +527,7 @@ $(document).ready(function()
 	$approved_sum = 0;
 	$techApprovedSum = 0;
 	$techNotApprovedSum = 0;
+    $userRoleId = $common->getLoggedUserRoleID();
 	foreach ($orders as $obj):
 		$class = 'cell'.(++$r%2);
 		$comm_calculated_class='color:red;';
@@ -638,7 +639,7 @@ $(document).ready(function()
 				</td>
 				
 				<td>
-				  <input type="checkbox" <?=$disable_inputs?> <?=$rows_persons[1]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[1]);?>,this);'/>
+				  <input type="checkbox" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[1]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[1]);?>,this);'/>
 				</td>
 				<td rowspan="4" colspan="2" width="100">
 				
@@ -760,7 +761,7 @@ $(document).ready(function()
         <td id="comm_val_2_<?=$obj['order_number']?>" class="<?=$name_class?> <?=$local_class?>" align="right" commision_val= "<?=($rows_persons[2]['total_comm']==0||$disable_tech[2])?'':$rows_persons[2]['total_comm']?>"><?=($rows_persons[2]['total_comm']==0||$disable_tech[2])?'':$HtmlAssist->prPrice($rows_persons[2]['total_comm']) ?>&nbsp;</td>
 				
 				<td>
-				  <input type="checkbox" <?=$disable_inputs?> <?=$rows_persons[2]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[2]);?>,this);'/>
+				  <input type="checkbox" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[2]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[2]);?>,this);'/>
 				</td>
 				<td></td>
 				<td width="100">
@@ -830,7 +831,7 @@ $(document).ready(function()
         <td id="comm_val_3_<?=$obj['order_number']?>"  class="<?=$name_class?> <?=$local_class?>" align="right" commision_val= "<?=($rows_persons[3]['total_comm']==0||$disable_tech[3])?'':$rows_persons[3]['total_comm']?>"><?=($rows_persons[3]['total_comm']==0||$disable_tech[3])?'':$HtmlAssist->prPrice($rows_persons[3]['total_comm']) ?>&nbsp;</td>
 				
 				<td>
-				  <input type="checkbox" <?=$disable_inputs?> <?=$rows_persons[3]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[3]);?>,this);'/>
+				  <input type="checkbox" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[3]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[3]);?>,this);'/>
 				</td>
 				<td></td>
 			<td width="100">
@@ -899,7 +900,7 @@ $(document).ready(function()
         <td id="comm_val_4_<?=$obj['order_number']?>"  class="<?=$name_class?> <?=$local_class?>" align="right" commision_val= "<?=($rows_persons[4]['total_comm']==0||$disable_tech[4])?'':$rows_persons[4]['total_comm']?>"><?=($rows_persons[4]['total_comm']==0||$disable_tech[4])?'':$HtmlAssist->prPrice($rows_persons[4]['total_comm']) ?>&nbsp;</td>
 				
 				<td>
-				  <input type="checkbox" <?=$disable_inputs?> <?=$rows_persons[4]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[4]);?>,this);'/>
+				  <input type="checkbox" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[4]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[4]);?>,this);'/>
 				</td>
 				<td></td>
 				<td width="100">
