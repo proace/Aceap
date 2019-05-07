@@ -174,7 +174,6 @@ class PaymentsController extends AppController
 		$method = $_REQUEST['method'];
 		$amount = $_REQUEST['amount'];
 		$payment_type = $_REQUEST['payment_type'];
-		$auth_number = $_REQUEST['auth_number'];
 		$show_message = $_REQUEST['show_message'];
 		$userRole = $this->Common->getLoggedUserRoleID();
 		$note = $_REQUEST['notes'];
@@ -206,11 +205,11 @@ class PaymentsController extends AppController
         $row =mysql_num_rows($result);
       if($row == 0 || $row ==''){
 		$query = "INSERT INTO ace_rp_payments
-								(idorder, creator, payment_method, payment_date, paid_amount, payment_type, auth_number, notes) 
-							VALUES ($order_id, '$creator', '$method', '$date', '$amount', '$payment_type', '$auth_number', '$note')";
+								(idorder, creator, payment_method, payment_date, paid_amount, payment_type, notes) 
+							VALUES ($order_id, '$creator', '$method', '$date', '$amount', '$payment_type', '$note')";
 			}
 			else{ 
-				$query = "UPDATE  ace_rp_payments set creator ='".$creator."',payment_method='".$method."',payment_date='".$date."' ,paid_amount='".$amount."',payment_type='".$payment_type."',auth_number='".$auth_number."',notes='".$note."' where idorder='".$order_id."'";
+				$query = "UPDATE  ace_rp_payments set creator ='".$creator."',payment_method='".$method."',payment_date='".$date."' ,paid_amount='".$amount."',payment_type='".$payment_type.", notes='".$note."' where idorder='".$order_id."'";
 				
 			}				
 		$res = $db->_execute($query);
@@ -376,7 +375,7 @@ class PaymentsController extends AppController
 			$res .= "<tr>\n";
 			$res .= "<td>&nbsp;{$row_p['payment_method']}</td>";
 			$res .= "<td>".$this->HtmlAssist->prPrice($row_p['paid_amount'])."</td>";
-			$res .= "<td>Auth.#;{$row_p['auth_number']}</td>";
+			// $res .= "<td>Auth.#;{$row_p['auth_number']}</td>";
 			if ($actions) {
 				//$res .= "<td style='width:40px'><a href='#' style='color:blue' onclick='ErasePayment({$row_p['id']});'>Delete</a></td>";
 				$res .= "<td style='width:40px'><input type='button' value='X' title='Delete this payment' class='delete_payment' onclick='ErasePayment({$row_p['id']});' /></td>";

@@ -8,7 +8,6 @@
 <script>
 jQuery( document ).ready(function($) {
     $('#removePayment').on('click', function(e){
-        console.log("yuagfyug");
         var selected = [];
         $(':checkbox:checked').each(function() {
             console.log("hhhhh");
@@ -26,46 +25,6 @@ jQuery( document ).ready(function($) {
     });
 });
 
-    // function deletePaymentMethod()
-    // {
-    //     console.log("yuagfyug");
-    //     var selected = [];
-    //     $('.checkboxes :checked').each(function() {
-    //         console.log("hhhhh");
-    //         selected.push($(this).attr('name'));
-    //         console.log(selected);
-    //     });
-    // }
-
-
-// jQuery(document).ready(function() {  
-//     jQuery('#removePayment').on("click", function(){
-//         console.log()
-//         var selected = [];
-//          jQuery('.checkboxes input:checked').each(function() {
-//             selected.push($(this).attr('name'));
-//             console.log(selected);
-//         });
-         
-//     });
-// });
-// jQuery(document).ready(function () {
-//      jQuery('.checkboxes input:checked').each(function() {
-//         console.log("hhhhh");
-//     // selected.push($(this).attr('name'));
-//     // console.log(selected);
-//     });
-// });
- // function deletePaymentMethod()
- // {
- //    console.log("yuagfyug");
- //    var selected = [];
- //    jQuery('.checkboxes input:checked').each(function() {
- //        console.log("hhhhh");
- //    selected.push($(this).attr('name'));
- //    console.log(selected);
- //    });
- // }
 </script>
 <style>
 table, th, td {
