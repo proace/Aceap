@@ -179,7 +179,7 @@ class PaymentsController extends AppController
 		$note = $_REQUEST['notes'];
 		$file 	= isset($_FILES['payment_image'])? $_FILES['payment_image'] : null;
 		$loggedUserId 	= $this->Common->getLoggedUserID();
-		$anchor = '<a href="http://localhost/acesys/index.php/orders/editBooking?order_id='.$order_id.'&rurl=orders%2FscheduleView%3F">'.$order_id.'</a>';
+		$anchor = '<a href="'.BASE_URL.'/orders/editBooking?order_id='.$order_id.'&rurl=orders%2FscheduleView%3F">'.$order_id.'</a>';
 		$message = 'Please find the payment for '.$anchor;
 		$toDate = date('Y-m-d');
 		$fromDate = date('Y-m-d H:i:s');
@@ -209,7 +209,7 @@ class PaymentsController extends AppController
 							VALUES ($order_id, '$creator', '$method', '$date', '$amount', '$payment_type', '$note')";
 			}
 			else{ 
-				$query = "UPDATE  ace_rp_payments set creator ='".$creator."',payment_method='".$method."',payment_date='".$date."' ,paid_amount='".$amount."',payment_type='".$payment_type.", notes='".$note."' where idorder='".$order_id."'";
+				$query = "UPDATE  ace_rp_payments set creator ='".$creator."',payment_method='".$method."',payment_date='".$date."' ,paid_amount='".$amount."',payment_type='".$payment_type."', notes='".$note."' where idorder='".$order_id."'";
 				
 			}				
 		$res = $db->_execute($query);
