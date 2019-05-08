@@ -180,7 +180,7 @@ class PaymentsController extends AppController
 		$file 	= isset($_FILES['payment_image'])? $_FILES['payment_image'] : null;
 		$loggedUserId 	= $this->Common->getLoggedUserID();
 		$anchor = '<a href="'.BASE_URL.'/orders/editBooking?order_id='.$order_id.'&rurl=orders%2FscheduleView%3F">'.$order_id.'</a>';
-		$message = 'Please find the payment for '.$anchor;
+		$message = 'Please collect payment for '.$anchor;
 		$toDate = date('Y-m-d');
 		$fromDate = date('Y-m-d H:i:s');
 		if($file !== null)
