@@ -1,5 +1,8 @@
 <link rel="stylesheet" href="<?=ROOT_URL;?>/app/webroot/css/jquery.jgrowl.css" type="text/css"/>
 <style type="text/css">
+a, u {
+    text-decoration: none;
+}
 .menuOver{
 	background:#EBE9ED;
 	height:16px;
@@ -168,7 +171,7 @@ if( $_SESSION['user']['id'] > 0 ) {
 		$idx++;
 	}
 	$u = BASE_URL;
-	echo "<div style='float:right;padding-right:10px;'>User: <a href='$u/users/editself' target='main_view'><b>{$_SESSION['user']['name']}</b></a>&nbsp;&nbsp;<a href='$u/login/logout' target='_top'>Logout</a></div>";
+	echo "<div style='float:right;padding-right:10px;'><a href='$u/messages/ShowMessages?fromMessage=1' target='main_view'><b>Message</b> &nbsp<span id='showMessage' style='font-size:15px;'></span></a>&nbsp;&nbsp;User: <a href='$u/users/editself' target='main_view'><b>{$_SESSION['user']['name']}</b></a>&nbsp;&nbsp;<a href='$u/login/logout' target='_top'>Logout</a></div>";
 	echo "</div>";
 	$idx = 1;
 	$on_off = "";
@@ -194,18 +197,18 @@ if( $_SESSION['user']['id'] > 0 ) {
 				if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
 				echo "<a href='$url' target='_blank' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']."</a>";
 				echo "</div>";
-				
-		} else if ($tbi['name'] == 'Message')
-		{
-				echo "<div class='icon' >";
-				$img = ROOT_URL."/app/webroot/img/".$tbi['img'];
-				$url = $linkPrefix.$tbi['url'];
-				$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
-				$onclick = "";
-				if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
-				echo "<a href='$url' target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']." <span id='showMessage' style='font-size:15px;'></span></a>";
-				echo "</div>";
-		}
+			}
+		// } else if ($tbi['name'] == 'Message')
+		// {
+		// 		echo "<div class='icon' >";
+		// 		$img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+		// 		$url = $linkPrefix.$tbi['url'];
+		// 		$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
+		// 		$onclick = "";
+		// 		if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
+		// 		echo "<a href='$url' target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']." <span id='showMessage' style='font-size:15px;'></span></a>";
+		// 		echo "</div>";
+		// }
 
 		 else {
 				echo "<div class='icon'>";

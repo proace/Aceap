@@ -155,19 +155,27 @@ class MessagesController extends AppController
 		$this->layout='list';
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
-		if($fromMessage)
-		{
-			$query = "UPDATE ace_rp_messages set state=1 where to_user=".$toUser." AND to_date='".$currentDate."' AND state=0";
-			$result = $db->_execute($query);
-		}
 		$sort = $_GET['sort'];
 		$order = $_GET['order'];
 		$job_id = $_GET['job_id'];
-		if (!$order) $order = 'from_date desc';
+		 if (!$order) $order = 'from_date desc';
 		$condition = "";
 		if ($job_id) $condition = " and m.file_link=$job_id ";
 
-		$query = "select m.id, m.from_date,m.state,
+		if($fromMessage)
+		{
+			
+			$messages = "select m.id, m.from_date,m.state,
+										 m.from_user, concat(fu.first_name, ' ', fu.last_name) from_name,
+										 m.to_user, concat(tu.first_name, ' ', tu.last_name) to_name,
+										 m.txt, m.file_link, m.customer_link, m.state
+								from ace_rp_messages m
+								left outer join ace_rp_users tu on tu.id=m.to_user
+								left outer join ace_rp_users fu on fu.id=m.from_user
+							 where m.state = 0 and m.to_user='".$this->Common->getLoggedUserID()."' and m.to_date='".$currentDate."'
+							 order by to_date desc";		
+		} else {
+			$messages = "select m.id, m.from_date,m.state,
 										 m.from_user, concat(fu.first_name, ' ', fu.last_name) from_name,
 										 m.to_user, concat(tu.first_name, ' ', tu.last_name) to_name,
 										 m.txt, m.file_link, m.customer_link, m.state
@@ -179,16 +187,31 @@ class MessagesController extends AppController
 									 or m.from_user='".$this->Common->getLoggedUserID()."'
 									 or m.to_role='".$this->Common->getLoggedUserRoleID()."')
 							 order by ".$order.' '.$sort;
+		}
 		
 		$items = array();
-		$result = $db->_execute($query);
+		$messageIds = array();
+		$result = $db->_execute($messages);
 		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
 		{
 			foreach ($row as $k => $v)
 			  $items[$row['id']][$k] = $v;
-		}		
-		
+			  $messageIds[] = $row['id'] ;
+
+		}
 		$this->set('items', $items);
+		if($fromMessage) 
+		{
+			$ids = implode(', ', $messageIds);
+			if(!empty($ids))
+			{
+				$query = "UPDATE ace_rp_messages set state=1 where id IN (".$ids.")";
+				$result = $db->_execute($query);
+			}
+				
+		}
+		
+		
 	}
 
 	function saveMessage()
