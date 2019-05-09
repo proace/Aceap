@@ -198,6 +198,28 @@ class ListsComponent extends Object
 				return $Ret;
 		}
 
+		function paymenTable($table_name, $conditions='', $fields=array('name'))
+		{
+				$db =& ConnectionManager::getDataSource($this->controller->User->useDbConfig);
+				
+				if ($conditions!='') $conditions = ' where '.$conditions;
+				
+				$result = $db->_execute("select * from ".$table_name.$conditions." order by payment_order asc");
+				
+				$Ret = array();
+				while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+						$sSep = '';
+						$Ret[$row['id']] = '';
+						foreach ($fields as $fld)
+						{
+								$Ret[$row['id']] .= $sSep .$row[$fld];
+								$sSep = ' - ';
+						}
+				}
+				
+				return $Ret;
+		}
+
 		// This method returns an array containing the given row content.
 		function GetTableRow($table_name, $conditions)
 		{

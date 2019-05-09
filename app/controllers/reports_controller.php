@@ -1,5 +1,6 @@
 <?
-error_reporting(E_PARSE ^ E_ERROR );
+//error_reporting(E_ALL);
+// error_reporting(E_PARSE ^ E_ERROR );
 //error_reporting(2047);
 
 // This class represents all the reports created under the ACE System
@@ -3057,7 +3058,8 @@ this function for trasfer jobs
 		$this->layout="list";
 		if ($this->Common->getLoggedUserRoleID() != 6) return;
     
-    $allPaymentMethods = $this->Lists->ListTable('ace_rp_payment_methods');
+    $allPaymentMethods = $this->Lists->paymenTable('ace_rp_payment_methods');
+    $allTechnicians = $this->Lists->Technicians();
     
 		//CONDITIONS
 		//Convert date from date picker to SQL format
@@ -3080,29 +3082,26 @@ this function for trasfer jobs
     
 		$records = array();
 		$recordsTotal = array();
+		$orders = array();
 
     $query ="
-         select o.job_date, m.id payment_method_id, m.name payment_method,
-                sum(p.paid_amount) paid_amount
+         select o.id as orderId, o.job_date, m.id payment_method_id, m.name payment_method,
+                p.paid_amount as paid_amount,o.id, o.order_number, p.paid_amount,
+						 o.job_technician1_id, o.job_technician2_id
            from ace_rp_payments p
            join ace_rp_orders o on p.idorder=o.id
            left outer join ace_rp_payment_methods m on m.id=p.payment_method
           where p.payment_type=1 $sqlConditions
           group by o.job_date, m.id, m.name";
-    
     $result = $db->_execute($query);
-    while($row = mysql_fetch_array($result))
-    {
-        $records[$row['job_date']]['date'] = date("d M Y", strtotime($row['job_date']));
-        $records[$row['job_date']]['payments'][$row['payment_method']] = $row['paid_amount'];
-        $records[$row['job_date']]['payments']['total'] += $row['paid_amount'];
-        $recordsTotal['payments'][$row['payment_method']] += $row['paid_amount'];
-        $recordsTotal['payments']['total'] += $row['paid_amount'];
-    }   
     
-    ksort($records);
-   
-		$this->set("records", $records);    
+    while($row = mysql_fetch_array($result))
+    {    	
+    	$orders[] = $row;
+    }  
+    
+        ksort($orders);
+   		$this->set("orders", $orders);    
 		$this->set("recordsTotal", $recordsTotal);
 		$this->set("allPaymentMethods", $allPaymentMethods);
 		$this->set('prev_fdate', date("d M Y", strtotime($fdate) - 24*60*60));
@@ -3111,6 +3110,7 @@ this function for trasfer jobs
 		$this->set('next_tdate', date("d M Y", strtotime($tdate) + 24*60*60));
 		$this->set('fdate', date("d M Y", strtotime($fdate)));
 		$this->set('tdate', date("d M Y", strtotime($tdate)));
+		$this->set("allTechnicians", $allTechnicians);
 	}
 	
 	function sendMsg()
