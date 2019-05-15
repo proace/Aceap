@@ -114,6 +114,14 @@ class Order extends AppModel
 												'dependent'		=> true,
 		                                     	'foreignKey'   	=> 'order_id'
 		                               ),
+
+							'Payment' => array('className' 	=> 'Payment',
+		                                     	'conditions'    => '',
+		                                     	'order'    	=> '',
+												'dependent'		=> false,
+		                                     	'foreignKey'   	=> 'idOrder'
+		                               ),
+
 							'Invoice'
 				);
 
