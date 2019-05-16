@@ -8,6 +8,22 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/iv_items_edit.js"></script>
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/inventory.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<script type="text/javascript">
+    
+$("#IvItemIvBrandId").live("change", function(){
+    var brand = $(this).find("option:selected").text();
+    $("#brand-name").val(brand);
+});
+$("#IvItemIvSupplierId").live("change", function(){
+    var supllier = $(this).find("option:selected").text();
+    $("#supplier-name").val(supllier);
+});
+$("#IvItemIvCategoryId").live("change", function(){
+    var category = $(this).find("option:selected").text();
+    $("#category-name").val(category);
+});
+
+</script>
 </head>
 <body id="page_edit">
 <h1><?php echo isset($_GET['seed'])?'Add':'Edit' ?> Item</h1>
@@ -129,6 +145,9 @@
         <?php }?>
     </table>    
     <?php echo $html->submit('Save') ?>
+    <input type="hidden" name="brandName" id="brand-name">
+    <input type="hidden" name="supplierName" id="supplier-name">
+    <input type="hidden" name="categoryName" id="category-name">
 </form>
 </body>
 </html>

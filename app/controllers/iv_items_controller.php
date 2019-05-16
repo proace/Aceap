@@ -434,15 +434,17 @@ class IvItemsController extends AppController
 		if($this->IvItem->save($this->data['IvItem'])) {
 			
 			$db =& ConnectionManager::getDataSource('default');	
-
+			$brandName = $_POST['brandName'];
+			$supplierName = $_POST['supplierName'];
+			$categoryName = $_POST['categoryName'];
 			if(!empty($this->data['IvItem']['id']))
 			{
-
+				
 				$item_label2 = "UPDATE iv_items_labeled2 set sku='".$this->data['IvItem']['sku']."',name='".$this->data['IvItem']['name']."',regular_price='".$this->data['IvItem']['regular_price']."',selling_price='".$this->data['IvItem']['selling_price']."',supplier_price='".$this->data['IvItem']['supplier_price']."',description1='".$this->data['IvItem']['description1']."',description2='".$this->data['IvItem']['description2']."',efficiency='".$this->data['IvItem']['efficiency']."',model='".$this->data['IvItem']['model']."',category_id='".$this->data['IvItem']['iv_category_id']."',brand_id='".$this->data['IvItem']['iv_brand_id']."',supplier_id='".$this->data['IvItem']['iv_supplier_id']."',active='".$this->data['IvItem']['active']."' WHERE id = '".$this->data['IvItem']['id']."'";
 			} else {
 				$lastinsertID = $this->IvItem->getLastInsertId();
 				
-				$item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active) VALUES ('".$this->data['IvItem']['sku']."',".$lastinsertID.", '".$this->data['IvItem']['name']."', '".$this->data['IvItem']['description1']."','".$this->data['IvItem']['description2']."', '".$this->data['IvItem']['efficiency']."','".$this->data['IvItem']['model']."', ".$this->data['IvItem']['iv_category_id'].",".$this->data['IvItem']['iv_brand_id'].",".$this->data['IvItem']['iv_supplier_id'].", ".$this->data['IvItem']['supplier_price'].",".$this->data['IvItem']['selling_price'].",".$this->data['IvItem']['regular_price'].", ".$this->data['IvItem']['active'].")";
+				$item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active) VALUES ('".$this->data['IvItem']['sku']."',".$lastinsertID.", '".$this->data['IvItem']['name']."', '".$this->data['IvItem']['description1']."','".$this->data['IvItem']['description2']."', '".$this->data['IvItem']['efficiency']."','".$this->data['IvItem']['model']."','".$brandName."' ,'".$categoryName."' ,'".$supplierName."' ,".$this->data['IvItem']['iv_category_id'].",".$this->data['IvItem']['iv_brand_id'].",".$this->data['IvItem']['iv_supplier_id'].", ".$this->data['IvItem']['supplier_price'].",".$this->data['IvItem']['selling_price'].",".$this->data['IvItem']['regular_price'].", ".$this->data['IvItem']['active'].")";
 			}
 			$db->_execute($item_label2);
 
