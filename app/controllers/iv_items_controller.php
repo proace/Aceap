@@ -336,7 +336,6 @@ class IvItemsController extends AppController
 		unset($criteria['_']);
 
 		
-
 		$result = $db->_execute($query);
 
 		while($row = mysql_fetch_array($result))
@@ -374,7 +373,6 @@ class IvItemsController extends AppController
 			$items[$row['id']]['regular_price'] = number_format($row['regular_price'], 2, '.', '');
 
 		}
-
 		
 
 		$this->set('criteria', json_encode($criteria));
@@ -400,11 +398,10 @@ class IvItemsController extends AppController
 		$this->layout = 'blank';	
 		
 		if (empty($this->data['IvItem'])) {    
-
 			$this->IvItem->id = $id;    
 
-			$this->data = $this->IvItem->read();			
-			
+			$this->data = $this->IvItem->read();	
+
 			$this->set('categories', $this->Lists->IvCategories());
 
 			$this->set('category_id', isset($_GET['category_id'])?$_GET['category_id']:'');
@@ -435,22 +432,29 @@ class IvItemsController extends AppController
 		if($this->data['IvItem']['active'] != 1) $this->data['IvItem']['active'] = 0;
 
 		if($this->IvItem->save($this->data['IvItem'])) {
-
+			
 			$db =& ConnectionManager::getDataSource('default');	
 
-			$item_label2 = "UPDATE iv_items_labeled2 set sku='".$this->data['IvItem']['sku']."',name='".$this->data['IvItem']['name']."',regular_price='".$this->data['IvItem']['regular_price']."',selling_price='".$this->data['IvItem']['selling_price']."',supplier_price='".$this->data['IvItem']['supplier_price']."',description1='".$this->data['IvItem']['description1']."',description2='".$this->data['IvItem']['description2']."',efficiency='".$this->data['IvItem']['efficiency']."',model='".$this->data['IvItem']['model']."',category_id='".$this->data['IvItem']['iv_category_id']."',brand_id='".$this->data['IvItem']['iv_brand_id']."',supplier_id='".$this->data['IvItem']['iv_supplier_id']."',active='".$this->data['IvItem']['active']."' WHERE id = '".$this->data['IvItem']['id']."'";
+			if(!empty($this->data['IvItem']['id']))
+			{
 
+				$item_label2 = "UPDATE iv_items_labeled2 set sku='".$this->data['IvItem']['sku']."',name='".$this->data['IvItem']['name']."',regular_price='".$this->data['IvItem']['regular_price']."',selling_price='".$this->data['IvItem']['selling_price']."',supplier_price='".$this->data['IvItem']['supplier_price']."',description1='".$this->data['IvItem']['description1']."',description2='".$this->data['IvItem']['description2']."',efficiency='".$this->data['IvItem']['efficiency']."',model='".$this->data['IvItem']['model']."',category_id='".$this->data['IvItem']['iv_category_id']."',brand_id='".$this->data['IvItem']['iv_brand_id']."',supplier_id='".$this->data['IvItem']['iv_supplier_id']."',active='".$this->data['IvItem']['active']."' WHERE id = '".$this->data['IvItem']['id']."'";
+			} else {
+				$lastinsertID = $this->IvItem->getLastInsertId();
+				
+				$item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active) VALUES ('".$this->data['IvItem']['sku']."',".$lastinsertID.", '".$this->data['IvItem']['name']."', '".$this->data['IvItem']['description1']."','".$this->data['IvItem']['description2']."', '".$this->data['IvItem']['efficiency']."','".$this->data['IvItem']['model']."', ".$this->data['IvItem']['iv_category_id'].",".$this->data['IvItem']['iv_brand_id'].",".$this->data['IvItem']['iv_supplier_id'].", ".$this->data['IvItem']['supplier_price'].",".$this->data['IvItem']['selling_price'].",".$this->data['IvItem']['regular_price'].", ".$this->data['IvItem']['active'].")";
+			}
 			$db->_execute($item_label2);
 
 
 			$this->Session->write("message", $this->data['IvItem']['name']." was saved.".mysql_error());
-
+		
 			$this->redirect("pages/close");			
 
 		} else {
 
 			$this->Session->write("message", $this->data['IvItem']['name']." was not saved.");
-
+		
 			$this->redirect("pages/close");
 
 		}		

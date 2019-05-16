@@ -3089,9 +3089,9 @@ this function for trasfer jobs
                 p.paid_amount as paid_amount,o.id, o.order_number, p.paid_amount,
 						 o.job_technician1_id, o.job_technician2_id
            from ace_rp_payments p
-           join ace_rp_orders o on p.idorder=o.id
+          right join ace_rp_orders o on p.idorder=o.id
            left outer join ace_rp_payment_methods m on m.id=p.payment_method
-          where p.payment_type=1 $sqlConditions
+          where o.id IS NOT NULL $sqlConditions
           group by o.job_date, m.id, m.name";
     $result = $db->_execute($query);
     

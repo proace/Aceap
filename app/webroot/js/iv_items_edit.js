@@ -1,7 +1,8 @@
 var G_URL;
 $(function() {
 	var test_server = "http://acesys.ace1.ca/acetest/acesys-2.0/index.php/";
-	var live_server = "http://acesys.ace1.ca/index.php/";
+	// var live_server = "http://acesys.ace1.ca/index.php/";
+	var live_server = "/acesys/index.php/";
 	
 	var l = $(location).attr('href');
 
@@ -46,7 +47,7 @@ function showCategoryField() {
 		
 	var option = "dialogWidth:450px;dialogHeight:135px;dialogLeft:300px;dialogTop:200px;status:off;scroll:off;resizable:off;";
 	
-	var answer = window.showModalDialog(url,'', option);
+	var answer = window.open(url,'', option);
 }
 
 function showBrandField() {
@@ -54,7 +55,7 @@ function showBrandField() {
 		
 	var option = "dialogWidth:450px;dialogHeight:135px;dialogLeft:300px;dialogTop:200px;status:off;scroll:off;resizable:off;";
 	
-	var answer = window.showModalDialog(url,'', option);
+	var answer = window.open(url,'', option);
 }
 
 function showSupplierField() {
@@ -62,5 +63,6 @@ function showSupplierField() {
 		
 	var option = "dialogWidth:450px;dialogHeight:135px;dialogLeft:300px;dialogTop:200px;status:off;scroll:off;resizable:off;";
 	
-	var answer = window.showModalDialog(url,'', option);
+	var answer = window.open(url,'', option);
+	// var answer = window.showModalDialog(url,'', option);
 }
