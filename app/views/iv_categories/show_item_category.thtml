@@ -1,0 +1,148 @@
+<html> 
+<head>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_constants.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_js_sample.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<script>
+jQuery( document ).ready(function($) {
+   
+    $('#removePayment').on('click', function(e){
+            var selected = [];
+             $("input:checkbox[class=checkboxes]:checked").each(function () {
+                 selected.push($(this).attr('type_id'));
+            });
+            jQuery.ajax({
+              url: "<?=BASE_URL;?>/iv_categories/deleteCategory",
+              type: "POST",
+              data: {typeIds:selected},
+              success: function(data){
+                // location.href = "<?=BASE_URL;?>/iv_categories/showPaymentTypes";
+                     document.forms['viewform'].submit();
+                 }
+            });
+        });
+ $('.category-name').on('click', function(){
+            var id = $(this).attr('cat-id');
+            window.open("<?=BASE_URL;?>/iv_categories/editCategory/"+id, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=400,height=400");
+        });
+    $('.showActive').on('change', function(elem_chk){
+        var jobtype_id = $(this).attr('type_id');
+        if ($(this).is(':checked')){
+            $.get("<?=BASE_URL;?>/iv_categories/changeActive",
+            {jobtype_id:jobtype_id,is_active:1},
+            function(data){document.forms['viewform'].submit();});
+         }
+        else {
+                $.get("<?=BASE_URL;?>/iv_categories/changeActive",
+                {jobtype_id:jobtype_id,is_active:0},
+                function(data){document.forms['viewform'].submit();});
+            }
+        });
+
+       $('.messageTo').on('change', function(elem_chk){
+        var jobtype_id = $(this).attr('type_id');
+        if ($(this).is(':checked')){
+            $.get("<?=BASE_URL;?>/payments/changeMessageActive",
+            {jobtype_id:jobtype_id,is_active:1},
+            function(data){document.forms['viewform'].submit();});
+         }
+        else {
+                $.get("<?=BASE_URL;?>/payments/changeMessageActive",
+                {jobtype_id:jobtype_id,is_active:0},
+                function(data){document.forms['viewform'].submit();});
+            }
+        });
+
+        $('.showPayment').on('change', function(elem_chk){
+        var jobtype_id = $(this).attr('type_id');
+        if ($(this).is(':checked')){
+            $.get("<?=BASE_URL;?>/payments/changePaymentActive",
+            {jobtype_id:jobtype_id,is_active:1},
+            function(data){document.forms['viewform'].submit();});
+         }
+        else {
+                $.get("<?=BASE_URL;?>/payments/changePaymentActive",
+                {jobtype_id:jobtype_id,is_active:0},
+                function(data){document.forms['viewform'].submit();});
+            }
+        });
+
+       
+});
+
+</script>
+<style>
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 10px;
+}   
+.question_button {
+    background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/text_page.png) no-repeat center #666;
+    border:1px solid #999;
+    border-radius:5px;
+    width:25px;
+    height:25px;
+}
+
+.timeslot_button {
+    background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/calendar.png) no-repeat center #666;
+    border:1px solid #999;
+    border-radius:5px;
+    width:25px;
+    height:25px;
+}
+
+.item_category_button {
+    background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/tree.png) no-repeat center #666;
+    border:1px solid #999;
+    border-radius:5px;
+    width:25px;
+    height:25px;
+}
+</style>
+</head>
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+<!-- <table width="90%" border="0px" cellspacing="10" cellpadding="0">
+    <tr>
+        <td align="left"> -->
+        <!--     <input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/jobs/editItem'" /> -->
+      <!--   </td>
+        <td align="left"> -->
+          <!--   <input type="button" name="addnew" value="Remove" onclick="document.location.href='<?=BASE_URL?>/jobs/editItem'" /> -->
+      <!--   </td>
+    </tr>
+</table>     -->
+</form>
+<form >
+<input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/payments/showAddPaymentTypePage'" />
+ <input type="button" name="Remove" value="Remove" id="removePayment" style="margin: 0 0 5px 10px;"/>
+<table class="results"  style="border-style: solid;border-width:1px; width: 50%;" width="100%">
+    <tr>
+        <th width="50"><b>ID</b></td>
+        <th width="50">Name</th>
+        <th width="10">Active</th>
+        <th width="10">Delete Category</th>
+   </tr>
+        <?php $r=1;
+            foreach ($itemCategories as $obj) {
+                $class = 'cell'.(++$r%2);
+        ?>
+        <td class="firstcol">&nbsp;<?php echo $obj['id']; ?></td>
+        <td class="category-name" cat-id="<?=$obj['id']?>" style="cursor: all-scroll;">&nbsp;<?php echo $obj['name']; ?></td>
+        <td><input type="checkbox" <?php if($obj['active']) {echo 'checked';}?> name="showActive" class="showActive" type_id = "<?=$obj['id']?>"></td>
+         
+        <td><input type="checkbox" class="checkboxes" name="remove_<?=$obj['id']?>" id="remove_<?=$obj['id']?>" type_id = "<?=$obj['id']?>"></td>
+    </tr>
+    <? } ?>
+</table>
+</form>
