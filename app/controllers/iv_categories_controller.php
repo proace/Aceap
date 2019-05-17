@@ -79,7 +79,7 @@ class IvCategoriesController extends AppController
 		$db =& ConnectionManager::getDataSource('default');
 		$query = "UPDATE ace_iv_categories set name ='".$name."' WHERE id=".$id;
 		$result = $db->_execute($query);
-		$this->redirect("pages/close");
+		exit();
 	}
 
 	function save() {

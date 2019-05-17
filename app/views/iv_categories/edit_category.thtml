@@ -8,16 +8,31 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/iv_items_edit.js"></script>
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/inventory.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<script type="text/javascript">
+    $("#edit-cat").live("click", function(){
+        var id = $("#catId").val();
+        var catName = $("#catName").val();
+          jQuery.ajax({
+              url: "<?=BASE_URL;?>/iv_categories/updateCategory",
+              type: "POST",
+              data: {catId:id, catName:catName},
+              success: function(data){
+                    window.opener.location.reload();
+                    window.close();
+                 }
+            });
+    });
+</script>
 </head>
 <body id="page_edit">
 <h1>Edit Category</h1>
 <form action="<?php echo BASE_URL ?>/iv_categories/updateCategory" method="post">
-    <input type="hidden" name="catId" value="<?=$cat['id']?>">
+    <input type="hidden" name="catId" id="catId" value="<?=$cat['id']?>">
     <table>
         <tr>
             <td><label>Category Name</label></td>
-            <td><input type="text" name="catName" value="<?=$cat['name']?>"></td>
-            <td><input type="submit" value="Save"/></td>
+            <td><input type="text" id="catName" name="catName" value="<?=$cat['name']?>"></td>
+            <td><input type="button" value="Save" id="edit-cat"/></td>
             <td><input type="button" value="Cancel" class="button_cancel" /></td>
         </tr>                
     </table>        
