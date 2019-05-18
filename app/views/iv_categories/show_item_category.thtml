@@ -124,7 +124,7 @@ th, td {
 </table>     -->
 </form>
 <form >
-<input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/payments/showAddPaymentTypePage'" />
+<!-- <input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/payments/showAddPaymentTypePage'" /> -->
  <input type="button" name="Remove" value="Remove" id="removePayment" style="margin: 0 0 5px 10px;"/>
 <table class="results"  style="border-style: solid;border-width:1px; width: 50%;" width="100%">
     <tr>

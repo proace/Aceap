@@ -145,9 +145,9 @@ $("#IvItemIvCategoryId").live("change", function(){
         <?php }?>
     </table>    
     <?php echo $html->submit('Save') ?>
-    <input type="hidden" name="brandName" id="brand-name">
-    <input type="hidden" name="supplierName" id="supplier-name">
-    <input type="hidden" name="categoryName" id="category-name">
+    <input type="hidden" name="brandName" id="brand-name" value="<?=$this->data['IvBrand']['name']?>">
+    <input type="hidden" name="supplierName" id="supplier-name" value="<?=$this->data['IvSupplier']['name']?>">
+    <input type="hidden" name="categoryName" id="category-name" value="<?=$this->data['IvCategory']['name']?>">
 </form>
 </body>
 </html>
