@@ -86,7 +86,7 @@
 	// });
 
 	//Loki: Add multiple items
-	$("#multipleItems").live("click", function(){
+	$(".multipleItems").live("click", function(){
 		var items= [];	
 		$('.addItems:checkbox:checked').each(function () {
 			var cur = $(this).parent().parent();
