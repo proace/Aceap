@@ -2,8 +2,10 @@
 <div class="item_count"><?php echo $count ?> result<?php echo $count==1?'':'s' ?></div>
 <li><?php //echo $criteria //for debugging ?>
 <div class="list_wrapper">
+    <input type="button" name="multipleItems" value="Add" id="multipleItems">
     <table class="list clear_this">
         <tr>
+            <th>Add</th>
             <th>Name</th>
             <th><?php echo $aliases['model']['alias']==''?'Model':$aliases['model']['alias'] ?></th>  
             <th>Brand</th>
@@ -28,7 +30,8 @@
             <input type="hidden" class="item_description1" value="<?php echo $item['description1'] ?>" />
             <input type="hidden" class="item_description2" value="<?php echo $item['description2'] ?>" />
             <input type="hidden" class="item_mode" value="<?php echo $mode ?>" />
-            <td class="left"><?php echo $item['name'] ?></td>
+           <td class="left"><input type="checkbox" name="addItem" class="addItems"></td>
+            <td class="right"><?php echo $item['name'] ?></td>
             <td class="right"><?php echo $item['model'] ?></td>  
             <td class="right"><?php echo $item['brand'] ?></td>                   
             <td class="right"><?php echo $item['regular_price'] ?></td>

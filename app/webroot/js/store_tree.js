@@ -16,12 +16,22 @@
 	
 	G_URL = "/acesys/index.php/";
 	
-	$('#dialog_link, ul#icons li').hover(
-		function() { $(this).addClass('ui-state-hover'); }, 
-		function() { $(this).removeClass('ui-state-hover'); }
-	);
+	// $('#dialog_link, ul#icons li').hover(
+	// 	function() { $(this).addClass('ui-state-hover'); }, 
+	// 	function() { $(this).removeClass('ui-state-hover'); }
+	// );
 	//end tabs
-	
+	$(".changeTab").live("onchange", function(){
+		console.log($(this));
+	});
+	// $("#triggerTree").live("click", function(){
+	// 	alert('ff');
+	// 	console.log("jbh");
+	// 	var id = $(this).attr('treetabId');
+	// 	console.log("id=", id);
+	// 	$('.activeClick'+id).trigger();
+	// });
+
 	//assign click events
 	$(".tabs a.link_branch").live("click", function(){		
 		var criteria = $.parseJSON($(this).children(".criteria").val());
@@ -54,28 +64,56 @@
 	//$(".all_node").click();
 	//end assign click events
 	
-	$(".tabs tr.item").live("click", function(){	
-		console.log("add item click");	
-		$(this).children(".item_id").val();
-		$(this).children(".item_name").val();
-		$(this).children(".item_model").val();
-		$(this).children(".item_regular_price").val();
-		$(this).children(".item_selling_price").val();
-		$(this).children(".item_supplier_price").val();
-		$(this).children(".item_efficiency").val();
-		$(this).children(".item_category_id").val();
-		$(this).children(".item_brand_id").val();
-		$(this).children(".item_supplier_id").val();
-		$(this).children(".item_description1").val();
-		$(this).children(".item_description2").val();
-		$(this).children(".item_mode").val();
+	// $(".tabs tr.item").live("click", function(){	
+	// 	$(this).children(".item_id").val();
+	// 	$(this).children(".item_name").val();
+	// 	$(this).children(".item_model").val();
+	// 	$(this).children(".item_regular_price").val();
+	// 	$(this).children(".item_selling_price").val();
+	// 	$(this).children(".item_supplier_price").val();
+	// 	$(this).children(".item_efficiency").val();
+	// 	$(this).children(".item_category_id").val();
+	// 	$(this).children(".item_brand_id").val();
+	// 	$(this).children(".item_supplier_id").val();
+	// 	$(this).children(".item_description1").val();
+	// 	$(this).children(".item_description2").val();
+	// 	$(this).children(".item_mode").val();
+
+	// 	// addItem($(this).children(".item_id").val(), $(this).children(".item_name").val(), $(this).children(".item_selling_price").val(), $(this).children(".item_mode").val(), $(this).children(".item_category_id").val(), $(this).children(".item_supplier_price").val(), $(this).children(".item_model").val());
 		
-		addItem($(this).children(".item_id").val(), $(this).children(".item_name").val(), $(this).children(".item_selling_price").val(), $(this).children(".item_mode").val(), $(this).children(".item_category_id").val(), $(this).children(".item_supplier_price").val(), $(this).children(".item_model").val());
+	// 	$('#closeBookedItems').click();
+	// 	$('#closeTechnicianSales').click();
+	// });
+
+	//Loki: Add multiple items
+	$("#multipleItems").live("click", function(){
+		var items= [];	
+		$('.addItems:checkbox:checked').each(function () {
+			var cur = $(this).parent().parent();
+			var itema = {}; 
+       		itema.item_id 		 		= cur.children(".item_id").val();
+			itema.item_name 	 		= cur.children(".item_name").val();
+			itema.item_model 	 		= cur.children(".item_model").val();
+			itema.item_regular_price 	= cur.children(".item_regular_price").val();
+			itema.item_selling_price 	= cur.children(".item_selling_price").val();
+			itema.item_supplier_price 	= cur.children(".item_supplier_price").val();
+			itema.item_efficiency 	 	= cur.children(".item_efficiency").val();
+			itema.item_category_id 	 	= cur.children(".item_category_id").val();
+			itema.item_brand_id 	 	= cur.children(".item_brand_id").val();
+			itema.item_supplier_id 	 	= cur.children(".item_supplier_id").val();
+			itema.item_description1 	= cur.children(".item_description1").val();
+			itema.item_description2 	= cur.children(".item_description2").val();
+			itema.item_mode 	 		= cur.children(".item_mode").val();
+			items.push(itema);
+		});
+
+		$(items).each(function( index ) {
+  			addItem(items[index].item_id, items[index].item_name, items[index].selling_price, items[index].item_mode, items[index].item_category_id, items[index].supplier_price, items[index].item_model);
+		});
 		
 		$('#closeBookedItems').click();
 		$('#closeTechnicianSales').click();
 	});
-
 	
 	//filter code from http://net.tutsplus.com/tutorials/javascript-ajax/using-jquery-to-manipulate-and-filter-data/
 

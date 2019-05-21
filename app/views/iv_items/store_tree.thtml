@@ -5,7 +5,7 @@
             <!--<li><a href="#tabs-<?php //echo $category['IvCategory']['id'] ?>"><?php //echo $category['IvCategory']['name'] ?></a>
             <pre><?php print_r($category) ?></pre>
             </li>-->
-            <li><a href="#tabs-<?php echo $category['id'] ?>"><?php echo $category['name'] ?></a>
+            <li class="changeTab"><a href="#tabs-<?php echo $category['id'] ?>" id="triggerTree<?=$category['id']?>" treeTabId="<?php echo $category['id'] ?>"><?php echo $category['name'] ?></a>
             </li>          
             <?php } ?>        
         </ul>

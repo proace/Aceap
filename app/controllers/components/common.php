@@ -512,6 +512,11 @@ class CommonComponent extends Object
 							'url' => BASE_URL.'/iv_categories/showItemCategory',
 							'img' => 'icon-lg-price.png',
 						),
+						array(
+							'name' => 'Item Sub Category',
+							'url' => BASE_URL.'/iv_categories/showItemSubCategory',
+							'img' => 'icon-lg-price.png',
+						),
 
 						array(
 							'name' => 'Dialer',
@@ -1343,8 +1348,11 @@ class CommonComponent extends Object
 							'name' => 'Item Category',
 							'url' => BASE_URL.'/iv_categories/showItemCategory',		
 							'img' => 'icon-lg-price.png',
-							
-
+						),
+						array(
+							'name' => 'Item Sub Category',
+							'url' => BASE_URL.'/iv_categories/showItemSubCategory',
+							'img' => 'icon-lg-price.png',
 						),
 						array(
 							'name' => 'Dialer',
@@ -1710,8 +1718,11 @@ class CommonComponent extends Object
 							'name' => 'Item Category',
 							'url' => BASE_URL.'/iv_categories/showItemCategory',		
 							'img' => 'icon-lg-price.png',
-							
-
+						),
+						array(
+							'name' => 'Item Sub Category',
+							'url' => BASE_URL.'/iv_categories/showItemSubCategory',
+							'img' => 'icon-lg-price.png',
 						),
 						array(
 							'name' => 'Dialer',
