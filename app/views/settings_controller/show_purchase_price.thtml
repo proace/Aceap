@@ -1,0 +1,49 @@
+<html> 
+<head>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_constants.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_js_sample.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<script>
+jQuery( document ).ready(function($) {
+ $('#purchase-price').on('click', function(){
+            window.open("<?=BASE_URL;?>/settings/showPurchasePrice/", "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=200,height=200");
+        });     
+
+ $("#show-purchase").on("change", function(){
+       if ($(this).is(':checked')){
+            $.get("<?=BASE_URL;?>/settings/changePurchaseActive",
+            {purchase_id:1,is_active:1},
+            function(data){ 
+                window.opener.location.reload();
+                window.close();
+              });
+         }
+        else {
+                $.get("<?=BASE_URL;?>/settings/changePurchaseActive",
+                {purchase_id:1,is_active:0},
+                function(data){
+                  window.opener.location.reload();
+                  window.close();
+              });
+            }
+    });
+
+});
+
+</script>
+<style>
+li { cursor: pointer; }
+.purchase-price-cls input,label{
+    float: none;
+    vertical-align: middle;
+    display: inline-block;
+}
+</style>
+</head>
+<br>
+<div class="purchase-price-cls">
+<input type="checkbox" <?php echo ($active == 1)? 'checked' : ""; ?> name="showPurchasePrice" id="show-purchase"><label>Show Purchase</label>
+</div>
+</form>

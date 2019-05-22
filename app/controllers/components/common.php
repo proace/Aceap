@@ -356,6 +356,15 @@ class CommonComponent extends Object
 
 							'img' => 'monitoring-images.png'
 
+						),
+						array(
+
+							'name' => 'Setting',
+
+							'url' => BASE_URL.'/settings/showSetting',
+
+							'img' => 'setting3.png'
+
 						)
 						// , 
 

@@ -169,5 +169,29 @@ class SettingsController extends AppController
 		
 		$this->redirect("settings/generalSettings");
 	}
+	// Loki- Show settings options
+	function showSetting()
+	{
+
+	}
+
+	function showPurchasePrice()
+	{
+		$db =& ConnectionManager::getDataSource('default');
+		$query = "SELECT active from ace_rp_show_purchase_price WHERE id =1";
+		$result = $db->_execute($query);
+		$row = mysql_fetch_array($result);
+		$this->set('active', $row['active']);
+	}
+
+	function changePurchaseActive()
+	{
+		$active = $_GET['is_active'];
+		$id = $_GET['purchase_id'];
+		$db =& ConnectionManager::getDataSource('default');
+		$query = "UPDATE ace_rp_show_purchase_price SET Active =".$active." WHERE id =".$id;
+		$result = $db->_execute($query);
+		exit();
+	}
 }
 ?>
