@@ -10,6 +10,72 @@ $(function(){
 
 	G_URL = "/acesys/index.php/"
 
+	// Loki- Add/Remove item
+	$(".add-dup-item").live("click", function(event){
+		event.stopPropagation();
+		var postdata = {};
+		var cur = $(this).parent().parent();
+		
+		postdata.id 				= "";
+		postdata.sku 				= cur.children(".item_sku").val();
+		postdata.name 				= cur.children(".item_name").val();
+		postdata.model 	 			= cur.children(".item_model").val();
+		postdata.regular_price 		= cur.children(".item_regular_price").val();
+		postdata.selling_price 		= cur.children(".item_selling_price").val();
+		postdata.supplier_price 	= cur.children(".item_supplier_price").val();
+		postdata.efficiency 	 	= cur.children(".item_efficiency").val();
+		
+		postdata.iv_brand_id 	 	= cur.children(".item_brand_id").val();
+		postdata.iv_supplier_id 	= cur.children(".item_supplier_id").val();
+		postdata.description1 		= cur.children(".item_description1").val();
+		postdata.description2 		= cur.children(".item_description2").val();
+		postdata.mode 	 			= cur.children(".item_mode").val();
+		postdata.active 	 		= 1;
+		postdata.iv_category_id 	= cur.children(".item_category_id").val(); 
+		var brand_name	 			= cur.children(".brand-name").val();
+		var supplier_name			= cur.children(".supplier-name").val();
+		var category_name			= cur.children(".category-name").val();
+
+
+		$.ajax({
+		url: G_URL+'iv_items/save',
+		dataType: 'html',
+		type: 'POST',
+		cache: false,
+		data:{postdata: postdata,brandName:brand_name, supplierName:supplier_name, categoryName:category_name, is_duplicant:1},
+		success: function(data) {
+				res = JSON.parse(data);
+				if(res.res == "OK")
+				{
+					var catId = $(".ui-state-active").attr("cat-act-id");
+					$(".activeClick"+catId).trigger("click");
+					$(".activeClick"+catId).trigger("click");
+				}
+			}
+		});	
+	});
+	
+	$(".remove-dup-item").live("click", function(event){
+		event.stopPropagation();
+		var itemId = $(this).attr('itemId');
+		$.ajax({
+		url: G_URL+'iv_items/removeDuplicantItem',
+		dataType: 'html',
+		type: 'POST',
+		cache: false,
+		data:{item_id: itemId},
+		success: function(data) {
+				res = JSON.parse(data);
+				if(res.res == "OK")
+				{
+					var catId = $(".ui-state-active").attr("cat-act-id");
+					$(".activeClick"+catId).trigger("click");
+					$(".activeClick"+catId).trigger("click");
+				}
+			}
+		});	
+
+	});
 	//tabs
 	$('#tabs').tabs();
 	

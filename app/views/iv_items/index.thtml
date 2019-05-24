@@ -13,7 +13,7 @@
     <ul>
     	<li><a href="#tabs-0" class="tab_link">Search All</a></li>
         <?php foreach($categories as $category) { ?>
-        <li><a onclick='callActiveClass("<?php echo $category['id'] ?>")' href="#tabs-<?php echo $category['id'] ?>" class="tab_link"><?php echo $category['name'] ?></a></li>
+        <li cat-act-id="<?php echo $category['id'] ?>"><a onclick='callActiveClass("<?php echo $category['id'] ?>")' href="#tabs-<?php echo $category['id'] ?>" class="tab_link"><?php echo $category['name'] ?></a></li>
         <?php } ?>        
     </ul>    
     <div id="list_filter"><input type="text" id="filter_name" /> <a id="link_filter_name">Filter</a></div>

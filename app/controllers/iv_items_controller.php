@@ -363,8 +363,11 @@ class IvItemsController extends AppController
 			$items[$row['id']]['brand_id'] = $row['brand_id'];
 
 			$items[$row['id']]['supplier'] = $row['supplier'];
-
+			$items[$row['id']]['category_id'] = $row['category_id'];
 			$items[$row['id']]['supplier_id'] = $row['supplier_id'];
+			$items[$row['id']]['brand_name'] = $row['brand'];
+			$items[$row['id']]['supplier_name'] = $row['supplier'];
+			$items[$row['id']]['category_name'] = $row['category'];
 
 			$items[$row['id']]['supplier_price'] = number_format($row['supplier_price'], 2, '.', '');
 
@@ -429,8 +432,13 @@ class IvItemsController extends AppController
 	
 
 	function save() {
-		if($this->data['IvItem']['active'] != 1) $this->data['IvItem']['active'] = 0;
+		$is_duplicant = isset($_POST['is_duplicant']) ? $_POST['is_duplicant']  : 0;
 
+		if($is_duplicant)
+		{
+			$this->data['IvItem'] = $_POST['postdata'];
+		}
+		if($this->data['IvItem']['active'] != 1) $this->data['IvItem']['active'] = 0;
 		if($this->IvItem->save($this->data['IvItem'])) {
 			
 			$db =& ConnectionManager::getDataSource('default');	
@@ -446,12 +454,20 @@ class IvItemsController extends AppController
 				
 				$item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active) VALUES ('".$this->data['IvItem']['sku']."',".$lastinsertID.", '".$this->data['IvItem']['name']."', '".$this->data['IvItem']['description1']."','".$this->data['IvItem']['description2']."', '".$this->data['IvItem']['efficiency']."','".$this->data['IvItem']['model']."','".$brandName."' ,'".$categoryName."' ,'".$supplierName."' ,'".$this->data['IvItem']['iv_category_id']."','".$this->data['IvItem']['iv_brand_id']."','".$this->data['IvItem']['iv_supplier_id']."', '".$this->data['IvItem']['supplier_price']."','".$this->data['IvItem']['selling_price']."','".$this->data['IvItem']['regular_price']."',".$this->data['IvItem']['active'].")";
 			}
-			$db->_execute($item_label2);
-
-
-			$this->Session->write("message", $this->data['IvItem']['name']." was saved.".mysql_error());
-		
-			$this->redirect("pages/close");			
+			$result = $db->_execute($item_label2);
+			if($is_duplicant)
+			{
+				if ($result) {
+					$this->Session->write("message", $this->data['IvItem']['name']." was saved.".mysql_error());
+		 			$response  = array("res" => "OK");
+		 			echo json_encode($response);
+		 			exit;
+ 				}
+			} else {
+				$this->Session->write("message", $this->data['IvItem']['name']." was saved.".mysql_error());
+			
+				$this->redirect("pages/close");			
+			}
 
 		} else {
 
@@ -805,7 +821,26 @@ class IvItemsController extends AppController
 
 	}
 
+	// Loki: Delete the item
+	function removeDuplicantItem()
+	{
+		$db 	=& ConnectionManager::getDataSource('default');	
+		$id 	= $_POST['item_id'];
+		$query = "DELETE from ace_iv_items where id=".$id;
+		$result = $db->_execute($query);
+		if($result)
+		{
+			$query1 = "DELETE from iv_items_labeled2 where id=".$id;
+			$result1 = $db->_execute($query1);
+		}
 
+		if($result1)
+		{
+			$response  = array("res" => "OK");
+ 			echo json_encode($response);
+ 			exit;
+		}
+	}
 }
 
 ?>

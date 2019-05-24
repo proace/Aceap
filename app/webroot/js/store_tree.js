@@ -88,6 +88,7 @@
 	//Loki: Add multiple items
 	$(".multipleItems").live("click", function(){
 		var items= [];	
+		var show_purchase = $("#show-purchase").val();
 		$('.addItems:checkbox:checked').each(function () {
 			var cur = $(this).parent().parent();
 			var itema = {}; 
@@ -107,8 +108,8 @@
 			items.push(itema);
 		});
 
-		$(items).each(function( index ) {
-  			addItem(items[index].item_id, items[index].item_name, items[index].selling_price, items[index].item_mode, items[index].item_category_id, items[index].supplier_price, items[index].item_model);
+		$.each(items, function( key, value ) {
+  			addItem(value.item_id, value.item_name, value.item_selling_price, value.item_mode, value.item_category_id, value.item_supplier_price, value.item_model, show_purchase);
 		});
 		
 		$('#closeBookedItems').click();
