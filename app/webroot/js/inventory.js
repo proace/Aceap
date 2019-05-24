@@ -32,6 +32,7 @@ $(function(){
 		postdata.mode 	 			= cur.children(".item_mode").val();
 		postdata.active 	 		= 1;
 		postdata.iv_category_id 	= cur.children(".item_category_id").val(); 
+		postdata.iv_sub_category_id = cur.children(".item_sub_category_id").val();
 		var brand_name	 			= cur.children(".brand-name").val();
 		var supplier_name			= cur.children(".supplier-name").val();
 		var category_name			= cur.children(".category-name").val();
@@ -232,8 +233,11 @@ $(function(){
 	//END filter code
 	
 	function showItem(id, criteria) {
+
+		var catId = $(".ui-state-active").attr("cat-act-id");
+
 		if(criteria == null) {
-			var url = G_URL + "iv_items/edit/" + id;
+			var url = G_URL + "iv_items/edit/" + id+"/"+catId;
 					
 			var option = "width=450,height=450,left=300,top=200,status=no,resize=none";
 			

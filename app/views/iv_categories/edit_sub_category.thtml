@@ -24,8 +24,6 @@ jQuery( document ).ready(function($) {
           success: function(data){
                 window.opener.location.reload();
                 window.close();
-            // location.href = "<?=BASE_URL;?>/iv_categories/showPaymentTypes";
-                 //document.forms['viewform'].submit();
              }
         });
     
@@ -105,6 +103,7 @@ td {
             <td><input type="text" id="subCatName" name="catName" value="<?=$subCategory['name']?>"></td>
             <td>
              <select class="category-id">
+              <option>Choose here</option>
                <?php foreach($categories as $category) {?>
                   <option <?php if($subCategory['category_id'] == $category['id']){ echo 'selected';}?> value="<?=$category['id']?>"><?php echo $category['name']?></option>
               <?}?>

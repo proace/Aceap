@@ -610,6 +610,23 @@ class ListsComponent extends Object
 				
 				return $Ret;
 		}
+		// Loki: Get sub categories on basis of category Id
+		function IvSubCategories($id)
+		{
+				$db =& ConnectionManager::getDataSource("default");
+				
+				$result = $db->_execute("
+					SELECT *
+					FROM  ace_iv_sub_categories where category_id =".$id);
+				
+				$Ret = array();
+				
+				while($row = mysql_fetch_array($result)) {
+					$Ret[$row['id']] = $row['name'];					
+				}
+				
+				return $Ret;
+		}
 		
 		function EprintTerminals()
 		{

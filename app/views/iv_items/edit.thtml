@@ -97,6 +97,14 @@ $("#IvItemIvCategoryId").live("change", function(){
             <a href="#" title="New Category">Add new Category</a>
             </td>
         </tr>
+         <tr>
+            <td><label>Sub Category</label></td>            
+            <td>
+                <span id="selection_sub_category">        
+                    <?php echo $html->selectTag('IvItem/iv_sub_category_id', $subCategories)?>
+                </span>
+            </td>
+        </tr>
         <tr>
         	<td><label>Brand</label></td>            
             <td>

@@ -43,6 +43,7 @@
             <input type="hidden" class="item_description1" value="<?php echo $item['description1'] ?>" />
             <input type="hidden" class="item_description2" value="<?php echo $item['description2'] ?>" />
             <input type="hidden" class="item_category_id" value="<?php echo $item['category_id'] ?>" />
+             <input type="hidden" class="item_sub_category_id" value="<?php echo $item['sub_category_id'] ?>" />
              <input type="hidden" name="brandName" class="brand-name" value="<?=$item['brand_name']?>"/>
             <input type="hidden" name="supplierName" class="supplier-name" value="<?=$item['supplier_name']?>"/>
             <input type="hidden" name="categoryName" class="category-name" value="<?=$item['category_name']?>"/>

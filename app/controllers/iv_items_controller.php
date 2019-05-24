@@ -368,6 +368,7 @@ class IvItemsController extends AppController
 			$items[$row['id']]['brand_name'] = $row['brand'];
 			$items[$row['id']]['supplier_name'] = $row['supplier'];
 			$items[$row['id']]['category_name'] = $row['category'];
+			$items[$row['id']]['sub_category_id'] = $row['sub_category_id'];
 
 			$items[$row['id']]['supplier_price'] = number_format($row['supplier_price'], 2, '.', '');
 
@@ -396,16 +397,21 @@ class IvItemsController extends AppController
 
 	
 
-	function edit($id) {
-
+	function edit($id, $catId=0) {
+		if(isset($_GET['category_id']))
+		{
+			$catId = $_GET['category_id'];
+		}
 		$this->layout = 'blank';	
 		
 		if (empty($this->data['IvItem'])) {    
 			$this->IvItem->id = $id;    
-
+	
 			$this->data = $this->IvItem->read();	
 
 			$this->set('categories', $this->Lists->IvCategories());
+
+			$this->set('subCategories', $this->Lists->IvSubCategories($catId));
 
 			$this->set('category_id', isset($_GET['category_id'])?$_GET['category_id']:'');
 
@@ -448,11 +454,11 @@ class IvItemsController extends AppController
 			if(!empty($this->data['IvItem']['id']))
 			{
 				
-				$item_label2 = "UPDATE iv_items_labeled2 set sku='".$this->data['IvItem']['sku']."',name='".$this->data['IvItem']['name']."',regular_price='".$this->data['IvItem']['regular_price']."',selling_price='".$this->data['IvItem']['selling_price']."',supplier_price='".$this->data['IvItem']['supplier_price']."',description1='".$this->data['IvItem']['description1']."',description2='".$this->data['IvItem']['description2']."',efficiency='".$this->data['IvItem']['efficiency']."',model='".$this->data['IvItem']['model']."',category_id='".$this->data['IvItem']['iv_category_id']."',brand_id='".$this->data['IvItem']['iv_brand_id']."',supplier_id='".$this->data['IvItem']['iv_supplier_id']."',active='".$this->data['IvItem']['active']."', brand='".$brandName."', category='".$categoryName."', supplier='".$supplierName."' WHERE id = '".$this->data['IvItem']['id']."'";
+				$item_label2 = "UPDATE iv_items_labeled2 set sku='".$this->data['IvItem']['sku']."',name='".$this->data['IvItem']['name']."',regular_price='".$this->data['IvItem']['regular_price']."',selling_price='".$this->data['IvItem']['selling_price']."',supplier_price='".$this->data['IvItem']['supplier_price']."',description1='".$this->data['IvItem']['description1']."',description2='".$this->data['IvItem']['description2']."',efficiency='".$this->data['IvItem']['efficiency']."',model='".$this->data['IvItem']['model']."',category_id='".$this->data['IvItem']['iv_category_id']."',brand_id='".$this->data['IvItem']['iv_brand_id']."',supplier_id='".$this->data['IvItem']['iv_supplier_id']."',active='".$this->data['IvItem']['active']."', brand='".$brandName."', category='".$categoryName."', supplier='".$supplierName."', sub_category_id='".$this->data['IvItem']['iv_sub_category_id']."' WHERE id = '".$this->data['IvItem']['id']."'";
 			} else {
 				$lastinsertID = $this->IvItem->getLastInsertId();
 				
-				$item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active) VALUES ('".$this->data['IvItem']['sku']."',".$lastinsertID.", '".$this->data['IvItem']['name']."', '".$this->data['IvItem']['description1']."','".$this->data['IvItem']['description2']."', '".$this->data['IvItem']['efficiency']."','".$this->data['IvItem']['model']."','".$brandName."' ,'".$categoryName."' ,'".$supplierName."' ,'".$this->data['IvItem']['iv_category_id']."','".$this->data['IvItem']['iv_brand_id']."','".$this->data['IvItem']['iv_supplier_id']."', '".$this->data['IvItem']['supplier_price']."','".$this->data['IvItem']['selling_price']."','".$this->data['IvItem']['regular_price']."',".$this->data['IvItem']['active'].")";
+				$item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active, sub_category_id) VALUES ('".$this->data['IvItem']['sku']."',".$lastinsertID.", '".$this->data['IvItem']['name']."', '".$this->data['IvItem']['description1']."','".$this->data['IvItem']['description2']."', '".$this->data['IvItem']['efficiency']."','".$this->data['IvItem']['model']."','".$brandName."' ,'".$categoryName."' ,'".$supplierName."' ,'".$this->data['IvItem']['iv_category_id']."','".$this->data['IvItem']['iv_brand_id']."','".$this->data['IvItem']['iv_supplier_id']."', '".$this->data['IvItem']['supplier_price']."','".$this->data['IvItem']['selling_price']."','".$this->data['IvItem']['regular_price']."',".$this->data['IvItem']['active'].", ".$this->data['IvItem']['iv_sub_category_id'].")";
 			}
 			$result = $db->_execute($item_label2);
 			if($is_duplicant)
