@@ -61,8 +61,8 @@
 		}
 	});
 	
-	//$(".all_node").click();
-	//end assign click events
+	$(".all_node").click();
+	end assign click events
 	
 	// $(".tabs tr.item").live("click", function(){	
 	// 	$(this).children(".item_id").val();
@@ -107,9 +107,9 @@
 			itema.item_mode 	 		= cur.children(".item_mode").val();
 			items.push(itema);
 		});
-
+		
 		$.each(items, function( key, value ) {
-  			addItem(value.item_id, value.item_name, value.item_selling_price, value.item_mode, value.item_category_id, value.item_supplier_price, value.item_model, show_purchase);
+  			addItem(value.item_id, value.item_name, value.item_selling_price, value.item_mode, value.item_category_id, value.item_supplier_price, value.item_model, show_purchase, value.item_model);
 		});
 		
 		$('#closeBookedItems').click();

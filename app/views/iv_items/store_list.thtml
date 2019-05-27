@@ -9,12 +9,15 @@
             <li><a href="#tabs-1001">Purchase from supplier</a>
             </li>
         </ul>
+         
         <div id="list_filter"><input type="text" id="filter_name" /> <a id="link_filter_name">Search</a></div>
         <div id="spacer"></div>
+        <input type="button" class="btn btn-navy btn-left-shift multipleItems" name="multipleItems" value="Submit">
         <?php foreach($categories_old as $category) { ?>
         <div id="tabs-<?php echo $category['IvCategory']['id'] ?>" class="tabs">
         	<table class="list clear_this">
                 <tr>
+                     <th>Add</th>
                     <th>Name</th>
                     <th><?php echo $aliases['model']['alias']==''?'Model':$aliases['model']['alias'] ?></th>         
                     <th><?php echo $aliases['regular_price']['alias']==''?'Regular Price':$aliases['regular_price']['alias'] ?></th>
@@ -39,6 +42,7 @@
                     <input type="hidden" class="item_description1" value="<?php echo $item['description1'] ?>" />
                     <input type="hidden" class="item_description2" value="<?php echo $item['description2'] ?>" />
                     <input type="hidden" class="item_mode" value="<?php echo $mode ?>" />
+                    <td class="left"><input type="checkbox" name="addItem" class="addItems"></td>
                     <td class="left"><?php echo $item['name'] ?></td>
                     <td class="right"><?php echo $item['model'] ?></td>                    
                     <td class="right"><?php echo $item['regular_price'] ?></td>
@@ -50,6 +54,7 @@
             </table>                    
         </div>
         <?php } ?>
+         <input type="button" class="btn btn-navy btn-left-shift multipleItems" name="multipleItems" value="Submit">
         <div id="tabs-1001" class="tabs">
         	<table>
             	<tr>
@@ -80,3 +85,28 @@
         </div>  
     </div>
 </div>
+<style type="text/css">
+.btn-navy {
+    background: #000040;
+    color: #fff;
+}
+.btn-right-shift {
+    margin-top: 10px;
+    float: right;
+}
+.btn-left-shift {
+    margin-bottom: 10px;
+    float: left;
+}
+.btn {
+    width: 98px;
+    height: 23px;
+    line-height: 23px;
+    display: inline-block;
+    text-align: center;
+    font-size: 12px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #fff #7d7d7d #7d7d7d #fff;
+}
+</style>

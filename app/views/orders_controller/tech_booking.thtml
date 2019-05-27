@@ -180,7 +180,7 @@ function CloseQuestions(){
   $('#OpenQuestionsText').show();
   $('#CloseQuestionsText').hide();
 }
-function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, part_number){
+function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, part_number, show_purchase='', model_number){
 	$("#item_selector0").html("").hide();
 	$("#item_selector1").html("").hide();
 				var index=1*document.getElementById("NumberOfItems").value;
@@ -203,7 +203,10 @@ function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, p
 							category:new_category,
 							price_purchase:new_pp,
 							part_number:part_number,
-							item_class:new_type}),
+							item_class:new_type,
+                            show_purchase:show_purchase, 
+                            model_number:model_number
+                        }),
 							dataType: "html",
 							async:false}).responseText;
 			$("#order_"+index).html(bodyContent);
@@ -1366,9 +1369,9 @@ input[type=text] {
 										<th style="width:55px">Add</th>
 										<th style="width:55px">Prch</th>
 										<th style="width:55px">Sum</th>
-										<th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
+										<!-- <th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
 										<th style="width:50px;background:#55bb55;color:white;">Tech add</th>
-										<th style="width:25px">Print</th>
+										<th style="width:25px">Print</th> -->
 										<th style="width:25px">&nbsp;</th>
 									</tr>
 														<?php } else { ?>
@@ -1380,9 +1383,10 @@ input[type=text] {
 										<th style="width:55px">Add</th>
 										<th style="width:55px">Prch</th>
 										<th style="width:55px">Sum</th>
-										<th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
+                                        <th style="width:25px;background:#DDFFDD">&nbsp;</th>
+										<!-- <th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
 										<th style="width:50px;background:#55bb55;color:white;">Tech add</th>
-									</tr>
+									</tr> -->
 														<?php }?>
 									<?php echo $booked_items; ?>												
 									<tr>
@@ -1415,9 +1419,9 @@ input[type=text] {
 										<th style="width:55px;background:#ffdddd">Add</th>
 										<th style="width:55px;background:#ffdddd">Prch</th>
 										<th style="width:55px;background:#ffdddd">Sum</th>
-										<th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
+										<!-- <th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
 										<th style="width:50px;background:#55bb55;color:white;">Tech add</th>
-										<th style="width:25px;background:#ffdddd">Print</th>
+										<th style="width:25px;background:#ffdddd">Print</th> -->
 										<th style="width:25px;background:#ffdddd">&nbsp;</th>
 									</tr>
 									<?php echo $tech_items; ?>												
