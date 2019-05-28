@@ -222,7 +222,6 @@ class CommissionsController extends AppController
 	function _calculate(&$order, &$comm_settings)
 
 	{
-
 		//Set up persons' rows
 
 		$rows_persons = array(); //1,2 - technitians; 3,4 - sources
@@ -394,7 +393,8 @@ class CommissionsController extends AppController
 
 		//	 items (class=1). Sources - only for the 'extra booking' items (class=0)
 
-	//if($order['show_commission'] != 0 ) {
+		// Loki- Show/Hide commission
+	if($order['estimate_sent'] != 1 ) {
 
 		$query_items =
 
@@ -838,7 +838,7 @@ class CommissionsController extends AppController
 					$tech_comm_confirm[$row_comm['tech_num']]['tech_unverified'] = 'checked';
 				}
 		}
-	//}
+	}
 		return array($rows_persons, $tech_comm_confirm);
 
 	}
@@ -2457,6 +2457,7 @@ class CommissionsController extends AppController
 						 a.t1_method,
 
 						 a.t2_method,
+						 a.estimate_sent,
 
 						
 

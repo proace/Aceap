@@ -443,6 +443,11 @@ class IvItemsController extends AppController
 		if($is_duplicant)
 		{
 			$this->data['IvItem'] = $_POST['postdata'];
+			if($this->data['IvItem']['iv_sub_category_id'] == NULL || $this->data['IvItem']['iv_sub_category_id'] == '')
+			{
+				$this->data['IvItem']['iv_sub_category_id'] = 0;
+			}
+			
 		}
 		if($this->data['IvItem']['active'] != 1) $this->data['IvItem']['active'] = 0;
 		if($this->IvItem->save($this->data['IvItem'])) {
