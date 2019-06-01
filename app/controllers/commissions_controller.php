@@ -393,9 +393,9 @@ class CommissionsController extends AppController
 
 		//	 items (class=1). Sources - only for the 'extra booking' items (class=0)
 
-		// Loki- Show/Hide commission
-	if($order['estimate_sent'] != 1 ) {
-
+		// Loki- Show commission only for the Done jobs
+	    // if($order['estimate_sent'] == 1 && $order['order_status'] ==  5) {
+ 		 if($order['order_status_id'] ==  5) {
 		$query_items =
 
 			"select sum(if(i.is_appliance!=1,(oi.price-oi.price_purchase)*oi.quantity-oi.discount+oi.addition+oi.tech-oi.tech_minus,0)) sell_service,

@@ -5,7 +5,7 @@ $getCatId = $catDecode->category_id;
 ?>
 <li><a title="More"  class="link_branch <?php if($item['field']=='Active'){ echo 'activeClick'.$getCatId;  } ?>"><?php echo $item['field'] ?>
 	<input type="hidden" class="criteria" value='<?php echo $item['criteria'] ?>' />
-	<input type="hidden" class="path" value='<?php echo $path ?>' />
+	<input type="hidden" class="path" value='item' />
 	</a>    
     <ul></ul></li>
 <?php } ?>

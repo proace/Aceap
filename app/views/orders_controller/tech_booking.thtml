@@ -704,7 +704,8 @@ function upload_photo(cur,i) {
 	$('#closeTechnicianSales').hide();
 	$('.loading_indicator').hide();	
 	$('#addBookedItems').click(function(){
-		$('#addBookedItemsList').click();	
+		// $('#addBookedItemsList').click();
+        $('#addBookedItemsTree').click();	
 	});
 	
 	$('#addBookedItemsTree').click(function(){
@@ -758,7 +759,8 @@ function upload_photo(cur,i) {
 	});
 	
 	$('#addTechnicianSales').click(function(){
-		$('#addTechnicianSalesList').click();
+		// $('#addTechnicianSalesList').click();
+        $('#addTechnicianSalesTree').click();        
 	});
 	
 	$('#addTechnicianSalesTree').click(function(){
@@ -798,7 +800,7 @@ function upload_photo(cur,i) {
 				$('#item_selector0').hide();
 				$('#item_selector1').html(data);
 				$('#tabs').tabs();
-				$('#tabs').tabs('select',7);
+				//$('#tabs').tabs('select',7);
 				$(".all_node").click();			
 		});
 	});

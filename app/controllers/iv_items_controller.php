@@ -48,7 +48,7 @@ class IvItemsController extends AppController
 
 	
 
-	function branch() { 
+	/*function branch() { 
 
 		$this->layout = 'blank';
 
@@ -68,11 +68,17 @@ class IvItemsController extends AppController
 
 		
 
-		$hierarchy[1]['id'] = 'active';
+		// $hierarchy[1]['id'] = 'active';
 
-		$hierarchy[1]['name'] = 'active_name';
+		// $hierarchy[1]['name'] = 'active_name';
 
-		$hierarchy[1]['alias'] = 'Active';
+		// $hierarchy[1]['alias'] = 'Active';
+
+		$hierarchy[1]['id'] = 'sub_category_id';
+
+		$hierarchy[1]['name'] = 'sub_category_name';
+
+		$hierarchy[1]['alias'] = 'Sub Category';
 
 		
 
@@ -111,7 +117,7 @@ class IvItemsController extends AppController
 		}		
 
 		
-
+		// print_r($_GET); die;
 		$criteria = $_GET;
 
 		
@@ -169,21 +175,19 @@ class IvItemsController extends AppController
 		}
 
 		
-
 		 $query .= " GROUP BY ".$hierarchy[$criteria['level']]['name'];
+		// print_r($query); die;
 
-		
+		 $query1 = "SELECT sc.name AS field , ivl.sub_category_id AS id FROM iv_items_labeled2 ivl JOIN ace_iv_sub_categories sc ON ivl.category_id  = sc.category_id WHERE 1 = 1 AND ivl.category_id LIKE $category_id GROUP BY sc.name";
 
 		unset($criteria['url']);
 
 		unset($criteria['_']);
 
-		
-
 		$result = $db->_execute($query);
 
 		$id = 0;
-
+		// print_r($criteria); die;
 		while($row = mysql_fetch_array($result))
 
 		{					
@@ -199,7 +203,6 @@ class IvItemsController extends AppController
 			$id++;
 
 		}
-
 		
 
 		if($hierarchy[$criteria['level'] + 1] != '') $this->set('path', 'branch');
@@ -208,7 +211,6 @@ class IvItemsController extends AppController
 
 		
 		
-
 		$this->set('heading', $hierarchy[$criteria['level']]['alias']);
 
 		$this->set('criteria', json_encode($criteria));
@@ -221,8 +223,29 @@ class IvItemsController extends AppController
 
 		$this->set('mode', $mode);
 
+	}*/
+	// LOKI : Show sub category list
+	function branch()
+	{
+		$mode = $_GET['mode'];
+		$db 	=& ConnectionManager::getDataSource('default');	
+		$category_id = $_GET['category_id'];
+		$query = "SELECT * from ace_iv_sub_categories where category_id=".$category_id;
+		$result = $db->_execute($query);
+		$items = array();
+		$id = 0;
+		while($row = mysql_fetch_array($result))
+		{
+			$items[$id]['field'] = $row['name'];
+			$row_criteria = array('seed' => '', 'level' => 1, 'category_id' => $category_id, 'sub_category_id' => $row['id'], 'mode' => $mode );
+			$items[$id]['criteria'] = json_encode($row_criteria);
+			$id++;
+		}
+		$this->layout = 'blank';
+		$this->set("items", $items);
+		$this->set('mode', $mode);
+		
 	}
-
 	
 
 	function items() {
@@ -235,7 +258,6 @@ class IvItemsController extends AppController
 
 		$category_id = $_GET['category_id'];
 
-		
 
 		//the default if the tree is not set
 
@@ -252,8 +274,6 @@ class IvItemsController extends AppController
 		$hierarchy[1]['name'] = 'active';
 
 		$hierarchy[1]['alias'] = 'Active';
-
-		
 
 		if(isset($category_id)) {		
 
@@ -369,7 +389,8 @@ class IvItemsController extends AppController
 			$items[$row['id']]['supplier_name'] = $row['supplier'];
 			$items[$row['id']]['category_name'] = $row['category'];
 			$items[$row['id']]['sub_category_id'] = $row['sub_category_id'];
-
+			$items[$row['id']]['sub_category_name'] = $row['sub_category_name'];
+			
 			$items[$row['id']]['supplier_price'] = number_format($row['supplier_price'], 2, '.', '');
 
 			$items[$row['id']]['selling_price'] = number_format($row['selling_price'], 2, '.', '');
@@ -378,7 +399,6 @@ class IvItemsController extends AppController
 
 		}
 		
-
 		$this->set('criteria', json_encode($criteria));
 
 		$this->set('items', $items);
@@ -447,7 +467,6 @@ class IvItemsController extends AppController
 			{
 				$this->data['IvItem']['iv_sub_category_id'] = 0;
 			}
-			
 		}
 		if($this->data['IvItem']['active'] != 1) $this->data['IvItem']['active'] = 0;
 		if($this->IvItem->save($this->data['IvItem'])) {
@@ -456,14 +475,16 @@ class IvItemsController extends AppController
 			$brandName = $_POST['brandName'];
 			$supplierName = $_POST['supplierName'];
 			$categoryName = $_POST['categoryName'];
+			$subCategoryName = $_POST['subCategoryName'];
+	
 			if(!empty($this->data['IvItem']['id']))
 			{
 				
-				$item_label2 = "UPDATE iv_items_labeled2 set sku='".$this->data['IvItem']['sku']."',name='".$this->data['IvItem']['name']."',regular_price='".$this->data['IvItem']['regular_price']."',selling_price='".$this->data['IvItem']['selling_price']."',supplier_price='".$this->data['IvItem']['supplier_price']."',description1='".$this->data['IvItem']['description1']."',description2='".$this->data['IvItem']['description2']."',efficiency='".$this->data['IvItem']['efficiency']."',model='".$this->data['IvItem']['model']."',category_id='".$this->data['IvItem']['iv_category_id']."',brand_id='".$this->data['IvItem']['iv_brand_id']."',supplier_id='".$this->data['IvItem']['iv_supplier_id']."',active='".$this->data['IvItem']['active']."', brand='".$brandName."', category='".$categoryName."', supplier='".$supplierName."', sub_category_id='".$this->data['IvItem']['iv_sub_category_id']."' WHERE id = '".$this->data['IvItem']['id']."'";
+				$item_label2 = "UPDATE iv_items_labeled2 set sku='".$this->data['IvItem']['sku']."',name='".$this->data['IvItem']['name']."',regular_price='".$this->data['IvItem']['regular_price']."',selling_price='".$this->data['IvItem']['selling_price']."',supplier_price='".$this->data['IvItem']['supplier_price']."',description1='".mysql_real_escape_string($this->data['IvItem']['description1'])."',description2='".mysql_real_escape_string($this->data['IvItem']['description2'])."',efficiency='".$this->data['IvItem']['efficiency']."',model='".$this->data['IvItem']['model']."',category_id='".$this->data['IvItem']['iv_category_id']."',brand_id='".$this->data['IvItem']['iv_brand_id']."',supplier_id='".$this->data['IvItem']['iv_supplier_id']."',active='".$this->data['IvItem']['active']."', brand='".$brandName."', category='".$categoryName."', supplier='".$supplierName."', sub_category_id='".$this->data['IvItem']['iv_sub_category_id']."', sub_category_name ='".$subCategoryName."' WHERE id = '".$this->data['IvItem']['id']."'";
 			} else {
 				$lastinsertID = $this->IvItem->getLastInsertId();
 				
-				$item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active, sub_category_id) VALUES ('".$this->data['IvItem']['sku']."',".$lastinsertID.", '".$this->data['IvItem']['name']."', '".$this->data['IvItem']['description1']."','".$this->data['IvItem']['description2']."', '".$this->data['IvItem']['efficiency']."','".$this->data['IvItem']['model']."','".$brandName."' ,'".$categoryName."' ,'".$supplierName."' ,'".$this->data['IvItem']['iv_category_id']."','".$this->data['IvItem']['iv_brand_id']."','".$this->data['IvItem']['iv_supplier_id']."', '".$this->data['IvItem']['supplier_price']."','".$this->data['IvItem']['selling_price']."','".$this->data['IvItem']['regular_price']."',".$this->data['IvItem']['active'].", ".$this->data['IvItem']['iv_sub_category_id'].")";
+				$item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active, sub_category_id, sub_category_name) VALUES ('".$this->data['IvItem']['sku']."',".$lastinsertID.", '".$this->data['IvItem']['name']."', '".$this->data['IvItem']['description1']."','".$this->data['IvItem']['description2']."', '".$this->data['IvItem']['efficiency']."','".$this->data['IvItem']['model']."','".$brandName."' ,'".$categoryName."' ,'".$supplierName."' ,'".$this->data['IvItem']['iv_category_id']."','".$this->data['IvItem']['iv_brand_id']."','".$this->data['IvItem']['iv_supplier_id']."', '".$this->data['IvItem']['supplier_price']."','".$this->data['IvItem']['selling_price']."','".$this->data['IvItem']['regular_price']."',".$this->data['IvItem']['active'].", '".$this->data['IvItem']['iv_sub_category_id']."', '".$subCategoryName."')";
 			}
 			$result = $db->_execute($item_label2);
 			if($is_duplicant)
@@ -554,6 +575,7 @@ class IvItemsController extends AppController
 		$hierarchy[1]['name'] = 'active';
 
 		$hierarchy[1]['alias'] = 'Active';
+
 
 		
 

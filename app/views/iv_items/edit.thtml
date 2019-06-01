@@ -22,7 +22,10 @@ $("#IvItemIvCategoryId").live("change", function(){
     var category = $(this).find("option:selected").text();
     $("#category-name").val(category);
 });
-
+$("#IvItemIvSubCategoryId").live("change", function(){
+    var subSategory = $(this).find("option:selected").text();
+    $("#sub-category-name").val(subSategory);
+});
 </script>
 </head>
 <body id="page_edit">
@@ -156,6 +159,7 @@ $("#IvItemIvCategoryId").live("change", function(){
     <input type="hidden" name="brandName" id="brand-name" value="<?=$this->data['IvBrand']['name']?>">
     <input type="hidden" name="supplierName" id="supplier-name" value="<?=$this->data['IvSupplier']['name']?>">
     <input type="hidden" name="categoryName" id="category-name" value="<?=$this->data['IvCategory']['name']?>">
+    <input type="hidden" name="subCategoryName" id="sub-category-name" value="<?=$this->data['IvItem']['sub_category_name']?>">
 </form>
 </body>
 </html>

@@ -138,6 +138,19 @@
             </select>
         </td>
     </tr>
+     <tr>
+        <td>Sub Category</td>
+        <td><input type="text" name="data[Settings][sub_category_id][alias]" value="<?php echo $settings['sub_category_id']['alias'] ?>" />
+        <input type="hidden" name="data[Settings][sub_category_id][name]" value="sub_category_name" /></td>
+        <td>
+            <select class="order_field" name="data[Settings][sub_category_id][order]">
+                <option value="-1">X</option>
+                <?php for($i = 0; $i < $field_count; $i++) { ?>
+                <option value="<?php echo $i + 1?>" <?php echo $settings['sub_category_id']['order']==($i + 1)?'selected':'' ?>><?php echo $i + 1?></option>
+                <?php } ?>
+            </select>
+        </td>
+    </tr>
 </table>
 <input type="submit" value="Save" />
 </form>

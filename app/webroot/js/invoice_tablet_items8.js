@@ -144,26 +144,57 @@ $(function() {
 		$(this).parents("tr").remove();
 	});
 	
-	$(".tabs tr.item").live("click", function(){		
-		$(this).children(".item_id").val();
-		$(this).children(".item_name").val();
-		$(this).children(".item_model").val();
-		$(this).children(".item_regular_price").val();
-		$(this).children(".item_selling_price").val();
-		$(this).children(".item_supplier_price").val();
-		$(this).children(".item_efficiency").val();
-		$(this).children(".item_category_id").val();
-		$(this).children(".item_brand_id").val();
-		$(this).children(".item_supplier_id").val();
-		$(this).children(".item_description1").val();
-		$(this).children(".item_description2").val();
-		$(this).children(".item_mode").val();
+	$(".multipleItems").live("click", function(){
+		var items= [];	
+		var show_purchase = $("#show-purchase").val();
+		$('.addItems:checkbox:checked').each(function () {
+			var cur = $(this).parent().parent();
+			var itema = {}; 
+       		itema.item_id 		 		= cur.children(".item_id").val();
+			itema.item_name 	 		= cur.children(".item_name").val();
+			itema.item_model 	 		= cur.children(".item_model").val();
+			itema.item_regular_price 	= cur.children(".item_regular_price").val();
+			itema.item_selling_price 	= cur.children(".item_selling_price").val();
+			itema.item_supplier_price 	= cur.children(".item_supplier_price").val();
+			itema.item_efficiency 	 	= cur.children(".item_efficiency").val();
+			itema.item_category_id 	 	= cur.children(".item_category_id").val();
+			itema.item_brand_id 	 	= cur.children(".item_brand_id").val();
+			itema.item_supplier_id 	 	= cur.children(".item_supplier_id").val();
+			itema.item_description1 	= cur.children(".item_description1").val();
+			itema.item_description2 	= cur.children(".item_description2").val();
+			itema.item_mode 	 		= cur.children(".item_mode").val();
+			items.push(itema);
+			$('input:checkbox').removeAttr('checked');
+		});
 		
-		addItem(G_CONTAINER, $(this).children(".item_id").val(), $(this).children(".item_name").val(), $(this).children(".item_category_id").val(), $(this).children(".item_selling_price").val(),$(this).children(".item_supplier_price").val(), G_NEW);
+		$.each(items, function( key, value ) {
+  			addItem(G_CONTAINER, value.item_id, value.item_name, value.item_category_id, value.item_selling_price ,value.item_supplier_price, G_NEW);
+		});
 		
 		$("#items_container").hide();
 		computeValues();
 	});
+	
+	// $(".tabs tr.item").live("click", function(){		
+	// 	$(this).children(".item_id").val();
+	// 	$(this).children(".item_name").val();
+	// 	$(this).children(".item_model").val();
+	// 	$(this).children(".item_regular_price").val();
+	// 	$(this).children(".item_selling_price").val();
+	// 	$(this).children(".item_supplier_price").val();
+	// 	$(this).children(".item_efficiency").val();
+	// 	$(this).children(".item_category_id").val();
+	// 	$(this).children(".item_brand_id").val();
+	// 	$(this).children(".item_supplier_id").val();
+	// 	$(this).children(".item_description1").val();
+	// 	$(this).children(".item_description2").val();
+	// 	$(this).children(".item_mode").val();
+		
+	// 	addItem(G_CONTAINER, $(this).children(".item_id").val(), $(this).children(".item_name").val(), $(this).children(".item_category_id").val(), $(this).children(".item_selling_price").val(),$(this).children(".item_supplier_price").val(), G_NEW);
+		
+	// 	$("#items_container").hide();
+	// 	computeValues();
+	// });
 	
 	$("#test_required").click(function(){
 		var current_balance = parseFloat($("#current_balance").val());		

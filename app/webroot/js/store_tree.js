@@ -1,7 +1,7 @@
 //$(function(){
 //	storeTreeInitialize();
 //});
-	function storeTreeInitialize() {
+function storeTreeInitialize() {
 		
 	/*var test_server = "http://acesys.ace1.ca/acesys/acesys-2.0/index.php/";
 	var live_server = "http://acesys.ace1.ca/index.php/";
@@ -62,7 +62,7 @@
 	});
 	
 	$(".all_node").click();
-	end assign click events
+	//end assign click events
 	
 	// $(".tabs tr.item").live("click", function(){	
 	// 	$(this).children(".item_id").val();

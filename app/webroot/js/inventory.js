@@ -14,8 +14,8 @@ $(function(){
 	$(".add-dup-item").live("click", function(event){
 		event.stopPropagation();
 		var postdata = {};
-		var cur = $(this).parent().parent();
-		
+		var cur 	= $(this).parent().parent();
+		var cat_cur = $(this).parents(".list_item").parent();
 		postdata.id 				= "";
 		postdata.sku 				= cur.children(".item_sku").val();
 		postdata.name 				= cur.children(".item_name").val();
@@ -36,6 +36,7 @@ $(function(){
 		var brand_name	 			= cur.children(".brand-name").val();
 		var supplier_name			= cur.children(".supplier-name").val();
 		var category_name			= cur.children(".category-name").val();
+		var sub_category_name		= cur.children(".sub-category-name").val();
 
 
 		$.ajax({
@@ -43,14 +44,14 @@ $(function(){
 		dataType: 'html',
 		type: 'POST',
 		cache: false,
-		data:{postdata: postdata,brandName:brand_name, supplierName:supplier_name, categoryName:category_name, is_duplicant:1},
+		data:{postdata: postdata,brandName:brand_name, supplierName:supplier_name, categoryName:category_name, subCategoryname:sub_category_name,is_duplicant:1},
 		success: function(data) {
 				res = JSON.parse(data);
 				if(res.res == "OK")
 				{
-					var catId = $(".ui-state-active").attr("cat-act-id");
-					$(".activeClick"+catId).trigger("click");
-					$(".activeClick"+catId).trigger("click");
+					//var catId = $(".ui-state-active").attr("cat-act-id");
+					$(".link_branch",cat_cur).trigger("click");
+					$(".link_branch",cat_cur).trigger("click");
 				}
 			}
 		});	
@@ -59,6 +60,7 @@ $(function(){
 	$(".remove-dup-item").live("click", function(event){
 		event.stopPropagation();
 		var itemId = $(this).attr('itemId');
+		var cat_cur = $(this).parents(".list_item").parent();
 		$.ajax({
 		url: G_URL+'iv_items/removeDuplicantItem',
 		dataType: 'html',
@@ -69,9 +71,8 @@ $(function(){
 				res = JSON.parse(data);
 				if(res.res == "OK")
 				{
-					var catId = $(".ui-state-active").attr("cat-act-id");
-					$(".activeClick"+catId).trigger("click");
-					$(".activeClick"+catId).trigger("click");
+					$(".link_branch",cat_cur).trigger("click");
+					$(".link_branch",cat_cur).trigger("click");
 				}
 			}
 		});	
