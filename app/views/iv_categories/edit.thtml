@@ -13,6 +13,7 @@
 <h1>Add Category</h1>
 <form action="<?php echo BASE_URL ?>/iv_categories/save" method="post">
 	<?php echo $html->hidden('IvCategory/id'); ?>
+    <input type="hidden" name="fromAdd" value="<?=$fromAdd?>">
     <table>
     	<tr>
         	<td><label>Category Name</label></td>

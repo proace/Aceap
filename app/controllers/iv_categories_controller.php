@@ -107,7 +107,7 @@ class IvCategoriesController extends AppController
 			$result = $db->_execute($query);
 			exit();
 	}
-	function edit($id = null) {
+	function edit($fromAdd = 0) {
 
 		$this->layout = 'blank';	
 
@@ -115,8 +115,9 @@ class IvCategoriesController extends AppController
 
 			$this->IvCategory->id = $id;    
 
-			$this->data = $this->IvCategory->read();			
+			$this->data = $this->IvCategory->read();	
 
+			$this->set("fromAdd", $fromAdd);
 		}
 
 	}
@@ -146,11 +147,16 @@ class IvCategoriesController extends AppController
 	}
 
 	function save() {
-
-		if($this->data['IvCategory']['active'] != 1) $this->data['IvCategory']['active'] = 0;
-
+		$fromAdd = $_POST['fromAdd'];
+		//if($this->data['IvCategory']['active'] != 1) $this->data['IvCategory']['active'] = 0;
 		if($this->IvCategory->save($this->data['IvCategory'])) {				
 
+			if($fromAdd == 1)
+			{
+				echo "<script>opener.location.reload();
+				window.close();</script>";
+		 			exit;
+			}
 			$this->Session->write("message", $this->data['IvCategory']['name']." was saved.".mysql_error());
 
 			$this->redirect("pages/close");

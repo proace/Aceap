@@ -6,6 +6,7 @@
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
 <script>
+    G_URL = "/acesys/index.php/";
 jQuery( document ).ready(function($) {
    
     $('#removePayment').on('click', function(e){
@@ -26,7 +27,7 @@ jQuery( document ).ready(function($) {
  $('.category-name').on('click', function(){
             var id = $(this).attr('cat-id');
             window.open("<?=BASE_URL;?>/iv_categories/editCategory/"+id, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=400,height=400");
-        });
+    });
     $('.showActive').on('change', function(elem_chk){
         var jobtype_id = $(this).attr('type_id');
         if ($(this).is(':checked')){
@@ -68,7 +69,11 @@ jQuery( document ).ready(function($) {
                 function(data){document.forms['viewform'].submit();});
             }
         });
-
+        $("#add-category").on("click", function(){
+            var url = G_URL + "iv_categories/edit/1";
+            var option = "width=450,height=450,left=300,top=200,status=no,resize=none";
+            var answer = window.open(url,'', option);   
+        });
        
 });
 
@@ -125,7 +130,8 @@ th, td {
 </form>
 <form >
 <!-- <input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/payments/showAddPaymentTypePage'" /> -->
- <input type="button" name="Remove" value="Remove" id="removePayment" style="margin: 0 0 5px 10px;"/>
+<input type="button" name="Add" value="Add" id="add-category" style="margin: 0 0 5px 10px;"/> 
+<input type="button" name="Remove" value="Remove" id="removePayment" style="margin: 0 0 5px 10px;"/>
 <table class="results"  style="border-style: solid;border-width:1px; width: 50%;" width="100%">
     <tr>
         <th width="50"><b>ID</b></td>
