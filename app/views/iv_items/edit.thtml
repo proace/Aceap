@@ -20,12 +20,24 @@ $("#IvItemIvSupplierId").live("change", function(){
 });
 $("#IvItemIvCategoryId").live("change", function(){
     var category = $(this).find("option:selected").text();
+    var catId = $(this).find("option:selected").val();
     $("#category-name").val(category);
+     $.ajax({
+        url: G_URL+'iv_items/getSubCategories',
+        dataType: 'html',
+        type: 'POST',
+        cache: false,
+        data:{categoryId: catId},
+        success: function(data) {
+                $("#IvItemIvSubCategoryId").html(data);
+            }
+        }); 
 });
 $("#IvItemIvSubCategoryId").live("change", function(){
     var subSategory = $(this).find("option:selected").text();
     $("#sub-category-name").val(subSategory);
 });
+
 </script>
 </head>
 <body id="page_edit">

@@ -427,7 +427,7 @@ class IvItemsController extends AppController
 		if (empty($this->data['IvItem'])) {    
 			$this->IvItem->id = $id;    
 	
-			$this->data = $this->IvItem->read();	
+			$this->data = $this->IvItem->read();
 
 			$this->set('categories', $this->Lists->IvCategories());
 
@@ -459,7 +459,6 @@ class IvItemsController extends AppController
 
 	function save() {
 		$is_duplicant = isset($_POST['is_duplicant']) ? $_POST['is_duplicant']  : 0;
-
 		if($is_duplicant)
 		{
 			$this->data['IvItem'] = $_POST['postdata'];
@@ -873,6 +872,20 @@ class IvItemsController extends AppController
  			echo json_encode($response);
  			exit;
 		}
+	}
+
+	// LOki: Get sub Categories
+
+	function getSubCategories()
+	{
+		$catId = $_POST['categoryId'];
+		$subCategories = $this->Lists->IvSubCategories($catId);
+		$res = "<option value='0'>Choose Here</option>";
+		foreach ($subCategories as $key => $value) {
+			$res .= "<option value='".$key."'>".$value."</option>";
+		}
+		echo $res;
+		exit();
 	}
 }
 
