@@ -8,10 +8,14 @@
 <script>
 jQuery( document ).ready(function($) {
 
- $('.category-id').on('change', function(){
-    var catId = $( ".category-id option:selected" ).val();
-     $('#catId').val(catId);
+ $('#cancel-sub-cat').on('click', function(){
+        window.close();
  });
+$('#add-another').click(function(){  
+      $('#dynamic_field').append('<tr><td><b><label>Name:</label>&nbsp</b><input type="text" id="subCatName" name="catName[]" value="<?=$subCategory["name"]?>"></td><td><select class="category-id" name="allCatId[]"><option>Choose here</option><?php foreach($categories as $category) {?>
+        <option <?php if($subCategory["category_id"] == $category["id"]){ echo "selected";}?> value="<?=$category["id"]?>" name="multipleCatId[]"><?php echo $category["name"]?></option><?}?></select></td><tr>');
+}); 
+
  $('#edit-cat').on('click', function(){
     var id = $('#subCatId').val();
     var name = $('#subCatName').val();
@@ -45,8 +49,12 @@ jQuery( document ).ready(function($) {
     });   
  $('.sub-category-name').on('click', function(){
             var id = $(this).attr('cat-id');
-            window.open("<?=BASE_URL;?>/iv_categories/editSubCategory/"+id, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=400,height=400");
+            window.open("<?=BASE_URL;?>/iv_categories/editSubCategory/"+id, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=100,height=400");
         });
+});
+$('.category-id').on('change', function(){
+    var catId = $( ".category-id option:selected" ).val();
+     $('#catId').val(catId);
 });
 
 </script>
@@ -56,8 +64,12 @@ table, th, td {
   border-collapse: collapse;
 }
 th, td {
+  padding: 2px;
+}  
+.shift {
+  float: left;
   padding: 10px;
-}   
+} 
 .question_button {
     background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/text_page.png) no-repeat center #666;
     border:1px solid #999;
@@ -93,26 +105,26 @@ td {
 <input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
 
 </form>
-<form >
+<form method="POST" action="<?php echo BASE_URL ?>/iv_categories/addSubCategory" name="SubCategoryForm" >
   <h1>Add/Edit Sub Category</h1>
     <input type="hidden" name="subCatId" id="subCatId" value="<?=$subCategory['id']?>">
     <input type="hidden" name="catId" id="catId" value="<?=$subCategory['category_id']?>">
-    <table style="border: 0px ; border-collapse: ;">
+    <table style="border: 0px ; border-collapse: ;" id="dynamic_field">
         <tr>
-            <td><b><label>Sub Category Name:</label></b></td>
-            <td><input type="text" id="subCatName" name="catName" value="<?=$subCategory['name']?>"></td>
+            <td><b><label>Name:</label>&nbsp</b><input type="text" id="subCatName" name="catName[]" value="<?=$subCategory['name']?>"></td>
             <td>
-             <select class="category-id">
+             <select class="category-id" name="allCatId[]">
               <option>Choose here</option>
                <?php foreach($categories as $category) {?>
-                  <option <?php if($subCategory['category_id'] == $category['id']){ echo 'selected';}?> value="<?=$category['id']?>"><?php echo $category['name']?></option>
+                  <option <?php if($subCategory['category_id'] == $category['id']){ echo 'selected';}?> value="<?=$category['id']?>" name="multipleCatId[]"><?php echo $category['name']?></option>
               <?}?>
              </select>
             </td>
-       </tr>                
-       <tr>
-        <td><input type="button" value="Save" id="edit-cat"/></td>
-        <td><input type="button" value="Cancel" class="button_cancel" /></td>
-       </tr>
-    </table>     
+    </table>   
+    <div class="shift"> 
+        <input  type="button" value="Add Another" id="add-another"/>
+        <!-- <input type="button" value="Save" id="edit-cat"/> -->
+        <input type="submit" value="Save"/>
+        <input type="button" value="Cancel" id="cancel-sub-cat" />
+    </div>  
 </form>

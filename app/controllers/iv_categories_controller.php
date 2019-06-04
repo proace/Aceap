@@ -67,17 +67,29 @@ class IvCategoriesController extends AppController
 	}
 	function addSubCategory($id)
 	{	
-		$id = $_POST['id'];
-		$name = $_POST['name'];
+		$allCatIds = $_POST['allCatId'];
 		$catId = $_POST['catId'];
+		$name = $_POST['catName'];
+		$subCatId = $_POST['subCatId'];
 		$db =& ConnectionManager::getDataSource('default');	
-		if(!empty($id) || $id != '')
+		if(!empty($subCatId) || $subCatId != '')
 		{
-			$query = "UPDATE ace_iv_sub_categories set name='".$name."',category_id=".$catId." where id=".$id;
+			$query = "UPDATE ace_iv_sub_categories set name='".$name[0]."',category_id=".$allCatIds[0]." where id=".$subCatId;
+			$result = $db->_execute($query);
 		} else {
-			$query = "INSERT into ace_iv_sub_categories (name,category_id) VALUES ('".$name."', ".$catId.")";
+			foreach($name as $key => $val)
+			{
+				$query = "INSERT into ace_iv_sub_categories (name,category_id) VALUES ('".$val."', ".$allCatIds[$key].")";	
+				$result = $db->_execute($query);
+			}
+			
 		}
-		$result = $db->_execute($query);
+		if($result)
+			{
+				echo "<script>opener.location.reload();
+				window.close();</script>";
+		 			exit();
+			}
 		exit();
 	}
 	function deleteSubCategory()
