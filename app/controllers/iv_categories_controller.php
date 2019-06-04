@@ -29,7 +29,7 @@ class IvCategoriesController extends AppController
 	function showItemSubCategory()
 	{			
 		$db =& ConnectionManager::getDataSource('default');	
-		$query = "SELECT scat.*, cat.name as catName from ace_iv_sub_categories scat JOIN ace_iv_categories cat ON scat.category_id = cat.id";
+		$query = "SELECT scat.*, cat.name as catName from ace_iv_sub_categories scat JOIN ace_iv_categories cat ON scat.category_id = cat.id order by cat.name";
 
 		$items = array();
 		$result = $db->_execute($query);
