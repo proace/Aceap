@@ -61,12 +61,13 @@ $(function(){
 		event.stopPropagation();
 		var itemId = $(this).attr('itemId');
 		var cat_cur = $(this).parents(".list_item").parent();
+		var inactiveid = $(this).attr('inactiveId');
 		$.ajax({
 		url: G_URL+'iv_items/removeDuplicantItem',
 		dataType: 'html',
 		type: 'POST',
 		cache: false,
-		data:{item_id: itemId},
+		data:{item_id: itemId, inactiveId:inactiveid},
 		success: function(data) {
 				res = JSON.parse(data);
 				if(res.res == "OK")

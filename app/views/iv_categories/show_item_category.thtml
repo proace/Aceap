@@ -85,6 +85,7 @@ table, th, td {
 }
 th, td {
   padding: 10px;
+  text-align: center;
 }   
 .question_button {
     background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/text_page.png) no-repeat center #666;
@@ -130,12 +131,13 @@ th, td {
 </form>
 <form >
 <!-- <input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/payments/showAddPaymentTypePage'" /> -->
+<h1>Categories :-</h1>
 <input type="button" name="Add" value="Add" id="add-category" style="margin: 0 0 5px 10px;"/> 
 <input type="button" name="Remove" value="Remove" id="removePayment" style="margin: 0 0 5px 10px;"/>
 <table class="results"  style="border-style: solid;border-width:1px; width: 50%;" width="100%">
     <tr>
         <th width="50"><b>ID</b></td>
-        <th width="50">Name</th>
+        <th width="50">Category Name</th>
         <th width="10">Active</th>
         <th width="10">Delete Category</th>
    </tr>

@@ -275,6 +275,11 @@ class IvItemsController extends AppController
 
 		$hierarchy[1]['alias'] = 'Active';
 
+		// Get Inactive subcategory Id
+		$query = "SELECT id FROM ace_iv_sub_categories WHERE category_id = $category_id AND name='Inactive'";
+		$res = 	$db->_execute($query);
+		$inactiveId = mysql_fetch_array($res);
+
 		if(isset($category_id)) {		
 
 			$query = "
@@ -413,6 +418,9 @@ class IvItemsController extends AppController
 
 		$this->set('query', $query);
 
+		$this->set('InactiveId', $inactiveId['id']);
+		
+
 	}
 
 	
@@ -496,7 +504,9 @@ class IvItemsController extends AppController
  				}
 			} else {
 				$this->Session->write("message", $this->data['IvItem']['name']." was saved.".mysql_error());
-			
+				// echo "<script>opener.location.reload();
+				// window.close();</script>";
+		 	// 		exit;
 				$this->redirect("pages/close");			
 			}
 
@@ -856,16 +866,16 @@ class IvItemsController extends AppController
 	// Loki: Delete the item
 	function removeDuplicantItem()
 	{
-		$db 	=& ConnectionManager::getDataSource('default');	
-		$id 	= $_POST['item_id'];
-		$query = "DELETE from ace_iv_items where id=".$id;
-		$result = $db->_execute($query);
+		$db 			=& ConnectionManager::getDataSource('default');	
+		$id 			= $_POST['item_id'];
+		$inactiveId 	= $_POST['inactiveId'];
+		$query 			= "UPDATE  ace_iv_items set iv_sub_category_id =".$inactiveId." where id=".$id;
+		$result 		= $db->_execute($query);
 		if($result)
 		{
-			$query1 = "DELETE from iv_items_labeled2 where id=".$id;
+			$query1 = "UPDATE  iv_items_labeled2 set sub_category_id =".$inactiveId." where id=".$id;
 			$result1 = $db->_execute($query1);
 		}
-
 		if($result1)
 		{
 			$response  = array("res" => "OK");
