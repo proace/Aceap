@@ -1122,6 +1122,7 @@ class CommissionsController extends AppController
 						a.admin_notes,
 						a.estimate_sent,
 					   	a.order_type_id,
+					   	a.payment_method_type,
 
 						t1.first_name as tech1_first_name,
 
@@ -1135,7 +1136,9 @@ class CommissionsController extends AppController
 
 						t2.last_name as tech2_last_name,
 
-						t2.commission_type as t2_commission_type
+						t2.commission_type as t2_commission_type,
+						pm.name as payment_type,
+						pm.show_picture
 
 
 
@@ -1148,6 +1151,8 @@ class CommissionsController extends AppController
 				LEFT JOIN		`ace_rp_users` as t2 on ( a.job_technician2_id = t2.id )
 
 				LEFT JOIN ace_rp_route_visibility rv ON a.job_truck = rv.route_id AND a.job_date = rv.job_date
+				LEFT JOIN ace_rp_payment_methods pm ON a.payment_method_type = pm.id 
+
 
 				WHERE 1=1
 
@@ -1248,7 +1253,8 @@ class CommissionsController extends AppController
 			$result = $db->_execute($query);
 			while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
 				$defaultEmail = $row['email'];
-			}			
+			}	
+
 			$this->set("defaultEmail", $defaultEmail);
 			$this->set("tech_comm_conf",$tech_comm_conf);
 			$this->set("previousPage",$previousPage);

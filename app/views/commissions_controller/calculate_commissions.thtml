@@ -270,11 +270,15 @@ $(document).ready(function()
               var imageVal = $(this).val();
               var order_id = $(this).attr('orderId');
               var order_type = $(this).attr('order_type');
-              if(order_type != 57) {
-                if(imageVal == '' || imageVal == null) {
-                    imageError += "\n Please upload payment image for reference no. "+order_id;
-                  }
-              }
+              var show_picture = $(this).attr('show-picture');
+             if(show_picture != 0) {
+                if(order_type != 57) {
+                    if(imageVal == '' || imageVal == null) {
+                        imageError += "\n Please upload payment image for reference no. "+order_id;
+                    }
+                }  
+             }
+              
         });
          if("" != imageError)
         {
@@ -477,6 +481,7 @@ $(document).ready(function()
 <input type="hidden" name="action" value="view" >
 <input type="hidden" name="order" value="<?=$_GET['order']?>">
 <input type="hidden" name="jobOption" value="<?= $joboption?>">
+
 <!--<div style="overflow: auto; height: 390px;">-->
 <!-- <div><h4 >Technician</h4></div> -->
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
@@ -505,9 +510,10 @@ $(document).ready(function()
         
         <th class="thborder" rowspan=2 colspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#ffff80;">Adjustment</th>
         <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#ffff80;">Total Comm</th>
-        <th class="thborder" rowspan=2 width="100" style="border-top: 1px solid #9f9f9f;background-color:#ffff80;">Admin Notes</th>
+        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f;background-color:#ffff80;">Admin Notes</th>
 		<th class="thborder" rowspan=2 width="16" style="border-top: 1px solid #9f9f9f; background-color:#ffff80;"><?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
 		<th class="thborder" rowspan=2 colspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#dec787;">Payments</th>
+        <th class="thborder" rowspan=2 colspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#dec787;">Payment Type</th>
 		<th class="thborder"rowspan=2 colspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#dec787;">Purchase</th>
 		<th class="thborder" rowspan=2 width="100" style="border-top: 1px solid #9f9f9f;background-color:#dec787;">Tech Notes</th>
 		<th class="thborder" rowspan=2 width="16" style="border-top: 1px solid #9f9f9f;background-color:#dec787;">Confirmed<?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
@@ -654,10 +660,11 @@ $(document).ready(function()
     					 	<img id="pre-image_photo3" class="pre-image_<?php echo $obj['id'] ?>_photo3 invoice-openImg" src="#" alt="your image" />
     					 			<div class="acecare-td-adjust">
     						 			<label for="Fileinput" >Upload</label>
-    					 				<input class="paymentImage disply_preview" type="file" name="techCommArr[<?php echo $obj['id'] ?>][uploadFile]" id="Fileinput" data-ct="_<?php echo $obj['id'] ?>_photo3" orderId="<?=$obj['order_number']?>" order_type="<?=$obj['order_type_id']?>" >
+    					 				<input class="paymentImage disply_preview" type="file" name="techCommArr[<?php echo $obj['id'] ?>][uploadFile]" id="Fileinput" data-ct="_<?php echo $obj['id'] ?>_photo3" orderId="<?=$obj['order_number']?>" order_type="<?=$obj['order_type_id']?>" show-picture="<?= $obj['show_picture']?>" >
     					 			</div>	
     				<?php } ?>	
 				</td>
+                <td rowspan="4" colspan="2" width="100"><b><?php echo $obj['payment_type'] ?><b></td>
 				<td rowspan="4" colspan="2" width="100">
 					<?php 
 						if(!empty($obj['order_purchase_image1']))
@@ -913,7 +920,7 @@ $(document).ready(function()
 <?php endforeach; ?>
 <!-- <?php if ($techid) {?> -->
     <tr>
-				<td colspan=13 style="border-top:1px solid #9f9f9f;">&nbsp;</td>
+				<td colspan=16 style="border-top:1px solid #9f9f9f;">&nbsp;</td>
 				
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b>Total:</b></td>
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($total_sum);?></b></td>
