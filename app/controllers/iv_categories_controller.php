@@ -79,7 +79,12 @@ class IvCategoriesController extends AppController
 		} else {
 			foreach($name as $key => $val)
 			{
-				$query = "INSERT into ace_iv_sub_categories (name,category_id) VALUES ('".$val."', ".$allCatIds[$key].")";	
+				$sort = 0;
+				if($val == 'Inactive' || $val == 'inactive')
+				{
+					$sort = 999;
+				}
+				$query = "INSERT into ace_iv_sub_categories (name,category_id,sort) VALUES ('".$val."', ".$allCatIds[$key].",".$sort.")";	
 				$result = $db->_execute($query);
 			}
 			
