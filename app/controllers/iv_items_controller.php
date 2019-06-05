@@ -230,7 +230,7 @@ class IvItemsController extends AppController
 		$mode = $_GET['mode'];
 		$db 	=& ConnectionManager::getDataSource('default');	
 		$category_id = $_GET['category_id'];
-		$query = "SELECT * from ace_iv_sub_categories where category_id=".$category_id;
+		$query = "SELECT * from ace_iv_sub_categories where category_id=".$category_id." order by sort";
 		$result = $db->_execute($query);
 		$items = array();
 		$id = 0;
