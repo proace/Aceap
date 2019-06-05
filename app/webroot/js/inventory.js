@@ -124,9 +124,10 @@ $(function(){
 	$(".tabs tr.editable").live("click", function(){
 		var container = $(this).parents(".list_item");
 		//alert(container.find(".criteria").val());
+		var cat_cur = $(this).parents(".list_item").parent();
 		var criteria = $.parseJSON(container.find(".criteria").val());
 		var url = G_URL + "iv_items/items";
-		showItem($(this).children(".id").val());
+		showItem($(this).children(".id").val(),cat_cur);
 		$.get(url,
 		criteria,
 		function(data){
@@ -137,9 +138,12 @@ $(function(){
 	$(".tabs a.link_additem").live("click", function(){
 		var container = $(this).parents(".list_item");
 		//alert(container.find(".criteria").val());
+		var cat_cur = $(this).parents(".list_item").parent();
+		console.log("hiii");
+		console.log(cat_cur);
 		var criteria = $.parseJSON(container.find(".criteria").val());
 		var url = G_URL + "iv_items/items";
-		showItem('', criteria);
+		showItem('',cat_cur,criteria);
 		$.get(url,
 		criteria,
 		function(data){
@@ -234,16 +238,26 @@ $(function(){
 	}		
 	//END filter code
 	
-	function showItem(id, criteria) {
+	function showItem(id, cat_cur, criteria) {
 
 		var catId = $(".ui-state-active").attr("cat-act-id");
-
 		if(criteria == null) {
 			var url = G_URL + "iv_items/edit/" + id+"/"+catId;
 					
 			var option = "width=450,height=450,left=300,top=200,status=no,resize=none";
 			
 			var answer = window.open(url,'', option);
+
+			if(answer)
+			{
+				var timer = setInterval(function() {   
+				    if(answer.closed) {  
+				    	clearInterval(timer);  
+				       	$(".link_branch",cat_cur).trigger("click");
+						$(".link_branch",cat_cur).trigger("click");
+				    }  
+				}, 1000); 
+			}
 		} else {
 			var url = G_URL + "iv_items/edit?seed=" + Math.random();
 			if(criteria.supplier_id) url += "&supplier_id=" + criteria.supplier_id;
@@ -257,6 +271,16 @@ $(function(){
 			var option = "width=450,height=450,left=300,top=200,status=no,resize=none";
 			
 			var answer = window.open(url,'', option);	
+			if(answer)
+			{
+				var timer = setInterval(function() {   
+				    if(answer.closed) {  
+				    	clearInterval(timer);  
+				       	$(".link_branch",cat_cur).trigger("click");
+						$(".link_branch",cat_cur).trigger("click");
+				    }  
+				}, 1000); 
+			}
 		}
 	}
 });
