@@ -43,6 +43,7 @@ function ShowTransactions(mid,dat,datid){
 </form>
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
     <tr style="height:25px;">
+        <th>No.</th>
         <th>Date</th>
         <th>Ref</th>
         <th>Tech Name</th>
@@ -51,23 +52,27 @@ function ShowTransactions(mid,dat,datid){
         ?>
         <th><?=$cur?></th>
         <?php endforeach; ?>
+        <th>Not Done</th> 
+        <th>Total</th>
     </tr>
 
 <?php
     $r = 1;
+    $i = 1;
     $total_sum = 0;
     $deposit_sum = 0;
     $paid_sum = 0;
     foreach ($orders as $obj):
         $class = 'cell'.(++$r%2);?>
     <tr class="<?= $class ?>">
+        <td><?php echo $i ;?></td>
         <td align="left"><?=$obj['job_date']?></td>
         <td><a href='<?=BASE_URL?>/orders/editBooking?order_id=<?=$obj["orderId"]?>'><?=$obj['order_number']?></a></td>
         <td><?=$allTechnicians[$obj['job_technician1_id']]?><?=$allTechnicians[$obj['job_technician2_id']]?></td>
         <?php foreach ($allPaymentMethods as $cur2): ?>
         <td>
             <?php  
-                if($obj['payment_method'] == $cur2)
+                if($obj['payment_method'] == $cur2 && $obj['order_status_id'] == 5)
                 { 
                    // echo $obj['paid_amount'];
                     echo $HtmlAssist->prPrice($obj['paid_amount']);
@@ -76,14 +81,26 @@ function ShowTransactions(mid,dat,datid){
             ?>
         </td>
         <?php endforeach; ?>
+        <td><?php if($obj['order_status_id'] != 5) {
+                echo $HtmlAssist->prPrice($obj['paid_amount']);
+            }?>  
+        </td>
+        <td></td>
     </tr>
+    <?php $i++;
+     $total =0; ?>
     <?php endforeach; ?>
     <tr style="height:25px;">
         <th></th>
         <th></th>
         <th></th>
-        <?php foreach ($allPaymentMethods as $cur1):?>
-        <th><?= $HtmlAssist->prPrice(${$cur1}); ?></th>
+        <th></th>
+        <?php foreach ($allPaymentMethods as $cur1): ?>
+        <th><?= $HtmlAssist->prPrice(${$cur1}); 
+                $total = $total + number_format(${$cur1}, 2, '.', ' ');
+        ?></th>
         <?php endforeach; ?>
+        <th></th>
+        <th><?=  '$'.number_format($total, 2, '.', ' ') ?></th>
     </tr>
 </table>

@@ -3058,20 +3058,20 @@ this function for trasfer jobs
 		$this->layout="list";
 		if ($this->Common->getLoggedUserRoleID() != 6) return;
     
-    $allPaymentMethods = $this->Lists->paymenTable('ace_rp_payment_methods');
-    $allTechnicians = $this->Lists->Technicians();
+	    $allPaymentMethods = $this->Lists->paymenTable('ace_rp_payment_methods');
+	    $allTechnicians = $this->Lists->Technicians();
     
 		//CONDITIONS
 		//Convert date from date picker to SQL format
 		if ($this->params['url']['ffromdate'] != '')
 			$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
-    else
-			$fdate = date("Y-m-d");
+	    else
+				$fdate = date("Y-m-d");
 
-		if ($this->params['url']['ftodate'] != '')
-			$tdate = date("Y-m-d", strtotime($this->params['url']['ftodate']));
-    else
-			$tdate = date("Y-m-d");
+			if ($this->params['url']['ftodate'] != '')
+				$tdate = date("Y-m-d", strtotime($this->params['url']['ftodate']));
+	    else
+				$tdate = date("Y-m-d");
 
 		$db =& ConnectionManager::getDataSource('default');
 		$sqlConditions = "";
@@ -3084,21 +3084,23 @@ this function for trasfer jobs
 		$recordsTotal = array();
 		$orders = array();
 
-    $query ="
-         select o.id as orderId, o.job_date, m.id payment_method_id, m.name payment_method,
-                p.paid_amount as paid_amount,o.id, o.order_number, p.paid_amount,
-						 o.job_technician1_id, o.job_technician2_id
-           from ace_rp_payments p
-          right join ace_rp_orders o on p.idorder=o.id
-           left outer join ace_rp_payment_methods m on m.id=p.payment_method
-          where o.id IS NOT NULL $sqlConditions
-          group by o.job_date, m.id, m.name";
-    $result = $db->_execute($query);
-    
-    while($row = mysql_fetch_array($result))
-    {    	
-    	$orders[] = $row;
-    }  
+    // $query ="
+    //      select o.id as orderId, o.job_date, m.id payment_method_id, m.name payment_method,
+    //             p.paid_amount as paid_amount,o.id, o.order_number, p.paid_amount,
+				// 		 o.job_technician1_id, o.job_technician2_id
+    //        from ace_rp_payments p
+    //       right join ace_rp_orders o on p.idorder=o.id
+    //        left outer join ace_rp_payment_methods m on m.id=p.payment_method
+    //       where o.id IS NOT NULL $sqlConditions";
+		$query ="
+         select o.id as orderId, o.order_status_id, o.job_date, o.payment_method_type payment_method_id, m.name payment_method, p.paid_amount as paid_amount,o.id, o.order_number, p.paid_amount, o.job_technician1_id, o.job_technician2_id from ace_rp_payments p right join ace_rp_orders o on p.idorder=o.id left outer join ace_rp_payment_methods m on m.id=o.payment_method_type where o.id IS NOT NULL $sqlConditions";
+          // print_r($query); die;
+	    $result = $db->_execute($query);
+	    
+	    while($row = mysql_fetch_array($result))
+	    {    	
+	    	$orders[] = $row;
+	    }  
     
         ksort($orders);
    		$this->set("orders", $orders);    
