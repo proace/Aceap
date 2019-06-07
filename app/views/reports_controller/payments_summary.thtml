@@ -53,6 +53,7 @@ function ShowTransactions(mid,dat,datid){
         <th><?=$cur?></th>
         <?php endforeach; ?>
         <th>Not Done</th> 
+        <th>Cancelled</th>
         <th>Total</th>
     </tr>
 
@@ -76,16 +77,27 @@ function ShowTransactions(mid,dat,datid){
                 { 
                    // echo $obj['paid_amount'];
                     echo $HtmlAssist->prPrice($obj['paid_amount']);
+                    echo '<td></td><td></td><td></td>';
                     ${$obj['payment_method']} += $obj['paid_amount'];
-                }
+                } 
             ?>
         </td>
         <?php endforeach; ?>
-        <td><?php if($obj['order_status_id'] != 5) {
-                echo $HtmlAssist->prPrice($obj['paid_amount']);
-            }?>  
-        </td>
-        <td></td>
+
+        <?php if($obj['order_status_id'] == 3){
+                    echo '<td></td>';
+                    echo '<td>'.$HtmlAssist->prPrice($obj['paid_amount']).'</td>';
+                    echo '<td></td>';
+                } else if($obj['order_status_id'] != 5 && $obj['order_status_id'] != 3) {
+                    echo '<td>'.$HtmlAssist->prPrice($obj['paid_amount']).'</td>';
+                    echo '<td></td><td></td>';
+                }  else if(empty ($obj['payment_method'])){
+                    echo '<td></td>';
+                    echo '<td></td>';
+                    echo '<td></td>';
+                }
+            ?>  
+        <!-- <td></td> -->
     </tr>
     <?php $i++;
      $total =0; ?>
@@ -97,10 +109,11 @@ function ShowTransactions(mid,dat,datid){
         <th></th>
         <?php foreach ($allPaymentMethods as $cur1): ?>
         <th><?= $HtmlAssist->prPrice(${$cur1}); 
-                $total = $total + number_format(${$cur1}, 2, '.', ' ');
+                $total = $total + number_format(${$cur1}, 2, '.', '');
         ?></th>
         <?php endforeach; ?>
         <th></th>
-        <th><?=  '$'.number_format($total, 2, '.', ' ') ?></th>
+        <th></th>
+        <th><?= '$'.number_format($total, 2, '.', ' ') ?></th>
     </tr>
 </table>

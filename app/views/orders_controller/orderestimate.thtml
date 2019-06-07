@@ -62,9 +62,9 @@
 
 		tinyMCE.init({
 			mode: 'textareas',
-
 			theme : "advanced",
-		plugins : "safari,spellchecker,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template,imagemanager,filemanager,tinymcespellchecker",
+
+		plugins : "code,safari,spellchecker,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,visualchars,nonbreaking,xhtmlxtras,template,imagemanager,filemanager,tinymcespellchecker",
 
 
 		// Theme options
@@ -78,7 +78,6 @@
 		theme_advanced_statusbar_location : "bottom",
 		theme_advanced_resizing : true,
 		
-		noneditable_leave_contenteditable : true,
 		// Example content CSS (should be your site CSS)
 		content_css : "css/example.css",
 		
@@ -92,7 +91,6 @@
 		gecko_spellcheck : true, browser_spellcheck : true
 		});
 	
-
 </script>
 
 </head>
@@ -131,11 +129,10 @@
 <!-- <input type="button" value="Back" onclick="history.go(-1);" class="buttons"> -->
 </form>
 	<script>
- 
+ 	
 		function printEstimate(){
 			/*var x = document.getElementById("tinymce").innerHTML; */
 			var x = tinyMCE.activeEditor.getContent();
-
 			console.log(x);
 
 			var newWindow = window.open();
