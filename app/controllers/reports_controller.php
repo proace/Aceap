@@ -3096,7 +3096,7 @@ this function for trasfer jobs
     //        left outer join ace_rp_payment_methods m on m.id=p.payment_method
     //       where o.id IS NOT NULL $sqlConditions";
 		$query ="
-         select o.id as orderId, o.order_status_id, o.job_date, o.payment_method_type payment_method_id, m.name payment_method, p.paid_amount as paid_amount,o.id, o.order_number, p.paid_amount, o.job_technician1_id, o.job_technician2_id from ace_rp_payments p right join ace_rp_orders o on p.idorder=o.id left outer join ace_rp_payment_methods m on m.id=o.payment_method_type where o.id IS NOT NULL $sqlConditions";
+         select o.id as orderId, o.order_status_id, o.job_date, o.payment_method_type payment_method_id, o.confirm_payment, m.name payment_method, p.paid_amount as paid_amount,o.id, o.order_number, p.paid_amount, o.job_technician1_id, o.job_technician2_id from ace_rp_payments p right join ace_rp_orders o on p.idorder=o.id left outer join ace_rp_payment_methods m on m.id=o.payment_method_type where o.id IS NOT NULL $sqlConditions";
           // print_r($query); die;
 	    $result = $db->_execute($query);
 	    
@@ -4030,5 +4030,22 @@ this function for trasfer jobs
 	// 		$this->set('tdate', date("d M Y", strtotime($tdate)));	
 	// }
 	
+	// Loki: Mark payment confirm:
+  	function confirmPayment()
+  	{
+  		$orderId = $_POST['orderId'];
+  		$checked = $_POST['checked'];
+  		$db 	=& ConnectionManager::getDataSource('default');
+  		$query 	= "UPDATE ace_rp_orders set confirm_payment=".$checked." where id=".$orderId;
+  		$res 	=  $db->_execute($query);
+
+  		if($res)
+  		{
+  			$response  = array("res" => "OK");
+			echo json_encode($response);
+			exit;
+		}
+
+  	}
 } //end of reports controller
 ?>

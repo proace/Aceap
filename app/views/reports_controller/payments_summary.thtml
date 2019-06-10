@@ -11,6 +11,30 @@ function ShowTransactions(mid,dat,datid){
         }
     );
 }
+
+$(".payment-confirm").live("change", function(){
+    var orderId = $(this).attr('orderId');
+     if(this.checked) {
+        var checked = 1;
+    } else {
+        var checked = 0;
+    }
+
+    $.ajax({
+        url: "<?=BASE_URL?>/reports/confirmPayment",
+        dataType: 'html',
+        type: 'POST',
+        cache: false,
+        data:{orderId : orderId, checked:checked},
+        success: function(data) {
+                res = JSON.parse(data);
+                if(res.res == "OK")
+                {
+                    window.reload();
+                }
+            }
+        }); 
+}); 
 </script>
 
 <form method="GET" action="<?= $PHP_SELF?>" name="viewform" id="viewform">
@@ -55,6 +79,7 @@ function ShowTransactions(mid,dat,datid){
         <th>Not Done</th> 
         <th>Cancelled</th>
         <th>Total</th>
+        <th>Confirm</th>
     </tr>
 
 <?php
@@ -97,7 +122,7 @@ function ShowTransactions(mid,dat,datid){
                     echo '<td></td>';
                 }
             ?>  
-        <!-- <td></td> -->
+        <td><input type="checkbox" name="confirm[]" class="payment-confirm" orderId="<?=$obj["orderId"]?>" <?php echo $obj['confirm_payment'] ? 'checked' : '' ?> ></td>
     </tr>
     <?php $i++;
      $total =0; ?>
@@ -115,5 +140,6 @@ function ShowTransactions(mid,dat,datid){
         <th></th>
         <th></th>
         <th><?= '$'.number_format($total, 2, '.', ' ') ?></th>
+        <th></th>
     </tr>
 </table>

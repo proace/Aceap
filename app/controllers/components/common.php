@@ -359,6 +359,15 @@ class CommonComponent extends Object
 						),
 						array(
 
+							'name' => 'Payment Summary',
+
+							'url' => BASE_URL.'/reports/payments_summary',
+
+							'img' => 'icon-lg-all-bookings.png'
+
+						),
+						array(
+
 							'name' => 'Setting',
 
 							'url' => BASE_URL.'/settings/showSetting',
@@ -752,14 +761,6 @@ class CommonComponent extends Object
 					array(
 
 						array(
-
-							'name' => 'Payment Summary',
-
-							'url' => BASE_URL.'/reports/payments_summary',
-
-							'img' => 'icon-lg-all-bookings.png'
-
-						),array(
 
 							'name' => 'Monthly Summary',
 
