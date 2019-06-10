@@ -3066,12 +3066,15 @@ this function for trasfer jobs
 		if ($this->params['url']['ffromdate'] != '')
 			$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
 	    else
-				$fdate = date("Y-m-d");
+				// $fdate = date("Y-m-d");
+	    		$fdate = date('Y-m-d',strtotime("-1 days"));
+
 
 			if ($this->params['url']['ftodate'] != '')
 				$tdate = date("Y-m-d", strtotime($this->params['url']['ftodate']));
 	    else
-				$tdate = date("Y-m-d");
+				//$tdate = date("Y-m-d");
+	    	$tdate = date('Y-m-d',strtotime("-1 days"));
 
 		$db =& ConnectionManager::getDataSource('default');
 		$sqlConditions = "";
