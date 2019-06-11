@@ -465,8 +465,8 @@ $(document).ready(function()
 			<input name="cur_ref" id="cur_ref" type="text" value="<?=$cur_ref?>" style="font-size: 8pt;">
 		<input type="submit" name="submit2" onclick="return SearchRecords();" id="submit2" value="Update" class="buttons">
 		</td>	
-
 	</tr>
+    <input type="submit" name="submit3" onclick="history.back();return false;" id="submit3" value="Go Back" class="buttons">
 </table>
 </form>
 <form method="POST" action="<?=BASE_URL;?>/commissions/saveTechCommission" name="techCommission" id="techCommission" enctype="multipart/form-data">
@@ -481,6 +481,8 @@ $(document).ready(function()
 <input type="hidden" name="action" value="view" >
 <input type="hidden" name="order" value="<?=$_GET['order']?>">
 <input type="hidden" name="jobOption" value="<?= $joboption?>">
+
+
 
 <!--<div style="overflow: auto; height: 390px;">-->
 <!-- <div><h4 >Technician</h4></div> -->
