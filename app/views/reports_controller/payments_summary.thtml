@@ -89,7 +89,9 @@ $(".payment-confirm").live("change", function(){
     $deposit_sum = 0;
     $paid_sum = 0;
     foreach ($orders as $obj):
+
         $class = 'cell'.(++$r%2);?>
+
     <tr class="<?= $class ?>">
         <td><?php echo $i ;?></td>
         <td align="left"><?=$obj['job_date']?></td>
@@ -102,7 +104,7 @@ $(".payment-confirm").live("change", function(){
                 { 
                    // echo $obj['paid_amount'];
                     echo $HtmlAssist->prPrice($obj['paid_amount']);
-                    echo '<td></td><td></td><td></td>';
+                    echo '<td></td><td></td>';
                     ${$obj['payment_method']} += $obj['paid_amount'];
                 } 
             ?>
@@ -112,16 +114,15 @@ $(".payment-confirm").live("change", function(){
         <?php if($obj['order_status_id'] == 3){
                     echo '<td></td>';
                     echo '<td>'.$HtmlAssist->prPrice($obj['paid_amount']).'</td>';
-                    echo '<td></td>';
                 } else if($obj['order_status_id'] != 5 && $obj['order_status_id'] != 3) {
                     echo '<td>'.$HtmlAssist->prPrice($obj['paid_amount']).'</td>';
-                    echo '<td></td><td></td>';
+                    echo '<td></td>';
                 }  else if(empty ($obj['payment_method'])){
                     echo '<td></td>';
                     echo '<td></td>';
-                    echo '<td></td>';
                 }
-            ?>  
+            ?> 
+        <td><?=$HtmlAssist->prPrice($obj['tech_comm1']).', '?><?=$HtmlAssist->prPrice($obj['tech_comm2'])?></td>
         <td><input type="checkbox" name="confirm[]" class="payment-confirm" orderId="<?=$obj["orderId"]?>" <?php echo $obj['confirm_payment'] ? 'checked' : '' ?> ></td>
     </tr>
     <?php $i++;
