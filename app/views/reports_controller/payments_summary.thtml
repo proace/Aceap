@@ -78,7 +78,7 @@ $(".payment-confirm").live("change", function(){
         <?php endforeach; ?>
         <th>Not Done</th> 
         <th>Cancelled</th>
-        <th>Total</th>
+        <th>Commission</th>
         <th>Confirm</th>
     </tr>
 
@@ -95,7 +95,8 @@ $(".payment-confirm").live("change", function(){
     <tr class="<?= $class ?>">
         <td><?php echo $i ;?></td>
         <td align="left"><?=$obj['job_date']?></td>
-        <td><a href='<?=BASE_URL?>/orders/editBooking?order_id=<?=$obj["orderId"]?>'><?=$obj['order_number']?></a></td>
+       <!--  <td><a href='<?=BASE_URL?>/orders/editBooking?order_id=<?=$obj["orderId"]?>'><?=$obj['order_number']?></a></td> -->
+        <td><a href='<?=$obj["comm_link"]?>'><?=$obj['order_number']?></a></td>
         <td><?=$allTechnicians[$obj['job_technician1_id']]?><?=$allTechnicians[$obj['job_technician2_id']]?></td>
         <?php foreach ($allPaymentMethods as $cur2): ?>
         <td>
@@ -140,7 +141,7 @@ $(".payment-confirm").live("change", function(){
         <?php endforeach; ?>
         <th></th>
         <th></th>
-        <th><?= '$'.number_format($total, 2, '.', ' ') ?></th>
+        <th><!-- <?= '$'.number_format($total, 2, '.', ' ') ?> --></th>
         <th></th>
     </tr>
 </table>
