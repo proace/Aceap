@@ -70,7 +70,9 @@ $(".payment-confirm").live("change", function(){
         <th>No.</th>
         <th>Date</th>
         <th>Ref</th>
-        <th>Tech Name</th>
+        <th>Tech 1</th>
+        <th>Tech 2</th>
+
         <?php foreach ($allPaymentMethods as $cur): 
           ${$cur} = 0;
         ?>
@@ -78,7 +80,8 @@ $(".payment-confirm").live("change", function(){
         <?php endforeach; ?>
         <th>Not Done</th> 
         <th>Cancelled</th>
-        <th>Commission</th>
+        <th>Tech 1</th>
+        <th>Tech 2</th>
         <th>Confirm</th>
     </tr>
 
@@ -97,7 +100,8 @@ $(".payment-confirm").live("change", function(){
         <td align="left"><?=$obj['job_date']?></td>
        <!--  <td><a href='<?=BASE_URL?>/orders/editBooking?order_id=<?=$obj["orderId"]?>'><?=$obj['order_number']?></a></td> -->
         <td><a href='<?=$obj["comm_link"]?>'><?=$obj['order_number']?></a></td>
-        <td><?=$allTechnicians[$obj['job_technician1_id']]?><?=$allTechnicians[$obj['job_technician2_id']]?></td>
+        <td><?=$allTechnicians[$obj['job_technician1_id']]?></td>
+        <td><?=$allTechnicians[$obj['job_technician2_id']]?></td>
         <?php foreach ($allPaymentMethods as $cur2): ?>
         <td>
             <?php  
@@ -123,7 +127,9 @@ $(".payment-confirm").live("change", function(){
                     echo '<td></td>';
                 }
             ?> 
-        <td><?=$HtmlAssist->prPrice($obj['tech_comm1']).', '?><?=$HtmlAssist->prPrice($obj['tech_comm2'])?></td>
+        <td><?=$HtmlAssist->prPrice($obj['tech_comm1'])?></td>
+        <td><?=$HtmlAssist->prPrice($obj['tech_comm2'])?></td>
+
         <td><input type="checkbox" name="confirm[]" class="payment-confirm" orderId="<?=$obj["orderId"]?>" <?php echo $obj['confirm_payment'] ? 'checked' : '' ?> ></td>
     </tr>
     <?php $i++;
@@ -134,11 +140,13 @@ $(".payment-confirm").live("change", function(){
         <th></th>
         <th></th>
         <th></th>
+        <th></th>
         <?php foreach ($allPaymentMethods as $cur1): ?>
         <th><?= $HtmlAssist->prPrice(${$cur1}); 
                 $total = $total + number_format(${$cur1}, 2, '.', '');
         ?></th>
         <?php endforeach; ?>
+        <th></th>
         <th></th>
         <th></th>
         <th><!-- <?= '$'.number_format($total, 2, '.', ' ') ?> --></th>
