@@ -466,7 +466,7 @@ $(document).ready(function()
 		<input type="submit" name="submit2" onclick="return SearchRecords();" id="submit2" value="Update" class="buttons">
 		</td>	
 	</tr>
-    <input type="submit" name="submit3" onclick="history.back();return false;" id="submit3" value="Go Back" class="buttons">
+  
 </table>
 </form>
 <form method="POST" action="<?=BASE_URL;?>/commissions/saveTechCommission" name="techCommission" id="techCommission" enctype="multipart/form-data">
@@ -951,6 +951,7 @@ $(document).ready(function()
 
 <?php if ($common->getLoggedUserRoleID() == "6") {?>
 <input type="hidden" name="isAdmin" value="1">
+  <input class="adminSubmit" type="button" name="submit3" onclick="history.back();return false;" id="submit3" value="Save" >
 <!-- <input class="adminSubmit" type="submit" name="Reply" value="Reply"> -->
 <input class="adminSubmit" type="button" id="reply-to-tech" name="Reply" value="Reply">
 <?php }?>
