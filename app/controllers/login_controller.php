@@ -5,7 +5,6 @@ class LoginController extends AppController
 
     function index()
     {
-
 				$external_login = 0;
 				$logged_in = false;
 				$this->layout = "login";
@@ -115,7 +114,12 @@ class LoginController extends AppController
 						exit;
 				}
 				elseif ($logged_in) {
-
+					$rediretUrl = str_replace("/acesys/index.php/",'',$this->Session->read("redirect_url"));
+					$this->Session->delete('redirect_url');
+					if(!empty($rediretUrl)){
+						$this->redirect($rediretUrl);
+						exit();
+					}
 					$user_agent = $_SERVER['HTTP_USER_AGENT'];
 					$findme   = 'Mobile';
 					$pos = strpos($user_agent, $findme);

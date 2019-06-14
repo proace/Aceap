@@ -5,10 +5,11 @@ $(function() {
 	var test_server = "http://acesys.ace1.ca/acesys/acesys-2.0/index.php/";
 	var live_server = "/acesys/index.php/";
 	
-	var l = $(location).attr('href');
-
+	var l = $(location).attr('href');   
+	$(".items_button_close").live('click', function(){
+		$('#items_container').hide();
+	});
 	$(".disply_preview").live("change",function(e){
-		console.log("hua");
 	    var img_ct = $(this).attr("data-ct").trim();
 	    var cur = $(this);
 	   upload_photo(cur[0],img_ct);
@@ -38,7 +39,7 @@ $(function() {
 		$("#job_list").toggle();	
 	});
 	
-	initializeItems();
+	//initializeItems();
 	
 	if($("#has_booking").val() != 1) {
 		$("#new_bookind_div").hide();
@@ -67,7 +68,7 @@ $(function() {
 	
 	$(".items_button").live("click", function(){
 		
-		$("#items_container").toggle();
+		//$("#items_container").toggle();
 		/*if($(this).hasClass("service_tab")) $('#tabs').tabs("option", "selected", 0);
 		if($(this).hasClass("furnace_tab")) $('#tabs').tabs("option", "selected", 1);
 		if($(this).hasClass("boiler_tab")) $('#tabs').tabs("option", "selected", 2);
@@ -79,19 +80,31 @@ $(function() {
 		if($(this).hasClass("permit_tab")) $('#tabs').tabs("option", "selected", 8);
 		if($(this).hasClass("heatpumps_tab")) $('#tabs').tabs("option", "selected", 9);
 		*/
-		if($(this).hasClass("tab1")) $('#tabs').tabs("option", "selected", 0);
-		if($(this).hasClass("tab2")) $('#tabs').tabs("option", "selected", 1);
-		if($(this).hasClass("tab3")) $('#tabs').tabs("option", "selected", 2);
-		if($(this).hasClass("tab4")) $('#tabs').tabs("option", "selected", 3);
-		if($(this).hasClass("tab5")) $('#tabs').tabs("option", "selected", 4);
-		if($(this).hasClass("tab6")) $('#tabs').tabs("option", "selected", 5);
-		if($(this).hasClass("tab7")) $('#tabs').tabs("option", "selected", 6);
-		if($(this).hasClass("tab8")) $('#tabs').tabs("option", "selected", 7);
-		if($(this).hasClass("tab9")) $('#tabs').tabs("option", "selected", 8);
-		if($(this).hasClass("tab10")) $('#tabs').tabs("option", "selected", 9);
 		
-		G_CONTAINER = $("#item_details");
-		G_NEW = false;
+		// if($(this).hasClass("tab1")) $('#tabs').tabs("option", "selected", 0);
+		// if($(this).hasClass("tab2")) $('#tabs').tabs("option", "selected", 1);
+		// if($(this).hasClass("tab3")) $('#tabs').tabs("option", "selected", 2);
+		// if($(this).hasClass("tab4")) $('#tabs').tabs("option", "selected", 3);
+		// if($(this).hasClass("tab5")) $('#tabs').tabs("option", "selected", 4);
+		// if($(this).hasClass("tab6")) $('#tabs').tabs("option", "selected", 5);
+		// if($(this).hasClass("tab7")) $('#tabs').tabs("option", "selected", 6);
+		// if($(this).hasClass("tab8")) $('#tabs').tabs("option", "selected", 7);
+		// if($(this).hasClass("tab9")) $('#tabs').tabs("option", "selected", 8);
+		// if($(this).hasClass("tab10")) $('#tabs').tabs("option", "selected", 9);
+		
+		 G_CONTAINER = $("#item_details");
+		 G_NEW = false;
+		var url = G_URL + "iv_items/storeTree?mode=0";
+		// var url = G_URL + "iv_items/storeList?mode=0";		
+		$.get(url,
+			{},
+			function(data){
+				$('#items_container').show();
+				$('#items_container').html('<div class="center"><input type="button" value=" Close " class="items_button_close" /></div>'+data);
+				$('#tabs').tabs();
+				$(".all_node").click();
+				//$('a[href|="#tabs-16"]').hide();	
+		});
 		
 	});
 	
@@ -475,7 +488,9 @@ function addSupplierItem(container) {
 }
 
 function initializeItems() {
-	var url = G_URL + "iv_items/storeList?mode=0&job_type=" + $("#job_type").val();		
+	// var url = G_URL + "iv_items/storeList?mode=0&job_type=" + $("#job_type").val();		
+	// var url = G_URL + "iv_items/storeList?mode=0";	
+	var url = G_URL + "iv_items/storeTree?mode=0";		
 	$.get(url,
 		{},
 		function(data){
@@ -659,3 +674,5 @@ function ErasePayment(payment_id){
     showPayments();
   });
 }
+
+

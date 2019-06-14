@@ -850,7 +850,12 @@ class CommissionsController extends AppController
 	function calculateCommissions()
 
 	{
-		// error_reporting(E_ALL);
+		if(empty($_SESSION['user']))
+		{
+			$redirectUrl = $_SERVER['REQUEST_URI'];
+			$this->Session->write('redirect_url', $redirectUrl);
+			$this->redirect("/login/index");
+		}
 		$this->layout="list";
 
 		if (($_SESSION['user']['role_id'] == 1) || ($_SESSION['user']['role_id'] == 4) || (($_SESSION['user']['role_id'] == 6) && ($_SESSION['user']['active_commission'] != 0))) 
