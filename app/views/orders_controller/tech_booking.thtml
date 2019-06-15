@@ -417,12 +417,18 @@ function TotalCalculation()
 				prc = $(el).children('.price').children('input').val();
 				disc = $(el).children('.discount').children('input').val();
 				add = $(el).children('.addition').children('input').val();
+                var purch = $(el).children('.purchase').children('input').val();
 				if (prc=="") prc=0;
 				if (disc=="") disc=0;
 				if (add=="") add=0;
+                if(purch=="") purch=0;
+                var purchase = (purch * qty);
+                var orgPrc = (prc * qty);
 				amount = parseFloat(prc) * qty - (1*disc) + (1*add);
 				subtotal += amount;
 				$(el).children('.amount').html('$'+amount);
+                $(el).children('.price').find("span").text(orgPrc);
+                $(el).children('.purchase').find("span").text(purchase);
 			}
     });
 <?php
@@ -432,15 +438,21 @@ if (($common->getLoggedUserID()==$this->data['Order']['job_technician1_id'])
 		$('#CurrentItemsTableTech').children('tbody').children('tr').each(function(i, el) {
 			qty = $(el).children('.quantity').children('input').val();
 			if (qty!=null){
+                var purch = $(el).children('.purchase').children('input').val();
 				prc = $(el).children('.price').children('input').val();
 				disc = $(el).children('.discount').children('input').val();
 				add = $(el).children('.addition').children('input').val();
 				if (prc=="") prc=0;
 				if (disc=="") disc=0;
 				if (add=="") add=0;
+                if(purch=="") purch=0;
+                var purchase = (purch * qty);
+                var orgPrc = (prc * qty);
 				amount = parseFloat(prc) * qty - (1*disc) + (1*add);
 				subtotal += amount;
 				$(el).children('.amount').html('$'+amount);
+                $(el).children('.price').find("span").text(orgPrc);
+                $(el).children('.purchase').find("span").text(purchase);
 			}
     });
 <? } ?>

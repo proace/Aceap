@@ -605,7 +605,8 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-all-bookings.png'
 
-						),
+						)
+						,
 
 						array(
 
@@ -1300,6 +1301,11 @@ class CommonComponent extends Object
 							'url' => 'http://www.acecare.ca/',
 							'img' => 'icon-ace.gif',
 							'target' => '_blank'
+						),
+						array(
+							'name' => 'Payment Summary',
+							'url' => BASE_URL.'/reports/payments_summary',
+							'img' => 'icon-lg-all-bookings.png'
 						)
 					),
 					array(
@@ -1383,11 +1389,7 @@ class CommonComponent extends Object
 							'url' => BASE_URL.'/reports/sales',
 							'img' => 'icon-lg-report.png'
 						),
-						array(
-							'name' => 'Payment Summary',
-							'url' => BASE_URL.'/reports/payments_summary',
-							'img' => 'icon-lg-all-bookings.png'
-						),
+						
 						array(
 							'name' => 'Booking Report',
 							'url' => BASE_URL.'/orders/?action=view&newSearch=1&ffromdate='.date('Y-m-d').'&fsource_id='.$userID,
@@ -1653,6 +1655,12 @@ class CommonComponent extends Object
 							'name' => 'Chat',
 							'url' => 'http://support.hvacproz.ca/lhc_web/index.php/site_admin/',
 							'img' => 'comments.png'
+						), 
+						
+						array(
+							'name' => 'Payment Summary',
+							'url' => BASE_URL.'/reports/payments_summary',
+							'img' => 'icon-lg-all-bookings.png'
 						)
 /*
 						array(
