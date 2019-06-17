@@ -3096,7 +3096,7 @@ this function for trasfer jobs
     //        left outer join ace_rp_payment_methods m on m.id=p.payment_method
     //       where o.id IS NOT NULL $sqlConditions";
 		$query ="
-         select o.id as orderId, o.order_status_id, o.job_date, o.payment_method_type payment_method_id, o.confirm_payment,o.booking_source_id, o.job_technician1_id,o.job_technician2_id, o.booking_source2_id, o.order_number ,m.name payment_method, p.paid_amount as paid_amount,o.id, o.order_number, p.paid_amount, o.job_technician1_id, o.job_technician2_id from ace_rp_payments p right join ace_rp_orders o on p.idorder=o.id left outer join ace_rp_payment_methods m on m.id=o.payment_method_type where o.id IS NOT NULL $sqlConditions";
+         select o.id as orderId, o.order_status_id, o.job_date, o.payment_method_type payment_method_id, o.confirm_payment,o.booking_source_id, o.job_technician1_id,o.job_technician2_id, o.booking_source2_id, o.order_number ,m.name payment_method, p.paid_amount as paid_amount,o.id, o.order_number, p.paid_amount, o.job_technician1_id, o.job_technician2_id , cu.first_name as user_first_name, cu.last_name as user_last_name from ace_rp_payments p right join ace_rp_orders o on p.idorder=o.id left outer join ace_rp_payment_methods m on m.id=o.payment_method_type LEFT JOIN	`ace_rp_users` as cu on cu.id = (SELECT user_id FROM  `ace_rp_orders_comm` WHERE  `order_id` = o.id AND id = (SELECT MAX( id ) FROM ace_rp_orders_comm WHERE order_id =o.id )) where o.id IS NOT NULL $sqlConditions";
           // print_r($query); die;
 	    $result = $db->_execute($query);
 	    $i = 0;
@@ -3104,6 +3104,7 @@ this function for trasfer jobs
 	    {    	
 	    	$orders[$i] = $row;
 	    	$comm = $this->requestAction('/commissions/getForOrder/'.$orders[$i]['orderId']);
+	    	
 				$tech1_comm = $comm[0][1]['total_comm'];
 				$tech2_comm = $comm[0][2]['total_comm'];
 				if ($orders[$i]['booking_source_id']==$orders[$i]['job_technician1_id'])
@@ -3117,9 +3118,10 @@ this function for trasfer jobs
 				$orders[$i]['tech_comm1'] = round($tech1_comm, 2);
 				$orders[$i]['tech_comm2'] = round($tech2_comm, 2);		
 				$orders[$i]['comm_link']  = BASE_URL."/commissions/calculateCommissions?cur_ref=".$orders[$i]['order_number'];
+				$orders[$i]['user_name']  = $orders[$i]['user_first_name'].' '.$orders[$i]['user_last_name'];
 	    	$i++;
 	    }
-	 
+
         ksort($orders);
    		$this->set("orders", $orders);    
 		$this->set("recordsTotal", $recordsTotal);

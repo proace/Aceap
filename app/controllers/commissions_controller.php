@@ -1099,26 +1099,14 @@ class CommissionsController extends AppController
 			$query = "
 
 				SELECT  a.id, a.job_date, a.order_number, a.order_type_id, a.order_status_id,
-
 						at.name as order_type, at.category_id as job_type_category,
 						at.show_commission,a.admin_commission_reply,
-
-					   
-
 						a.fact_job_beg, a.fact_job_end,
-
-						
-
 						a.booking_source_id,
-
 						a.booking_source2_id,
-
 						a.job_technician1_id,
-
 						a.job_technician2_id,
-
 						a.t1_method,
-
 						a.t2_method,
 						a.payment_image,
 						a.photo_1,
@@ -1128,50 +1116,30 @@ class CommissionsController extends AppController
 						a.estimate_sent,
 					   	a.order_type_id,
 					   	a.payment_method_type,
-
 						t1.first_name as tech1_first_name,
-
 						t1.last_name as tech1_last_name,
-
 						t1.commission_type as t1_commission_type,
-
-					   
-
 						t2.first_name as tech2_first_name,
-
 						t2.last_name as tech2_last_name,
-
 						t2.commission_type as t2_commission_type,
 						pm.name as payment_type,
 						pm.show_picture
 
-
-
-				FROM 				`ace_rp_orders` as a
+				FROM `ace_rp_orders` as a
 
 				INNER JOIN	`ace_rp_order_types` as at ON (a.order_type_id = at.id)
 
-				LEFT JOIN		`ace_rp_users` as t1 on ( a.job_technician1_id = t1.id )
+				LEFT JOIN	`ace_rp_users` as t1 on ( a.job_technician1_id = t1.id )
 
-				LEFT JOIN		`ace_rp_users` as t2 on ( a.job_technician2_id = t2.id )
-
+				LEFT JOIN	`ace_rp_users` as t2 on ( a.job_technician2_id = t2.id )
 				LEFT JOIN ace_rp_route_visibility rv ON a.job_truck = rv.route_id AND a.job_date = rv.job_date
 				LEFT JOIN ace_rp_payment_methods pm ON a.payment_method_type = pm.id 
-
-
 				WHERE 1=1
-
 				AND tech_visible = 1
-
 				$routeVisibilityConstraint
-
 				$sqlConditions
-
 				ORDER BY a.job_date desc 
-
-				$sqlPaging
-
-				";
+				$sqlPaging";
 
 	 //	print_r($query); die;
 			$result = $db->_execute($query);
@@ -2582,7 +2550,7 @@ class CommissionsController extends AppController
 
 										$driving_comm+$redo_penalty+$helper_ded+$adjustment;
 
-		
+		$user_id = $this->Common->getLoggedUserID();
 
 		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
 
@@ -2595,15 +2563,13 @@ class CommissionsController extends AppController
 
 													sales_job_comm, sales_appl_comm, driving_comm,
 
-													redo_penalty, total_comm, helper_ded, adjustment)
+													redo_penalty, total_comm, helper_ded, adjustment, user_id)
 
 									 VALUES ('".$order_id."','".$tech_num."','".$booking_comm."',
 
 												'".$sales_job_comm."','".$sales_appl_comm."','".$driving_comm."',
 
-												'".$redo_penalty."','".$total_comm."','".$helper_ded."','".$adjustment."')");
-
-
+												'".$redo_penalty."','".$total_comm."','".$helper_ded."','".$adjustment."','".$user_id."')");
 
 		exit;
 

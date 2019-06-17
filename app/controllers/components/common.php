@@ -365,15 +365,6 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-all-bookings.png'
 
-						),
-						array(
-
-							'name' => 'Setting',
-
-							'url' => BASE_URL.'/settings/showSetting',
-
-							'img' => 'setting3.png'
-
 						)
 						// , 
 

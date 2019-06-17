@@ -82,6 +82,7 @@ $(".payment-confirm").live("change", function(){
         <th>Cancelled</th>
         <th>Tech 1</th>
         <th>Tech 2</th>
+        <th>User Name</th>
         <th>Confirm</th>
     </tr>
 
@@ -129,7 +130,7 @@ $(".payment-confirm").live("change", function(){
             ?> 
         <td><?=$HtmlAssist->prPrice($obj['tech_comm1'])?></td>
         <td><?=$HtmlAssist->prPrice($obj['tech_comm2'])?></td>
-
+        <td><?=$obj['user_name']?></td>
         <td><input type="checkbox" name="confirm[]" class="payment-confirm" orderId="<?=$obj["orderId"]?>" <?php echo $obj['confirm_payment'] ? 'checked' : '' ?> ></td>
     </tr>
     <?php $i++;
@@ -146,6 +147,7 @@ $(".payment-confirm").live("change", function(){
                 $total = $total + number_format(${$cur1}, 2, '.', '');
         ?></th>
         <?php endforeach; ?>
+        <th></th>
         <th></th>
         <th></th>
         <th></th>
