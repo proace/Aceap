@@ -236,6 +236,27 @@ function techMarkVerified(job_id,status,element,status_val,total )
 }
 $(document).ready(function()
 {
+
+    $(".delete-payment-image").live("click", function (){
+        var id = $(this).attr("orderId");
+        var imgPath = $(this).attr("image-name");
+
+        $.ajax({
+        url: '<?=BASE_URL?>/orders/removePaymentImage',
+        dataType: 'html',
+        type: 'POST',
+        cache: false,
+        data: {oid:id, imgPath:imgPath},
+        success: function(data) {
+                res = JSON.parse(data);
+                if(res.res == "OK")
+                {
+                    location.reload(true);
+                }
+            }           
+        });
+        
+    });
 	$(".disply_preview").live("change",function(e){
 	    var img_ct = $(this).attr("data-ct").trim();
 	    var cur = $(this);
@@ -655,10 +676,11 @@ $(document).ready(function()
     					if(!empty($obj['orderNumber_image_path']))
     					{
 
-    						$imgPath =  '/acesys/app/webroot/payment-images/'.$obj['orderNumber_image_path']; 
-    						
-    					 	echo '<img class="openImg1" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">'	;			
-    					 } else { ?>
+    						$imgPath =  '/acesys/app/webroot/payment-images/'.$obj['orderNumber_image_path']; ?>
+    						  <div style="position: relative; padding:0; width: 30px;"> 
+                                    <span style="position:absolute;right: 0px;"><img style="height: 15px;width: 12px;" class="delete-payment-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-nu="1" image-name="<?=$obj["orderNumber_image_path"]?>" orderId="<?=$obj['id']?>"></span>
+                                   <img class="openImg1" src="<?=$imgPath?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;"></div>
+    					<? } else { ?>
     					 	<img id="pre-image_photo3" class="pre-image_<?php echo $obj['id'] ?>_photo3 invoice-openImg" src="#" alt="your image" />
     					 			<div class="acecare-td-adjust">
     						 			<label for="Fileinput" >Upload</label>
