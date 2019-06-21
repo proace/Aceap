@@ -366,6 +366,25 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-all-bookings.png'
 
+						),
+
+						array(
+
+							'name' => 'Payments',
+
+							'url' => BASE_URL.'/payments/index',
+
+							'img' => 'icon-lg-price.png'
+
+						),
+						array(
+
+							'name' => 'Payment Report',
+
+							'url' => BASE_URL.'/reports/monthlyPaymentReport',
+
+							'img' => 'icon-lg-all-bookings.png'
+
 						)
 						// , 
 
@@ -600,15 +619,15 @@ class CommonComponent extends Object
 						)
 						,
 
-						array(
+						// array(
 
-							'name' => 'Client Filter',
+						// 	'name' => 'Client Filter',
 
-							'url' => BASE_URL.'/reports/clientFilter',
+						// 	'url' => BASE_URL.'/reports/clientFilter',
 
-							'img' => 'icon-lg-all-bookings.png'
+						// 	'img' => 'icon-lg-all-bookings.png'
 
-						),
+						// ),
 
 						/*array(
 
@@ -897,25 +916,15 @@ class CommonComponent extends Object
 
 						),
 
-						array(
+						// array(
 
-							'name' => 'Payments',
+						// 	'name' => 'Training',
 
-							'url' => BASE_URL.'/payments/index',
+						// 	'url' => ROOT_URL.'/training/start_page_3.html',
 
-							'img' => 'icon-lg-price.png'
+						// 	'img' => 'icon-lg-all-bookings.png'
 
-						),
-
-						array(
-
-							'name' => 'Training',
-
-							'url' => ROOT_URL.'/training/start_page_3.html',
-
-							'img' => 'icon-lg-all-bookings.png'
-
-						),
+						// ),
 
 						array(
 
@@ -1283,11 +1292,11 @@ class CommonComponent extends Object
 							'url' => BASE_URL.'/items/items_price',
 							'img' => 'icon-lg-price.png'
 						),
-						array(
-							'name' => 'Training',
-							'url' => ROOT_URL.'/training/start_page.html',
-							'img' => 'icon-lg-all-bookings.png'
-						),
+						// array(
+						// 	'name' => 'Training',
+						// 	'url' => ROOT_URL.'/training/start_page.html',
+						// 	'img' => 'icon-lg-all-bookings.png'
+						// ),
 						array(
 							'name' => 'ACE Web Site',
 							'url' => 'http://www.acecare.ca/',
@@ -1612,11 +1621,11 @@ class CommonComponent extends Object
 							'url' => BASE_URL.'/orders/clients',
 							'img' => 'icon-lg-customers.png'
 						),*/
-						array(
-							'name' => 'Training',
-							'url' => ROOT_URL.'/training/start_page.html',
-							'img' => 'icon-lg-all-bookings.png'
-						),
+						// array(
+						// 	'name' => 'Training',
+						// 	'url' => ROOT_URL.'/training/start_page.html',
+						// 	'img' => 'icon-lg-all-bookings.png'
+						// ),
 						array(
 							'name' => 'Map',
 							'url' => '#',
@@ -1777,11 +1786,11 @@ class CommonComponent extends Object
 							'url' => BASE_URL.'/commissions/editTech/'.$userID.'?view=2',
 							'img' => 'icon-lg-technician.png'
 						),
-						array(
-							'name' => 'Training',
-							'url' => ROOT_URL.'/training/start_page_tech.html',
-							'img' => 'icon-lg-all-bookings.png'
-						),
+						// array(
+						// 	'name' => 'Training',
+						// 	'url' => ROOT_URL.'/training/start_page_tech.html',
+						// 	'img' => 'icon-lg-all-bookings.png'
+						// ),
 						array(
 							'name' => 'Tablet Invoice',
 							'url' => BASE_URL.'/orders/invoiceTablet',
@@ -1878,11 +1887,11 @@ class CommonComponent extends Object
 							'url' => BASE_URL.'/users',
 							'img' => 'icon-lg-technician.png'
 						),
-						array(
-							'name' => 'Training',
-							'url' => ROOT_URL.'/training/start_page.html',
-							'img' => 'icon-lg-all-bookings.png'
-						),
+						// array(
+						// 	'name' => 'Training',
+						// 	'url' => ROOT_URL.'/training/start_page.html',
+						// 	'img' => 'icon-lg-all-bookings.png'
+						// ),
 						array(
 							'name' => 'Logout',
 							'url' => BASE_URL.'/login/logout',

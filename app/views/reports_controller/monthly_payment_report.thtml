@@ -1,0 +1,83 @@
+<script>
+var previous;
+function ShowTransactions(mid,fdate,datid,tdate){
+    $('.details').hide();
+    if (previous==mid) {previous=0; return;}
+    previous = mid;
+    $.post("<?=BASE_URL;?>/payments/paymentTransactions",
+        {payment_method_id:mid, payment_type_id:1, job_fdate:fdate,job_tdate:tdate},
+        function(data){
+            $('#details'+datid).show().find('td').html(data);
+        }
+    );
+}
+</script>
+
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform" id="viewform">
+    <input type="hidden" name="action" value="view" >
+    <input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+    <input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+    <table border="0" cellspacing="3" cellpadding="0">
+    <tr>
+        <td class="sectionTitle" colspan=4>Payments Summary</td>
+    </tr>
+    <tr>
+        <td>Date from: </td>
+        <td>
+      <input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+            &nbsp;&nbsp;
+            <input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+        </td>
+        <td>Date to: </td>
+        <td>
+      <input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+            &nbsp;&nbsp;
+            <input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_fdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+        </td>
+        <td colspan="1" align="left">
+      <input type="submit" name="submit2" onclick="return SearchRecords();" id="submit2" value="Update" class="buttons">
+        </td>           
+    </tr>
+    </table>
+</form>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
+    <tr style="height:25px;">
+        <th>Date</th>
+        <?php foreach ($allPaymentMethods as $cur): ?>
+        <th><?=$cur?></th>
+        <?php endforeach; ?>
+        <th><b>Total</b></th>
+    </tr>
+<?php
+    $r = 1;
+    $total_sum = 0;
+    $deposit_sum = 0;
+    $paid_sum = 0;
+    foreach ($records as $obj):
+        $class = 'cell'.(++$r%2);
+?>
+    <tr class="<?= $class ?>">
+        <!-- <td align="left"><?=$obj['date']?></td> -->
+<?php
+        foreach ($allPaymentMethods as $id => $cur):
+?>
+                <?php (1*$obj['payments'][$cur]==0)?'&nbsp;':$HtmlAssist->prPrice($obj['payments'][$cur]);?>
+<?php   endforeach; ?>
+        <!-- <td align="left"><b><?=(1*$obj['payments']['total']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['payments']['total']);?></b></td> -->
+        <?php (1*$obj['payments']['total']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['payments']['total']);?>
+    </tr>
+    <tr id="details<?=$obj['dateid']?>" style="display:none;" class="details"><td colspan=<?php (2+count($allPaymentMethods))?>>&nbsp;</td></tr>
+<?php endforeach; ?>
+    <tr style="background-color: yellow;">
+        <td align="right" style="border-top:1px solid #9f9f9f;"><b>Total:</b></td>
+<?php
+        foreach ($allPaymentMethods as $id => $cur):
+?>
+         <td align="left" style="border-top:1px solid #9f9f9f;border-right: 1px solid black; "><a style="text-decoration: none;color: black;" href="javascript:ShowTransactions(<?=$id?>,'<?=$fdate?>','<?=$obj['dateid']?>', '<?=$tdate?>')"><b><?=(1*$recordsTotal['payments'][$cur]==0)?'&nbsp;':$HtmlAssist->prPrice($recordsTotal['payments'][$cur]);?></b></a></td>
+        <!-- <?php (1*$recordsTotal['payments'][$cur]==0)?'&nbsp;':$HtmlAssist->prPrice($recordsTotal['payments'][$cur]);?> -->
+<?php   endforeach; ?>
+    <td align="left" style="border-top:1px solid #9f9f9f;"><b><?=(1*$recordsTotal['payments']['total']==0)?'&nbsp;':$HtmlAssist->prPrice($recordsTotal['payments']['total']);?></b></td>
+
+    </tr>   
+</table>

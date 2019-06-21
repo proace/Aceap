@@ -3811,7 +3811,7 @@ this function for trasfer jobs
 		$this->set('allTechnician',$this->Lists->Technicians());	
 	}
 	
-	function clientFilter()
+	/*function clientFilter()
 	{
 		$this->layout="list";
 		$max_page = 100;
@@ -3941,7 +3941,7 @@ this function for trasfer jobs
 		if($tdate!='')
 			$this->set('tdate', date("d M Y", strtotime($tdate)));		
 		$this->set('allCities',$this->Lists->ListTable('ace_rp_cities'));
-	}
+	}*/
 	
 	function exportClientListToCsv()
   {
@@ -4064,5 +4064,68 @@ this function for trasfer jobs
 		}
 
   	}
+  		//Loki: Get payment data 
+
+	function monthlyPaymentReport()
+	{
+		$this->layout="list";
+		if ($this->Common->getLoggedUserRoleID() != 6) return;
+    
+	    $allPaymentMethods = $this->Lists->ListTable('ace_rp_payment_methods');
+	    
+			//CONDITIONS
+			//Convert date from date picker to SQL format
+			if ($this->params['url']['ffromdate'] != '')
+				$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
+	    else
+				$fdate = date("Y-m-d");
+
+			if ($this->params['url']['ftodate'] != '')
+				$tdate = date("Y-m-d", strtotime($this->params['url']['ftodate']));
+	    else
+				$tdate = date("Y-m-d");
+
+			$db =& ConnectionManager::getDataSource('default');
+			$sqlConditions = "";
+			if($fdate != '')
+				$sqlConditions .= " AND o.job_date >= '".$this->Common->getMysqlDate($fdate)."'"; 
+			if($tdate != '')
+				$sqlConditions .= " AND o.job_date <= '".$this->Common->getMysqlDate($tdate)."'";
+	    
+			$records = array();
+			$recordsTotal = array();
+
+	    $query ="
+	         select o.job_date, m.id payment_method_id, m.name payment_method,
+	                sum(p.paid_amount) paid_amount
+	           from ace_rp_payments p
+	           join ace_rp_orders o on p.idorder=o.id
+	           left outer join ace_rp_payment_methods m on m.id=p.payment_method
+	          where p.payment_type=1 $sqlConditions
+	          group by o.job_date, m.id, m.name";
+	    
+	    $result = $db->_execute($query);
+	    while($row = mysql_fetch_array($result))
+	    {
+	        $records[$row['job_date']]['date'] = date("d M Y", strtotime($row['job_date']));
+	        $records[$row['job_date']]['payments'][$row['payment_method']] = $row['paid_amount'];
+	        $records[$row['job_date']]['payments']['total'] += $row['paid_amount'];
+	        $recordsTotal['payments'][$row['payment_method']] += $row['paid_amount'];
+	        $recordsTotal['payments']['total'] += $row['paid_amount'];
+	    }   
+	    
+	    ksort($records);
+	   
+			$this->set("records", $records);    
+			$this->set("recordsTotal", $recordsTotal);
+			$this->set("allPaymentMethods", $allPaymentMethods);
+			$this->set('prev_fdate', date("d M Y", strtotime($fdate) - 24*60*60));
+			$this->set('next_fdate', date("d M Y", strtotime($fdate) + 24*60*60));
+			$this->set('prev_tdate', date("d M Y", strtotime($tdate) - 24*60*60));
+			$this->set('next_tdate', date("d M Y", strtotime($tdate) + 24*60*60));
+			$this->set('fdate', date("d M Y", strtotime($fdate)));
+			$this->set('tdate', date("d M Y", strtotime($tdate)));
+	}
+
 } //end of reports controller
 ?>

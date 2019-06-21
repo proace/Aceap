@@ -392,9 +392,11 @@ class PaymentsController extends AppController
 	function paymentTransactions(){
 		$payment_method_id = $_REQUEST['payment_method_id'];
 		$payment_type_id = $_REQUEST['payment_type_id'];
-		$job_date = $_REQUEST['job_date'];
+		$job_fdate = $_REQUEST['job_fdate'];
+		$job_tdate = $_REQUEST['job_tdate'];
 		$job_date_conditions = "";
-		if ($job_date) $job_date_conditions = " and o.job_date='".date("Y-m-d",strtotime($job_date))."'";
+		// if ($job_fdate) $job_date_conditions = " and o.job_date='".date("Y-m-d",strtotime($job_date))."'";
+		if ($job_fdate) $job_date_conditions = " and (o.job_date BETWEEN '". date('Y-m-d',strtotime($job_fdate))."' AND '". date('Y-m-d',strtotime($job_tdate))."')";
 		
 		$res = '<table>';
 		$total_p = 0;
@@ -405,7 +407,7 @@ class PaymentsController extends AppController
 						 o.job_technician1_id, o.job_technician2_id
 		            from ace_rp_payments p, ace_rp_orders o
 				   where o.id=p.idorder and p.payment_method='$payment_method_id'
-					 and p.payment_type=$payment_type_id $job_date_conditions";
+					 and p.payment_type=$payment_type_id and o.order_status_id=5 $job_date_conditions";
 		$result_p = $db->_execute($query);
 		while($row_p = mysql_fetch_array($result_p, MYSQL_ASSOC))
 		{
