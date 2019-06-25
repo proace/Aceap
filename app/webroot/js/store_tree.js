@@ -105,11 +105,12 @@ function storeTreeInitialize() {
 			itema.item_description1 	= cur.children(".item_description1").val();
 			itema.item_description2 	= cur.children(".item_description2").val();
 			itema.item_mode 	 		= cur.children(".item_mode").val();
+			itema.item_brand 	 		= cur.children(".item_brand").val();
 			items.push(itema);
 		});
 		
 		$.each(items, function( key, value ) {
-  			addItem(value.item_id, value.item_name, value.item_selling_price, value.item_mode, value.item_category_id, value.item_supplier_price, value.item_model, show_purchase, value.item_model);
+  			addItem(value.item_id, value.item_name, value.item_selling_price, value.item_mode, value.item_category_id, value.item_supplier_price, value.item_model, show_purchase, value.item_model, value.item_brand);
 		});
 		
 		$('#closeBookedItems').click();

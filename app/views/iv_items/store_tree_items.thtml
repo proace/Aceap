@@ -30,6 +30,7 @@
             <input type="hidden" class="item_description1" value="<?php echo $item['description1'] ?>" />
             <input type="hidden" class="item_description2" value="<?php echo $item['description2'] ?>" />
             <input type="hidden" class="item_mode" value="<?php echo $mode ?>" />
+            <input type="hidden" class="item_brand" value="<?php echo $item['brand'] ?>" />
            <td class="left"><input type="checkbox" name="addItem" class="addItems"></td>
             <td class="right"><?php echo $item['name'] ?></td>
             <td class="right"><?php echo $item['model'] ?></td>  
