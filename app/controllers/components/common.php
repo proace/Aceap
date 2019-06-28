@@ -916,6 +916,16 @@ class CommonComponent extends Object
 
 						),
 
+						array(
+
+							'name' => 'Camp Email Template',
+
+							'url' => BASE_URL.'/settings/editBulkEmail?title=bulk_email',
+
+							'img' => 'icon-lg-mail.png'
+
+						),
+
 						// array(
 
 						// 	'name' => 'Training',

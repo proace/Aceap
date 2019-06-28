@@ -54,22 +54,22 @@ item_name+'</td><td>'+item_prc+'</td>'+
 
 <!-- <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tiny_mce/tiny_mce.js"></script> --> <!-- Simple Calendar --> 
 <script src="<?php echo ROOT_URL; ?>/app/webroot/js/jquery.js"></script>
-<script src="<?php echo ROOT_URL; ?>/app/webroot/js/tinymce/tinymce.min.js"></script>
+<!-- <script src="<?php echo ROOT_URL; ?>/app/webroot/js/tinymce/tinymce.min.js"></script> -->
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tinymce/tinymce.min.js"></script> 
 
-<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tiny_mce/tiny_mce.js"></script> <!-- Simple Calendar --> 
+<!-- <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tiny_mce/tiny_mce.js"></script> -->
 <script>
 	
 
 		tinyMCE.init({
 			mode: 'textareas',
-
-			theme : "advanced",
-		plugins : "safari,spellchecker,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template,imagemanager,filemanager",
-
-
+			theme : "modern",
+			browser_spellcheck: true,
+		plugins : "code,safari,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,visualchars,nonbreaking,xhtmlxtras,template,imagemanager,filemanager, nanospell, link unlink, anchor, image, media",
+		external_plugins: {"nanospell": "plugins/nanospell/plugin.js"},
+			nanospell_server: "php", // choose "php" "asp" "asp.net" or "java"
 		// Theme options
-		
-		theme_advanced_buttons1 : "save,newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,styleselect,formatselect,fontselect,fontsizeselect",
+		theme_advanced_buttons1 : "save,newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,styleselect,formatselect,fontselect,fontsizeselect,|nanospell",
 		theme_advanced_buttons2 : "cut,copy,paste,pastetext,pasteword,|,search,replace,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,insertdate,inserttime,preview,|,forecolor,backcolor",
 		theme_advanced_buttons3 : "tablecontrols,|,hr,removeformat,visualaid,|,sub,sup,|,charmap,emotions,iespell,media,advhr,|,print,|,ltr,rtl,|,fullscreen",
 		theme_advanced_buttons4 : "insertlayer,moveforward,movebackward,absolute,|,styleprops,spellchecker,|,cite,abbr,acronym,del,ins,attribs,|,visualchars,nonbreaking,template,blockquote,pagebreak,|,insertfile,insertimage",
@@ -78,7 +78,6 @@ item_name+'</td><td>'+item_prc+'</td>'+
 		theme_advanced_statusbar_location : "bottom",
 		theme_advanced_resizing : true,
 		
-		noneditable_leave_contenteditable : true,
 		// Example content CSS (should be your site CSS)
 		content_css : "css/example.css",
 		
@@ -89,7 +88,9 @@ item_name+'</td><td>'+item_prc+'</td>'+
 		external_link_list_url : "js/link_list.js",
 		external_image_list_url : "js/image_list.js",
 		media_external_list_url : "js/media_list.js",
+		gecko_spellcheck : true, browser_spellcheck : true
 		});
+
 	
 
 </script>
@@ -196,7 +197,7 @@ item_name+'</td><td>'+item_prc+'</td>'+
 		            	 		<textarea rows="" cols="" name="data[template][templateform]">
 		            	 			
 		            	 			<div style="border: 1px solid grey;padding-right: 35px;padding-left: 35px;">
-									<div class="header mceNonEditable" title="test" contenteditable="false">
+									<div class="header" title="test" contenteditable="true">
 									<p><img class="headerimg" style="margin-right: auto;margin-left: auto;display: block;" src="https://www.acecare.ca/wp-content/uploads/2017/10/newacelogo.png" alt="no image foud"  /></p><p><span style="color: #000000;">Pro Ace Heating and Air Conditioning Ltd.</span><br /><span style="color: #000000;">102 - 3855 Henning Dr,</span><br /><span style="color: #000000;">Burnaby, BC, V5C 6N3</span><br /><span style="color: #000000;">604-293-3770</span><br /><br /></p>
 									<p style="text-align: left;"><span style="color: #000000;">Date: &nbsp; {date}</span></p> <br /><span style="color: #000000;">Reference: {reference}</span><br /><br /></p>
 									<p style="text-align: left;">First and Last Name: {name}</p>
@@ -217,17 +218,17 @@ item_name+'</td><td>'+item_prc+'</td>'+
 									<p>Our promise is to deliver an exceptional installation with quality and care, and to ensure that your</p>
 									<p>Hvac system meets every need required. Heating and cooling are what we do for a living.tetet</p>
 									<p>&nbsp;</p>
-									<div class="officequestion mceNonEditable" title="officequestion" contenteditable="false">
+									<div class="officequestion" title="officequestion" contenteditable="true">
 									<p><span style="color: #000000;"><strong>Information Provided by Client:</strong></span> {officequestion}</p>
 									</div>
 									<p>&nbsp;</p>
 									<p><span style="color: #000000;"><strong>Estimate For: </strong>{jobetype}</span></p>
 									<p>&nbsp;</p>
-									<div class="option1 mceNonEditable" title="option1" contenteditable="false">
+									<div class="option1" title="option1" contenteditable="true">
 									<p><span style="color: #000000;">{option1}&nbsp;&nbsp; {subtotal1}</span></p>
 									</div>
 									<p>&nbsp;</p>
-									<div class="option2 mceNonEditable" title="option2" contenteditable="false">
+									<div class="option2" title="option2" contenteditable="true">
 									<p><span style="color: #000000;">{option2}&nbsp;&nbsp; {subtotal2}<br /></span></p>
 									</div>
 									<p>&nbsp;</p>
@@ -241,7 +242,7 @@ item_name+'</td><td>'+item_prc+'</td>'+
 									<p>{note}</p>
 									<p>&nbsp;</p>
 									<p>&nbsp;</p>
-									<div class="sincerely mceNonEditable" title="sincerely" contenteditable="false">
+									<div class="sincerely " title="sincerely" contenteditable="true">
 									<p><span style="color: #000000;">Sincerely:</span></p>
 									<p>Ali Soroush <span style="color: #000000;">, Project manager</span></p>
 									</div>

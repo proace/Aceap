@@ -1,5 +1,5 @@
-<?
-error_reporting(E_PARSE  ^ E_ERROR );
+<? ob_start();
+//error_reporting(E_PARSE  ^ E_ERROR );
 class JobsController extends AppController
 {
 	//To avoid possible PHP4 problemfss

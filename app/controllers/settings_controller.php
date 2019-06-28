@@ -193,5 +193,29 @@ class SettingsController extends AppController
 		$result = $db->_execute($query);
 		exit();
 	}
+	// Loki: Show the bulk email template
+	function editBulkEmail()
+	{
+		//If we have no data, then we need to provide the data to the user for editing
+		if (empty($this->data['Setting']))
+		{
+			$this->data = $this->Setting->find(array("title" => $_GET['title']));
+		}
+		else if (!empty($this->data['Setting']))
+		{
+			//Validate & Validate
+			if ($this->Setting->save($this->data['Setting']))
+			{
+				//Forward user where they need to be - if this is a single action per view
+				if ($this->data['rurl'][0]){
+					$this->redirect($this->data['rurl'][0]);
+				}
+				else{
+					$this->redirect('/orders/scheduleView');
+				}
+				exit();
+			}
+		}
+	}
 }
 ?>
