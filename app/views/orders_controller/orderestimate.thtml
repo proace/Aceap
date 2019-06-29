@@ -150,11 +150,10 @@
 				type: 'POST',
 				data: {'editor':data,'order_id':order_id},
 				success: function(data) {
-					console.log("fromtech",fromTech);
 					if(fromTech == 3 || fromTech== 2){
-						document.location.href="techBooking?order_id=<?= $order_id ?>&from_tech_page=<?= $fromTech ?>";
+						document.location.href="techBooking?order_id=<?= $order_id ?>&from_tech_page=<?= $fromTech ?>&fromEstimate=1";
 					}else {
-						document.location.href="editBooking?order_id=<?= $order_id ?>&from_tech_page=<?= $fromTech ?>";
+						document.location.href="editBooking?order_id=<?= $order_id ?>&from_tech_page=<?= $fromTech ?>&fromEstimate=1";
 					}
         			
         			/*window.location.href= "/thankyou.html";*/

@@ -70,7 +70,7 @@ function ShowTransactions(mid,fdate,datid,tdate){
     <tr id="details<?=$obj['dateid']?>" style="display:none;" class="details"><td colspan=<?php (2+count($allPaymentMethods))?>>&nbsp;</td></tr>
 <?php endforeach; ?>
     <tr style="background-color: yellow;">
-        <td align="right" style="border-top:1px solid #9f9f9f;"><b>Total:</b></td>
+        <td align="right" style="border-top:1px solid #9f9f9f; border-right: 1px solid black;"><b>Total:</b></td>
 <?php
         foreach ($allPaymentMethods as $id => $cur):
 ?>
