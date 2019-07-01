@@ -50,7 +50,7 @@ class PaymentsController extends AppController
 										 concat(c.first_name,' ',c.last_name) client_name,
 										 c.address_street client_address, c.phone client_phone,
 										 o.order_type_id, o.order_status_id, jt.category_id,
-										 jt.name job_type_name, o.customer_deposit,
+										 jt.name job_type_name, o.customer_deposit,o.payment_image,
 										 (SELECT SUM(p.paid_amount) 
 										 FROM ace_rp_payments p 
 										 WHERE p.idorder = o.id) payment,

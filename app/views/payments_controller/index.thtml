@@ -1,4 +1,49 @@
+
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
 <script>
+
+// Delete purchase images
+    $(".delete-purchase-image").live("click", function(){
+        var id = $(this).attr("orderId");
+        var imgPath = $(this).attr("image-name");
+        var imageNo = $(this).attr("image-nu");
+        console.log("imageno=", imageNo);
+        $.ajax({
+        url: '<?=BASE_URL?>/orders/removePaymentImage',
+        dataType: 'html',
+        type: 'POST',
+        cache: false,
+        data: {oid:id, imgPath:imgPath},
+        success: function(data) {
+                res = JSON.parse(data);
+                if(res.res == "OK")
+                {
+                    location.reload(true);
+                }
+            }           
+        });
+
+    });
+
+$(document).ready(function(){
+     $(function () {
+        $(".invoice-img-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 1024,
+            height: 786,
+        });
+        $(".invoice-openImg").live("click",function () {
+            var imgPath = $(this).attr('src');
+            $('.invoice-img-enlarge img').attr('src', imgPath);
+            $('.invoice-img-enlarge').dialog('open');
+        });
+    });
+});
 function SavePayment(order_id){
 	var method = $("#method"+order_id).val();
 	var amount = $("#amount"+order_id).val();
@@ -29,7 +74,6 @@ function InvoiceSubmitted(order_id, el){
 <input type="hidden" name="order" value="<?=$_GET['order']?>">
 <input type="hidden" name="sort" value="<?=$_GET['sort']?>">
 <input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
-
 <table width="90%" border="0px" cellspacing="10" cellpadding="0">
 	<tr>
 		<td class="sectionTitle">Payments</td>
@@ -108,7 +152,7 @@ function InvoiceSubmitted(order_id, el){
         <th rowspan=2 width="100px"><a href="javascript:setOrder('tech2_name');">Tech 2</a></th>
         <th rowspan=2 width="100px"><b>Amount</b></th>
         <th rowspan=2 width="60px"><b>Method</b></th>
-        <th rowspan=2 width="100px"><b>Auth.#</b></th>
+        <th rowspan=2 width="100px"><b>Payment Image</b></th>
         <th colspan=5 width="150px"><b>Payment</b></th>
         <th rowspan=2 width="100px">Balance</th>
         <th rowspan=2 width="100px">Invoice submitted</th>
@@ -142,7 +186,15 @@ function InvoiceSubmitted(order_id, el){
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech2_name']?></td>
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>"><?=(1*$obj['total']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['total'])?></td>
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech_payments']?></td>
-      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech_auth']?></td>
+      	<!-- <td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech_auth']?></td> -->
+        <td rowspan=<?=$cnt?> style="background:<?=$bg?>">
+            <?php if (!empty($obj['payment_image']) || $obj['payment_image'] != '') { ?>
+                    <div style="position: relative; padding:0; width: 30px;"> 
+                        <span style="position:absolute;right: 0px;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-nu="1" image-name="<?php echo $obj['payment_image']?>" orderId="<?=$obj['id']?>"></span>
+                        <img id="photo_1" class="invoice-openImg" src="<?php echo ROOT_URL.'/app/webroot/payment-images/'.$obj['payment_image'];?>" style="max-height:28px;height:auto;cursor:pointer;">                       
+                    </div>  
+             <?php }?>    
+        </td>
       	<td colspan=5 style="background:<?=$bg?>">
 								<a id='add_payment_link<?=$obj['id']?>' href='#'
 								onclick='$("#addnewform<?=$obj['id']?>").show();$("#add_payment_link<?=$obj['id']?>").hide();$("#cancel_payment_link<?=$obj['id']?>").show();'>
@@ -200,3 +252,6 @@ function InvoiceSubmitted(order_id, el){
     <? } ?>
     <? } ?>
 </table>
+<div class="invoice-img-enlarge" title="Photo" style="display: none">
+    <img src="<?=$imgPath?>" style="width:100%;">
+</div>
