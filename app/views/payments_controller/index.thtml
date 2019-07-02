@@ -57,7 +57,8 @@ function SavePayment(order_id){
 }
 function ErasePayment(payment_id){
   $.post("<?=BASE_URL;?>/payments/deletePayment",{payment_id:payment_id},function(data){
-    document.viewform.submit();
+    // document.viewform.submit();
+        window.location.reload();
   });
 }
 function InvoiceSubmitted(order_id, el){
@@ -189,7 +190,7 @@ function InvoiceSubmitted(order_id, el){
       	<!-- <td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech_auth']?></td> -->
         <td rowspan=<?=$cnt?> style="background:<?=$bg?>">
             <?php if (!empty($obj['payment_image']) || $obj['payment_image'] != '') { ?>
-                    <div style="position: relative; padding:0; width: 30px;"> 
+                    <div style="position: relative; padding:0; width: 10px;"> 
                         <span style="position:absolute;right: 0px;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-nu="1" image-name="<?php echo $obj['payment_image']?>" orderId="<?=$obj['id']?>"></span>
                         <img id="photo_1" class="invoice-openImg" src="<?php echo ROOT_URL.'/app/webroot/payment-images/'.$obj['payment_image'];?>" style="max-height:28px;height:auto;cursor:pointer;">                       
                     </div>  

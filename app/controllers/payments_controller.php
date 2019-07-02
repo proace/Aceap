@@ -366,7 +366,7 @@ class PaymentsController extends AppController
 										 p.paid_amount, p.payment_date, p.auth_number
 								from ace_rp_payments p
 								left outer join ace_rp_payment_methods m on m.id=p.payment_method
-							 where payment_type=1 and p.idorder='$order_id'";
+							 where p.idorder='$order_id'";
 		$result_p = $db->_execute($query);
 		while($row_p = mysql_fetch_array($result_p, MYSQL_ASSOC))
 		{
