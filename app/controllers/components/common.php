@@ -154,16 +154,15 @@ class CommonComponent extends Object
 	{
 		$roleID = (integer)$this->getLoggedUserRoleID();
 		$userID = (integer)$this->getLoggedUserID();
-		$menu = array();
-//var_dump($roleID); die;
-		// if (($userID == 44851)||($userID == 58613))	
+		$menu = array();	
 		if ($roleID == 6)	
 		// FULL ADMINISTRATORS: ALI, SANAZ
+		// Tab = 'Referrals'
 		{
 
 			$menu = array(
 
-				'tabs' => array('Bookings','Inventory','CC Reports','Other Reports','Admin','Techs','Payroll','Call Center','Referrals'),
+				'tabs' => array('Bookings','Inventory','Reports','Admin','Techs','Payroll','Call Center','Financial', 'Template'),
 
 				'content' =>
 
@@ -190,17 +189,6 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-schedule.png'
 
 						),
-/*
-						array(
-
-							'name' => 'Web Requests',
-
-							'url' => BASE_URL.'/orders/?action=view&newSearch=1&booker_id=96043&data[Order][order_status_id]=1&submit2=Update+%3E%3E',
-
-							'img' => 'icon-lg-pending.png'
-
-						),
-*/
 						array(
 
 							'name' => 'Hot List',
@@ -214,57 +202,6 @@ class CommonComponent extends Object
 							'target' => '_self'
 
 						),
-
-						array(
-
-							'name' => 'Feedbacks',
-
-							'url' => BASE_URL.'/orders/feedbacks_list',
-
-							'img' => 'icon-lg-feedbacks.png'
-
-						),
-
-						array(
-
-							'name' => 'Feedback Display',
-
-							'url' => BASE_URL.'/orders/feedbackView',
-
-							'img' => 'icon-lg-feedbacks.png'
-
-						),
-
-						/*array(
-
-							'name' => 'Installations',
-
-							'url' => BASE_URL.'/orders/installations',
-
-							'img' => 'icon-lg-all-bookings.png'
-
-						),*/
-
-						/*array(
-
-							'name' => 'Payments',
-
-							'url' => BASE_URL.'/payments/index',
-
-							'img' => 'icon-lg-price.png'
-
-						),*/
-
-						array(
-
-							'name' => 'Items Price',
-
-							'url' => BASE_URL.'/items/items_price',
-
-							'img' => 'icon-lg-price.png'
-
-						),
-
 						array(
 
 							'name' => 'Estimates',
@@ -274,73 +211,6 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-all-bookings.png'
 
 						),
-
-						/*array(
-
-							'name' => 'Confirmations',
-
-							'url' => BASE_URL.'/orders/confirmations',
-
-							'img' => 'icon-lg-feedbacks.png'
-
-						),*/
-
-						/*array(
-
-							'name' => 'Training',
-
-							'url' => ROOT_URL.'/training/start_page.html',
-
-							'img' => 'icon-lg-all-bookings.png'
-
-						),*/
-
-						/*array(
-
-							'name' => 'ACE Web Site',
-
-							'url' => 'http://www.acecare.ca/',
-
-							'img' => 'icon-ace.gif',
-
-							'target' => '_blank'
-
-						),*/
-/*
-						array(
-
-							'name' => 'Map',
-
-							'url' => '#',
-
-							'onclick' => 'openMap();return false;',
-
-							'img' => 'icon-ace.gif',
-
-							'target' => '_blank'
-
-						),
-*/
-						/*array(
-
-							'name' => 'Confirmation E-mails',
-
-							'url' => BASE_URL.'/orders/sendConfirmationEmail',
-
-							'img' => 'icon-lg-mail.png'
-
-						),
-
-						array(
-
-							'name' => 'Portfolio E-mails',
-
-							'url' => BASE_URL.'/orders/sendPortfolioEmail',
-
-							'img' => 'icon-lg-mail.png'
-
-						),
-*/
 						array(
 
 							'name' => 'Chat',
@@ -355,86 +225,27 @@ class CommonComponent extends Object
 
 							'url' => BASE_URL.'/users/userMonitoring',
 
-							'img' => 'monitoring-images.png'
+							'img' => 'investigation12.png'
 
 						),
 						array(
 
-							'name' => 'Payment Summary',
+							'name' => 'Failed Email',
 
-							'url' => BASE_URL.'/reports/payments_summary',
+							'url' => BASE_URL.'/orders/showFailedEmail',
 
 							'img' => 'icon-lg-all-bookings.png'
 
 						),
-
 						array(
 
-							'name' => 'Payments',
+							'name' => 'Booking Requests',
 
-							'url' => BASE_URL.'/payments/index',
-
-							'img' => 'icon-lg-price.png'
-
-						),
-						array(
-
-							'name' => 'Payment Report',
-
-							'url' => BASE_URL.'/reports/monthlyPaymentReport',
+							'url' => BASE_URL.'/orders/showUserResponse',
 
 							'img' => 'icon-lg-all-bookings.png'
 
 						)
-						// , 
-
-						// array(
-
-						// 	'name' => 'Message',
-						// 	'url' => BASE_URL.'/messages/ShowMessages?fromMessage=1',
-						// 	'img' => 'message2.png',
-						// 	'id' => 'showMessage'
-						// )
-
-
-						/*,
-
-						array(
-
-							'name' => 'Expired List',
-
-							'url' => '#',
-
-							'onclick' => 'opencb("non_valid");return false;',
-
-							'img' => 'icon-lg-callback.png',
-
-							'target' => '_self'
-
-						)*/
-						
-/*
-						array(
-
-							'name' => 'ACE #1 Reviews',
-
-							'url' => 'http://acecare.ca/reviews/approval.php',
-
-							'img' => 'icon-lg-feedbacks.png'
-
-						),
-*/
-/*						array(
-
-							'name' => 'Dialer',
-
-							'url' => BASE_URL.'/calls',
-
-							'img' => 'icon-lg-callback.png',
-							'target' => '_top'
-
-						)*/
-
 					),
 
 					array(
@@ -509,16 +320,6 @@ class CommonComponent extends Object
 
 						),
 
-						/*array(
-
-							'name' => 'Items',
-
-							'url' => BASE_URL.'/items',
-
-							'img' => 'icon-lg-price.png'
-
-						),*/
-
 						array(
 
 							'name' => 'Edit Item Names',
@@ -558,36 +359,6 @@ class CommonComponent extends Object
 
 					array(
 
-						/*array(
-
-							'name' => 'Monthly Summary',
-
-							'url' => BASE_URL.'/reports/sales_monthly',
-
-							'img' => 'icon-lg-report.png'
-
-						),
-
-						array(
-
-							'name' => 'Profit',
-
-							'url' => BASE_URL.'/reports/sales',
-
-							'img' => 'icon-lg-report.png'
-
-						),
-
-						array(
-
-							'name' => 'Tech Work',
-
-							'url' => BASE_URL.'/reports/technicians_summary',
-
-							'img' => 'icon-lg-all-bookings.png'
-
-						),*/
-
 						array(
 
 							'name' => 'Booking Report',
@@ -607,88 +378,6 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-all-bookings.png'
 
 						),
-
-						array(
-
-							'name' => 'Payment Summary',
-
-							'url' => BASE_URL.'/reports/payments_summary',
-
-							'img' => 'icon-lg-all-bookings.png'
-
-						)
-						,
-
-						// array(
-
-						// 	'name' => 'Client Filter',
-
-						// 	'url' => BASE_URL.'/reports/clientFilter',
-
-						// 	'img' => 'icon-lg-all-bookings.png'
-
-						// ),
-
-						/*array(
-
-							'name' => 'Board',
-
-							'url' => BASE_URL.'/reports/telem_board',
-
-							'img' => 'icon-lg-report.png'
-
-						),
-
-						array(
-
-							'name' => 'Board with Groups',
-
-							'url' => BASE_URL.'/reports/telem_board_by_group',
-
-							'img' => 'icon-lg-report.png'
-
-						),*/
-
-						/*array(
-
-							'name' => 'Calls',
-
-							'url' => BASE_URL.'/reports/calls_summary',
-
-							'img' => 'icon-lg-all-bookings.png'
-
-						),
-
-						array(
-
-							'name' => 'Hot Lists',
-
-							'url' => BASE_URL.'/reports/callback_summary',
-
-							'img' => 'icon-lg-all-bookings.png'
-
-						),
-
-						array(
-
-							'name' => 'Cancellations',
-
-							'url' => BASE_URL.'/reports/cancellations',
-
-							'img' => 'icon-lg-all-bookings.png'
-
-						),*/
-
-						array(
-
-							'name' => 'Estimates',
-
-							'url' => BASE_URL.'/reports/estimates',
-
-							'img' => 'icon-lg-all-bookings.png'
-
-						),
-
 						array(
 
 							'name' => 'Telem Summary',
@@ -698,80 +387,6 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-all-bookings.png'
 
 						),
-
-						/*array(
-
-							'name' => 'Installations',
-
-							'url' => BASE_URL.'/orders/installations',
-
-							'img' => 'icon-lg-all-bookings.png'
-
-						),*/
-
-						// array(
-
-						// 	'name' => 'Agent Recording',
-
-						// 	'url' => BASE_URL.'/reports/salesRecording',
-
-						// 	'img' => 'icon-lg-all-bookings.png'
-
-						// ),
-
-						// array(
-
-						// 	'name' => 'Agent Time Statistics',
-
-						// 	'url' => BASE_URL.'/reports/vicidialTimeStats',
-
-						// 	'img' => 'icon-lg-all-bookings.png'
-
-						// ),
-
-						// array(
-
-						// 	'name' => 'Unattended Callbacks',
-
-						// 	'url' => BASE_URL.'/reports/unattendedCallbacks',
-
-						// 	'img' => 'icon-lg-all-bookings.png'
-
-						// ),
-
-						/*array(
-
-							'name' => 'Customers Export',
-
-							'url' => BASE_URL.'/users/exportCustomers',
-
-							'img' => 'icon-lg-all-bookings.png'
-
-						),*/
-
-						/*array(
-
-							'name' => 'Members Report',
-
-							'url' => BASE_URL.'/users/search',
-
-							'img' => 'icon-lg-customers.png'
-
-						),
-
-						array(
-
-							'name' => 'Customers',
-
-							'url' => BASE_URL.'/customers/canvassers',
-
-							'img' => 'icon-lg-customers.png',
-
-						)*/
-
-					),
-					array(
-
 						array(
 
 							'name' => 'Monthly Summary',
@@ -818,6 +433,25 @@ class CommonComponent extends Object
 							'url' => BASE_URL.'/customers/canvassers',
 
 							'img' => 'icon-lg-customers.png',
+
+						),
+						array(
+
+							'name' => 'Feedbacks',
+
+							'url' => BASE_URL.'/orders/feedbacks_list',
+
+							'img' => 'icon-lg-feedbacks.png'
+
+						),
+
+						array(
+
+							'name' => 'Feedback Display',
+
+							'url' => BASE_URL.'/orders/feedbackView',
+
+							'img' => 'icon-lg-feedbacks.png'
 
 						)
 
@@ -843,9 +477,6 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-jobs.png'
 
 						),
-
-
-
 						array(
 
 							'name' => 'Item Categ.',
@@ -866,76 +497,7 @@ class CommonComponent extends Object
 
 						),
 
-						array(
-
-							'name' => 'Booking Template',
-
-							'url' => BASE_URL.'/settings/edit?title=email_template_bookingnotification',
-
-							'img' => 'icon-lg-mail.png'
-
-						),
-
-						array(
-
-							'name' => 'Email Invoice/Review Template',
-
-							'url' => BASE_URL.'/settings/editNewsletter?title=email_template_custom',
-
-							'img' => 'icon-lg-mail.png'
-
-						),
-
-						array(
-
-							'name' => 'Coupon Template',
-
-							'url' => BASE_URL.'/settings/editNewsletter?title=coupon_template',
-
-							'img' => 'icon-lg-mail.png'
-
-						),
-
-						array(
-
-							'name' => 'Portfolio Template',
-
-							'url' => BASE_URL.'/settings/editNewsletter?title=portfolio_template',
-
-							'img' => 'icon-lg-mail.png'
-
-						),
-
-						array(
-
-							'name' => '2-Day Template',
-
-							'url' => BASE_URL.'/settings/edit?title=email_template_jobnotification',
-
-							'img' => 'icon-lg-mail.png'
-
-						),
-
-						array(
-
-							'name' => 'Camp Email Template',
-
-							'url' => BASE_URL.'/settings/editBulkEmail?title=bulk_email',
-
-							'img' => 'icon-lg-mail.png'
-
-						),
-
-						// array(
-
-						// 	'name' => 'Training',
-
-						// 	'url' => ROOT_URL.'/training/start_page_3.html',
-
-						// 	'img' => 'icon-lg-all-bookings.png'
-
-						// ),
-
+						
 						array(
 
 							'name' => 'Maintenance Tables',
@@ -1024,7 +586,6 @@ class CommonComponent extends Object
 							'url' => BASE_URL.'/orders/showPaymentImages',
 							
 							'img' => 'images1.png'
-							// 'img' => 'image-icon.png'
 						)
 						,
 						array(
@@ -1032,7 +593,7 @@ class CommonComponent extends Object
 							'name' => 'Email Setup',
 							'url' => BASE_URL.'/commissions/showDefaultCommissionEmail',
 							'img' => 'email1.png'
-							// 'img' => 'image-icon.png'
+							
 						)
 						,
 						array(
@@ -1040,8 +601,7 @@ class CommonComponent extends Object
 							'name' => 'Commission Review',
 							'url' => 'https://mail.google.com',
 							'img' => 'gmial-icon.jpeg',
-							'target' => '_blank'	
-							// 'img' => 'image-icon.png'
+							'target' => '_blank'
 						)
 
 					),
@@ -1247,6 +807,92 @@ class CommonComponent extends Object
 					array(
 						array(
 
+								'name' => 'Payment Summary',
+
+								'url' => BASE_URL.'/reports/payments_summary',
+
+								'img' => 'icon-lg-all-bookings.png'
+							),
+							array(
+
+								'name' => 'Payments',
+
+								'url' => BASE_URL.'/payments/index',
+
+								'img' => 'icon-lg-price.png'
+							),
+							array(
+								'name' => 'Payment Report',
+
+								'url' => BASE_URL.'/reports/monthlyPaymentReport',
+
+								'img' => 'icon-lg-all-bookings.png'
+							)
+                      ),
+					array (
+						array(
+
+							'name' => 'Booking Template',
+
+							'url' => BASE_URL.'/settings/edit?title=email_template_bookingnotification',
+
+							'img' => 'icon-lg-mail.png'
+
+						),
+
+						array(
+
+							'name' => 'Email Invoice/Review Template',
+
+							'url' => BASE_URL.'/settings/editNewsletter?title=email_template_custom',
+
+							'img' => 'icon-lg-mail.png'
+
+						),
+
+						array(
+
+							'name' => 'Coupon Template',
+
+							'url' => BASE_URL.'/settings/editNewsletter?title=coupon_template',
+
+							'img' => 'icon-lg-mail.png'
+
+						),
+
+						array(
+
+							'name' => 'Portfolio Template',
+
+							'url' => BASE_URL.'/settings/editNewsletter?title=portfolio_template',
+
+							'img' => 'icon-lg-mail.png'
+
+						),
+
+						array(
+
+							'name' => '7-Day Template',
+
+							'url' => BASE_URL.'/settings/edit?title=email_template_jobnotification',
+
+							'img' => 'icon-lg-mail.png'
+
+						),
+
+						array(
+
+							'name' => 'Blast Email Template',
+
+							'url' => BASE_URL.'/settings/editBulkEmail?title=bulk_email',
+
+							'img' => 'icon-lg-mail.png'
+
+						)
+					),
+					array(
+						array(
+
 								'name' => 'Referrals',
 
 								'url' => BASE_URL.'/orders/referrals',
@@ -1297,16 +943,6 @@ class CommonComponent extends Object
 							'url' => BASE_URL.'/payments/index',
 							'img' => 'icon-lg-price.png'
 						),
-						array(
-							'name' => 'Items Price',
-							'url' => BASE_URL.'/items/items_price',
-							'img' => 'icon-lg-price.png'
-						),
-						// array(
-						// 	'name' => 'Training',
-						// 	'url' => ROOT_URL.'/training/start_page.html',
-						// 	'img' => 'icon-lg-all-bookings.png'
-						// ),
 						array(
 							'name' => 'ACE Web Site',
 							'url' => 'http://www.acecare.ca/',
@@ -1605,37 +1241,12 @@ class CommonComponent extends Object
 							//'onclick' => 'opencb()',
 							'img' => 'icon-lg-callback.png',
 							'target' => '_self'
-						)/*,
-						array(
-							'name' => 'Booking Report',
-							'url' => BASE_URL.'/orders/?action=view&newSearch=1&ffromdate='.date('Y-m-d').'&fsource_id='.$userID,
-							'img' => 'icon-lg-jobs.png'
 						),
-						array(
-							'name' => 'Pay Period Jobs',
-							'url' => BASE_URL.'/orders?payperiod=1&view_mode=pay_period&pp_view=telemarketers&ffromdate='.date('Y-m-d'),
-							'img' => 'icon-lg-all-bookings.png'
-						)*/,
 						array(
 							'name' => 'Telem Summary ',
 							'url' => BASE_URL.'/reports/telemarketers_summary',
 							'img' => 'icon-lg-all-bookings.png'
 						),
-						array(
-							'name' => 'Items Price',
-							'url' => BASE_URL.'/items/items_price',
-							'img' => 'icon-lg-price.png'
-						),
-						/*array(
-							'name' => 'Clients',
-							'url' => BASE_URL.'/orders/clients',
-							'img' => 'icon-lg-customers.png'
-						),*/
-						// array(
-						// 	'name' => 'Training',
-						// 	'url' => ROOT_URL.'/training/start_page.html',
-						// 	'img' => 'icon-lg-all-bookings.png'
-						// ),
 						array(
 							'name' => 'Map',
 							'url' => '#',
@@ -1643,11 +1254,6 @@ class CommonComponent extends Object
 							'img' => 'icon-ace.gif',
 							'target' => '_blank'
 						),
-						/*array(
-							'name' => 'Feedbacks',
-							'url' => BASE_URL.'/orders/feedbacks_list',
-							'img' => 'icon-lg-feedbacks.png'
-						),*/
 						array(
 							'name' => 'Cancellations',
 							'url' => BASE_URL.'/reports/cancellations',
@@ -1672,25 +1278,6 @@ class CommonComponent extends Object
 							'target' => '_top'
 
 						)
-						// , 
-						// array(
-
-						// 	'name' => 'Message',
-						// 	'url' => BASE_URL.'/messages/ShowMessages?fromMessage=1',
-						// 	'img' => 'message2.png',
-						// 	'id' => 'showMessage'
-						// )
-                                               /* ,
-						array(
-
-							'name' => 'Dialer2',
-
-							'url' => BASE_URL.'/dialer/index?action_type=callback',
-
-							'img' => 'icon-lg-callback.png',
-							'target' => 'main_view'
-
-						)*/
 					)
 				)
 			);
@@ -1740,11 +1327,6 @@ class CommonComponent extends Object
 							'url' => BASE_URL.'/suppliers',
 							'img' => 'icon-lg-technician.png'
 						),
-						/*array(
-							'name' => 'Items',
-							'url' => BASE_URL.'/items',
-							'img' => 'icon-lg-price.png'
-						),*/
 						array(
 							'name' => 'Logout',
 							'url' => BASE_URL.'/login/logout',
@@ -1796,11 +1378,6 @@ class CommonComponent extends Object
 							'url' => BASE_URL.'/commissions/editTech/'.$userID.'?view=2',
 							'img' => 'icon-lg-technician.png'
 						),
-						// array(
-						// 	'name' => 'Training',
-						// 	'url' => ROOT_URL.'/training/start_page_tech.html',
-						// 	'img' => 'icon-lg-all-bookings.png'
-						// ),
 						array(
 							'name' => 'Tablet Invoice',
 							'url' => BASE_URL.'/orders/invoiceTablet',
@@ -1813,20 +1390,6 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-logout.png',
 							'target' => '_top'
 						)
-						// ,
-						// array(
-
-						// 	'name' => 'Message',
-						// 	'url' => BASE_URL.'/messages/ShowMessages?fromMessage=1',
-						// 	'img' => 'message2.png',
-						// 	'id' => 'showMessage'
-						// )
-						// //,
-						//array(
-						//	'name' => 'Customers',
-						//	'url' => BASE_URL.'/users/distances',
-						//	'img' => 'icon-lg-customers.png',
-						//)
 
 					),
 					array(
@@ -1888,20 +1451,10 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-jobs.png'
 						),
 						array(
-							'name' => 'Items Price',
-							'url' => BASE_URL.'/items/items_price',
-							'img' => 'icon-lg-price.png'
-						),
-						array(
 							'name' => 'Users',
 							'url' => BASE_URL.'/users',
 							'img' => 'icon-lg-technician.png'
 						),
-						// array(
-						// 	'name' => 'Training',
-						// 	'url' => ROOT_URL.'/training/start_page.html',
-						// 	'img' => 'icon-lg-all-bookings.png'
-						// ),
 						array(
 							'name' => 'Logout',
 							'url' => BASE_URL.'/login/logout',

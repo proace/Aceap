@@ -1,5 +1,4 @@
-<!-- <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
- --><style type="text/css">
+<style type="text/css">
 .new-btn {
 	position: relative;
     display: block;
@@ -9,17 +8,16 @@
 	padding: 3px;
 	margin-left: 6px;
 }
+.active {
+     background-color:  #80ff80 !important;
+}
 </style>
 
-
-<?php if($is_campaing == 1) { ?>
-<!-- <input type="hidden" id = "current-seleted-button" name="current-seleted-button" value="">
-<input type="hidden" id = "selected-str" name="selected-str" value="today"> -->
-
+<b>Dailer:</b><br>
 <div class="new-btn">
-<input class="new-btn-input" type="button" id="call-back" value="Call Back" onclick="showSelectBar(1);">
-<input class="new-btn-input" type="button" id="ace-list" value="Ace List" onclick="showSelectBar(2);">
-<input class="new-btn-input" type="button" id="new-list" value="New List">
+<input class="new-btn-input selected-btn" type="button" id="call-back" value="Call Back" onclick="showSelectBar(1);">
+<input class="new-btn-input selected-btn" type="button" id="ace-list" value="Ace List" onclick="showSelectBar(2);">
+<input class="new-btn-input selected-btn" type="button" id="new-list" value="New List">
 </div>
 <select id="call-back-select" style="display: none" onchange="callbackSourceType(this.value);">
  <option value="today">Todays</option>
@@ -29,24 +27,39 @@
 <div id='missed_callback_dates' style="display: none;">
 	      from: 
 	      &nbsp;&nbsp;
-		  <!-- <input type="text" id="datepicker1" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($fdate) echo $fdate; else echo ''; ?>"> -->
-		  <input type="text" name="ffromdate" id="datepicker1" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+		  <input type="text" name="ffromdate" id="datepicker1" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?php echo isset($fdate) ? $fdate : ''?>">
 	      to:
 	      &nbsp;&nbsp;
-		 <!--  <input type="text" id="datepicker2" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($tdate) echo $tdate; else echo ''; ?>"> -->
-		  <input type="text" name="ftodate" id="datepicker2" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
-	  </div>
-<input type="button" name="call-back-result" id="user_serch_go" value="Go" onclick="searchList('Campaign_data',<?php echo $campId ?>);">
-<?php }?>
-
+		  <input type="text" name="ftodate" id="datepicker2" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?php echo isset($tdate) ? $tdate : ''?>">
+</div>
+<input type="button" name="call-back-result" id="user_serch_go" value="Go" onclick="searchList('Campaign_data',<?php echo isset($campId) ? $campId : '' ?>);">
+<br>
+<b>Email:</b><br>
+<div class="new-btn">
+<input class="new-btn-input selected-btn" type="button" id="" value="Sent" onclick="showReminderBar(1);">
+<input class="new-btn-input selected-btn" type="button" id="" value="Not Sent" onclick="showReminderBar(2);">
+<input class="new-btn-input selected-btn" type="button" id="" value="Email All" onclick="sendBulkEmails(<?php echo $campId ?>)">
+<input class="new-btn-input selected-btn" type="button" id="" value="Reminder Email" onclick="showReminderBar(3)">
+<!-- <input class="new-btn-input" type="button" id="" value="No email" onclick="showReminderBar(4);"> -->
+</div>
+<select id="reminder-select" style="display: none" onchange="reminderSourceType(this.value);">
+ <option value="today">Todays</option>
+ <option value="all">All</option>
+</select>
+<input type="button" name="reminder-email-result" id="email_serch_go" value="Go" onclick="showReminderHotList(1, <?php echo $campId ?>);">
 <?php if($totalPages > 1){?>
 		<div style="margin-top: 10px;">
-	<?php 
-	$j = 1;
-	for( $j; $j <= $totalPages; $j++){ ?>
-		<a href="javascript:void(0)" onclick="searchList('Campaign_data',<?php echo $campId ?>, <?php echo $j ?> );"><?php echo $j ?></a>
-				
- 	<?php } ?>
+	<?php if($is_search == 1) {?>
+		<?php $j = 1;
+		for( $j; $j <= $totalPages; $j++){ ?>
+			<a href="javascript:void(0)" onclick="searchList('Campaign_data',<?php echo $campId ?>, <?php echo $j ?> );"><?php echo $j ?></a>		
+	 	<?php } ?>
+	<?php } else {?>
+		<?php $j = 1;
+		for( $j; $j <= $totalPages; $j++){ ?>
+			<a href="javascript:void(0)" onclick="showReminderHotList(<?php echo $j ?>, <?php echo $campId ?>);"><?php echo $j ?></a>		
+	 	<?php } ?>
+	<?php }?>
  	</div>
 <?php }?>
 <div style="width: 1250px; float: left;  margin-top: 70px;">
@@ -55,11 +68,10 @@
 <input type="hidden" id="currentUserId" val="">
 <input type="hidden" id="currentUserPhoneNo" val="">
 
-<? 
-if ($add == 0) { ?>
 <div style="clear: both; float: left;">
 	<div class="dhcell" style="width: 110px;">Last Name<?=$last_name?></div>
 	<div class="dhcell" style="width: 85px;"><b>First Name<?=$first_name?></b></div>
+	<div class="dhcell" style="width: 95px;">Is Sent</div>
 	<div class="dhcell" style="width: 95px;">Source</div>
 
 	<div class="dhcell sort_data" style="width: 70px;"  sort_type='' sort_val="call-result">Call Result <?php if($sort_by == 'call-result'){ echo $sortTypeImg ?> <?php } ?></div>
@@ -73,9 +85,10 @@ if ($add == 0) { ?>
 	<div class="dhcell" style="width: 95px;">Phone<?=$phone?></div>
 	<div class="dhcell" style="width: 95px;">Cell Phone<?=$cell_phone?></div>
 	<div class="dhcell" style="width: 95px;">Address<?=$address?></div>
+	<div class="dhcell" style="width: 95px;">Reminder Date</div>
 </div>
 
-<? } ?>
+
 
 <?php $r=1; $cus_count=0;
 	foreach ($cust as $obj): 
@@ -117,19 +130,10 @@ if ($add == 0) { ?>
 						'<?php echo addslashes(ereg_replace("[\r\n]", "", $obj["User"]["callback_note"])) ?>',
 						<?php echo $obj["User"]["telemarketer_id"] ? $obj["User"]["telemarketer_id"] : 0 ?>);"
 	>
-	<!-- <div class="dcell" style="width: 110px;<? echo $color?>"><?php echo $obj["User"]["last_name"] ?> </div>
-	<div class="dcell" style="width: 85px;<? echo $color?>"><b><?php echo $obj['User']['first_name']; ?></b> </div>
-	<div class="dcell" style="width: 95px;<? echo $color?>"><?=$obj['u']['telemarketer_first_name'].' '.$obj['u']['telemarketer_last_name'] ?></div>
-	<div class="dcell" style="width: 95px;<? echo $color?>"><?php echo ( $obj['User']['phone'] != '' ? $common->displayPhone($obj['User']['phone']) : '' ); ?> </div>
-	<div class="dcell" style="width: 95px;<? echo $color?>"><?php echo ( $obj['User']['cell_phone'] != '' ? $common->displayPhone($obj['User']['cell_phone']) : ''); ?> </div>
-	<div class="dcell" style="width: 150px;<? echo $color?>"><?=$obj["User"]["address_unit"].' '.$obj["User"]["address_street_number"].' '.$obj["User"]["address_street"]; ?></div>
-	<div class="dcell" style="width: 150px;<? echo $color?>"><?php echo $obj['User']['city']; ?></div>
-	<div class="dcell" style="width: 70px;<? echo $color?>"><?php echo $call_results[$obj['User']['callresult']]; ?> </div>
-	<div class="dcell" style="width: 80px;<? echo $color?>"><?php echo date("d M Y", strtotime($obj['User']['lastcall_date'])); ?></a> </div>
-	<div class="dcell" style="width: 80px;<? echo $color?>"><?php echo date("d M Y", strtotime($obj['User']['callback_date'])); ?></a> </div>
-	<div class="dcell" style="width: 80px;<? echo $color?>"><?php echo $obj['User']['callback_time']; ?></a> </div> -->
+	
 	<div class="dcell" style="width: 110px;<? echo $color?>"><?php echo $obj["User"]["last_name"] ?> </div>
 	<div class="dcell" style="width: 85px;<? echo $color?>"><b><?php echo $obj['User']['first_name']; ?></b> </div>
+	<div class="dcell" style="width: 85px;<?php if( $obj['User']['is_sent'] == 1){ echo 'color:green' ;} else { echo 'color:red';}; ?>"><b><?php if( $obj['User']['is_sent'] == 1){ echo 'Sent' ;} else { echo 'Not Sent';}; ?></b> </div>
 	<div class="dcell" style="width: 95px;<? echo $color?>"><?=$obj['u']['telemarketer_first_name'].' '.$obj['u']['telemarketer_last_name'] ?></div>
 	<div class="dcell" style="width: 70px;<? echo $color?>"><?php echo $call_results[$obj['User']['callresult']]; ?> </div>
 	<div class="dcell" style="width: 80px;<? echo $color?>"><?php echo date("d M Y", strtotime($obj['User']['lastcall_date'])); ?></a> </div>
@@ -142,6 +146,7 @@ if ($add == 0) { ?>
 	<div class="dcell" style="width: 95px;<? echo $color?>"><?php echo ( $obj['User']['phone'] != '' ? $common->displayPhone($obj['User']['phone']) : '' ); ?> </div>
 	<div class="dcell" style="width: 95px;<? echo $color?>"><?php echo ( $obj['User']['cell_phone'] != '' ? $common->displayPhone($obj['User']['cell_phone']) : ''); ?> </div>
 	<div class="dcell" style="width: 95px;<? echo $color?>"><?=$obj["User"]["address_unit"].' '.$obj["User"]["address_street_number"].' '.$obj["User"]["address_street"]; ?></div>
+	<div class="dcell" style="width: 95px;<? echo $color?>"><?=date("d M Y", strtotime($obj["User"]["reminder_date"]))?></div>
 </div>
 <?php endforeach; ?>
 <?php if(isset($totalCus)) { ?>
@@ -154,6 +159,8 @@ if ($add == 0) { ?>
 <script language="JavaScript">
 	
 	$("#call-back-select").hide();
+	$("#reminder-select").hide();
+	
 	window.curpage = <?=$curpage;?>;
 	window.sq_crit = '<?=$sq_crit;?>';
 	window.sq_str = '<?=$sq_str;?>';

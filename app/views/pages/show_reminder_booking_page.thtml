@@ -1,0 +1,110 @@
+<html> 
+<head>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<script>
+jQuery( document ).ready(function($) {
+  $(".contact_way").on("change", function(){
+       $('.contact_way').not(this).prop('checked', false);  
+  });
+});
+
+function deleteUser(Id)
+  {
+      $.ajax({
+      url: "<?=BASE_URL;?>/orders/deleteEmailEntry",
+      type: "POST",
+      data: {id : Id},
+      success: function(data){
+        res = JSON.parse(data);
+            if(res.res == "OK")
+            {
+                window.location.reload();
+            }
+      }
+    });
+  }
+</script>
+<style type="text/css">
+ body{margin: 10px}
+
+ ol {margin: 0; padding: 0; }
+  li {    margin: 7.2em 0; font-weight: bold; }
+  
+  #info label { 
+    font-size: 13px;
+    float: left; 
+    width: 270px; 
+    margin-right: 15px; 
+    margin-top: 2px;
+    font-weight: bold;
+  }
+.question {
+  font-size: 15px;
+  width: 50%;
+  border: 1px solid black;
+  height: 50%;
+}
+.btn {
+  background-color: #2287ca;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 13px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+.mid_form{
+     width: 40%;
+    margin: auto;
+    border: 1px solid black;
+    padding-left: 30px;
+    height: 60%;
+    border-radius: 20px;
+}
+.footer {
+   position: fixed;
+   left: 0;
+   bottom: 0;
+   width: 100%;
+   background-color: grey;
+   color: white;
+   text-align: center;
+   height: 13%;
+   font-size: 12px;
+   padding: 0px;
+}
+</style>
+</head>
+<body>
+  <div>
+    <div style="text-align: center;">
+      <img src="/acesys/app/webroot/img/ProAceLogo.png" style="width: 25%; " >
+    </div>
+    <form id="info" method="POST" action="<?=BASE_URL;?>/orders/saveUserResponse" class="mid_form">
+      <input type="hidden" name="orderId" value="<?=$orderId?>">
+      <input type="hidden" name="customerId" value="<?=$customerId?>">
+      <input type="hidden" name="orderNum" value="<?=$orderNum?>">
+      <h1>Booking Information</h1>
+      <ol>
+        <li><label>What day will work for you?</label> <input type="text" name="workDate" onclick="scwShow(this,event);" onkeydown="return false;"></li>
+        <li><label>Would like it morning or in the afternoon?</label><input type="text" name="workTime"></li>
+        <li><label>Would like to be called, emailed or texted for this booking?</label> <input class="contact_way" type="checkbox" name="contactInfo" value="1"><span>Email</span><input class="contact_way" type="checkbox" name="contactInfo" value="2"><span>Call</span><input class="contact_way" type="checkbox" name="contactInfo" value="3"><span>Text</span>
+        </li>
+        <li><label style="margin-top: 15px">Note:</label> <textarea name="Notes"></textarea></li>
+      </ol>
+      <input class="btn" type="Submit" name="Submit" value="Submit">
+    </form>
+  </div>
+  <div class="footer">
+    <h3 style="margin: 10px;">Contact Us</h3>
+      phone: 604-293-3770 <br>
+     email: info@acecare.ca
+  <p>&#9400; <?= date('Y')?><b> Acecare</b>. All Rights Reserved. Proudly Canadian Owned Since 1995. 
+    Privacy And Security Policy <br>
+SEO Website Marketing By Anney Ha</p>
+</div>
+</body>
+</html>

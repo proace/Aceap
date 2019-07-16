@@ -15,6 +15,41 @@
 
 
 <style type="text/css">
+.reminder-email-table {
+    width: 100%;
+    text-align: left;
+    font-weight: bolder;
+    height: 115px;
+}
+.reminder-email-table td {
+    padding-left: 25px;
+}
+.reminder-email-table tr {
+    padding-top: 10px;
+}
+.reminder-modal {
+    display: none; /* Hidden by default */
+    position: absolute; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.reminder-modal-content {
+    background-color: #fefefe;
+    /*margin: auto;*/
+        margin: 200px 200px 100px 200px;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 49%;
+    height: auto;
+}
 .success {
  background-color: red;
  }
@@ -65,7 +100,66 @@
 
 <div id="invoice">
 <script>
+
     $(document).ready(function(){
+    var element = $("#PaymentPaymentMethodId").find('option:selected'); 
+    var showPicture = element.attr("show-picture");
+    if(showPicture == 1)
+    {
+       $("#payment-image").show(); 
+    }
+    $("#PaymentPaymentMethodId").live("change", function (){
+        var element = $("#PaymentPaymentMethodId").find('option:selected'); 
+        var method = $("#PaymentPaymentMethodId").val();
+        var option = element.attr("show-picture"); 
+        if(option == 1) {
+            $("#payment-image").show();
+        } else {
+            $("#payment-image").hide();
+        }
+    });
+    $('#save-reminder-email').live("click", function(){
+        
+        var orderId = $("#remOrderId").val();
+        var reminderMonths = $("#reminder-months").val();
+        var reminderDate = $("#reminder-date").val();
+        var reminderType = $("#reminder-type-val").val();
+        var remiderNote = $("#reminder-message").val();
+        var reminderEmail = 0;
+        var reminderSms = 0;
+        if($('#reminder-type-email').is(":checked")) {
+            reminderEmail = 1;
+        }
+        if($('#reminder-type-sms').is(":checked")) {
+            reminderSms = 1;
+        }
+        $.ajax({
+        url: '<?=BASE_URL?>/orders/setReminderEmail/?ordid='+orderId,
+        dataType: 'html',
+        type: 'POST',
+        cache: false,
+        data: {reminderMonths:reminderMonths,reminderDate:reminderDate,reminderType:reminderType,  remiderNote:remiderNote, reminderSms:reminderSms, reminderEmail:reminderEmail},
+        success: function(data) {
+                res = JSON.parse(data);
+                if(res.res == "OK")
+                {
+                    hideInvoiceReview();
+                }
+            }           
+        });
+
+});
+    $('.reminder-email-type').live("change", function(){
+        var $cur = $(this);
+        var $val = $(this).val();
+        if($cur.is(":checked"))
+        {
+            $('.reminder-email-type').attr('checked',false);
+            $cur.attr('checked', true);
+        }
+        $('#reminder-type-val').val($val);
+    });
+
     $(".disply_preview").live("change",function(e){
         var img_ct = $(this).attr("data-ct").trim();
         var cur = $(this);
@@ -295,12 +389,25 @@ function upload_photo(cur,i) {
         <div class="right">Deposit: <input type="text" class="right" id="current_deposit" name="data[Order][deposit]" value="<?php echo $job['Order']['customer_deposit']==""?"0":$job['Order']['customer_deposit'] ?>" /></div>   
         <div class="right">Balance: <input type="text" class="right" id="current_balance" name="data[Order][balance]" value="0" /></div>   
         <br /> 
-        <div class="center" id="payment_details">
+       
+    <!-- <div class="right"><input type="button" value="Save" id="save-payment-image" style=" margin-right: 30px;width: 100px;" /></div> -->
+            
+        <div class="right" id="payment_box">
+            <div class="clear_this"></div>
+        <!-- <div>Paid by: <?php echo $html->selectTag('Payment/payment_method_id', $payment_method); ?></div> -->
+            <div> Paid by: 
+            <select id="PaymentPaymentMethodId" name="data[Payment][payment_method_id]">
+                <option value="0">--</option>
+               <?php foreach($payment_methods as $method) {?>
+                    <option value="<?=$method['id']?>" <?php echo $job['Order']['payment_method_type'] == $method['id']? 'selected' : '';?> show-picture="<?=$method['show_picture']?>" show-payment="<?=$method['show_payment']?>" show-message="<?=$method['message_to_office']?>" ><? echo $method['name']?></option>
+               <?php }?> 
+            </select>
             </div>
-            <div class="clear_this"></div>  
-         <img id="pre-image_photo1" style="float: right;" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
+            <div>Amount: <input type="text" class="right" id="paid_by_amount" name="data[Payment][amount]" value="<?=$job['Payment']['paid_amount']?>" /></div>
+        	<!-- <div>Auth#: <input type="text" class="right" id="auth_number" name="data[Payment][auth_number]" value="" /></div> -->
+            <img id="pre-image_photo1" style="float: right;" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
          <div class="clear_this"></div>
-        <div class="right" style="margin-bottom: 10px;">Payment photo:
+            <div class="right" style="margin-bottom: 10px;">Payment photo:
             <?php 
                 if(isset($invoice_payment_photo) && !empty($invoice_payment_photo)){                              
                     $imgPath =  '/acesys/app/webroot/payment-images/'.$invoice_payment_photo; 
@@ -313,7 +420,7 @@ function upload_photo(cur,i) {
                 }else{
                     ?>
                     
-                    <div class="acecare-td-adjust" style="float: right;">
+                    <div class="acecare-td-adjust" id="payment-image" style="float: right;display: none;">
                         <label for="Fileinput">Upload</label>
                         <input type="file" name="uploadFile" id="FileinputImg" class="right disply_preview" data-ct="photo1">
                     </div>  
@@ -321,15 +428,11 @@ function upload_photo(cur,i) {
                 }
             ?> 
         </div>  
-    <!-- <div class="right"><input type="button" value="Save" id="save-payment-image" style=" margin-right: 30px;width: 100px;" /></div> -->
-            
-        <div class="right" id="payment_box">
-            <div class="clear_this"></div>
-        	<div>Paid by: <?php echo $html->selectTag('Payment/payment_method_id', $payment_methods); ?></div>
-            <div>Amount: <input type="text" class="right" id="paid_by_amount" name="data[Payment][amount]" value="" /></div>
-        	<div>Auth#: <input type="text" class="right" id="auth_number" name="data[Payment][auth_number]" value="" /></div>
-            <div><input type="button" value="Save" id="save_payment" /></div>
+            <div class="center" id="payment_details" style="width:100%;float: right;"></div>
+            <div><input type="button" value="Save" id="save_payment" /></div> 
         </div>
+        
+         
         
         </div><!--END of order_div-->
         <div class="order_div">
@@ -520,6 +623,57 @@ function upload_photo(cur,i) {
 <div class="invoice-img-enlarge" title="Photo">
     <img src="<?=$imgPath?>" style="width:100%;">
 </div> 
-
+<div id="reminderEmail" class="reminder-modal" >
+    <body>
+    <div class="reminder-modal-content">
+            <input type="hidden" id="reminder-type-val" name="reminderType">
+            <h3>Reminder E-mail</h3>
+        <table class="reminder-email-table">
+            <tr>
+                <td>Reminder:
+                    <select id="reminder-months">
+                        <option value="11">11 Months</option>
+                        <option value="23">23 Months</option>
+                        <option value="6">6 Months</option>
+                        <option value="4">4 Months</option>
+                        <option value="1">Use Calender</option>
+                    </select>
+                </td>
+                <td>
+                    <span>Date:</span><input class="emboss" type="text" id = "reminder-date" name="reminderDate" style="width: 85px; cursor: hand; cursor: pointer;" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$job['Order']['job_date']?>">
+                
+                </td>
+                <td>
+                    <span>Always:</span><input class= "reminder-email-type" id="always-send" type="checkbox" name="always"  value="1">
+                </td>
+                <td>
+                    <span>Only this time:</span><input class= "reminder-email-type" id="only-one-time" type="checkbox" name="onlyOne"  value="2">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span>Do Not Send Mail:</span><input type="Checkbox" class= "reminder-email-type" id ="doNotSend" name="doNotSend" value="3">
+                </td>
+                <td>
+                <span>Note:</span><textarea id ="reminder-message" name="message"></textarea> <!-- <input type="textarea" name="message"> -->
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span>Email:</span><input type="Checkbox" id ="reminder-type-email" name="reminder-type-email">         
+                </td>
+                <td>
+                    <span>SMS:</span><input type="Checkbox" id ="reminder-type-sms" name="reminder-type-sms">           
+                </td>
+            </tr>
+            <!-- <tr><td> <input type="submit" name="OK" value="OK" style="width: 50px;height: 25px;"></td></tr> -->
+        </table>
+        <input type="hidden" name="" id="remOrderId" value="<?= $job['Order']['id']?>">
+        <input type="button" id="save-reminder-email" name="OK" value="OK"  style="width: 50px;height: 25px;    margin-left: 235px;">
+        <input type="button"  name="cancel" value="Cancel" onclick="hideInvoiceReview();" style="width: 50px;height: 25px;float: right;
+    margin-right: 258px;">
+    </div>  
+    </body>
+</div>
 </body>
 </html>

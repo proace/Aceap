@@ -717,7 +717,23 @@ class PagesController extends AppController{
 		
 		$this->set('counter', str_split($counter));
 	}
+	// Loki: Show the booking info page.	
+	function showReminderBookingPage()
+	{	
+		$oid = $_GET['oid'];
+		$cusId = $_GET['cid'];
+		$jobType = $_GET['otype']; 
+		$reminderDate = $_GET['rdate'];
+		$orderNum = $_GET['onum'];
+
+		$this->set("orderId",$oid);
+		$this->set("customerId",$cusId);
+		$this->set("orderNum",$orderNum);
+	}
 	
-	
+	function thankYouPage()
+	{
+		
+	}
 }
 ?>

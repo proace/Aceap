@@ -15,6 +15,10 @@
 	// #LOKI- Sort customer data
 	sortType = '';
 	sortBy = '';
+	$(".selected-btn").live("click", function(){
+		 $(".selected-btn").removeClass("active");
+		 $(this).addClass("active");
+	});
     $(".sort_data").live("click", function()
     {
     	var sort_type =  $("#sort_type").val();
@@ -24,13 +28,54 @@
     	$("#user_serch_go").trigger("click");
     });
 
+	// Loki: send bulk emails
+    function sendBulkEmails(campId){
+	    	$.ajax({
+			url: '<?=BASE_URL?>/orders/sendBulkEmails',
+			dataType: 'html',
+			type: 'POST',
+			cache: false,
+			data:{campId:campId},
+			success: function(data) {
+				res = JSON.parse(data);
+				if(res.res == "OK")
+				{
+					alert("Email sending started.");
+				}
+			}
+		});	
+    }
 	function showSelectBar(nval)
 	 {
+	 		$('#reminder-select').hide();
 			$("#current-seleted-button").val(nval);
 			$('#selected-str').val('today');
 			$('#call-back-select option[value="today"]').attr("selected","selected");
 			document.getElementById('missed_callback_dates').style.display = 'none';
 	 		$('#call-back-select').show();
+	 }
+
+
+	// function showReminderBar(nval)
+	//  {		
+	//  		$('#call-back-select').hide();
+	// 		$("#current-seleted-reminder-button").val(nval);
+	// 		if(nval != 3)
+	// 		{
+	// 			$('#selected-str').val('today');
+	// 			$('#call-back-select option[value="today"]').attr("selected","selected");
+	// 			//document.getElementById('missed_callback_dates').style.display = 'none';
+	// 	 		$('#reminder-select').show();
+	// 		}
+	//  }
+	function showReminderBar(nval)
+	 {		
+	 		$('#call-back-select').hide();
+			$("#current-seleted-reminder-button").val(nval);
+			$('#selected-str').val('today');
+			$('#call-back-select option[value="today"]').attr("selected","selected");
+			//document.getElementById('missed_callback_dates').style.display = 'none';
+	 		$('#reminder-select').show();
 	 }
 	 function callbackSourceType(callType)
 	 {	
@@ -42,11 +87,55 @@
 	 		document.getElementById('missed_callback_dates').style.display = 'none';
 	 	}
 	 }
+	 function reminderSourceType(callType)
+	 {	
+	 	$("#reminder-selected-str").val(callType);
+	 	// if(callType == 'missed-call-date')
+	 	// {
+	 	// 	document.getElementById('missed_callback_dates').style.display = 'block';
+	 	// } else {
+	 	// 	document.getElementById('missed_callback_dates').style.display = 'none';
+	 	// }
+	 }
 	var last_sq_crit, last_sq_str, last_dates;
 	var lpp = 500;	//lines per page
 	var maxpage = 1;
+	function showReminderHotList(page='', sq_str)
+	{
+
+		//document.getElementById("append_count_div").style.display = 'none';
+		//document.getElementById("listbox").style.display = 'none';
+		if (typeof(page) == 'undefined' || page == '')
+			page = 1;
+		limit = ((page-1)*lpp) + "," + (page*lpp);
+		var currentSelected = $("#current-seleted-reminder-button").val();
+	 	if( 0 <currentSelected)
+	 	{
+	 		var selectedStr = $("#reminder-selected-str").val();
+	 	}
+	 	if(typeof(selectedStr) == 'undefined') 
+		{
+			selectedStr = '';	
+		}
+	 	if (typeof(currentSelected) == 'undefined')
+			currentSelected = 0;
+
+		if(typeof(sq_str) == 'undefined' || sq_str == '') 
+		{
+			sq_str = 0;	
+		}
+		divID = document.getElementById('listbox');
+		divID2 = document.getElementById('count_of_cust_div1');
+		$.get('<?=BASE_URL;?>/orders/reminderHotList?page='+page+'&limit='+limit+'&currentSelected='+currentSelected+'&selectedStr='+selectedStr+'&is_search=0'+'&sq_str='+sq_str,
+				function(data){
+					divID.innerHTML=data;
+					count_of_cust = document.getElementById('count_of_cust').value;
+					document.getElementById('append_count_div').style.display = '';
+					divID2.innerHTML=count_of_cust;
+				});
+
+	}
 	 function searchList (sq_crit,sq_str='',page, fromTop='') {
-		 
 		var sortType =  $("#sort_type").val();
 	 	var fromDate = $("#datepicker1").val();
 	 	var toDate = $("#datepicker2").val(); 	
@@ -94,8 +183,10 @@
 			last_sq_crit = sq_crit;
 			maxpage = 1;
 		}
-		if (sq_str == 0)
-			sq_str = last_sq_str;
+		if(typeof(sq_str) == 'undefined' || sq_str == '') 
+		{
+			sq_str = 0;	
+		}
 		else
 		{
 			last_sq_str = sq_str;
@@ -104,7 +195,7 @@
 		//alert("requested page "+page+"\nmaxpage "+maxpage+"\nlimit "+limit);
 		divID = document.getElementById('listbox');
 		divID2 = document.getElementById('count_of_cust_div1');
-		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&add=0&curpage='+page+'&is_call_result='+is_call_res+'&seletedStr='+selectedStr+'&fromDate='+fromDate+'&toDate='+toDate+'&sortType='+sortType+'&sortBy='+sortBy,
+		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&add=0&curpage='+page+'&is_call_result='+is_call_res+'&seletedStr='+selectedStr+'&fromDate='+fromDate+'&toDate='+toDate+'&sortType='+sortType+'&sortBy='+sortBy+"&is_search=1",
 				function(data){
 					divID.innerHTML=data;
 					count_of_cust = document.getElementById('count_of_cust').value;
@@ -198,7 +289,9 @@
 		  else
 		    return results[1];
 	}
-	
+	// function reminderElemClecl(userid) {
+	// 	parent.frames['main_view'].document.location.href='<?=BASE_URL;?>/orders/editBooking?fromReminder=1&admin_select=1&customer_id='+userid;
+	// }
 	function elementClick(el, job_date, job_id, userid, firstname, lastname, address_unit, address_street_number, address_street, city, postalcode, phone, cellphone, email, callback_date, lastcall_date, callresult, callback_note, telemarketer_id)
 	{
 		$('.browser_item').css({'border-top':'none'}).css({'border-bottom':'1px solid #CCCCCC','background-color':''});
@@ -240,13 +333,21 @@
 	}
 </script>
 <input type="hidden" id = "current-seleted-button" name="current-seleted-button" value="">
+<input type="hidden" id = "current-seleted-reminder-button" name="current-seleted-reminder-button" value="">
+
+<input type="hidden" id = "reminder-selected-str" name="reminder-selected-str" value="">
 <input type="hidden" id = "selected-str" name="selected-str" value="">
 <input type="hidden" id = "sort_type" name="sort_type" value="">
 <div id='append_count_div' style="display: none;margin-left: 10px;">
 	<div style="float: left;display:inline-block;">No. of count - </div>
 	<div style="float: left;display:inline-block;" id="count_of_cust_div1"></div>
 </div>
-
+<!-- <div id='append_count_div1' style="display: none;margin-left: 10px;">
+	<div style="float: left;display:inline-block;">No. of count - </div>
+	<div style="float: left;display:inline-block;" id="count_of_cust_div2"></div>
+</div> -->
 <div id="listbox" style="float: left;">
+</div>
+<div id="reminder-email-box" style="float: left;">
 
 </div>

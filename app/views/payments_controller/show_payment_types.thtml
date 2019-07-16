@@ -9,9 +9,12 @@
 jQuery( document ).ready(function($) {
     $('#removePayment').on('click', function(e){
         var selected = [];
-        $(':checkbox:checked').each(function() {
-            selected.push($(this).attr('type_id'));
+          $("input:checkbox[class=checkboxes]:checked").each(function () {
+             selected.push($(this).attr('type_id'));
         });
+        // $(':checkbox:checked').each(function() {
+        //     selected.push($(this).attr('type_id'));
+        // });
         jQuery.ajax({
           url: "<?=BASE_URL;?>/payments/deletePaymentType",
           type: "POST",

@@ -1,0 +1,115 @@
+<html> 
+<head>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<script>
+
+jQuery( document ).ready(function($) {
+    $('#markAll').on('click', function(){
+            $(".delete_email").attr('checked', this.checked);
+        });
+    $('#deleteAll').on('click', function(){
+        var Id = '';
+         $(".delete_email:checkbox:checked").each(function(){
+            Id += (Id != "")? "," : "";
+            Id += $(this).val();
+        });
+        deleteUser(Id);
+    });
+});
+
+function deleteUser(Id)
+  {
+      $.ajax({
+      url: "<?=BASE_URL;?>/orders/deleteUserResponse",
+      type: "POST",
+      data: {id : Id},
+      success: function(data){
+        res = JSON.parse(data);
+            if(res.res == "OK")
+            {
+                window.location.reload();
+            }
+        //location.href = "<?=BASE_URL;?>/orders/showFailedEmail";
+      }
+    });
+  }
+</script>
+<style type="text/css">
+.active {
+     background-color:  #80ff80 !important;
+}
+a {
+  color: #080808;
+  text-decoration: none;  
+}
+.currentSelected {
+  border: none;
+  outline: none;
+  padding: 10px 16px;
+  background-color: #656565;
+  cursor: pointer;
+}
+table {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: collapse;
+  margin-top: 30px;
+}
+
+table td,
+table th {
+  border: 1px solid #dadada;
+  padding: 5px;
+  text-align: center;
+  font-size: 12px
+}
+table thead th:nth-child(4){
+  width: 30%;
+}
+.btn{
+    float:right;
+    padding: 5px;
+}
+</style>
+</head>
+<body>
+<table >
+    <tr >
+        <th>No.</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Ref No.</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Contact</th>
+        <th>Notes</th>
+        <th><input id="markAll" type="checkbox" name="delete_all">Delete</th>
+    </tr>
+        <?php $i=1; foreach ($users as $user):        
+        ?>
+        <tr>
+            <td><?=$i?></td>
+            <td><?=$user['first_name'].' '.$user['last_name']?></td>
+            <td><?=$user['email']?></td>
+            <td><?=$user['order_num']?></td>
+            <td><?=$user['work_date']?></td>
+            <td><?=$user['work_time']?></td>
+            <td><?=$user['contactInfo']?></td>
+            <td class="userrd_combine"><?=$user['notes']?></td>
+            <td><input type="checkbox" class="delete_email" name="markCheck[]" value="<?=$user['id']?>" ></td>
+        </tr>
+        <?php $i++; endforeach; ?>
+    <?php if($totalPages > 1){?>
+        <div style="margin-top: 10px;">
+            <?php $j = 1;
+            for( $j; $j <= $totalPages; $j++){ ?>
+                <a class="currentSelected <?php echo ($pageNo == $j) ? active :'' ?>" href="<?=BASE_URL?>/orders/showUserResponse?page_no=<?=$j?>"><?php echo $j ?></a>   
+            <?php } ?>
+        </div>
+    <?php }?>
+   <input class="btn" id="deleteAll" type="button" name="deleteAll" value="Delete">
+</table>
+<!-- <div id="listbox" style="float: left;">
+</div> -->
+</body>
+</html>

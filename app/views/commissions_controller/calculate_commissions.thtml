@@ -664,7 +664,7 @@ $(document).ready(function()
 				</td>
 				<td id="comm_val_1_<?=$obj['order_number']?>"  class="<?=$name_class?> <?=$local_class?>" align="right" commision_val= "<?=($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$rows_persons[1]['total_comm']?>" ><?=($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['total_comm']) ?>&nbsp;</td>
 				
-				<td rowspan="4"><input  type="text" name="techCommArr[<?php echo $obj['id'] ?>][admin-notes]" placeholder="Notes" value="<?php echo $obj['admin_notes']?>">
+				<td rowspan="4"><input  type="text" name="techCommArr[<?php echo $obj['id'] ?>][admin-notes]" placeholder="Notes" value="<?php echo $obj['admin_commission_reply']?>">
 				</td>
 				
 				<td>
@@ -975,7 +975,7 @@ $(document).ready(function()
 <input type="hidden" name="isAdmin" value="1">
   <input class="adminSubmit" type="button" name="submit3" onclick="history.back();return false;" id="submit3" value="Save" >
 <!-- <input class="adminSubmit" type="submit" name="Reply" value="Reply"> -->
-<input class="adminSubmit" type="button" id="reply-to-tech" name="Reply" value="Reply">
+<input class="adminSubmit" type="button" id="reply-to-tech" name="Reply" value="Send Email">
 <?php }?>
 <?php if ($common->getLoggedUserRoleID() == "6") {?>
 <div style="margin-top: 20px;"><textarea rows="10" cols="50" name="adminCommonNotes" id="adminCommonNotes" placeholder="Notes" value=""></textarea></div>

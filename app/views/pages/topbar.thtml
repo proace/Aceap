@@ -35,10 +35,10 @@ $(document).ready(function(e){
         get_chat_count();
 	    }, 20000 );
 
-	   var blink_speed = 500; 
-	   var t = setInterval(function () 
-	   	{ var ele = document.getElementById('showMessage');
-	   		ele.style.visibility = (ele.style.visibility == 'hidden' ? '' : 'hidden'); }, blink_speed);
+	   // var blink_speed = 500; 
+	   // var t = setInterval(function () 
+	   // 	{ var ele = document.getElementById('showMessage');
+	   // 		ele.style.visibility = (ele.style.visibility == 'hidden' ? '' : 'hidden'); }, blink_speed);
 });
 function get_chat_count(){ 
  $.ajax({
@@ -49,11 +49,14 @@ function get_chat_count(){
             count = res['total'];
             if(count >= 1 && count > 0)
             {
-            	$('#showMessage').text(count);
+            	// $('#showMessage').text(count);
+            	// window.open("<?=BASE_URL?>/messages/ShowMessages?fromMessage=1", "", "width=50,height=50", "left=1000","top=50");
+
             } if( count == 0)
             {
             	$('#showMessage').text('');
             }
+
         }
    });
 }
@@ -165,7 +168,7 @@ if( $_SESSION['user']['id'] > 0 ) {
 	echo "<div class='tabulator_sm'>";
 	foreach ($tabs as $tab)
 	{
-                if($idx==9){continue;}
+        //if($idx==9){continue;}
 		echo "<div class='tabtrigger_sm $on_off' id='trigger$idx' onclick='openTab($idx);'>$tab</div>";
 		$on_off = "menuOff";
 		$idx++;

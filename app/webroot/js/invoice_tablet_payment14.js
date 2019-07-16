@@ -522,8 +522,8 @@ function SavePayment(){
 			
 			$("#PaymentPaymentMethodId").val(0);
 			$("#paid_by_amount").val(0);
-			// showInvoiceReview();
-			location.reload(); 
+			 showInvoiceReview();
+			//location.reload(); 
 		}
 	});
 }

@@ -43,7 +43,6 @@ function ShowTransactions(mid,fdate,datid,tdate){
 </form>
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
     <tr style="height:25px;">
-        <th>Date</th>
         <?php foreach ($allPaymentMethods as $cur): ?>
         <th><?=$cur?></th>
         <?php endforeach; ?>
@@ -58,26 +57,22 @@ function ShowTransactions(mid,fdate,datid,tdate){
         $class = 'cell'.(++$r%2);
 ?>
     <tr class="<?= $class ?>">
-        <!-- <td align="left"><?=$obj['date']?></td> -->
 <?php
         foreach ($allPaymentMethods as $id => $cur):
 ?>
-                <?php (1*$obj['payments'][$cur]==0)?'&nbsp;':$HtmlAssist->prPrice($obj['payments'][$cur]);?>
+        <?php (1*$obj['payments'][$cur]==0)?'&nbsp;':$HtmlAssist->prPrice($obj['payments'][$cur]);?>
 <?php   endforeach; ?>
-        <!-- <td align="left"><b><?=(1*$obj['payments']['total']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['payments']['total']);?></b></td> -->
+       
         <?php (1*$obj['payments']['total']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['payments']['total']);?>
     </tr>
     <tr id="details<?=$obj['dateid']?>" style="display:none;" class="details"><td colspan=<?php (2+count($allPaymentMethods))?>>&nbsp;</td></tr>
 <?php endforeach; ?>
     <tr style="background-color: yellow;">
-        <td align="right" style="border-top:1px solid #9f9f9f; border-right: 1px solid black;"><b>Total:</b></td>
 <?php
         foreach ($allPaymentMethods as $id => $cur):
 ?>
          <td align="left" style="border-top:1px solid #9f9f9f;border-right: 1px solid black; "><a style="text-decoration: none;color: black;" href="javascript:ShowTransactions(<?=$id?>,'<?=$fdate?>','<?=$obj['dateid']?>', '<?=$tdate?>')"><b><?=(1*$recordsTotal['payments'][$cur]==0)?'&nbsp;':$HtmlAssist->prPrice($recordsTotal['payments'][$cur]);?></b></a></td>
-        <!-- <?php (1*$recordsTotal['payments'][$cur]==0)?'&nbsp;':$HtmlAssist->prPrice($recordsTotal['payments'][$cur]);?> -->
 <?php   endforeach; ?>
     <td align="left" style="border-top:1px solid #9f9f9f;"><b><?=(1*$recordsTotal['payments']['total']==0)?'&nbsp;':$HtmlAssist->prPrice($recordsTotal['payments']['total']);?></b></td>
-
     </tr>   
 </table>

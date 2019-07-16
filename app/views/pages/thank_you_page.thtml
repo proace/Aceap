@@ -1,0 +1,26 @@
+<html> 
+<head>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<style type="text/css">
+ body{margin: 10px}
+ .thank{
+    font-size: 43px;
+ }
+ .thank_color{
+  color: #5C5C5C;
+ }
+
+</style>
+</head>
+<body>
+  <div>
+    <div>
+      <img src="/acesys/app/webroot/img/ProAceLogo.png" style="width: 15%; " >
+    </div>
+    <div style="text-align: center;"><img src="/acesys/app/webroot/img/right.png" style="width: 5%;">
+      <h1 class="thank thank_color">Thank you!</h1>
+      <h2 class="thank_color">Your submission is received and we will contact you soon.</h2>
+    </div>
+  </div>
+</body>
+</html>

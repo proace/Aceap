@@ -122,8 +122,8 @@
     Your commission page<span>
     <br><br><br></div>
     <div style="text-align: center">
-    <a  class="button" href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?<?=$URL?>" target="">GO</a></div>
-    <!-- <a  class="button" href="http://localhost/acesys/index.php/commissions/calculateCommissions?<?=$URL?>" target="">GO</a></div> -->
+    <!-- <a  class="button" href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?<?=$URL?>" target="">GO</a></div> -->
+    <a  class="button" href="<?=BASE_URL?>/commissions/calculateCommissions?<?=$URL?>" target="">GO</a></div>
 </div>
 <script type="text/javascript">
 $(document).ready(function()

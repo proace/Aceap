@@ -4,13 +4,24 @@
   crossorigin="anonymous"></script>
 	<script language="JavaScript">
 		$(document).ready(function(){
+			
 			$("#sq_str").on("keyup",function(e){
 				if(e.which == 13)
 				{
 					submitRequest();
 				}
 			});
+			$("#submit_go").on("click", function (){
+				var propVal = $("#propVal").val();
+				if(propVal != 'reminderLogs') {
+					submitRequest();
+				} else {
+					parent.frames['frame_browser'].showReminderHotList(page='');
+				}
+			});
 		});
+	lpp = 100;
+
 	
 	function callbackSearch()
 	{
@@ -36,69 +47,75 @@
 
 	function prepFields(on)
 	{
-		if (on == "booking_source_id")
-		{
-			
-			document.getElementById('sq_str').style.display = 'none';
-			document.getElementById('booking_source_id').style.display = '';
-			document.getElementById('Campaign_source_id_frontend').style.display = 'none';
-			document.getElementById('order_type_id').style.display = 'none';
-			document.getElementById('callresult').style.display = 'none';
-			document.getElementById('callback_agent_option_frontend').style.display = 'none';
-		}
-		else if (on == "Campaign_data")
-		{
-			console.log("Campaign");
-			document.getElementById("Campaign_source_id_frontend").selectedIndex = "0";
-			document.getElementById('sq_str').style.display = 'none';
-			document.getElementById('booking_source_id').style.display = 'none';
-			document.getElementById('Campaign_source_id_frontend').style.display = '';
-			document.getElementById('order_type_id').style.display = 'none';
-			document.getElementById('callresult').style.display = 'none';
-			document.getElementById('callback_agent_option_frontend').style.display = 'none';
-		}
-		else if (on == "order_type_id")
-		{
-			document.getElementById('sq_str').style.display = 'none';
-			document.getElementById('booking_source_id').style.display = 'none';
-			document.getElementById('Campaign_source_id_frontend').style.display = 'none';
-			document.getElementById('order_type_id').style.display = '';
-			document.getElementById('callresult').style.display = 'none';
-			document.getElementById('callback_agent_option_frontend').style.display = 'none';
-		}
-		else if (on == "callresult")
-		{
-			document.getElementById('sq_str').style.display = 'none';
-			document.getElementById('booking_source_id').style.display = 'none';
-			document.getElementById('order_type_id').style.display = 'none';
-			document.getElementById('Campaign_source_id_frontend').style.display = 'none';
-			document.getElementById('callback_agent_option_frontend').style.display = 'none';
-			document.getElementById('callresult').style.display = '';
-		}
-		else if (on == "callback_date_dropdown")
-		{
-			console.log("call");
-			document.getElementById('callback_agent_option_frontend').style.display = '';
-			document.getElementById('sq_str').style.display = 'none';
-			document.getElementById('booking_source_id').style.display = 'none';
-			document.getElementById('order_type_id').style.display = 'none';
-			document.getElementById('Campaign_source_id_frontend').style.display = 'none';
-			document.getElementById('callresult').style.display = 'none';
-		}
-		else
-		{
+		$("#propVal").val(on);
 
-			document.getElementById('callback_missed_call_dropdown').style.display = 'none';
-			document.getElementById('missed_callback_dates').style.display = 'none';
+			if (on == "booking_source_id")
+			{
+				
+				document.getElementById('sq_str').style.display = 'none';
+				document.getElementById('booking_source_id').style.display = '';
+				document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+				document.getElementById('order_type_id').style.display = 'none';
+				document.getElementById('callresult').style.display = 'none';
+				document.getElementById('callback_agent_option_frontend').style.display = 'none';
+				document.getElementById('reminder-email-box').style.display = 'block';		}
+			else if (on == "Campaign_data")
+			{
+				document.getElementById("Campaign_source_id_frontend").selectedIndex = "0";
+				document.getElementById('sq_str').style.display = 'none';
+				document.getElementById('booking_source_id').style.display = 'none';
+				document.getElementById('Campaign_source_id_frontend').style.display = '';
+				document.getElementById('order_type_id').style.display = 'none';
+				document.getElementById('callresult').style.display = 'none';
+				document.getElementById('callback_agent_option_frontend').style.display = 'none';
+				// document.getElementById('reminderLogs').style.display = 'none';
+			}
+			else if (on == "order_type_id")
+			{
+				// document.getElementById('reminderLogs').style.display = 'none';
+				document.getElementById('sq_str').style.display = 'none';
+				document.getElementById('booking_source_id').style.display = 'none';
+				document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+				document.getElementById('order_type_id').style.display = '';
+				document.getElementById('callresult').style.display = 'none';
+				document.getElementById('callback_agent_option_frontend').style.display = 'none';
+			}
+			else if (on == "callresult")
+			{
+				// document.getElementById('reminderLogs').style.display = 'none';
+				document.getElementById('sq_str').style.display = 'none';
+				document.getElementById('booking_source_id').style.display = 'none';
+				document.getElementById('order_type_id').style.display = 'none';
+				document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+				document.getElementById('callback_agent_option_frontend').style.display = 'none';
+				document.getElementById('callresult').style.display = '';
+			}
+			else if (on == "callback_date_dropdown")
+			{
+				// document.getElementById('reminderLogs').style.display = 'none';
+				document.getElementById('callback_agent_option_frontend').style.display = '';
+				document.getElementById('sq_str').style.display = 'none';
+				document.getElementById('booking_source_id').style.display = 'none';
+				document.getElementById('order_type_id').style.display = 'none';
+				document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+				document.getElementById('callresult').style.display = 'none';
+			}
+			else
+			{
+				// document.getElementById('reminderLogs').style.display = 'none';
 
-			document.getElementById('sq_str').value = '';
-			document.getElementById('sq_str').style.display = '';
-			document.getElementById('callback_agent_option_frontend').style.display = 'none';
-			document.getElementById('booking_source_id').style.display = 'none';
-			document.getElementById('order_type_id').style.display = 'none';
-			document.getElementById('Campaign_source_id_frontend').style.display = 'none';
-			document.getElementById('callresult').style.display = 'none';
-		}
+				document.getElementById('callback_missed_call_dropdown').style.display = 'none';
+				document.getElementById('missed_callback_dates').style.display = 'none';
+
+				document.getElementById('sq_str').value = '';
+				document.getElementById('sq_str').style.display = '';
+				document.getElementById('callback_agent_option_frontend').style.display = 'none';
+				document.getElementById('booking_source_id').style.display = 'none';
+				document.getElementById('order_type_id').style.display = 'none';
+				document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+				document.getElementById('callresult').style.display = 'none';
+
+			}
 	}
 
 	function callbackSource(val)
@@ -315,7 +332,8 @@ Date.prototype.format = function (mask, utc) {
 <input type="hidden" id="hidden_flag_hotlist" name="hidden_flag_hotlist" value="not_select">
 <form id="searchform" onSubmit="submitRequest();return false;">
 <div id="searchbox" style="width: 99%; padding: 1px; text-align: center; background: #CCCCCC;">
-	<select name="sq_crit" id="sq_crit" style="width: 60px;" onchange="prepFields(this.value); if (this.value == 'callback_date' || this.value == 'Campaign_data') callbackSearch();">
+	<!-- <select name="sq_crit" id="sq_crit" style="width: 60px;" onchange="prepFields(this.value); if (this.value == 'callback_date' || this.value == 'Campaign_data') callbackSearch();"> -->
+		<select name="sq_crit" id="sq_crit" style="width: 60px;" onchange="prepFields(this.value); if (this.value == 'callback_date') callbackSearch();">
 		<option value="REF">REF #</option>
 		<option value="phone">Phone</option>
 		<? if (($common->getLoggedUserRoleID() != "9")&&($common->getLoggedUserRoleID() != "3")) { ?>
@@ -373,7 +391,8 @@ Date.prototype.format = function (mask, utc) {
       $html->selectTag('Order/campaign_id', $camp_list, null, 'style="width: 115px; display: none;" onchange="callbackSource(this.value);" id="Campaign_source_id_frontend"');
       ?>
 	<input name="sq_str" id="sq_str" style="width: 115px;" />
-	<input type="button" id='submit_go' value="GO" style="width: 29px; font-weight: bold;" onclick="submitRequest();" />
+	<input type="button" id='submit_go' value="GO" style="width: 29px; font-weight: bold;"/>
+	<input type="hidden" name="propVal" id="propVal">
 	<input type='hidden' name="sq_str_missed_dates" id="sq_str_missed_dates" value="" />
 	<input type='hidden' name="current_role" id="current_role_id" value="<?php echo $common->getLoggedUserRoleID();?>" />
 	<!-- input type="button" value="callback" style="width: 52px; font-size: 9px;" / -->

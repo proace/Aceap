@@ -144,6 +144,19 @@ class ListsComponent extends Object
 				return $Ret;
 		}
 
+		function allCampaingList()
+		{
+				$db =& ConnectionManager::getDataSource($this->controller->User->useDbConfig);
+				
+				$result = $db->_execute("select a.id, a.campaign_name as name from ace_rp_reference_campaigns a");
+				
+				$Ret = array();
+
+				while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+					$Ret[] = $row['id'];
+				}
+				return $Ret;
+		}
 		function AgentCampaingList($agent_id)
 		{
 				$db =& ConnectionManager::getDataSource($this->controller->User->useDbConfig);

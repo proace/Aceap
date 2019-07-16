@@ -1,0 +1,136 @@
+<html> 
+<head>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<script>
+
+jQuery( document ).ready(function($) {
+        $('#refreshData').on('click', function(){
+            $.ajax({
+              url: "<?=BASE_URL;?>/orders/showFailedEmail",
+              type: "GET",
+              data: {},
+              success: function(data){
+              }
+           });
+      });
+      $('#markAll').on('click', function(){
+              $(".delete_email").attr('checked', this.checked);
+          });
+      $('#deleteAll').on('click', function(){
+          var Id = '';
+           $(".delete_email:checkbox:checked").each(function(){
+              Id += (Id != "")? "," : "";
+              Id += $(this).val();
+          });
+          deleteUser(Id);
+      });
+});
+
+function deleteUser(Id)
+  {
+      $.ajax({
+      url: "<?=BASE_URL;?>/orders/deleteEmailEntry",
+      type: "POST",
+      data: {id : Id},
+      success: function(data){
+        res = JSON.parse(data);
+            if(res.res == "OK")
+            {
+                window.location.reload();
+            }
+        //location.href = "<?=BASE_URL;?>/orders/showFailedEmail";
+      }
+    });
+  }
+</script>
+<style type="text/css">
+.active {
+     background-color:  #80ff80 !important;
+}
+a {
+  color: #080808;
+  text-decoration: none;  
+}
+.currentSelected {
+  border: none;
+  outline: none;
+  padding: 10px 16px;
+  background-color: #656565;
+  cursor: pointer;
+}
+table {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: collapse;
+  margin-top: 30px;
+}
+
+table td,
+table th {
+  border: 1px solid #dadada;
+  padding: 5px;
+}
+table thead th:nth-child(4){
+  width: 30%;
+}
+.btn{
+    float:right;
+    padding: 5px;
+    margin-right: 5px;
+    background: #F5F5F5;
+    border-top: 2px solid white;
+    border-left: 2px solid white;
+    border-bottom: 2px solid #A7A6AA;
+    border-right: 2px solid #A7A6AA;
+    font-size: 12px;
+    font-weight: bold;
+    width: 56px;
+    height: 26px;
+}
+.button {
+    float: right;
+    width: 53px;
+    height: 13px;
+    margin-right: 5px;
+    padding: 5px;
+    text-align: center;
+}
+</style>
+</head>
+<body>
+<table >
+    <tr >
+        <th>No.</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Subject</th>
+        <th>Reason</th>
+        <th><input id="markAll" type="checkbox" name="delete_all">Delete</th>
+    </tr>
+        <?php $i=1; foreach ($emails as $email):        
+        ?>
+        <tr>
+            <td><?=$i?></td>
+            <td><?=$email['first_name'].' '.$email['last_name']?></td>
+            <td><?=$email['email']?></td>
+            <td><?=$email['subject']?></td>
+            <td class="word_combine"><?=$email['reason']?></td>
+            <td><input type="checkbox" class="delete_email" name="markCheck[]" value="<?=$email['id']?>" ></td>
+        </tr>
+        <?php $i++; endforeach; ?>
+    <?php if($totalPages > 1){?>
+        <div style="margin-top: 10px;">
+            <?php $j = 1;
+            for( $j; $j <= $totalPages; $j++){ ?>
+                <a class="currentSelected <?php echo ($pageNo == $j) ? active :'' ?>" href="<?=BASE_URL?>/orders/showFailedEmail?page_no=<?=$j?>"><?php echo $j ?></a>   
+            <?php } ?>
+        </div>
+    <?php }?>
+   <input class="btn" id="deleteAll" type="button" name="deleteAll" value="Delete">
+   <a class="button" href="<?=BASE_URL?>/orders/showFailedEmail?page_no=1">Refresh</a>
+   <!-- <input class="btn" id="refreshData" type="button" name="refreshData" value="Refresh">  -->
+</table>
+<!-- <div id="listbox" style="float: left;">
+</div> -->
+</body>
+</html>

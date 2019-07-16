@@ -6,7 +6,7 @@ class OrdersController extends AppController
 {
 	//To avoid possible PHP4 problemfss
 	var $name = "OrdersController";
-
+	var $G_URL  = "http://hvacproz.ca";
 
 	var $uses = array('OrderEstimate','Order', 'CallRecord', 'User', 'Customer', 'OrderItem',
                     'Timeslot', 'OrderStatus', 'OrderType', 'Item',
@@ -151,7 +151,6 @@ class OrdersController extends AppController
     	if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
 			$this->preViewEstimate($_POST);
 		}else{
-
 		//Prepare the date for entry into the DB
 		//Set nulls into the empty selects
 		$this->Common->SetNull($this->data['Order']['booking_source_id']);
@@ -162,6 +161,7 @@ class OrdersController extends AppController
 		$this->Common->SetNull($this->data['Order']['job_technician2_id']);
 		$this->Common->SetNull($this->data['Order']['job_technician2_id']);
 		$this->Common->SetNull($this->data['Order']['job_reference_id']);
+		$paidById = $this->data['Order']['payment_method_type'];
 
 		// Default booking date is today, telemarketer - current user
 		$SendToDisp = false;
@@ -286,9 +286,21 @@ class OrdersController extends AppController
 		{
 			//Get Order ID
 			if ($this->Order->id)
-			  $order_id = $this->Order->id;
-			else
+			{
+				$order_id = $this->Order->id;
+				if(empty($this->data['Order']['id']))
+				{
+				  $itemTotal = $this->data['Order']['current_item_total'];
+				  $creator = $this->Common->getLoggedUserID();
+				  $date = date("Y-m-d");
+				  $savePayment = "INSERT INTO ace_rp_payments (idorder, creator, payment_method, payment_date, paid_amount, payment_type) VALUES (".$order_id.", ".$creator.", ".$paidById.", '$date', '$itemTotal', 1)";
+				  $db->_execute($savePayment);
+				}
+			}	
+			else {
+
 			  $order_id = $this->Order->getLastInsertId();
+			}
 		// 1. Items
 		// Clear Previous Order Items of class 'booking'
 		//$this->Order->BookingItem->execute("DELETE FROM " . $this->Order->BookingItem->tablePrefix . "order_items WHERE order_id = '".$order_id."' AND class=0;");
@@ -440,32 +452,37 @@ class OrdersController extends AppController
 			}
 		}
 		//Now E-Mail the customer with what we just did
+		
+	
 		if($_POST['sendMailOnEstimate']){
 			$mail_sent = false;
 			if ($this->data['Order']['order_status_id'] != 5)
 			{
 			  	if($_POST['havetoprint'] == "1")
 					{
+
 						if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==1){
-					  		$subject = $this->emailCustomerBooking($order_id);			  		$mail_sent = true;
-							$queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$emal_send_date."' WHERE id = '".$order_id."'";
-							$db->_execute($queryEmailDateUpdate);
-				
+					  		if($paidById != 11) {
+						  		$subject = $this->emailCustomerBooking($order_id);			  		$mail_sent = true;
+								$queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$emal_send_date."' WHERE id = '".$order_id."'";
+								$db->_execute($queryEmailDateUpdate);
+							}
 					  	}else if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==0){
 					  		'';	
 					  	}else{
-					  		$queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$emal_send_date."' WHERE id = '".$order_id."'";
-							$db->_execute($queryEmailDateUpdate);
-					  		$subject = $this->emailCustomerBooking($order_id);
-					  		$mail_sent = true;
+						  		$queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$emal_send_date."' WHERE id = '".$order_id."'";
+								$db->_execute($queryEmailDateUpdate);
+						  		$subject = $this->emailCustomerBooking($order_id);
+						  		$mail_sent = true;
 					  	}
 					}
 			}
-
+		if($paidById != 11) {
 			if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==1 && $mail_sent== false ){
 				$this->emailCustomerBooking($order_id, $send_cancalled_email);
 			}
 		}
+	}
 	//die('Loadings...');
 
 		// Trying to create a sale record for the call history
@@ -575,7 +592,13 @@ class OrdersController extends AppController
 			";
 			$db->_execute($query);
 			}
-
+		// LOKI= update payment method type
+		
+		if($paidById)
+		{
+			$query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`payment_method_type` =".$paidById." WHERE arc.id=".$order_id.";";
+			$up_order = $db->_execute($query_order_up);
+		}
 		$campId = $this->data['Order']['order_campaing_id'];
 		$cusId = $this->data['Order']['customer_id'];
 		if(!empty($campId))
@@ -589,7 +612,6 @@ class OrdersController extends AppController
 			$get_user = "SELECT id from ace_rp_all_campaigns where call_history_ids=".$cusId;
 			$user_result = $db->_execute($get_user);
 			$row = mysql_fetch_array($user_result);
-			// print_r($row);die("hua");
 			if(empty($row['id']))
 			{
 
@@ -641,8 +663,8 @@ class OrdersController extends AppController
 			echo $queryUpdate = "UPDATE ace_rp_orders set emal_bounce_status='".$emal_bounce_status."' WHERE id = '".$order_id."'";
 			$result = $db->_execute($queryUpdate);
 			*/
+			
 			//Forward user where they need to be - if this is a single action per view
-
 			if($_POST['havetoprint'] == 0 && ($_SESSION['user']['role_id']==6 || $_SESSION['user']['role_id']==1)){
 				//REDIRECT FOR SEND ESTIMATE TEMPLATE
 				$this->orderEstimate($order_id, $this->data['Order']['BookingItem'], $fromTech);
@@ -944,6 +966,7 @@ class OrdersController extends AppController
 	}
 
     function orderEstimate($order_id , $bookingItem, $fromTech=null ){
+
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		// Read the order's data from database
 
@@ -956,20 +979,20 @@ class OrdersController extends AppController
 
 		if(1){
 
-		$this->Order->id = $order_id;
-		$orderData = $this->Order->read();
-		
-		if(empty($template)){
-			$templateQuery = "select * from ace_rp_estimation_template where job_type_id =".$this->data['Order']['order_type_id']; 
-			$result = $db->_execute($templateQuery);
-			$template = mysql_fetch_array($result);
-			$first_Temp = "true";
-		}
-		else{
-			$templateQuery = "SELECT * FROM ace_rp_order_estimation WHERE order_id=".$order_id; 
-			$result = $db->_execute($templateQuery);
-			$template = mysql_fetch_array($result);
-		}
+			$this->Order->id = $order_id;
+			$orderData = $this->Order->read();
+			
+			if(empty($template)){
+				$templateQuery = "select * from ace_rp_estimation_template where job_type_id =".$this->data['Order']['order_type_id']; 
+				$result = $db->_execute($templateQuery);
+				$template = mysql_fetch_array($result);
+				$first_Temp = "true";
+			}
+			else{
+				$templateQuery = "SELECT * FROM ace_rp_order_estimation WHERE order_id=".$order_id; 
+				$result = $db->_execute($templateQuery);
+				$template = mysql_fetch_array($result);
+			}
 
 		//Load current questions 
 		//$officeQuery =  $this->_showQuestions(0, 0,$orderData['Order']['order_type_id'],'');
@@ -1033,6 +1056,8 @@ class OrdersController extends AppController
 				<tbody>
 				<tr style="height: 18px;">
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Brand</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Model</strong></td>
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
@@ -1043,6 +1068,8 @@ class OrdersController extends AppController
 				<tbody>
 				<tr style="height: 18px;">
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Brand</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Model</strong></td>
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
@@ -1057,6 +1084,8 @@ class OrdersController extends AppController
 					$classZeroExist = 1;
 					$option1 .='<tr style="height: 18px;">
 						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['brand'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['model_number'].'</td>
 						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
 						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['price']. '</td>
 						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
@@ -1069,6 +1098,8 @@ class OrdersController extends AppController
 					$classOneExist = 1;
 					$option2 .='<tr style="height: 18px;">
 						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['brand'].'</td>
+						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['model_number'].'</td>
 						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
 						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['price']. '</td>
 						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
@@ -1171,13 +1202,13 @@ class OrdersController extends AppController
 				$template['template'] = str_replace("{subtotal1}",'' ,$template['template']);	
 			}
 			
-			if($classOneExist){
-				$template['template'] = str_replace("{option2}",$option2 ,$template['template']);	
-				$template['template'] = str_replace("{subtotal2}",$subTotal2 ,$template['template']);	
-			}else{
-				$template['template'] = str_replace("{option2}",'' ,$template['template']);	
-				$template['template'] = str_replace("{subtotal2}",'' ,$template['template']);	
-			}
+			// if($classOneExist){
+			$template['template'] = str_replace("{option2}",$option2 ,$template['template']);	
+			$template['template'] = str_replace("{subtotal2}",$subTotal2 ,$template['template']);	
+			// }else{
+			// 	$template['template'] = str_replace("{option2}",'' ,$template['template']);	
+			// 	$template['template'] = str_replace("{subtotal2}",'' ,$template['template']);	
+			// }
 		}
 		else{
 			$officeQueryHTML = '<table class="officeQueryHTML" style="border-collapse: collapse; width: 35%;" border="1">
@@ -1202,6 +1233,8 @@ class OrdersController extends AppController
 				<tbody>
 				<tr style="height: 18px;">
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Brand</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Model</strong></td>
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
@@ -1212,6 +1245,8 @@ class OrdersController extends AppController
 				<tbody>
 				<tr style="height: 18px;">
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Brand</strong></td>
+					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Model</strong></td>
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
 					<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
@@ -1226,6 +1261,8 @@ class OrdersController extends AppController
 					$classZeroExist = 1;
 					$option1 .='<tr style="height: 18px;">
 						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
+						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['brand'].'</td>
+						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['model_number'].'</td>
 						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
 						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['price']. '</td>
 						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
@@ -1238,6 +1275,8 @@ class OrdersController extends AppController
 					$classOneExist = 1;
 					$option2 .='<tr style="height: 18px;">
 						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
+						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['brand'].'</td>
+						<td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['model_number'].'</td>
 						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
 						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['price']. '</td>
 						<td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
@@ -1340,6 +1379,7 @@ class OrdersController extends AppController
 			}
 			
 			if($classOneExist){
+
 				$template['estimate'] =preg_replace('/<table class="option2_new" [^>]*>.*?<\/table>/si',$option2,$template['estimate']);
 				$template['estimate'] =preg_replace('/<table class="subtotal2" [^>]*>.*?<\/table>/si',$subTotal2,$template['estimate']);
 			}else{	
@@ -1382,6 +1422,7 @@ class OrdersController extends AppController
 	}
 
 	function saveAndSendEstimateForOrder(){
+
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		if(isset($_POST['print'])){
 
@@ -1416,6 +1457,7 @@ class OrdersController extends AppController
 			}
 
 			if($template){
+
 				$query = "UPDATE ace_rp_order_estimation set estimate='".$_POST['editor']."' where order_id = ".$_POST['order_id'];
 
 			}
@@ -1441,19 +1483,34 @@ class OrdersController extends AppController
 	function sendMailEstimate(){
 		$orderId = $_POST['order_id'];
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-		$query = "SELECT * FROM ace_rp_order_estimation WHERE order_id=".$orderId; 
+		$query = "SELECT oe.*, o.* FROM ace_rp_order_estimation oe INNER JOIN ace_rp_orders o ON oe.order_id = o.id   WHERE oe.order_id=".$orderId; 
 		$result = $db->_execute($query);
-
+		$currentDate = date("Y-m-d");
 		while ($row = mysql_fetch_array($result)){
 			$template = $row;
 		}
-		$db->_execute("UPDATE ace_rp_orders set estimate_sent = 1 where id=".$orderId);
 		$subject = 'Ace Services : Order Estimate';
-		$headers = "From: info@acecare.ca\n";
-		$headers .="Content-Type: text/html;charset=utf-8";
-    	$msg = '<html><body>'.$template['estimate'].'</body></html>';
-		$msg = str_replace("\\", '' , $msg);
-		$res = mail($_POST['email'], $subject,$msg, $headers);
+		$new = str_replace('&nbsp;', ' ', $template['estimate']);
+		$message = html_entity_decode($new);
+		$email = $_POST['email'];
+		$res1 = $this->sendEmailUsingMailgun($email,$subject,$message);		
+		if (strpos($res1, '@acecare') !== false) 
+		{
+	    	$is_sent = 1;
+		} else 
+		{
+			$is_sent = 0;
+		}
+		
+		if($is_sent) {
+			$db->_execute("UPDATE ace_rp_orders set estimate_sent =".$is_sent." where id=".$orderId);
+			$insertLog = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$orderId.",".$template['customer_id'].",".$template['order_type_id'].",'".$currentDate."',".$is_sent.",'".$message."', '".$res1."')";
+			$insetRes = $db->_execute($insertLog);
+
+			$response  = array("res" => "OK");
+	 		echo json_encode($response);
+	 		exit();
+		}
 		exit;
 	}
 
@@ -1959,6 +2016,7 @@ class OrdersController extends AppController
 	function editBooking()
 	{   
 		// error_reporting(E_ALL);
+		// print_r("jbvjb"); die;
 		$this->layout='edit';
 		$fromTech = isset($this->params['url']['from_tech_page']) ? $this->params['url']['from_tech_page'] :0;
 		$techOrderId = isset($this->params['url']['techOrderId']) ? $this->params['url']['techOrderId'] :0;
@@ -1969,6 +2027,7 @@ class OrdersController extends AppController
 
 		$is_booking = isset($this->params['url']['is_booking'])?$this->params['url']['is_booking'] : "";
 		$orderNo = isset($this->params['url']['orderNo'])?$this->params['url']['orderNo'] : '';
+		$fromEstimate = isset($this->params['url']['fromEstimate']) ? $this->params['url']['fromEstimate'] :0;
 
 		if (!empty($this->data['Order']))
 		{
@@ -2000,6 +2059,7 @@ class OrdersController extends AppController
 			// Check submitted data for any special parameters to be set
 			$order_id = $this->params['url']['order_id'];
 			$customer_id = $this->params['url']['customer_id'];
+			
 			if($customer_id)
 			{
 				$this->Customer->id = $customer_id;
@@ -2040,7 +2100,15 @@ class OrdersController extends AppController
 
 				$result = $db->_execute($query);
 			}
-
+			//# Loki Retrieve all payment types
+			$query = " SELECT * from ace_rp_payment_methods";
+			$result1 = $db->_execute($query);
+			while($row = mysql_fetch_array($result1))
+			{
+				$methods[$row['id']] = $row;
+			}
+		
+			$this->set("payment_types", $methods);
 			// If order ID is submitted, prepare order's data to be displayed
 			if ($order_id)
 			{
@@ -2131,16 +2199,16 @@ class OrdersController extends AppController
 
 				//Techs' commissions
 				$comm = $this->requestAction('/commissions/getForOrder/'.$order_id);
-				$tech1_comm = $comm[1]['total_comm'];
-				$tech2_comm = $comm[2]['total_comm'];
+				$tech1_comm = $comm[0][1]['total_comm'];
+				$tech2_comm = $comm[0][2]['total_comm'];
 				if ($this->data['Order']['booking_source_id']==$this->data['Order']['job_technician1_id'])
-					$tech1_comm += $comm[3]['total_comm'];
+					$tech1_comm += $comm[0][3]['total_comm'];
 				elseif ($this->data['Order']['booking_source_id']==$this->data['Order']['job_technician2_id'])
-					$tech2_comm += $comm[3]['total_comm'];
+					$tech2_comm += $comm[0][3]['total_comm'];
 				elseif ($this->data['Order']['booking_source2_id']==$this->data['Order']['job_technician1_id'])
-					$tech1_comm += $comm[4]['total_comm'];
+					$tech1_comm += $comm[0][4]['total_comm'];
 				elseif ($this->data['Order']['booking_source2_id']==$this->data['Order']['job_technician2_id'])
-					$tech2_comm += $comm[4]['total_comm'];
+					$tech2_comm += $comm[0][4]['total_comm'];
 				$this->set('tech1_comm', round($tech1_comm, 2));
 				$this->set('tech2_comm', round($tech2_comm, 2));
 				$this->set('tech1_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']);
@@ -2153,7 +2221,6 @@ class OrdersController extends AppController
 			$created_date = date('Y-m-d H:i');
 			$modified_by = $this->Common->getLoggedUserID();
 			$modified_date = date('Y-m-d H:i');
-
 			// Retrieve an additional information from the submitted parameters
 			$this->data['Order']['job_date'] = $this->params['url']['job_date'];
 			$this->data['Order']['job_time_beg'] = $this->params['url']['job_time_beg'];
@@ -2215,20 +2282,24 @@ class OrdersController extends AppController
 				$this->set('tab7','tabOff');
 				$this->set('tab3','tabOff');
 				$this->set('tab10','tabOff');
+				$this->set('tab11','tabOff');
 				$this->set('page1','block');
 				$this->set('page3','none');
 				$this->set('page7','none');
 				$this->set('page10','none');
+				$this->set('page11','none');
 			} else {
 				$this->set('tab_num',3);
 				$this->set('tab1','tabOff');
 				$this->set('tab7','tabOff');
 				$this->set('tab10','tabOff');
+				$this->set('tab11','tabOff');
 				$this->set('tab3','tabOver');
 				$this->set('page1','none');
 				$this->set('page3','block');
 				$this->set('page10','none');
 				$this->set('page7','none');
+				$this->set('page11','none');
 			}
 					
 		}else if($hotlist){
@@ -2237,21 +2308,26 @@ class OrdersController extends AppController
 			$this->set('tab7','tabOver');
 			$this->set('tab3','tabOff');
 			$this->set('tab10','tabOff');
+			$this->set('tab11','tabOff');
 			$this->set('page1','none');
 			$this->set('page3','none');
 			$this->set('page10','none');
 			$this->set('page7','block');
-		}else
+			$this->set('page11','none');
+		} 
+		else
 		{
 			$this->set('tab_num',1);
 			$this->set('tab1','tabOver ');
 			$this->set('tab7','tabOff');
 			$this->set('tab3','tabOff');
 			$this->set('tab10','tabOff');
+			$this->set('tab11','tabOff');
 			$this->set('page1','block');
 			$this->set('page3','none');
 			$this->set('page7','none');
 			$this->set('page10','none');
+			$this->set('page11','none');
 
 		}
 		// Get call recordings 1 800 394 1980
@@ -2266,6 +2342,16 @@ class OrdersController extends AppController
 				array_push($recordings, $row);
 			}
 		}
+		$emailLogs = array();
+		$query =  "SELECT el.*, ot.name as job_type_name FROM ace_rp_reminder_email_log el LEFT JOIN ace_rp_order_types ot ON el.job_type = ot.id where el.customer_id='".$this->data['Order']['customer_id']."' order by id desc";
+			// $query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
+		$result = $db->_execute($query);
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			array_push($emailLogs, $row);
+		}
+		
+		$this->set('emailLogs',$emailLogs);
 		$this->set('callRecordings',$recordings);
 		// PREPARE DATA FOR UI
 		// Get Associated Options
@@ -2298,7 +2384,7 @@ class OrdersController extends AppController
 		  $campListArray[] = $cla;
 		}
 		$this->set('job_trucks2', $items);
-
+		$this->set('from_estimate', $fromEstimate);
 		$this->set('job_statuses', $this->HtmlAssist->table2array($this->OrderStatus->findAll(), 'id', 'name'));
 		$this->set('job_types', $this->HtmlAssist->table2array($this->OrderType->findAll(array("OrderType.flagactive",1)), 'id', 'name'));
 		$this->set('call_results', $this->HtmlAssist->table2array($this->CallResult->findAll(), 'id', 'name'));
@@ -3487,7 +3573,7 @@ class OrdersController extends AppController
 
 	function searchList()
 	{
-		//error_reporting(E_ALL);
+		// error_reporting(E_ALL);
 		$conditions = array();
 		$is_campaing = 0;
 		$campaignId = 0;
@@ -3518,8 +3604,6 @@ class OrdersController extends AppController
 		if ($_GET['sq_crit'] == 'phone')
 		{
 			if($this->Common->getLoggedUserRoleID() != 6) {
-				// $telem_clause = " AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = c.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
-				
 				$allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
 				$arrayString = implode(',', $allCampList);
 				$telem_clause = " AND c.campaign_id IN ('".$arrayString."') AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = c.id AND order_status_id IN(1,3,5))";
@@ -3548,20 +3632,20 @@ class OrdersController extends AppController
 			$toDate = $_GET['toDate'];
 			$isCampaing = 1;
 			$callResult = $_GET['is_call_result'];
+			$is_search = $_GET['is_search'];
+			$this->set('is_search', $is_search);
 			$this->set('is_campaing', $isCampaing);
 			$data = explode('-', $_GET['sq_str']);
-			if(isset($data[0]) && isset($data[1]) && isset($data[2])){
+			if($_GET['sq_str'] == 0)
+			{
 				$this->set('campId', 0);
-				$allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
-				if(!empty($allCampList)) {
+				if($this->Common->getLoggedUserRoleID() == 6) 
+				{
+					$allCampList = $this->Lists->allCampaingList();
 					$arrayString = implode(',', $allCampList);
-				
-					$callWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
+					// $telem_clause = ' AND o.booking_source_id='.$this->Common->getLoggedUserID();
+					$telem_clause = ' AND c.campaign_id IN ('.$arrayString.')';
 				}
-				// $arrayString = implode(',', $allCampList);
-				
-				// $callWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
-				
 			}
 			else{
 				if($_GET['sq_str'] != ''){
@@ -3598,9 +3682,11 @@ class OrdersController extends AppController
 					$callWhere .= '';
 				}
 			}
+			$orderBy ='';
 			if(!empty($sortBy))
 			{
 				$this->set('sort_by', $sortBy);
+
 				if($sortBy == "call-result")
 				{
 					$orderBy = " ORDER BY u2.callresult ".$sortType;
@@ -3620,8 +3706,7 @@ class OrdersController extends AppController
 				}
 			}
 			$callWhere .= " AND u2.callresult NOT IN (7, 3)";
-			$countSql = "SELECT count(*) as total FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere;
-			
+			$countSql = "SELECT count(DISTINCT u2.id) as total FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id LEFT JOIN ace_rp_reminder_email_log rel ON rel.customer_id = ec.call_history_ids WHERE u2.campaign_id IS NOT NULL ".$callWhere;
 			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 					$result = $db->_execute($countSql);
 
@@ -3630,7 +3715,8 @@ class OrdersController extends AppController
 			$this->set('totalCus', $totalCus);
 			$totalPages = ceil($totalCus / 500);
 			$this->set('totalPages', $totalPages);
-			$sql = "SELECT * FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere.$orderBy." limit ".$limit;
+			$sql = "SELECT o . * , ec . * , u2 . * , u2.id AS uid, (SELECT is_sent FROM ace_rp_reminder_email_log rel WHERE customer_id = uid ORDER BY id DESC 
+				LIMIT 0 , 1) AS is_sent FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id LEFT JOIN ace_rp_reminder_email_log rel ON rel.customer_id = ec.call_history_ids WHERE u2.campaign_id IS NOT NULL ".$callWhere.$orderBy." group by uid limit ".$limit;
 					$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 					$result = $db->_execute($sql);
 
@@ -3639,15 +3725,14 @@ class OrdersController extends AppController
 						foreach ($row as $k => $v)
 						$cust_temp['User'][$k] = $v;
 
-						$cust_temp['User']['telemarketer_id']= $row['call_user_id'];
+						$cust_temp['User']['telemarketer_id']= $row['telemarketer_id'];
 						$cust_temp['User']['callback_time']= date("H:i", strtotime($row['callback_time']));
 						/*$cust_temp['Order']['job_date']= $row['job_date'];
 						$cust_temp['Order']['id']= $row['order_id'];*/
 
 						$cust[$row['id']] = $cust_temp;
 					}
-
-		}
+			}
 
 		else if ($_GET['sq_crit'] == 'REF')
 		{
@@ -3995,8 +4080,10 @@ class OrdersController extends AppController
 
 		foreach ($cust as $cnt => $cur)
 		{
-			foreach ($cur['c'] as $k => $v)
+			if(isset($cur['c'])) {
+				foreach ($cur['c'] as $k => $v)
 				$cust[$cnt]['User'][$k] = str_replace("'","`",str_replace("\"","`",$v));
+			}
 		}
 
 		$vicidial_fields=array('phone'=>'phone_number','postal_code'=>'postal_code','city'=>'city','address_street'=>'address1','last_name'=>'last_name','first_name'=>'first_name');
@@ -4036,6 +4123,7 @@ class OrdersController extends AppController
 
 	function index()
 	{
+		// error_reporting(E_ALL);
 		//Get a list of all technicians
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
@@ -5406,9 +5494,7 @@ class OrdersController extends AppController
 		return $template_subject;
 		//$res = mail($email, $template_subject, $msg, $headers);
 	}
-	function sendEmailUsingMailgun($to,$subject,$body,$order_id){
-		
-
+	function sendEmailUsingMailgun($to,$subject,$body,$order_id = null){
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
 		curl_setopt($ch, CURLOPT_POST, 1);
@@ -5417,9 +5503,8 @@ class OrdersController extends AppController
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$msgid = curl_exec ($ch);//exit;
 		curl_close ($ch);
-
 		$this->manageMailgunEmailLogs($msgid, $subject, $order_id);
-
+		return $msgid;
 		//var_export($response);
 		//$this->verifyEmailUsingMailgun($to,$subject,$order_id,$msgid);
 	}
@@ -6561,17 +6646,24 @@ class OrdersController extends AppController
   // Method returns an HTML code for the given order's item
   function _itemHTML($index, $item, $actions)
   {
+  	$db =& ConnectionManager::getDataSource('default');
+		$query = "SELECT active from ace_rp_show_purchase_price WHERE id =1";
+		$result = $db->_execute($query);
+		$row = mysql_fetch_array($result);
     $h = '';
 
     //Class==0 means that this item is from the original booking
     //Class==1 - the item was sold by technitian (extra sale)
+
     $h .= '<td><input type="hidden" id="data[Order][BookingItem]['.$index.'][class]" name="data[Order][BookingItem]['.$index.'][class]" value="'.$item['class'].'"/>';
     $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][item_id]" name="data[Order][BookingItem]['.$index.'][item_id]" value="'.$item['item_id'].'"/>';
+    $h .='<input type="hidden" id="data[Order][BookingItem]['.$index.'][model_number]" name="data[Order][BookingItem]['.$index.'][model_number]" value="'.$item['model_number'].'"/>';
+    $h .='<input type="hidden" id="data[Order][BookingItem]['.$index.'][brand]" name="data[Order][BookingItem]['.$index.'][brand]" value="'.$item['brand'].'"/>';
     $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][item_category_id]" name="data[Order][BookingItem]['.$index.'][item_category_id]" value="'.$item['item_category_id'].'"/>';
 
 
 	if ($item['name']=='-custom part-')
-		$h .= '<input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value="Write your part here"/>';
+		$h .= '<input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value=""/>';
 	elseif ($item['name']=='-custom item-') {
 		$h .= '<input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value=""/>';
 	} elseif ($item['name']=='Coupon Promotion')
@@ -6626,17 +6718,15 @@ class OrdersController extends AppController
 
 
 
-    if (($item['item_category_id']==2 || $item['item_category_id']==3 || $item['item_category_id']==4 || $item['item_category_id']==5 || $item['item_category_id']==6 || $item['item_category_id']==7 || $item['item_category_id']==8 || $item['item_category_id']==10 ) &&(($this->Common->getLoggedUserRoleID() == 6)||($this->Common->getLoggedUserRoleID() == 1)))
-	//if (($item['item_category_id']==4)&&(($this->Common->getLoggedUserRoleID() == 6)||($this->Common->getLoggedUserRoleID() == 1)))
-	{
-      //$h .= '<br/>part # <input style="width:80px" type="text" id="data[Order][BookingItem]['.$index.'][part_number]" name="data[Order][BookingItem]['.$index.'][part_number]" value="'.$item['part_number'].'"/><br/>';
-		$h .= '&nbsp;<select id="data[Order][BookingItem]['.$index.'][installed]" class="is_installed" name="data[Order][BookingItem]['.$index.'][installed]">';
-		$h .= '<option value=0 '.($item['installed']==0?'selected':'').'>-Choose-</option>';
-		$h .= '<option value=2 '.($item['installed']==2?'selected':'').'>Not installed</option>';
-		$h .= '<option value=1 '.($item['installed']==1?'selected':'').'>Installed</option>';
+ //    if (($item['item_category_id']==2 || $item['item_category_id']==3 || $item['item_category_id']==4 || $item['item_category_id']==5 || $item['item_category_id']==6 || $item['item_category_id']==7 || $item['item_category_id']==8 || $item['item_category_id']==10 ) &&(($this->Common->getLoggedUserRoleID() == 6)||($this->Common->getLoggedUserRoleID() == 1))) 
+	// {
+	// 	$h .= '&nbsp;<select id="data[Order][BookingItem]['.$index.'][installed]" class="is_installed" name="data[Order][BookingItem]['.$index.'][installed]">';
+	// 	$h .= '<option value=0 '.($item['installed']==0?'selected':'').'>-Choose-</option>';
+	// 	$h .= '<option value=2 '.($item['installed']==2?'selected':'').'>Not installed</option>';
+	// 	$h .= '<option value=1 '.($item['installed']==1?'selected':'').'>Installed</option>';
 
-		$h .= '</select>';
-	}
+	// 	$h .= '</select>';
+	// }
 
     $h .= '</td>';
 	if (($item['item_id']=='0'))
@@ -6650,8 +6740,10 @@ class OrdersController extends AppController
 
     if ((($item['item_id']=='1000')||($item['item_id']=='1024')||($item['item_id']=='1218')||($item['item_id']=='1227'))&&$actions)
         $h .= '<td class="price"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price]" name="data[Order][BookingItem]['.$index.'][price]" value="'.$item['price'].'" onkeyup="TotalCalculation()"/></td>';
+    else if($item['name']=='-custom part-')
+    	$h .= '<td class="price"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price]" name="data[Order][BookingItem]['.$index.'][price]" value="'.$item['price'].'" onkeyup="TotalCalculation()"/></td>';
     else
-        $h .= '<td class="price"><input style="width:50px" type="hidden" id="data[Order][BookingItem]['.$index.'][price]" name="data[Order][BookingItem]['.$index.'][price]" value="'.$item['price'].'"/>'.$item['price'].'</td>';
+        $h .= '<td class="price"><input style="width:50px" type="hidden" id="data[Order][BookingItem]['.$index.'][price]" name="data[Order][BookingItem]['.$index.'][price]" value="'.$item['price'].'"/><span>'.$item['price'].'</span></td>';
 
     if ($actions&&($item['item_id']!='1000')&&($item['item_id']!='0'))
         $h .= '<td class="discount"><input style="width:50px;color:red;" type="text" id="data[Order][BookingItem]['.$index.'][discount]" name="data[Order][BookingItem]['.$index.'][discount]" value="'.$item['discount'].'" onkeyup="TotalCalculation()"/></td>';
@@ -6665,37 +6757,57 @@ class OrdersController extends AppController
 
     //For the parts we have to open the purchase price box
     if (($item['item_id']=='1024' || $item['item_id']=='1227')&&$actions) {
-
-		$h .= '<td><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'"/></td>';
-
-	} else {
-		if($this->Common->getLoggedUserRoleID() == 6) {
-		$h .= '<td><input style="width:50px" type="hidden" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'"/>'.$item['price_purchase'].'</td>';
+    	if($item['show_purchase'] == 1 || $item['show_purchase'] == '' || $item['show_purchase'] == NULL)
+    	{
+			$h .= '<td class="purchase"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'"/></td>';
 		} else {
-		$h .= '<td><input style="width:50px" type="hidden" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'"/>&nbsp;</td>';
+			$h .='<td></td>';
+		}
+	} else if($item['name']=='-custom part-'){
+			if($item['show_purchase'] == 1 || $item['show_purchase'] == '' || $item['show_purchase'] == NULL)
+	    	{
+				$h .= '<td class="purchase"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'" onkeyup="TotalCalculation()"/></td>';
+			} else {
+				$h .='<td></td>';
+			}
+		} 
+	else {
+		if(($this->Common->getLoggedUserRoleID() == 6)) {
+			if($item['show_purchase'] == 1 || $item['show_purchase'] == '' || $item['show_purchase'] == NULL){
+				$h .= '<td class="purchase"><input style="width:50px" type="hidden" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'"/><span>'.$item['price_purchase'].'</span></td>';
+			} else {
+				$h .='<td></td>';
+			}
+		}
+		else {
+			if($item['show_purchase'] == 1 || $item['show_purchase'] == '' || $item['show_purchase'] == NULL) {
+				$h .= '<td class="purchase"><input style="width:50px" type="hidden" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'"/>&nbsp;</td>';
+			} else {
+				$h .='<td></td>';
+			}
 		}
 	}
     $h .= '<td class="amount" id="data[Order][BookingItem]['.$index.'][amount]">'.$this->HtmlAssist->prPrice(round($item['quantity']*$item['price']-$item['discount']+$item['addition'],2)).'</td>';
 
-    if ($this->Common->getLoggedUserRoleID() == 6)
-	{
-		$h .= '<td style="background:#00bb00;"><input style="width:50px;color:red;background:#c4ffc4;" type="text" id="data[Order][BookingItem]['.$index.'][tech_minus]" name="data[Order][BookingItem]['.$index.'][tech_minus]" value="'.$item['tech_minus'].'"/></td>';
-		$h .= '<td style="background:#00bb00;"><input style="width:50px;background:#c4ffc4;" type="text" id="data[Order][BookingItem]['.$index.'][tech]" name="data[Order][BookingItem]['.$index.'][tech]" value="'.$item['tech'].'"/></td>';
-	}
-    elseif ($this->Common->getLoggedUserRoleID() == 1)
-	{
-		$h .= '<td style="background:#55bb55;"><input style="width:50px;color:red;background:#c4ffc4;" type="hidden" id="data[Order][BookingItem]['.$index.'][tech_minus]" name="data[Order][BookingItem]['.$index.'][tech_minus]" value="'.$item['tech_minus'].'"/>'.$item['tech_minus'].'</td>';
-		$h .= '<td style="background:#55bb55;"><input style="width:50px;background:#c4ffc4;" type="hidden" id="data[Order][BookingItem]['.$index.'][tech]" name="data[Order][BookingItem]['.$index.'][tech]" value="'.$item['tech'].'"/>'.$item['tech'].'</td>';
-	}
+ //    if ($this->Common->getLoggedUserRoleID() == 6)
+	// {
+	// 	$h .= '<td style="background:#00bb00;"><input style="width:50px;color:red;background:#c4ffc4;" type="text" id="data[Order][BookingItem]['.$index.'][tech_minus]" name="data[Order][BookingItem]['.$index.'][tech_minus]" value="'.$item['tech_minus'].'"/></td>';
+	// 	$h .= '<td style="background:#00bb00;"><input style="width:50px;background:#c4ffc4;" type="text" id="data[Order][BookingItem]['.$index.'][tech]" name="data[Order][BookingItem]['.$index.'][tech]" value="'.$item['tech'].'"/></td>';
+	// }
+ //    elseif ($this->Common->getLoggedUserRoleID() == 1)
+	// {
+	// 	$h .= '<td style="background:#55bb55;"><input style="width:50px;color:red;background:#c4ffc4;" type="hidden" id="data[Order][BookingItem]['.$index.'][tech_minus]" name="data[Order][BookingItem]['.$index.'][tech_minus]" value="'.$item['tech_minus'].'"/>'.$item['tech_minus'].'</td>';
+	// 	$h .= '<td style="background:#55bb55;"><input style="width:50px;background:#c4ffc4;" type="hidden" id="data[Order][BookingItem]['.$index.'][tech]" name="data[Order][BookingItem]['.$index.'][tech]" value="'.$item['tech'].'"/>'.$item['tech'].'</td>';
+	// }
 
-	if ($actions)
-	{
-		$checked = '';
-		if ($item['print_it']=='on') $checked = '"checked"';
-		$h .= '<td><input type="checkbox" id="data[Order][BookingItem]['.$index.'][print_it]" name="data[Order][BookingItem]['.$index.'][print_it]" '.$checked.'/></td>';
-		$h .= '<td><img onclick="removeItem('.$index.')" src="'.ROOT_URL.'/app/webroot/img/icon-vsm-delete.png"/></td>';
-	}
-
+	// if ($actions)
+	// {
+	// 	$checked = '';
+	// 	if ($item['print_it']=='on') $checked = '"checked"';
+	// 	$h .= '<td><input type="checkbox" id="data[Order][BookingItem]['.$index.'][print_it]" name="data[Order][BookingItem]['.$index.'][print_it]" '.$checked.'/></td>';
+	// 	$h .= '<td><img onclick="removeItem('.$index.')" src="'.ROOT_URL.'/app/webroot/img/icon-vsm-delete.png"/></td>';
+	// }
+    $h .= '<td style="width:22px"><img onclick="removeItem('.$index.')" src="'.ROOT_URL.'/app/webroot/img/icon-vsm-delete.png"/></td>';
     return $h;
   }
 
@@ -6713,7 +6825,9 @@ class OrdersController extends AppController
     $item['item_category_id']=$_GET['category'];
     $item['price_purchase']=$_GET['price_purchase'];
     $item['print_it']='on';
-
+    $item['show_purchase']= $_GET['show_purchase'];
+    $item['model_number']= $_GET['model_number'];
+    $item['brand']= $_GET['brand'];
     echo $this->_itemHTML($index, $item, $actions);
     exit;
   }
@@ -10363,26 +10477,26 @@ class OrdersController extends AppController
 		 $getCommDate = mysql_fetch_array($result, MYSQL_ASSOC);
 
 		 $commDate1 = $getCommDate['max_job_date'];
-		 // print_r($commDate1);die;
 		 // #LOKI - If the max job date is equal to tady's date get the previous job date.
 		if(($commDate1 == $todayDate) || ($commDate1 > $todayDate)) {
 		 	$commDate1 = $this->checkJobAssigned($techId, $todayDate);
 		 	//'2019-03-29'
 		 } 
 
-		 $query = "SELECT comm_date from ace_rp_tech_done_comm where comm_date='".$commDate1."' AND tech_id=".$techId;
-		 $result = $db->_execute($query);
-		 $row = mysql_fetch_array($result, MYSQL_ASSOC);		 
-		 $commDate = $row['comm_date'];
-		// $this->set('isShow','0');
-		// $this->set('URL','');
-		 // if((empty($commDate) || $commDate == '') && ($todayDate != $commDate1))
-		 if((empty($commDate) || $commDate == ''))
+		 if(!empty($commDate1) || $commDate1 != '' )
 		 {
-		 	$urlEncode = 'action=view&order=&sort=&currentPage=&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option=1&ffromdate='.date('d M Y',strtotime($commDate1)).'&cur_ref=';
-		 	$this->set('isShow','1');
+			 $query = "SELECT comm_date from ace_rp_tech_done_comm where comm_date='".$commDate1."' AND tech_id=".$techId;
+			 $result = $db->_execute($query);
+			 $row = mysql_fetch_array($result, MYSQL_ASSOC);		 
+			 $commDate = $row['comm_date'];
+			 // if((empty($commDate) || $commDate == '') && ($todayDate != $commDate1))
+			 if((empty($commDate) || $commDate == ''))
+			 {
+			 	$urlEncode = 'action=view&order=&sort=&currentPage=&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option=1&ffromdate='.date('d M Y',strtotime($commDate1)).'&cur_ref=';
+			 	$this->set('isShow','1');
 
-		 	$this->set('URL', $urlEncode);
+			 	$this->set('URL', $urlEncode);
+			 }
 		 }
 
 			$this->layout = "blank";
@@ -10710,8 +10824,41 @@ class OrdersController extends AppController
 		}
 
 		$order = $this->Order->findById($order_id);
+	
 		$city = $order['Customer']['city'];
-
+		// $h_booked='';
+		// $h_tech='';
+		// $num_items = 0;
+		// foreach ($order['BookingItem'] as $oi)
+		// {
+		// 	if ($oi['class']==0)
+		// 	{
+		// 		$h_booked .= '<tr id="order_'.$num_items.'" class="booked">';
+		// 		$h_booked .= $this->_itemHTML($num_items, $oi, true);
+		// 		$h_booked .= '</tr>';
+		// 	}
+		// 	else
+		// 	{
+		// 		$h_tech .= '<tr id="order_'.$num_items.'" class="extra">';
+		// 		$h_tech .= $this->_itemHTML($num_items, $oi, true);
+		// 		$h_tech .= '</tr>';
+		// 	}
+		// 	$num_items++;
+		// }
+		// foreach ($this->data['BookingCoupon'] as $oi)
+		// {
+		// 	$oi['price'] = 0-$oi['price'];
+		// 	$oi['quantity'] = 1;
+		// 	$oi['name'] = 'Discount';
+		// 	$h_booked .= '<tr id="order_'.$num_items.'" class="booked">';
+		// 	$h_booked .= $this->_itemHTML($num_items, $oi, true);
+		// 	$h_booked .= '</tr>';
+		// 	$num_items++;
+		// }
+		// $this->set('booked_items', $h_booked);
+		// $this->set('tech_items', $h_tech);
+		// $this->set('num_items', $num_items);
+		
 		$this->set('order', $order);
 		$this->set('last_order', $this->Order->findByJobEstimateId($order_id));
 		$this->set('invoice', $this->Invoice->findByOrderId($order_id));
@@ -10744,13 +10891,16 @@ class OrdersController extends AppController
 			$city_id = $row['internal_id'];
 		}
 
+		// $query = "
+		// 	SELECT c.*
+		// 	FROM ace_rp_item_job_categories ic
+		// 	LEFT JOIN ace_iv_categories c
+		// 	ON c.id = ic.item_category_id
+		// 	WHERE ic.job_type_id = (SELECT order_type_id FROM ace_rp_orders WHERE id = $order_id)
+		// ";
 		$query = "
-			SELECT c.*
-			FROM ace_rp_item_job_categories ic
-			LEFT JOIN ace_iv_categories c
-			ON c.id = ic.item_category_id
-			WHERE ic.job_type_id = (SELECT order_type_id FROM ace_rp_orders WHERE id = $order_id)
-		";
+			SELECT *
+			FROM  ace_iv_categories where active=1";
 		$result = $db->_execute($query);
 		while($row = mysql_fetch_array($result))
 		{
@@ -10761,7 +10911,7 @@ class OrdersController extends AppController
 			$query = "UPDATE ace_rp_orders SET tech_visible_agent = 1 WHERE id = $order_id";
 			$db->_execute($query);
 		}
-
+		
 		$this->set('job_type_id', $job_type_id);
 		$this->set('city_id', $city_id);
 		$this->set('order_id', $order_id);
@@ -11735,7 +11885,6 @@ class OrdersController extends AppController
 
 		$order = $this->Order->findById($order_id);
 		$city = $order['Customer']['city'];
-
 		$this->set('order', $order);
 		$this->set('last_order', $this->Order->findByJobEstimateId($order_id));
 		$this->set('invoice', $this->Invoice->findByOrderId($order_id));
@@ -11777,11 +11926,18 @@ class OrdersController extends AppController
 		{
 			$city_id = $row['internal_id'];
 		}
-
+		$methods = array();
+		$query = " SELECT * from ace_rp_payment_methods";
+		$result1 = $db->_execute($query);
+		while($row = mysql_fetch_array($result1))
+		{
+			$methods[$row['id']] = $row;
+		}
 		$this->set('city_id', $city_id);
 		$this->set('order_id', $order_id);
 		$this->set('job_types',$this->Lists->OrderTypes());
-		$this->set('payment_methods', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(), 'id', 'name'));
+		// $this->set('payment_method', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(), 'id', 'name', 'show_picture'));
+		$this->set('payment_methods', $methods);
 	}
 
 	function saveInvoiceTabletPayment() {
@@ -13453,6 +13609,7 @@ class OrdersController extends AppController
 		";
 
 		$db->_execute($query);
+		exit();
 	}
 
 	function validateEmailAddress($cEmail){
@@ -14045,6 +14202,7 @@ function deleteUserFromCampaign()
 
  function checkJobAssigned($techId, $commDate ) {
  	$i = 0;
+ 	$compareDate = date("Y-m-d", strtotime("-30 days"));
 	$commDate = date("Y-m-d", strtotime("-1 days", strtotime($commDate)));
 	$techId = $techId;
  	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
@@ -14057,6 +14215,11 @@ function deleteUserFromCampaign()
 	    return $commDate1;
 	  } else {
 	  	$i++;
+	  	if($commDate == $compareDate)
+	  	{
+	  		 $commDate1 = '';
+	  		return $commDate1;
+	  	}
 	    // continue the recursion
 	   $commDate1 = $this->checkJobAssigned( $techId,$commDate);
 	   return $commDate1;
@@ -14068,6 +14231,472 @@ function deleteUserFromCampaign()
 		$res = $_POST['chatRes'];
 		$_SESSION['user']['old_chat_res'] = $res;
 		exit();
+	}
+
+	#Loki: Set reminder date
+	function setReminderEmail()
+	{
+		$orderId = $this->params['url']['ordid'];
+		$reminderMonths = $_POST['reminderMonths'];
+		$reminderDate = $_POST['reminderDate'];
+		$reminderType = !empty($_POST['reminderType']) ? $_POST['reminderType'] : 0;
+		$remiderNote = !empty($_POST['remiderNote']) ? $_POST['remiderNote'] : NULL;
+		$reminderEmail = $_POST['reminderEmail'];
+		$reminderSms = $_POST['reminderSms'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		if($reminderMonths == 1) {
+			$reminderDate = date('Y-m-d', strtotime($reminderDate));
+		} else {
+			 $reminderDate = date('Y-m-d', strtotime("+".$reminderMonths."months", strtotime($reminderDate)));
+		}
+
+		$query = "UPDATE ace_rp_orders set reminder_date='".$reminderDate."', reminder_type =".$reminderType.", reminder_note='".$remiderNote."',reminder_email=".$reminderEmail.", reminder_sms=".$reminderSms.", reminder_month=".$reminderMonths." where id=".$orderId;
+		$result = $db->_execute($query);
+
+		if ($result) {
+ 			$response  = array("res" => "OK");
+ 			echo json_encode($response);
+ 			exit;
+ 		}
+		exit();
+	}
+
+	/* Loki- Send reminder email to customers before 7 days
+		Reminder types: 1 = always send mail
+						2 = only one time
+						3 = don't send mail
+	*/
+	function sendReminderEmail()
+	{
+		$maildate = date('Y-m-d', strtotime("+7 days"));
+		$db 	  =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query 	  = "SELECT DISTINCT o.id, o.job_time_beg,o.job_date, o.job_time_end ,o.customer_id, o.order_type_id, o.reminder_type , o.reminder_date, o.job_date, o.reminder_month, o.order_number,c.email, c.first_name, c.last_name, ot.name as job_type, rel.is_sent from ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_order_types ot ON ot.id= o.order_type_id LEFT JOIN ace_rp_reminder_email_log rel ON rel.order_id = o.id  WHERE o.reminder_date='".$maildate."'";
+		$result = $db->_execute($query);
+		$settings = $this->Setting->find(array('title'=>'email_template_jobnotification'));
+		$template = $settings['Setting']['valuetxt'];
+		//$template_subject = "Acecare Reminder Email for Job";
+		$settings = $this->Setting->find(array('title'=>'email_template_jobnotification_subject'));
+		$template_subject = $settings['Setting']['subject'];
+		$currentDate = date('Y-m-d');
+
+		while($row = mysql_fetch_array($result, MYSQL_BOTH)) {
+				$url = $this->G_URL.BASE_URL."/pages/showReminderBookingPage?oid=".$row['id']."&cid=".$row['customer_id']."&otype=".$row['order_type_id']."&rdate=".$row['reminder_date']."&onum=".$row['order_number'];
+
+				$link = '<a href='\.urlencode($url).\'>Book Now</a>';
+				$msg = $template;
+				$msg = str_replace('{first_name}', $row['first_name'], $msg);
+				$msg = str_replace('{last_name}', $row['last_name'], $msg);
+				$msg = str_replace('{job_type}','<b>'. $row['job_type'].'</b>', $msg);
+				$msg = str_replace('{last_job_date}', date("d-M-Y",strtotime($row['job_date'])), $msg);
+				$msg = str_replace('{url_confirm}', $link, $msg);
+				$msg = str_replace("&nbsp;", nl2br("\n"), $msg);
+
+			if($row['reminder_type'] != 3) 
+			{
+				$res = $this->sendEmailUsingMailgun($row['email'],$template_subject,$msg);
+				if (strpos($res, '@acecare') !== false) {
+	    			$is_sent = 1;
+				} else {
+					$is_sent = 0;
+				}
+				$message = mysql_real_escape_string($msg);
+				$query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$row['id'].",". $row['customer_id'].",".$row['order_type_id'].",'".$currentDate."',".$is_sent.", '".$message."', '".$res."')";
+				$result1 = $db->_execute($query1);
+				if($row['reminder_type'] == 1)
+				{
+					$reminderDate = date('Y-m-d', strtotime("+".$row['reminder_month']."months", strtotime($maildate)));
+					$setReminderDate = "UPDATE ace_rp_orders set reminder_date='".$reminderDate."' where id=".$row['id'];
+					$reminderRes = $db->_execute($setReminderDate);
+				}
+			}
+		}
+		
+		exit();
+	}
+
+	function reminderHotList()
+	{
+		// error_reporting(E_ALL);
+		$limit = isset($_GET['limit']) ?$_GET['limit'] : 500;
+		$currentDate = date('Y-m-d');
+		$currentSelected = $_GET['currentSelected'];
+		$selectedStr = $_GET['selectedStr'];
+		$is_search = $_GET['is_search'];
+		$this->set('is_search', $is_search);
+		$campId = !empty($_GET['sq_str']) ? $_GET['sq_str'] : 0 ;
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		if($campId > 0)
+		{
+			$this->set('campId', $campId);
+			$callWhere = ' AND ec.last_inserted_id ='.$campId.''; 
+			$emptyEmailWhere = ' AND ec.last_inserted_id ='.$campId.'';
+		} else {
+			if($this->Common->getLoggedUserRoleID() == 6) 
+			{
+				$allCampList = $this->Lists->allCampaingList();
+				$arrayString = implode(',', $allCampList);
+				$callWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
+				$emptyEmailWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
+				//$telem_clause = ' AND c.campaign_id IN ('.$arrayString.')';
+			} else {
+				$allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
+
+				if(!empty($allCampList)) {
+					$arrayString = implode(',', $allCampList);
+				
+					$callWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
+					$emptyEmailWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
+				}
+			}
+		}
+		if($currentSelected == 1 || $currentSelected == 2)
+		{
+			if(!empty($selectedStr)) 
+			{
+				if($selectedStr == 'today')
+				{
+					$callWhere .= " AND o.reminder_date = CURDATE()"; 
+				} else {
+					$callWhere .= '';
+				}
+			} else {
+				$callWhere .= ' AND o.reminder_date IS NOT NULL';
+			}
+			if($currentSelected == 1) {
+				$compare = 1;
+			} elseif($currentSelected == 2) {
+				$compare = 0;
+			}
+			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT is_sent FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
+				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE (SELECT is_sent FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
+				LIMIT 0 , 1) =".$compare." ".$callWhere." limit ".$limit;
+			$result = $db->_execute($sql);
+			
+			$countSql = "SELECT count(*) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL AND (SELECT is_sent FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC LIMIT 0 , 1) =".$compare." ".$callWhere;
+			$resultTotal = $db->_execute($countSql);
+			$rowTotal = mysql_fetch_array($resultTotal);
+		} else if($currentSelected == 3 ) {
+			$countSql = "SELECT count(DISTINCT o.id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere;
+			$resultTotal = $db->_execute($countSql);
+			$rowTotal = mysql_fetch_array($resultTotal);
+			
+			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT is_sent FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
+				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere." group by o.id limit ".$limit;
+			$result = $db->_execute($sql);
+				//print_r($sql); die;
+		} else {
+			$countSql = "SELECT count(*) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE c.email= ''".$emptyEmailWhere;
+			$resultTotal = $db->_execute($countSql);
+			$rowTotal = mysql_fetch_array($resultTotal, MYSQL_ASSOC);
+			$sql = "SELECT o.*, o.id as order_id , c.* FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE c.email= ''".$emptyEmailWhere." limit ".$limit;	
+			$result = $db->_execute($sql);
+		}
+		
+		$totalCus = $rowTotal['total']; 
+		$this->set('totalCus', $totalCus);
+		$totalPages = ceil($totalCus / 500);
+		$this->set('totalPages', $totalPages);
+		$cust = array();
+		$i=0;
+		$cust_temp = array();
+		while ($row = mysql_fetch_array($result, MYSQL_BOTH))
+		{
+			
+			foreach ($row as $k => $v)
+			$cust_temp['User'][$k] = $v;
+			$cust_temp['User']['telemarketer_id']= $row['telemarketer_id'];
+			$cust_temp['User']['callback_time']= date("H:i", strtotime($row['callback_time']));
+			array_push($cust, $cust_temp);
+			$i++;
+		}
+		$this->set('cust', $cust);
+		$this->set('call_results', $this->HtmlAssist->table2array($this->CallResult->findAll(), 'id', 'name'));
+		$this->render('search_list');
+	}
+
+	//LOki: Remove payment image
+
+	function removePaymentImage()
+	{
+		$orderId = $_POST['oid'];
+		$imgPath = $_POST['imgPath'];
+		$rootPath = getcwd();
+		unlink($rootPath.'/app/webroot/payment-images/'.$imgPath);
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "UPDATE ace_rp_orders set payment_image = NULL where id=".$orderId;
+		$res = $db->_execute($query);
+		if ($res) {
+ 			$response  = array("res" => "OK");
+ 			echo json_encode($response);
+ 			exit();
+ 		}
+		exit();		
+	}
+
+	function removePurchaseImage()
+	{
+		$orderId = $_POST['oid'];
+		$imgPath = $_POST['imgPath'];
+		$imgNu = $_POST['imgNo'];
+		$rootPath = getcwd();
+		unlink($rootPath.'/upload_photos/'.$imgPath);
+		if($imgNu == 1)
+		{
+			$pic = 'photo_1';
+		}else{
+			$pic = 'photo_2';
+		}
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "UPDATE ace_rp_orders set ".$pic." = NULL where id=".$orderId;
+		$res = $db->_execute($query);
+		if ($res) {
+ 			$response  = array("res" => "OK");
+ 			echo json_encode($response);
+ 			exit();
+ 		}
+		exit();		
+	}
+	function SendSms()
+	{
+		$phone_number = $_POST['phone'];
+		$cusId = $_POST['cusId'];
+		$message = $_POST['message'];
+		exit();
+	}
+
+	function sendSeparateEmail()
+	{
+		$email   = $_POST['email'];
+		$cusId 	 = $_POST['cusId'];
+		$message = $_POST['message'];
+		$subject = 'Pro Ace  Heating and AIR Conditioning';
+		$db 	 =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$res = $this->sendEmailUsingMailgun($email,$subject,$message);
+		$currentDate = date('Y-m-d');
+		if (strpos($res, '@acecare') !== false) 
+		{
+	    	$is_sent = 1;
+		} else 
+		{
+			$is_sent = 0;
+		}
+		$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$cusId.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
+		$result = $db->_execute($query);
+		if ($result) {
+ 			$response  = array("res" => "OK");
+ 			echo json_encode($response);
+ 			exit();
+ 		}
+		exit();
+	}
+	// Loki: Set campId for sending emails
+	function sendBulkEmails()
+	{
+		$campId  = $_POST['campId'];
+		$db 	 =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query   = "INSERT INTO ace_rp_camp_email (camp_id,status) VALUES (".$campId.", 0)";
+		$res 	 =	$db->_execute($query);
+		if ($res) {
+	 			$response  = array("res" => "OK");
+	 			echo json_encode($response);
+	 			exit();
+	 		}
+		exit();	
+	}
+
+	/* LOki: send mail to all campaign users
+	 status 0 = not complete, 1 = queue, 2 = complete 
+	 */ 	
+	function sendMailToAll()
+	{
+		$db 	 		=& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$getCampIdSql 	= "SELECT camp_id,id from ace_rp_camp_email where status=0 limit 1";
+		$result 		= $db->_execute($getCampIdSql);
+		$campId 		= mysql_fetch_array($result, MYSQL_ASSOC);
+		if(!empty($campId))
+		{
+
+
+			$updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_email set status=1 where id=".$campId['id']."");
+			$currentDate = date('Y-m-d');
+			$settings = $this->Setting->find(array('title'=>'bulk_email'));
+			$message = $settings['Setting']['valuetxt'];
+			$subject = $settings['Setting']['subject'];
+			$sql = "SELECT u2.email, u2.id AS cid, (SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids 		ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN 						ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids WHERE 
+				u2.campaign_id IS NOT NULL AND ec.last_inserted_id = ".$campId['camp_id']." AND ec.show_default =0 AND u2.callresult NOT IN ( 7, 3 ) GROUP BY ord.customer_id";
+			$res = $db->_execute($sql);
+
+			while ($row = mysql_fetch_array($res, MYSQL_ASSOC))
+			{
+				$res1 = $this->sendEmailUsingMailgun($row['email'],$subject,$message);
+				
+				if (strpos($res1, '@acecare') !== false) 
+				{
+			    	$is_sent = 1;
+				} else 
+				{
+					$is_sent = 0;
+				}
+				$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$row['cid'].",'','".$currentDate."',".$is_sent.",'".$message."', '".$res1."')";
+				$result = $db->_execute($query);
+			}
+			$updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_email set status=2 where id=".$campId['id']."");
+			echo "done";
+		}
+		exit();
+	}
+
+	function getStatusMailgun()
+	{
+		$logDate = date("Y-m-d");
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$getLink = "SELECT link from ace_rp_mail_link where log_date ='".$logDate."'";
+		$linkRes = $db->_execute($getLink);
+		$row = mysql_fetch_array($linkRes);
+		$link = "";
+		if(!empty($row['link']) || $row['link'] != '')
+		{
+			$link = $row['link'];
+		}
+
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailgun_status.php");
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS,"link=".$link);
+		// receive server response ...
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$res = 	curl_exec ($ch);//exit;
+		curl_close ($ch);		
+		$data = json_decode($res);
+		$nextLink = $data->paging->next;
+		$explodeLink = explode("events/",$nextLink);
+		
+		foreach ($data->items  as $key => $value) {
+			$msgConstant = 'message-id';
+			$toEmail = $value->message->headers->to;
+			$subject = $value->message->headers->subject;
+			$messageId = $value->message->headers->$msgConstant;
+			$delivery_status = 'delivery-status';
+			$message = mysql_real_escape_string($value->$delivery_status->message);
+			if(empty($message))
+			{
+				$message = mysql_real_escape_string($value->$delivery_status->description);
+			}
+			$query = "INSERT INTO ace_rp_failed_email (email, subject, reason,message_id) VALUES ('".$toEmail."', '".$subject."', '".$message."', '".$messageId."')";
+			$res = $db->_execute($query);
+		}
+		
+		if(!empty($link) || $link != '') 	
+		{
+			$insertLink = "UPDATE ace_rp_mail_link set link='".$explodeLink[1]."' where log_date='".$logDate."'";	
+		} else {
+			$insertLink = "INSERT INTO ace_rp_mail_link (log_date,link) VALUES ('".$logDate."', '".$explodeLink[1]."')";
+		}
+		$response = $db->_execute($insertLink);
+		exit();
+	}
+
+	function showFailedEmail()
+	{
+		$no_of_records_per_page = 25;
+		$pageNo = isset($this->params['url']['page_no']) ?$this->params['url']['page_no']: 1;
+		$offset = ($pageNo-1) * $no_of_records_per_page;
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		// $query = "SELECT fe.*, cus.first_name, cus.last_name from ace_rp_failed_email fe LEFT JOIN ace_rp_customers cus ON fe.email = cus.email where fe.status = 0 LIMIT ".$offset.", ". $no_of_records_per_page."";
+		$query = "SELECT fe.*, cus.first_name, cus.last_name from ace_rp_failed_email fe LEFT JOIN ace_rp_reminder_email_log rel ON rel.message_id = fe.message_id LEFT JOIN ace_rp_customers cus ON rel.customer_id = cus.id where fe.status = 0 LIMIT ".$offset.", ". $no_of_records_per_page."";
+		$res = $db->_execute($query);
+		$emails = array();
+		// $totalQuery = "SELECT count(*) as total from ace_rp_failed_email fe LEFT JOIN ace_rp_customers cus ON fe.email = cus.email where fe.status = 0";
+		$totalQuery = "SELECT count(*) as total from ace_rp_failed_email fe LEFT JOIN ace_rp_reminder_email_log rel ON rel.message_id = fe.message_id LEFT JOIN ace_rp_customers cus ON rel.customer_id = cus.id where fe.status = 0 ";
+		$totalRes = $db->_execute($totalQuery);
+		$row1 = mysql_fetch_array($totalRes, MYSQL_ASSOC);
+		while ($row = mysql_fetch_array($res, MYSQL_ASSOC))
+		{
+			$emails[] = $row;
+		}
+		$totalPages = ($row1['total'] / $no_of_records_per_page);
+		$this->set("emails", $emails);
+		$this->set("totalPages", ceil($totalPages));
+		$this->set("pageNo", $pageNo);
+	}
+	// Loki: Delete the email log
+	function deleteEmailEntry()
+	{
+		$ids = $_POST['id'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$deleteQuery = "DELETE from ace_rp_failed_email where id IN (".$ids.")";
+		$res = $db->_execute($deleteQuery);
+		if ($res) {
+	 			$response  = array("res" => "OK");
+	 			echo json_encode($response);
+	 			exit();
+	 		}
+	 	exit();
+	}
+	// Loki: Save the user mail response for booking.
+	function saveUserResponse()
+	{
+		$orderId 		= $_POST['orderId'];
+		$customerId 	= $_POST['customerId'];
+		$order_num 		= $_POST['orderNum'];
+		$workDate 		= $_POST['workDate'];
+		$workTime 		= $_POST['workTime'];
+		$Notes  		= $_POST["Notes"];
+		$contactInfo	= $_POST['contactInfo'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "INSERT INTO ace_rp_user_booking_response (order_id, customer_id, order_num, work_date, work_time, notes, contactInfo) VALUES (".$orderId.", ".$customerId.", ".$order_num.", '".$workDate."','".$workTime."','".$Notes."',".$contactInfo.")";
+		$result = $db->_execute($query);
+		$this->redirect('/pages/thankYouPage');
+	}
+
+	function showUserResponse()
+	{
+		$no_of_records_per_page = 25;
+		$pageNo = isset($this->params['url']['page_no']) ?$this->params['url']['page_no']: 1;
+		$offset = ($pageNo-1) * $no_of_records_per_page;
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "SELECT ur.*, cus.first_name, cus.last_name, cus.email from ace_rp_user_booking_response ur LEFT JOIN ace_rp_customers cus ON ur.customer_id = cus.id group by ur.order_id LIMIT ".$offset.", ". $no_of_records_per_page." ";
+		$res = $db->_execute($query);
+		$users = array();
+		$totalQuery = "SELECT count(DISTINCT ur.order_id) as total from ace_rp_user_booking_response ur LEFT JOIN ace_rp_customers cus ON ur.customer_id = cus.id ";
+		$totalRes = $db->_execute($totalQuery);
+		$row1 = mysql_fetch_array($totalRes, MYSQL_ASSOC);
+		while ($row = mysql_fetch_array($res, MYSQL_ASSOC))
+		{
+			
+			switch ($row['contactInfo']) {
+				case '1':
+					$row['contactInfo'] = 'Email';
+					break;
+				case '2':
+					$row['contactInfo'] = 'Call';
+					break;
+				case '3':
+					$row['contactInfo'] = 'Text';
+					break;
+			}
+			$users[] = $row;
+		}
+		
+		$totalPages = ( $row1['total'] / $no_of_records_per_page);
+		$this->set("users", $users);
+		$this->set("totalPages", ceil($totalPages));
+		$this->set("pageNo", $pageNo);
+	}
+
+	// Loki: Delete the User booking response
+	function deleteUserResponse()
+	{
+		$ids = $_POST['id'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$deleteQuery = "DELETE from  ace_rp_user_booking_response where id IN (".$ids.")";
+		$res = $db->_execute($deleteQuery);
+		if ($res) {
+	 			$response  = array("res" => "OK");
+	 			echo json_encode($response);
+	 			exit();
+	 		}
+	 	exit();
 	}
 }
 ?>
