@@ -664,9 +664,10 @@ $(document).ready(function()
 				</td>
 				<td id="comm_val_1_<?=$obj['order_number']?>"  class="<?=$name_class?> <?=$local_class?>" align="right" commision_val= "<?=($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$rows_persons[1]['total_comm']?>" ><?=($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['total_comm']) ?>&nbsp;</td>
 				
-				<td rowspan="4"><input  type="text" name="techCommArr[<?php echo $obj['id'] ?>][admin-notes]" placeholder="Notes" value="<?php echo $obj['admin_commission_reply']?>">
-				</td>
-				
+			<!-- 	<td rowspan="4"><input  type="text" id="adminCommonNotes" name="techCommArr[<?php echo $obj['id'] ?>][admin-notes]" placeholder="Notes" value="<?php echo $obj['admin_notes']?>">
+				</td> -->
+				    <td rowspan="4"><textarea id="adminCommonNotes" name="techCommArr[<?php echo $obj['id'] ?>][admin-notes]" placeholder="Notes" value="<?php echo $obj['admin_notes']?>"><?php echo $obj['admin_notes']?></textarea>
+                </td>
 				<td>
 				  <input type="checkbox" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[1]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[1]);?>,this);'/>
 				</td>
@@ -715,13 +716,8 @@ $(document).ready(function()
 								<input type="file" name="techCommArr[<?php echo $obj['id'] ?>][sortpic2]" id="sortpicture2" class="disply_preview" data-ct="_<?php echo $obj['id'] ?>_photo2">
 							</div>
 					<?php } ?>
-				</td>
-				<td><input type="text" name="techCommArr[<?php echo $obj['id'] ?>][tech-notes]" placeholder="Notes" value="<?php echo $obj['tech_notes']?>"></td>
-				<!-- <td width="100">
-				  <input type="checkbox" name= "techCommArr[<?php echo $obj['id'] ?>]tech-confirm1"onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[1]);?>,this);'/>
-				</td>
-
- -->			
+			     </td>
+                <td><textarea type="text" name="techCommArr[<?php echo $obj['id'] ?>][tech-notes]" placeholder="Notes" value="<?php echo $obj['tech_notes']?>"><?php echo $obj['tech_notes']?></textarea></td>
  				<td width="100">
 				  <input id="techverify_1_<?=$obj['order_number']?>" class="techVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][1]['tech_verified'];?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,1,this, 1, <?=($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->totalPrPrice($rows_persons[1]['total_comm']) ?>);' comm_val="<?=$rows_persons[1]['total_comm']?>" order_id="<?=$obj['order_number']?>" seq_no="1"/>
 				</td>
@@ -973,15 +969,9 @@ $(document).ready(function()
 
 <?php if ($common->getLoggedUserRoleID() == "6") {?>
 <input type="hidden" name="isAdmin" value="1">
-  <input class="adminSubmit" type="button" name="submit3" onclick="history.back();return false;" id="submit3" value="Save" >
+  <input class="adminSubmit" style="float:right;" type="button" name="submit3" onclick="history.back();return false;" id="submit3" value="Go Back" >
 <!-- <input class="adminSubmit" type="submit" name="Reply" value="Reply"> -->
-<input class="adminSubmit" type="button" id="reply-to-tech" name="Reply" value="Send Email">
-<?php }?>
-<?php if ($common->getLoggedUserRoleID() == "6") {?>
-<div style="margin-top: 20px;"><textarea rows="10" cols="50" name="adminCommonNotes" id="adminCommonNotes" placeholder="Notes" value=""></textarea></div>
-<?php }?>
-<?php if ($common->getLoggedUserRoleID() == 1) {?>
-<div style="margin-top: 20px;"><textarea rows="10" cols="50" name="adminTechNotes" id="adminTechNotes" placeholder="Notes" value="<?=$obj['admin_commission_reply']?>"><?php echo $obj['admin_commission_reply']?></textarea></div>
+<input class="adminSubmit" type="button" id="reply-to-tech" name="Reply" value="Save">
 <?php }?>
 
 

@@ -3494,12 +3494,11 @@ class CommissionsController extends AppController
 		$currentRef = $data['currentRef'];
 		$currentPage = $data['currentPage'];
 		$orderId = $data['orderId'];
-		$adminNotes = isset($data['adminNotes']) ? $data['adminNotes'] : ''
-		;
+		$adminNotes = isset($data['adminNotes']) ? $data['adminNotes'] : '';
 		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
 		if(!empty($adminNotes))
 		{
-			$query = "UPDATE ace_rp_orders set admin_commission_reply='".$adminNotes."' where id=".$orderId;
+			$query = "UPDATE ace_rp_orders set admin_notes='".$adminNotes."' where id=".$orderId;
 			$result = $db->_execute($query);
 		}
 		$url = urlencode('action=view&order=&sort='.$sort.'&currentPage='.$currentPage.'&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option='.$jobOption.'&ffromdate='.$fromDate.'&cur_ref=&orderId='.$orderId);
@@ -3536,7 +3535,6 @@ class CommissionsController extends AppController
 		$currentRef = $data['currentRef'];
 		$currentPage = $data['currentPage'];
 		$isAdmin = $data['isAdmin'];
-		$adminCommonNotes = isset($data['adminCommonNotes']) ? $data['adminCommonNotes'] : '';
 		$adminEmail = isset($data['adminEmail']) ? $data['adminEmail'] : '';
 		
 		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
@@ -3583,11 +3581,7 @@ class CommissionsController extends AppController
 		 {   
 			$inserData = "INSERT INTO ace_rp_tech_done_comm (tech_id,comm_date, status) values (".$techId.",'".$techCommDate."', 1)";
 			$result = $db->_execute($inserData);
-		 }			
-		if(!empty($adminCommonNotes) && ($isAdmin != 0)) {
-			$query = "UPDATE ace_rp_tech_done_comm set admin_common_notes='".$adminCommonNotes."' where tech_id=".$techId." AND comm_date='".$techCommDate."'";
-				$result = $db->_execute($query);
-		}	
+		 }				
 		 $url = urlencode('action=view&order=&sort='.$sort.'&currentPage='.$currentPage.'&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option='.$jobOption.'&ffromdate='.$fromDate.'&cur_ref=');
 
 		if($isAdmin == 0)
@@ -3631,6 +3625,7 @@ class CommissionsController extends AppController
 		$this->redirect('/orders/invoiceTablet');
 		exit();
 	}
+
 	function sendEmailUsingMailgun($to,$from,$subject,$body, $header){
 	
 		// error_reporting(E_ALL);
