@@ -142,7 +142,7 @@
 		 } 
 		 elseif ($obj['User']['is_sent'] == 0) 
 		 {
-		 	echo 'Not Sent';
+		 	echo 'Failed';
 		 }
 	?></b> </div>
 	<div class="dcell" style="width: 95px;<? echo $color?>"><?=$obj['u']['telemarketer_first_name'].' '.$obj['u']['telemarketer_last_name'] ?></div>

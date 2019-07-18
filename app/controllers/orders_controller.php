@@ -14706,7 +14706,7 @@ function deleteUserFromCampaign()
 
 	function getMailEventMailgun()
 	{
-		error_reporting(E_ALL);
+		// error_reporting(E_ALL);
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$getMessageId = "SELECT * from ace_rp_reminder_email_log where is_done =0 limit 50";
 		$result = $db->_execute($getMessageId);
