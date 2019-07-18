@@ -2343,7 +2343,12 @@ class OrdersController extends AppController
 			}
 		}
 		$emailLogs = array();
-		$query =  "SELECT el.*, ot.name as job_type_name FROM ace_rp_reminder_email_log el LEFT JOIN ace_rp_order_types ot ON el.job_type = ot.id where el.customer_id='".$this->data['Order']['customer_id']."' order by id desc";
+		$cusId = $customer_id;
+		if(empty($cusId))
+		{
+			$cusId = $this->data['Order']['customer_id'];
+		}
+		$query =  "SELECT el.*, ot.name as job_type_name FROM ace_rp_reminder_email_log el LEFT JOIN ace_rp_order_types ot ON el.job_type = ot.id where el.customer_id='".$cusId."' order by id desc";
 			// $query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
 		$result = $db->_execute($query);
 		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
@@ -3715,8 +3720,8 @@ class OrdersController extends AppController
 			$this->set('totalCus', $totalCus);
 			$totalPages = ceil($totalCus / 500);
 			$this->set('totalPages', $totalPages);
-			$sql = "SELECT o . * , ec . * , u2 . * , u2.id AS uid, (SELECT is_sent FROM ace_rp_reminder_email_log rel WHERE customer_id = uid ORDER BY id DESC 
-				LIMIT 0 , 1) AS is_sent FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id LEFT JOIN ace_rp_reminder_email_log rel ON rel.customer_id = ec.call_history_ids WHERE u2.campaign_id IS NOT NULL ".$callWhere.$orderBy." group by uid limit ".$limit;
+			$sql = "SELECT o . * , ec . * , u2 . * , u2.id AS uid, (SELECT delivery_status FROM ace_rp_reminder_email_log rel WHERE customer_id = uid ORDER BY id DESC 
+				LIMIT 0 , 1) AS is_sent, ord.reminder_date FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id LEFT JOIN ace_rp_reminder_email_log rel ON rel.customer_id = ec.call_history_ids INNER JOIN ace_rp_orders ord ON ord.customer_id = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere.$orderBy." group by uid limit ".$limit;
 					$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 					$result = $db->_execute($sql);
 
@@ -14360,19 +14365,19 @@ function deleteUserFromCampaign()
 					$callWhere .= '';
 				}
 			} else {
-				$callWhere .= ' AND o.reminder_date IS NOT NULL';
+				$callWhere .= ' AND o.reminder_date IS NOT NULL ';
 			}
 			if($currentSelected == 1) {
 				$compare = 1;
 			} elseif($currentSelected == 2) {
 				$compare = 0;
 			}
-			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT is_sent FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
-				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE (SELECT is_sent FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
+			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
+				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
 				LIMIT 0 , 1) =".$compare." ".$callWhere." limit ".$limit;
 			$result = $db->_execute($sql);
 			
-			$countSql = "SELECT count(*) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL AND (SELECT is_sent FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC LIMIT 0 , 1) =".$compare." ".$callWhere;
+			$countSql = "SELECT count(*) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL AND (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC LIMIT 0 , 1) =".$compare." ".$callWhere;
 			$resultTotal = $db->_execute($countSql);
 			$rowTotal = mysql_fetch_array($resultTotal);
 		} else if($currentSelected == 3 ) {
@@ -14380,7 +14385,7 @@ function deleteUserFromCampaign()
 			$resultTotal = $db->_execute($countSql);
 			$rowTotal = mysql_fetch_array($resultTotal);
 			
-			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT is_sent FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
+			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
 				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere." group by o.id limit ".$limit;
 			$result = $db->_execute($sql);
 				//print_r($sql); die;
@@ -14697,6 +14702,40 @@ function deleteUserFromCampaign()
 	 			exit();
 	 		}
 	 	exit();
+	}
+
+	function getMailEventMailgun()
+	{
+		error_reporting(E_ALL);
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$getMessageId = "SELECT * from ace_rp_reminder_email_log where is_done =0 limit 50";
+		$result = $db->_execute($getMessageId);
+		
+		while ($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			$messageId = $row['message_id'];
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailgun_message_data.php");
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS,"message_id=".$messageId);
+			// receive server response ...
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			$res = 	curl_exec ($ch);//exit;
+			curl_close ($ch);		
+			$data = json_decode($res);
+			if(!empty($data))
+			{
+				$eventStatus = $data->items[0]->event;
+				if($eventStatus == 'failed')
+				{
+					$deliveryStatus = 0;
+				} else {
+					$deliveryStatus = 1;
+				}
+				$db->_execute("UPDATE ace_rp_reminder_email_log set delivery_status = ".$deliveryStatus.", is_done=1 where id=".$row['id']."");
+			}
+		}
+		exit();
 	}
 }
 ?>

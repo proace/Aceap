@@ -72,13 +72,14 @@
 	 {		
 	 		$('#call-back-select').hide();
 			$("#current-seleted-reminder-button").val(nval);
-			$('#selected-str').val('today');
+			$('#reminder-selected-str').val('today');
 			$('#call-back-select option[value="today"]').attr("selected","selected");
 			//document.getElementById('missed_callback_dates').style.display = 'none';
 	 		$('#reminder-select').show();
 	 }
 	 function callbackSourceType(callType)
 	 {	
+
 	 	$("#selected-str").val(callType);
 	 	if(callType == 'missed-call-date')
 	 	{
