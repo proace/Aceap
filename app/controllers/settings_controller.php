@@ -217,5 +217,31 @@ class SettingsController extends AppController
 			}
 		}
 	}
+
+	//Loki: Get the bulk email template content
+	function getBulkMailContent()
+	{
+		$settings = $this->Setting->find(array('title'=>'bulk_email'));
+		$message = $settings['Setting']['valuetxt'];
+		$response  = array("msgBody" => $message);
+		echo json_encode($response);
+		exit();
+	}
+	//Loki: Save the bulk email template content
+	function saveBulkEmailContent()
+	{
+		$title = 'bulk_email';
+		$content = $_POST['content'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$update = "UPDATE  ace_rp_settings set valuetxt = '".$content."' where title = '".$title."'";
+		$result = $db->_execute($update);
+		if($result)
+		{			
+ 			$response  = array("res" => "OK");
+ 			echo json_encode($response);
+ 			exit();
+		}
+		exit();
+	}
 }
 ?>

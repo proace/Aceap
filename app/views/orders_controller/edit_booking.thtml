@@ -2053,9 +2053,9 @@ table.dialler-scroll tr{
 .fa-phone {
 		font-size: 9px;
 		border-radius: 20%;
-		border: 1px solid red;
+		border: 1px solid black;
 		padding: 2px;
-		background-color: red;
+		background-color: black;
 		color: white;
 		cursor: pointer;
 }
@@ -2289,7 +2289,7 @@ function get_data($url)
 <tr style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
 <td width=260px style="text-align:left;vertical-align:top">
     <!-- <input type="button" value="Change customer" onclick="showClients()"/> -->
-    <input type="button" value="Change customer" onclick="showEditUserInfo()"/>
+    
     <div class="frame-wrap">
         <div class="frame-header-left"></div>
         <div class="frame-header-title">Customer's information</div>
@@ -2356,7 +2356,7 @@ function get_data($url)
                     <td align="right">Home Phone*:</td>
                     <td>
                     <?php echo $html->input('Customer/phone',array("value"=>$common->displayPhone($html->tagValue('Customer/phone')), 'style' => 'width: 145px;')); ?><br>
-                    <span class="fa fa-phone call_icon" style="background:red;" onclick="call_phone();" aria-hidden="true"></span>
+                    <span class="fa fa-phone call_icon"  onclick="call_phone();" aria-hidden="true"></span>
                     <?php echo $html->tagErrorMsg('Order/CustomerPhone','Please enter in a phone for this customer.') ?>
                     <span class="fa fa-envelope call_icon" style="font-size: 15px; color:#3c8dbc;" onclick="showEmailBox();" aria-hidden="true"></span>
                     </td>
@@ -2369,7 +2369,7 @@ function get_data($url)
                 <tr>
                     <td align="right">Cell Phone:</td>
                     <td>
-                    <?php echo $html->input('Customer/cell_phone',array("value"=>$common->displayPhone($html->tagValue('Customer/cell_phone')), 'style' => 'width: 140px;')); ?>
+                    <?php echo $html->input('Customer/cell_phone',array("value"=>$common->displayPhone($html->tagValue('Customer/cell_phone')), 'style' => 'width: 140px;')); ?><br/>
                     <span class="fa fa-phone call_icon" onclick="call_cell_phone();" aria-hidden="true"></span>
                     <span class="fa fa-comments call_icon" style="font-size: 17px; color:green;" onclick="showSmsBox();" aria-hidden="true"></span>
                     <?php echo $html->tagErrorMsg('Customer/cell_phone','Please enter in a cell phone for this customer.'); ?>
@@ -2473,6 +2473,7 @@ function get_data($url)
             </table>
         </div>
     </div>
+    <input type="button" class="edit_info" value="Edit Info" onclick="showEditUserInfo()"/>
 </td>
 <td style="text-align:left;vertical-align:top">
 	<table id="tabA1" style="display:<?=$page1?>">
@@ -4047,6 +4048,14 @@ $(document).ready(function(){
 		
 	</script>
 <style>
+.edit_info{
+	padding: 6px;
+    background: #000040;
+    color: white;
+    font-size: 13px;
+    margin-left: 10px !important;
+    font-weight: bold;
+}
 .tab11-table {
 	border-collapse: collapse;
 	width: 100%;

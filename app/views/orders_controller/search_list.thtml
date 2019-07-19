@@ -37,9 +37,10 @@
 <b>Email:</b><br>
 <div class="new-btn">
 <input class="new-btn-input selected-btn" type="button" id="" value="Sent" onclick="showReminderBar(1);">
-<input class="new-btn-input selected-btn" type="button" id="" value="Not Sent" onclick="showReminderBar(2);">
-<input class="new-btn-input selected-btn" type="button" id="" value="Email All" onclick="sendBulkEmails(<?php echo $campId ?>)">
-<input class="new-btn-input selected-btn" type="button" id="" value="Reminder Email" onclick="showReminderBar(3)">
+<input class="new-btn-input selected-btn" type="button" id="" value="Failed" onclick="showReminderBar(2);">
+<!-- <input class="new-btn-input selected-btn send_bulk_email" type="button" id="" value="Email All" onclick="sendBulkEmails(<?php echo $campId ?>)"> -->
+<input class="new-btn-input selected-btn send_bulk_email" type="button" value="Email All" campId = "<?php echo $campId ?>">
+<input class="new-btn-input selected-btn" type="button" id="" value="Reminders" onclick="showReminderBar(3)">
 <!-- <input class="new-btn-input" type="button" id="" value="No email" onclick="showReminderBar(4);"> -->
 </div>
 <select id="reminder-select" style="display: none" onchange="reminderSourceType(this.value);">
@@ -167,6 +168,7 @@
 <?php } ?>
 
 </form>
+
 <script language="JavaScript">
 	
 	$("#call-back-select").hide();
