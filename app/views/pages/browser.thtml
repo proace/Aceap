@@ -78,10 +78,15 @@
 				type: 'GET',				
 				success: function(data) {
 					// addTinyMCE();
-					tinyMCE.remove('#append_email_content');
+					if(tinymce.get("append_email_content")) 
+					{
+						tinymce.remove('#append_email_content');
+					}
 					$('#append_email_content').val(data.msgBody);
-					addTinyMCE();
-	        		$('.show_email_content1').dialog('open');
+					setTimeout(() => {
+						addTinyMCE();	
+					},50);
+					$('.show_email_content1').dialog('open');
 				}
 			});
 	    });
