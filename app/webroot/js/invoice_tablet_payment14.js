@@ -6,7 +6,7 @@ $(function() {
 	var live_server = "/acesys/index.php/";
 	
 	var l = $(location).attr('href');
-
+    
 	if(l.indexOf("acesys-2.0") != -1) G_URL = test_server;
 	else G_URL = live_server;
 	
@@ -472,7 +472,8 @@ function SavePayment(){
 	var option = element.attr("show-picture"); 
 	var paymentOption = element.attr("show-payment"); 
 	var MessageOption = element.attr("show-message"); 
-	var amount = $("#paid_by_amount").val();	
+	// var amount = $("#paid_by_amount").val();	
+	var amount = $("#current_balance").val();	
 	var orderId = $("#remOrderId").val();
 	
 	if (!method) {alert('A payment method should be selected!'); return;}
@@ -486,8 +487,6 @@ function SavePayment(){
 	formdata.append("amount",amount);
 	formdata.append("payment_type",1);
 	formdata.append("show_message",MessageOption);
-	// if(method == 2 || method == 3 || method == 4 || method == 5)
-	// {
 	if(option == 1)
 	{
 		var fileval = $('#FileinputImg')[0].files[0];
