@@ -5,16 +5,39 @@
 <title>Invoice</title>
 <!--<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
 <meta name="apple-mobile-web-app-capable" content="yes">-->
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/edit_help.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/showhint.js"></script>
+<!-- <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.quicksearch.js"></script> -->
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_payment14.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/eff_calculator.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/meio.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.21.custom.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/layout.css" rel="stylesheet" type="text/css">
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/media-queries.css" rel="stylesheet" type="text/css">
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
 
 
 <style type="text/css">
+.reminder-button{
+    width: 50px;
+    height: 25px;
+    float: right;
+    margin-top: 20px;
+    margin-right: 5px;
+}
+.reminder-message {
+    width: 100%;
+    height: 100%;
+    resize: none;
+    -webkit-box-sizing: border-box; /* <=iOS4, <= Android  2.3 */
+    -moz-box-sizing: border-box; /* FF1+ */
+    box-sizing: border-box; /* Chrome, IE8, Opera, Safari 5.1*/
+}
 .reminder-email-table {
     width: 100%;
     text-align: left;
@@ -48,7 +71,7 @@
     padding: 20px;
     border: 1px solid #888;
     width: 49%;
-    height: auto;
+    height: 30%;
 }
 .success {
  background-color: red;
@@ -95,8 +118,6 @@
         var id = $('#InvoiceOrderId').val();
         var imgPath = $(this).attr("image-name");
         var url = '<?=BASE_URL?>/orders/removePaymentImage';
-        // console.log(url);
-        // return false;
         $.ajax({
         url: '<?=BASE_URL?>/orders/removePaymentImage',
         dataType: 'html',
@@ -143,26 +164,33 @@
         }
     });
     $('#save-reminder-email').live("click", function(){
-        
-        var orderId = $("#remOrderId").val();
+        var orderId = $("#InvoiceOrderId").val();
         var reminderMonths = $("#reminder-months").val();
         var reminderDate = $("#reminder-date").val();
         var reminderType = $("#reminder-type-val").val();
         var remiderNote = $("#reminder-message").val();
-        var reminderEmail = 0;
-        var reminderSms = 0;
+        var emailId = $("#reminder_email_id").val();
+        var smsNum = $("#reminder_text_num").val();
+        var callbackNum = $("#reminder_callback_num").val();
+        var reminderEmailSend = 0;
+        var reminderSmsSend = 0;
+        var reminderCallback = 0;
+        var customerId = $('#customerId').val();
         if($('#reminder-type-email').is(":checked")) {
-            reminderEmail = 1;
+            reminderEmailSend = 1;
         }
         if($('#reminder-type-sms').is(":checked")) {
-            reminderSms = 1;
+            reminderSmsSend = 1;
+        }
+        if($('#reminder-callback').is(":checked")) {
+            reminderCallback = 1;
         }
         $.ajax({
         url: '<?=BASE_URL?>/orders/setReminderEmail/?ordid='+orderId,
         dataType: 'html',
         type: 'POST',
         cache: false,
-        data: {reminderMonths:reminderMonths,reminderDate:reminderDate,reminderType:reminderType,  remiderNote:remiderNote, reminderSms:reminderSms, reminderEmail:reminderEmail},
+        data: {reminderMonths:reminderMonths,reminderDate:reminderDate,reminderType:reminderType,  remiderNote:remiderNote, reminderSmsSend:reminderSmsSend, reminderEmailSend:reminderEmailSend,emailId:emailId,smsNum:smsNum, callbackNum:callbackNum, reminderCallback:reminderCallback, customerId:customerId},
         success: function(data) {
                 res = JSON.parse(data);
                 if(res.res == "OK")
@@ -264,6 +292,7 @@ function upload_photo(cur,i) {
    <table>
         <tr>
             <td>Firs name:</td>
+            <input type="hidden" id="customerId" name="customerId" value="<?=$job['Customer']['id'] ?>">
             <td><?php echo $job['Customer']['first_name'] ?></td>
         </tr>
         <tr>
@@ -673,34 +702,36 @@ function upload_photo(cur,i) {
                 
                 </td>
                 <td>
-                    <span>Always:</span><input class= "reminder-email-type" id="always-send" type="checkbox" name="always"  value="1">
-                </td>
-                <td>
-                    <span>Only this time:</span><input class= "reminder-email-type" id="only-one-time" type="checkbox" name="onlyOne"  value="2">
+                    <span>Do Not Contact:</span><input type="Checkbox" class= "reminder-email-type" id ="doNotSend" name="doNotSend" value="3">
                 </td>
             </tr>
             <tr>
                 <td>
-                    <span>Do Not Send Mail:</span><input type="Checkbox" class= "reminder-email-type" id ="doNotSend" name="doNotSend" value="3">
+                    <span>Email:</span><input type="Checkbox" checked  id="reminder-type-email" name="reminder-type-email">
+                    <input type="text" style="width: 50%;" id ="reminder_email_id" name="reminder_email_id" value="<?=$job['Customer']['email']?>">            
                 </td>
-                <td>
-                <span>Note:</span><textarea id ="reminder-message" name="message"></textarea> <!-- <input type="textarea" name="message"> -->
+                <td colspan="2" rowspan="3">
+                    <span>Note:</span><textarea class="reminder-message" id="reminder-message" name="message"></textarea> 
                 </td>
             </tr>
             <tr>
                 <td>
-                    <span>Email:</span><input type="Checkbox" id ="reminder-type-email" name="reminder-type-email">         
+                    <span>SMS:</span><input type="Checkbox" checked  id="reminder-type-sms" name="reminder-type-sms">
+                    <input type="text" id ="reminder_text_num" name="reminder_text_num" value="<?=$job['Customer']['cell_phone']?>">
                 </td>
+            </tr>       
+            <tr>
                 <td>
-                    <span>SMS:</span><input type="Checkbox" id ="reminder-type-sms" name="reminder-type-sms">           
+                    <span>Callback:</span><input type="Checkbox" id ="reminder-callback" name="reminder-callback">          
+                    <input type="text" id ="reminder_callback_num" name="reminder_callback_num" value="<?=$job['Customer']['cell_phone']?>">
                 </td>
             </tr>
-            <!-- <tr><td> <input type="submit" name="OK" value="OK" style="width: 50px;height: 25px;"></td></tr> -->
         </table>
-        <input type="hidden" name="" id="remOrderId" value="<?= $job['Order']['id']?>">
-        <input type="button" id="save-reminder-email" name="OK" value="OK"  style="width: 50px;height: 25px;    margin-left: 235px;">
-        <input type="button"  name="cancel" value="Cancel" onclick="hideInvoiceReview();" style="width: 50px;height: 25px;float: right;
-    margin-right: 258px;">
+        <!-- <input type="button" class="reminder-button" id="save-reminder-email" name="OK" value="OK"  style="width: 50px;height: 25px;    margin-left: 235px;">
+        <input type="button"  class="reminder-button" name="cancel" value="Cancel" onclick="hideInvoiceReview();" style="width: 50px;height: 25px;float: right;
+    margin-right: 258px;"> -->
+    <input type="button" class="reminder-button" id="save-reminder-email" name="OK" value="OK">
+    <input type="button"  class="reminder-button" name="cancel" value="Cancel" onclick="hideInvoiceReview();">
     </div>  
     </body>
 </div>
