@@ -2355,7 +2355,14 @@ class OrdersController extends AppController
 		{
 			array_push($emailLogs, $row);
 		}
-		
+		$receivedLogs = array();
+		$receivedEmails =  "SELECT * FROM ace_rp_customer_mail_response where customer_id = ".$cusId." order by id desc";
+		$emailResult = $db->_execute($receivedEmails);
+		while($row = mysql_fetch_array($emailResult, MYSQL_ASSOC))
+		{
+			array_push($receivedLogs, $row);
+		}
+		$this->set('receivedLogs', $receivedLogs);
 		$this->set('emailLogs',$emailLogs);
 		$this->set('callRecordings',$recordings);
 		// PREPARE DATA FOR UI
@@ -14746,6 +14753,23 @@ function deleteUserFromCampaign()
 				$db->_execute("UPDATE ace_rp_reminder_email_log set delivery_status = ".$deliveryStatus.", is_done=1 where id=".$row['id']."");
 			}
 		}
+		exit();
+	}
+
+	// Get incoming mail data and save with their users.
+	function getAllMailFromMailgun()
+	{
+		$body = mysql_real_escape_string($_POST['body-html']);
+		$fromEmail = $_POST['sender'];
+		$subject = $_POST['subject'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$getUserDetails = "SELECT id from ace_rp_customers where email= '".$fromEmail."'";
+		$userResult = $db->_execute($getUserDetails);
+		while ($row = mysql_fetch_array($userResult, MYSQL_ASSOC))
+		{
+			$mailData = "INSERT INTO ace_rp_customer_mail_response (email, subject, body, flag, customer_id) VALUES ('".$fromEmail."', '".$subject."', '".$body."', 0, ".$row['id']." )";
+			$result = $db->_execute($mailData);
+		}	
 		exit();
 	}
 }

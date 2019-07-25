@@ -8,6 +8,7 @@
  -->
 <!--  <script type="text/javascript" src="http://beneposto.pl/jqueryrotate/js/jQueryRotateCompressed.js"> -->
 <!-- </script> -->
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.quicksearch.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/store_tree.js"></script>
@@ -1270,6 +1271,24 @@ $(document).ready(function(){
 		        $('.show_email_content').dialog('open');
 		    });
 		});
+
+		$(function () {
+			$(".show_email_content").dialog({
+		        modal: true,
+		        autoOpen: false,
+		        title: "Message",
+		        autoOpen: false,
+		        width: 1024,
+		        height: 786,
+		    });
+		    $(".receiveViewContents").live("click",function () {
+		    	var id = $(this).attr("content_id");
+				var message = $("#received_log_content_"+id).val();
+		    	$('.show_email_content').html(message);
+		        $('.show_email_content').dialog('open');
+		    });
+		});
+
 	//Loki- Delete payment image
 	$("#delete-image").live("click", function (){
 		var id = $('#OrderId').val();
@@ -3561,7 +3580,7 @@ function get_data($url)
 </div>
 <div id="tabA11" style="display:<?=$page11?>; width:100%">
 	<div><h1>Email History</h1></div>
-	
+	<div><h3>Sent</h3></div>
 	<div>
 		<table class="tab11-table">
 			<tr>
@@ -3582,9 +3601,29 @@ function get_data($url)
 				 	}
 				 	?>
 				 	<td><?php echo $log['job_type_name'] ?></td>
-				 	<textarea style="display:none" id="log_content_<?=$log['id']?>"><?=$log['message']?></textarea>
+				 	<textarea class="log_content" style="display:none" id="log_content_<?=$log['id']?>"><?=$log['message']?></textarea>
 				 	<!-- <input type="textarea"> -->
 				 	<td><input type="button" class="viewContents" name="viewContents" value="View Content" content_id="<?=$log['id']?>"></td>
+			 	</tr>
+			<? }?>
+		</table>
+	</div>
+	<div><h3>Received</h3></div>
+	<div>
+		<table class="tab11-table">
+			<tr>
+				<th>Received Date</th>
+				<th>Subject</th>
+				<th>Message</th>
+			</tr>
+			 <?php
+			 foreach($receivedLogs as $log) { ?>
+			 	<tr>
+				 	<td><b><?php echo $log['mail_date'] ?></b></td>
+				 	<td><?php echo $log['subject'] ?></td>
+				 	<textarea style="display:none" id="received_log_content_<?=$log['id']?>"><?=$log['body']?></textarea>
+				 	<!-- <input type="textarea"> -->
+				 	<td><input type="button" class="receiveViewContents" name="receiveViewContents" value="View Content" content_id="<?=$log['id']?>"></td>
 			 	</tr>
 			<? }?>
 		</table>
