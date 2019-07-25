@@ -2356,7 +2356,8 @@ class OrdersController extends AppController
 			array_push($emailLogs, $row);
 		}
 		$receivedLogs = array();
-		$receivedEmails =  "SELECT * FROM ace_rp_customer_mail_response where customer_id = ".$cusId." order by id desc";
+		//$receivedEmails =  "SELECT * FROM ace_rp_customer_mail_response where customer_id = ".$cusId." order by id desc";
+		$receivedEmails =  "SELECT * FROM ace_rp_customer_mail_response where email = '".$this->data['Customer']['email']."' order by id desc";
 		$emailResult = $db->_execute($receivedEmails);
 		while($row = mysql_fetch_array($emailResult, MYSQL_ASSOC))
 		{
@@ -14763,13 +14764,8 @@ function deleteUserFromCampaign()
 		$fromEmail = $_POST['sender'];
 		$subject = $_POST['subject'];
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-		$getUserDetails = "SELECT id from ace_rp_customers where email= '".$fromEmail."'";
-		$userResult = $db->_execute($getUserDetails);
-		while ($row = mysql_fetch_array($userResult, MYSQL_ASSOC))
-		{
-			$mailData = "INSERT INTO ace_rp_customer_mail_response (email, subject, body, flag, customer_id) VALUES ('".$fromEmail."', '".$subject."', '".$body."', 0, ".$row['id']." )";
-			$result = $db->_execute($mailData);
-		}	
+		$mailData = "INSERT INTO ace_rp_customer_mail_response (email, subject, body, flag) VALUES ('".$fromEmail."', '".$subject."', '".$body."', 0)";
+		$result = $db->_execute($mailData);
 		exit();
 	}
 }
