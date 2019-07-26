@@ -130,8 +130,8 @@ table thead th:nth-child(4){
         <th>Email</th>
         <th>Subject</th>
         <th>Message</th>
-        <th><input id="markAll" type="checkbox" name="delete_all">Delete</th>
-    </tr>
+<!--         <th><input id="markAll" type="checkbox" name="delete_all">Delete</th>
+ -->    </tr>
         <?php $i=1; foreach ($emails as $email):        
         ?>
         <tr>
@@ -141,8 +141,8 @@ table thead th:nth-child(4){
             <td><?=$email['subject']?></td>
             <textarea style="display:none" id="received_log_content_<?=$email['id']?>"><?=$email['body']?></textarea>
             <td><input type="button" class="receiveViewContents" name="receiveViewContents" value="View Content"          content_id="<?=$email['id']?>"></td>
-            <td><input type="checkbox" class="delete_email" name="markCheck[]" value="<?=$email['id']?>" ></td>
-        </tr>
+<!--             <td><input type="checkbox" class="delete_email" name="markCheck[]" value="<?=$email['id']?>" ></td>
+ -->        </tr>
         <?php $i++; endforeach; ?>
     <?php if($totalPages > 1){?>
         <div style="margin-top: 10px;">
@@ -152,8 +152,8 @@ table thead th:nth-child(4){
             <?php } ?>
         </div>
     <?php }?>
-   <input class="btn" id="deleteAll" type="button" name="deleteAll" value="Delete">
-   <a class="button" href="<?=BASE_URL?>/users/showUserEmailResponse?page_no=1">Refresh</a>
+<!--    <input class="btn" id="deleteAll" type="button" name="deleteAll" value="Delete">
+ -->   <a class="button" href="<?=BASE_URL?>/users/showUserEmailResponse?page_no=1">Refresh</a>
 </table>
 <div class="show_email_content" style="display: none, background-color: #ffffff">
 </div>
