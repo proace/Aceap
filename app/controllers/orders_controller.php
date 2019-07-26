@@ -14757,14 +14757,15 @@ function deleteUserFromCampaign()
 		exit();
 	}
 
-	// Get incoming mail data and save with their users.
+	// Get incoming mail data and save.
 	function getAllMailFromMailgun()
 	{
 		$body = mysql_real_escape_string($_POST['body-html']);
 		$fromEmail = $_POST['sender'];
 		$subject = $_POST['subject'];
+		$receive_date = date("Y-m-d");
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-		$mailData = "INSERT INTO ace_rp_customer_mail_response (email, subject, body, flag) VALUES ('".$fromEmail."', '".$subject."', '".$body."', 0)";
+		$mailData = "INSERT INTO ace_rp_customer_mail_response (email, subject, body, flag, mail_date) VALUES ('".$fromEmail."', '".$subject."', '".$body."', 0, '".$receive_date."')";
 		$result = $db->_execute($mailData);
 		exit();
 	}

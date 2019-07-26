@@ -33,7 +33,8 @@ var nopen = 1;
 $(document).ready(function(e){
 	   setInterval( function(){     
         get_chat_count();
-	    }, 20000 );
+        get_mail_count();
+	    }, 30000 );
 
 	   // var blink_speed = 500; 
 	   // var t = setInterval(function () 
@@ -42,7 +43,7 @@ $(document).ready(function(e){
 });
 function get_chat_count(){ 
  $.ajax({
-    url:"<?=BASE_URL;?>/messages/getMessages", 
+    url:"<?=BASE_URL;?>/messages/getMessages/", 
     type: "GET",
     success:function(result){ 
             var res = JSON.parse(result);
@@ -60,6 +61,23 @@ function get_chat_count(){
         }
    });
 }
+function get_mail_count(){ 
+ $.ajax({
+    url:"<?=BASE_URL;?>/users/getMailCount", 
+    type: "GET",
+    success:function(result){ 
+            var res = JSON.parse(result);
+            count = res['total'];
+            if(count >= 1)
+            {
+            	// $('#showMessage').text(count);
+            	window.open("<?=BASE_URL?>/users/showUserEmailResponse?topbar=1", "", "width=700,height=300", "left=1000","top=200");
+
+            }
+        }
+   });
+}
+
 function openChat()
 {
   var answer = window.open("<?=BASE_URL?>/messages/ShowMessages",'',"width=600, height=500");  

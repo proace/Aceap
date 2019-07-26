@@ -1163,6 +1163,7 @@ $h .= ' 		<tr>
  		exit;
   	}
 
+  	// Loki: Update the customer information
   	function editCustomerInfo()
   	{
   		$phone = $_POST['phone'];
@@ -1179,5 +1180,55 @@ $h .= ' 		<tr>
  			exit;
  		}
   	}
+
+  	function showUserEmailResponse()
+  	{
+  		$no_of_records_per_page = 25;
+		$pageNo = isset($this->params['url']['page_no']) ?$this->params['url']['page_no']: 1;
+		$offset = ($pageNo-1) * $no_of_records_per_page;
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		// print_r($this->params['url']['from_topbar']) ; die;
+		$fromTop = isset($_GET['topbar']) ? $_GET['topbar'] : 0;
+		$flag = 1;
+		$query = "SELECT * from ace_rp_customer_mail_response order by id desc LIMIT ".$offset.", ". $no_of_records_per_page."";
+		if($fromTop == 1)
+		{
+			$flag = 0;
+			$query = "SELECT * from ace_rp_customer_mail_response where flag = 0 order by id desc";
+		}
+		
+		$res = $db->_execute($query);
+		$emails = array();
+		$totalQuery = "SELECT count(*) as total from ace_rp_customer_mail_response  where flag =".$flag;
+		$totalRes = $db->_execute($totalQuery);
+		$row1 = mysql_fetch_array($totalRes, MYSQL_ASSOC);
+		while ($row = mysql_fetch_array($res, MYSQL_ASSOC))
+		{
+			if($fromTop == 1)
+			{
+				$db->_execute("UPDATE ace_rp_customer_mail_response set flag=1 where id=".$row['id']);
+			}
+			
+			$emails[] = $row;
+		}
+		$totalPages = ($row1['total'] / $no_of_records_per_page);
+		$this->set("emails", $emails);
+		$this->set("totalPages", ceil($totalPages));
+		$this->set("pageNo", $pageNo);
+
+  	}
+
+  	function getMailCount()
+	{
+		$fromTop = $_GET['from_topbar'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "SELECT count(*) as total from ace_rp_customer_mail_response where flag=0";
+		$result = $db->_execute($query);
+		$row = mysql_fetch_array($result);
+		$total = $row['total'];    	
+		$data=array('total'=>$total);
+		echo json_encode($data);
+		exit();
+	}
 }
 ?>

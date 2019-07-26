@@ -245,6 +245,15 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-all-bookings.png'
 
+						),
+						array(
+
+							'name' => 'Receiver Email',
+
+							'url' => BASE_URL.'/users/showUserEmailResponse',
+
+							'img' => 'icon-lg-all-bookings.png'
+
 						)
 					),
 
