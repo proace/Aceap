@@ -1,0 +1,161 @@
+<html> 
+<head>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tinymce/tinymce.min.js"></script>
+
+<script>
+
+jQuery( document ).ready(function($) {
+
+      $(function () {
+        $(".show_email_content").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "Message",
+              autoOpen: false,
+              width: 1024,
+              height: 786,
+          });
+          $(".receiveViewContents").live("click",function () {
+            var id = $(this).attr("content_id");
+            var message = $("#received_log_content_"+id).val();
+            console.log(message);
+            $('.show_email_content').html(message);
+            $('.show_email_content').dialog('open');
+          });
+    });
+        $('#refreshData').live('click', function(){
+            $.ajax({
+              url: "<?=BASE_URL;?>/users/showUserEmailResponse",
+              type: "GET",
+              data: {},
+              success: function(data){
+              }
+           });
+      });
+      $('#markAll').live('click', function(){
+              $(".delete_email").attr('checked', this.checked);
+          });
+      $('#deleteAll').live('click', function(){
+          var Id = '';
+           $(".delete_email:checkbox:checked").each(function(){
+              Id += (Id != "")? "," : "";
+              Id += $(this).val();
+          });
+          deleteUser(Id);
+      });
+});
+
+function deleteUser(Id)
+  {
+      $.ajax({
+      url: "<?=BASE_URL;?>/users/markCheckUserResponse",
+      type: "POST",
+      data: {id : Id},
+      success: function(data){
+        res = JSON.parse(data);
+            if(res.res == "OK")
+            {
+                window.location.reload();
+            }
+        //location.href = "<?=BASE_URL;?>/orders/showFailedEmail";
+      }
+    });
+  }
+</script>
+<style type="text/css">
+.active {
+     background-color:  #80ff80 !important;
+}
+a {
+  color: #080808;
+  text-decoration: none;  
+}
+.currentSelected {
+  border: none;
+  outline: none;
+  padding: 10px 16px;
+  background-color: #656565;
+  cursor: pointer;
+}
+table {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: collapse;
+  margin-top: 30px;
+}
+
+table td,
+table th {
+  border: 1px solid #dadada;
+  padding: 5px;
+}
+table thead th:nth-child(4){
+  width: 30%;
+}
+.btn{
+    float:right;
+    padding: 5px;
+    margin-right: 5px;
+    background: #F5F5F5;
+    border-top: 2px solid white;
+    border-left: 2px solid white;
+    border-bottom: 2px solid #A7A6AA;
+    border-right: 2px solid #A7A6AA;
+    font-size: 12px;
+    font-weight: bold;
+    width: 56px;
+    height: 26px;
+}
+.button {
+    float: right;
+    width: 53px;
+    height: 13px;
+    margin-right: 5px;
+    padding: 5px;
+    text-align: center;
+}
+</style>
+</head>
+<body>
+<table >
+    <tr >
+        <th>No.</th>
+        <th>Date</th>
+        <th>Email</th>
+        <th>Subject</th>
+        <th>Message</th>
+        <th><input id="markAll" type="checkbox" name="delete_all">Delete</th>
+    </tr>
+        <?php $i=1; foreach ($emails as $email):        
+        ?>
+        <tr>
+            <td><?=$i?></td>
+            <td><?=$email['mail_date']?></td>
+            <td><?=$email['email']?></td>
+            <td><?=$email['subject']?></td>
+            <textarea style="display:none" id="received_log_content_<?=$email['id']?>"><?=$email['body']?></textarea>
+            <td><input type="button" class="receiveViewContents" name="receiveViewContents" value="View Content"          content_id="<?=$email['id']?>"></td>
+            <td><input type="checkbox" class="delete_email" name="markCheck[]" value="<?=$email['id']?>" ></td>
+        </tr>
+        <?php $i++; endforeach; ?>
+    <?php if($totalPages > 1){?>
+        <div style="margin-top: 10px;">
+            <?php $j = 1;
+            for( $j; $j <= $totalPages; $j++){ ?>
+                <a class="currentSelected <?php echo ($pageNo == $j) ? active :'' ?>" href="<?=BASE_URL?>/users/showUserEmailResponse?page_no=<?=$j?>"><?php echo $j ?></a>   
+            <?php } ?>
+        </div>
+    <?php }?>
+   <input class="btn" id="deleteAll" type="button" name="deleteAll" value="Delete">
+   <a class="button" href="<?=BASE_URL?>/users/showUserEmailResponse?page_no=1">Refresh</a>
+</table>
+<div class="show_email_content" style="display: none, background-color: #ffffff">
+</div>
+</body>
+</html>
