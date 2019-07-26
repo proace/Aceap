@@ -14765,8 +14765,15 @@ function deleteUserFromCampaign()
 		$subject = $_POST['subject'];
 		$receive_date = date("Y-m-d");
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-		$mailData = "INSERT INTO ace_rp_customer_mail_response (email, subject, body, flag, mail_date) VALUES ('".$fromEmail."', '".$subject."', '".$body."', 0, '".$receive_date."')";
-		$result = $db->_execute($mailData);
+
+		$matchUserEmail = "SELECT email from ace_rp_customers where email ='".$fromEmail."'";
+		$matchResult = $db->_execute($matchUserEmail);
+		$row = mysql_fetch_array($matchResult, MYSQL_ASSOC);
+		if(!empty($row))
+		{
+			$mailData = "INSERT INTO ace_rp_customer_mail_response (email, subject, body, flag, mail_date) VALUES ('".$fromEmail."', '".$subject."', '".$body."', 0, '".$receive_date."')";
+			$result = $db->_execute($mailData);
+		}
 		exit();
 	}
 }
