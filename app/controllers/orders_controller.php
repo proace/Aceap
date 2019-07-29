@@ -14490,10 +14490,17 @@ function deleteUserFromCampaign()
 
 	function sendSeparateEmail()
 	{
+		// error_reporting(E_ALL);
+		
 		$email   = $_POST['email'];
-		$cusId 	 = $_POST['cusId'];
+		$cusId 	 = !empty($_POST['cusId']) ? $_POST['cusId'] : '';
 		$message = $_POST['message'];
+		$from_schedule = isset($_POST['from_schedule']) ? $_POST['from_schedule'] : 0;
 		$subject = 'Pro Ace  Heating and AIR Conditioning';
+		if($from_schedule == 1)
+		{
+			$subject = $_POST['subject'];
+		}
 		$db 	 =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$res = $this->sendEmailUsingMailgun($email,$subject,$message);
 		$currentDate = date('Y-m-d');
@@ -14504,13 +14511,17 @@ function deleteUserFromCampaign()
 		{
 			$is_sent = 0;
 		}
-		$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$cusId.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
-		$result = $db->_execute($query);
-		if ($result) {
- 			$response  = array("res" => "OK");
- 			echo json_encode($response);
- 			exit();
- 		}
+		if($from_schedule != 1)
+		{
+			$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$cusId.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
+			$result = $db->_execute($query);
+			if ($result) {
+	 			$response  = array("res" => "OK");
+	 			echo json_encode($response);
+	 			exit();
+ 			}
+		}
+		
 		exit();
 	}
 	// Loki: Set campId for sending emails
