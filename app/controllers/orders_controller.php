@@ -14491,10 +14491,10 @@ function deleteUserFromCampaign()
 	function sendSeparateEmail()
 	{
 		// error_reporting(E_ALL);
-		
 		$email   = $_POST['email'];
 		$cusId 	 = !empty($_POST['cusId']) ? $_POST['cusId'] : '';
-		$message = $_POST['message'];
+		$message = '<img src="http://hvacproz.ca/acesys/app/webroot/img/ProAceLogo.png" style="width: 25%;"> <br/> '.$_POST['message'].'<br/><br/> <p>Have a nice day!</p>
+			<p>ACE Services Ltd<br />phone: 604-293-3770<br />email: info@acecare.ca</p>';
 		$from_schedule = isset($_POST['from_schedule']) ? $_POST['from_schedule'] : 0;
 		$subject = 'Pro Ace  Heating and AIR Conditioning';
 		if($from_schedule == 1)

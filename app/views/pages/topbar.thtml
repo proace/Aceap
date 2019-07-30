@@ -1,4 +1,6 @@
 <link rel="stylesheet" href="<?=ROOT_URL;?>/app/webroot/css/jquery.jgrowl.css" type="text/css"/>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tinymce/tinymce.min.js"></script>
+
 <style type="text/css">
 a, u {
     text-decoration: none;
@@ -28,6 +30,7 @@ a, u {
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.ui.all.js"></script>
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.jgrowl.js"></script>
 <script language="JavaScript">
+
 var nopen = 1;
 
 $(document).ready(function(e){
