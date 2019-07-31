@@ -14605,7 +14605,6 @@ function deleteUserFromCampaign()
 		$data = json_decode($res);
 		$nextLink = $data->paging->next;
 		$explodeLink = explode("events/",$nextLink);
-		
 		foreach ($data->items  as $key => $value) {
 			$msgConstant = 'message-id';
 			$toEmail = $value->message->headers->to;
@@ -14621,11 +14620,15 @@ function deleteUserFromCampaign()
 			$res = $db->_execute($query);
 		}
 		
-		if(!empty($link) || $link != '') 	
+		if(!empty($link) || $link != '' && !empty($nextLink)) 	
 		{
-			$insertLink = "UPDATE ace_rp_mail_link set link='".$explodeLink[1]."' where log_date='".$logDate."'";	
+			$insertLink = "UPDATE ace_rp_mail_link set link='".$explodeLink[1]."' where log_date='".$logDate."'";
+			echo "in1";
 		} else {
-			$insertLink = "INSERT INTO ace_rp_mail_link (log_date,link) VALUES ('".$logDate."', '".$explodeLink[1]."')";
+			if(!empty($nextLink))
+			{
+				$insertLink = "INSERT INTO ace_rp_mail_link (log_date,link) VALUES ('".$logDate."', '".$explodeLink[1]."')"; 
+			}
 		}
 		$response = $db->_execute($insertLink);
 		exit();
@@ -14633,7 +14636,7 @@ function deleteUserFromCampaign()
 
 	function showFailedEmail()
 	{
-		$no_of_records_per_page = 25;
+		$no_of_records_per_page = 2;
 		$pageNo = isset($this->params['url']['page_no']) ?$this->params['url']['page_no']: 1;
 		$offset = ($pageNo-1) * $no_of_records_per_page;
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
