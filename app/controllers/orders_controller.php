@@ -14291,7 +14291,7 @@ function deleteUserFromCampaign()
 	*/
 	function sendReminderEmail()
 	{
-		error_reporting(E_ALL);
+		// error_reporting(E_ALL);
 		$maildate = date('Y-m-d', strtotime("+7 days"));
 		$db 	  =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$query 	  = "SELECT DISTINCT o.id, o.job_time_beg,o.job_date, o.job_time_end ,o.customer_id, o.order_type_id, o.reminder_type , o.reminder_date, o.job_date, o.reminder_month, o.order_number,c.email, c.first_name, c.last_name, ot.name as job_type, rel.is_sent from ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_order_types ot ON ot.id= o.order_type_id LEFT JOIN ace_rp_reminder_email_log rel ON rel.order_id = o.id  WHERE o.reminder_date='".$maildate."'";
