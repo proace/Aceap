@@ -1190,7 +1190,7 @@ $h .= ' 		<tr>
 		// print_r($this->params['url']['from_topbar']) ; die;
 		$fromTop = isset($_GET['topbar']) ? $_GET['topbar'] : 0;
 		$flag = 1;
-		$query = "SELECT * from ace_rp_customer_mail_response order by id desc LIMIT ".$offset.", ". $no_of_records_per_page."";
+		$query = "SELECT * from ace_rp_customer_mail_response where flag = 1 order by id desc LIMIT ".$offset.", ". $no_of_records_per_page."";
 		if($fromTop == 1)
 		{
 			$flag = 0;
@@ -1215,7 +1215,6 @@ $h .= ' 		<tr>
 		$this->set("emails", $emails);
 		$this->set("totalPages", ceil($totalPages));
 		$this->set("pageNo", $pageNo);
-
   	}
 
   	function getMailCount()
@@ -1229,6 +1228,20 @@ $h .= ' 		<tr>
 		$data=array('total'=>$total);
 		echo json_encode($data);
 		exit();
+	}
+
+	function markCheckUserResponse()
+	{
+		$ids = $_POST['id'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$updateQuery = "UPDATE ace_rp_customer_mail_response set flag = 2 where id IN (".$ids.")";
+		$res = $db->_execute($updateQuery);
+		if ($res) {
+	 			$response  = array("res" => "OK");
+	 			echo json_encode($response);
+	 			exit();
+	 		}
+	 	exit();
 	}
 }
 ?>

@@ -14636,7 +14636,7 @@ function deleteUserFromCampaign()
 
 	function showFailedEmail()
 	{
-		$no_of_records_per_page = 2;
+		$no_of_records_per_page = 25;
 		$pageNo = isset($this->params['url']['page_no']) ?$this->params['url']['page_no']: 1;
 		$offset = ($pageNo-1) * $no_of_records_per_page;
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
