@@ -167,6 +167,11 @@ function openMap()
   window.open("<?=ROOT_URL?>/training/Maps/map.html",'', 
   "width=800, height=500, left=300, top=200");
 }
+
+function openNewSendMail(){
+    parent.frames['main_view'].showEmailBox();
+}
+
 <?php
 if(!isset($_GET["rel"])){
 	//echo "setInterval(CheckForMessages, 300000);"; //1 minute = 60000
@@ -222,31 +227,32 @@ if( $_SESSION['user']['id'] > 0 ) {
 				echo "<a href='$url' target='_blank' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']."</a>";
 				echo "</div>";
 			}
-		// } else if ($tbi['name'] == 'Message')
-		// {
-		// 		echo "<div class='icon' >";
-		// 		$img = ROOT_URL."/app/webroot/img/".$tbi['img'];
-		// 		$url = $linkPrefix.$tbi['url'];
-		// 		$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
-		// 		$onclick = "";
-		// 		if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
-		// 		echo "<a href='$url' target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']." <span id='showMessage' style='font-size:15px;'></span></a>";
-		// 		echo "</div>";
-		// }
+    		// } else if ($tbi['name'] == 'Message')
+    		// {
+    		// 		echo "<div class='icon' >";
+    		// 		$img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+    		// 		$url = $linkPrefix.$tbi['url'];
+    		// 		$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
+    		// 		$onclick = "";
+    		// 		if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
+    		// 		echo "<a href='$url' target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']." <span id='showMessage' style='font-size:15px;'></span></a>";
+    		// 		echo "</div>";
+    		// }
 
-		 else {
-				echo "<div class='icon'>";
-				$img = ROOT_URL."/app/webroot/img/".$tbi['img'];
-				$url = $linkPrefix.$tbi['url'];
-				$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
-				$onclick = "";
-				if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
-				echo "<a href='$url' target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']."</a>";
-				echo "</div>";
-			}
+    		 else {
+    				echo "<div class='icon'>";
+    				$img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+    				$url = $linkPrefix.$tbi['url'];
+    				$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
+    				$onclick = "";
+    				if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
+    				echo "<a href='$url' target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']."</a>";
+    				echo "</div>";
+    			}
 			
 		}
-		echo "</div>";
+        $img1 = ROOT_URL."/app/webroot/img/icon-lg-all-bookings.png";
+        echo "<div class='icon'><a href='JavaScript:void(0);' class='openAnonymousMailBox' onclick='openNewSendMail();' ><img src='$img1' style=\"width:27px;height:27px\" /><br/>Send Mail</a></div>";
 		$on_off = "display: none;";
 		$idx++;
 	}

@@ -159,9 +159,18 @@
         });
     }
 
-// function showEmailBox() {
-//     $( "#sendAnonymousEmail" ).dialog("open");
-// }
+function showEmailBox() {
+    $("#sendAnonymousEmail").css({ 'display' : 'block'});
+    if(tinymce.get("scheduleEmailVal")) 
+            {
+                tinymce.remove('#scheduleEmailVal');
+            }
+            $('#scheduleEmailVal').val('Write Here');
+                    setTimeout(() => {
+                        addTinyMCE();   
+                    },50);
+    $("#sendAnonymousEmail" ).dialog("open");
+}
 
 function hideEmailBox() {
     $( "#sendAnonymousEmail" ).dialog("close");
@@ -406,6 +415,7 @@ function openPayPeriodPopup()
         });
     }
 }
+
 $(document).ready(function(){
 
     $(function () {
@@ -418,17 +428,17 @@ $(document).ready(function(){
             height: 800,
         });
 
-        $('.openAnonymousMailBox').live('click', function(){
-            if(tinymce.get("scheduleEmailVal")) 
-            {
-                tinymce.remove('#scheduleEmailVal');
-            }
-            $('#scheduleEmailVal').val('Write Here');
-                    setTimeout(() => {
-                        addTinyMCE();   
-                    },50);
-            $( "#sendAnonymousEmail" ).dialog("open");
-        });
+        // $('.openAnonymousMailBox').live('click', function(){
+            // if(tinymce.get("scheduleEmailVal")) 
+            // {
+            //     tinymce.remove('#scheduleEmailVal');
+            // }
+            // $('#scheduleEmailVal').val('Write Here');
+            //         setTimeout(() => {
+            //             addTinyMCE();   
+            //         },50);
+            // $( "#sendAnonymousEmail" ).dialog("open");
+        // });
 });
 
     openPayPeriodPopup();
@@ -789,13 +799,12 @@ $(document).ready(function(){
         &nbsp;&nbsp;
         <input type="button" value="<?=$k?>" class="buttons" onclick="document.viewform.route_type.value='<?=$v?>'; document.viewform.submit();" style="font-size: 8pt;">
 <?php endforeach; ?>
-<input type="button" value="Send Mail" class="buttons openAnonymousMailBox" style="font-size: 8pt;
-     margin-left: 35px;">
-        </td>
+
+     </td>
   </tr>
 </table>
 
-<div id="sendAnonymousEmail">
+<div id="sendAnonymousEmail" style="display: none">
         <table>
             <tr>
                 <td>
