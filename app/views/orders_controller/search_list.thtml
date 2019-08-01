@@ -73,7 +73,7 @@
 	<div class="dhcell" style="width: 110px;">Last Name<?=$last_name?></div>
 	<div class="dhcell" style="width: 85px;"><b>First Name<?=$first_name?></b></div>
 	<div class="dhcell" style="width: 95px;">Status</div>
-	<div class="dhcell" style="width: 95px;">Source</div>
+	<div class="dhcell" style="width: 175px;">Email</div>
 
 	<div class="dhcell sort_data" style="width: 70px;"  sort_type='' sort_val="call-result">Call Result <?php if($sort_by == 'call-result'){ echo $sortTypeImg ?> <?php } ?></div>
 	<div class="dhcell sort_data" style="width: 80px;"  sort_type='' sort_val="last-call">Last Call <?php if($sort_by == 'last-call') { echo $sortTypeImg ?> <?php } ?></div>
@@ -146,7 +146,7 @@
 		 	echo 'Failed';
 		 }
 	?></b> </div>
-	<div class="dcell" style="width: 95px;<? echo $color?>"><?=$obj['u']['telemarketer_first_name'].' '.$obj['u']['telemarketer_last_name'] ?></div>
+	<div class="dcell" style="width: 175px;<? echo $color?>"><?=$obj['User']['email'] ?></div>
 	<div class="dcell" style="width: 70px;<? echo $color?>"><?php echo $call_results[$obj['User']['callresult']]; ?> </div>
 	<div class="dcell" style="width: 80px;<? echo $color?>"><?php echo date("d M Y", strtotime($obj['User']['lastcall_date'])); ?></a> </div>
 	<div class="dcell" style="width: 80px;<? echo $color?>"><?php echo date("d M Y", strtotime($obj['User']['callback_date'])); ?></a> </div>

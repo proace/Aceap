@@ -3621,7 +3621,7 @@ class OrdersController extends AppController
 				$arrayString = implode(',', $allCampList);
 				$telem_clause = " AND c.campaign_id IN ('".$arrayString."') AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = c.id AND order_status_id IN(1,3,5))";
 			}
-			$sql = "SELECT c.id, c.card_number, `c`.`first_name`, c.last_name,
+			$sql = "SELECT c.id, c.card_number, `c`.`first_name`, c.last_name,c.email,
 						c.postal_code, c.email, c.address_unit, c.address_street_number, c.address_street, c.city,
 						c.phone, c.cell_phone, c.created, c.modified,
 						c.telemarketer_id, '' callback_note, c.callresult,
@@ -14620,14 +14620,14 @@ function deleteUserFromCampaign()
 			$res = $db->_execute($query);
 		}
 		
-		if(!empty($link) || $link != '' && !empty($nextLink)) 	
+		if((!empty($link) || $link != '') && (!empty($explodeLink[1]) && $explodeLink[1] != '')) 	
 		{
 			$insertLink = "UPDATE ace_rp_mail_link set link='".$explodeLink[1]."' where log_date='".$logDate."'";
-			echo "in1";
+			
 		} else {
-			if(!empty($nextLink))
+			if(!empty($explodeLink[1]) && ($explodeLink[1] != ''))
 			{
-				$insertLink = "INSERT INTO ace_rp_mail_link (log_date,link) VALUES ('".$logDate."', '".$explodeLink[1]."')"; 
+				$insertLink = "INSERT INTO ace_rp_mail_link (log_date,link) VALUES ('".$logDate."', '".$explodeLink[1]."')";
 			}
 		}
 		$response = $db->_execute($insertLink);

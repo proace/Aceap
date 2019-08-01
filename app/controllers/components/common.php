@@ -248,7 +248,7 @@ class CommonComponent extends Object
 						),
 						array(
 
-							'name' => 'Receiver Email',
+							'name' => 'Received Email',
 
 							'url' => BASE_URL.'/users/showUserEmailResponse',
 
@@ -881,7 +881,7 @@ class CommonComponent extends Object
 
 						array(
 
-							'name' => '7-Day Template',
+							'name' => 'Reminder 7-Days',
 
 							'url' => BASE_URL.'/settings/edit?title=email_template_jobnotification',
 
