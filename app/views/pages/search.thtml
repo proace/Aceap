@@ -355,6 +355,7 @@ Date.prototype.format = function (mask, utc) {
 		<option value="order_type_id">Job Type</option>
 		<option value="callresult">Call Result</option>
 		<option value="card_number">Card #</option>
+		<option value="email">Email</option>
 		<? } ?>
 	</select>
       <?php echo
