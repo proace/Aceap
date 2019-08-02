@@ -3638,11 +3638,13 @@ function get_data($url)
 			 foreach($emailLogs as $log) { ?>
 			 	<tr>
 				 	<td><b><?php echo $log['sent_date'] ?></b></td>
-
 				 	<?php if (1 == $log['delivery_status']) {
 				 		echo '<td style="color:green"><b>Sent</b></td>';
-				 	} elseif (0 == $log['delivery_status']) {
+				 	} elseif (("" != $log['delivery_status'])) {
 				 		echo '<td style="color:red"><b>Failed</b></td>';
+				 	}
+				 	else{
+				 		echo '<td></td>';
 				 	}
 				 	?>
 				 	<td><?php echo $log['job_type_name'] ?></td>

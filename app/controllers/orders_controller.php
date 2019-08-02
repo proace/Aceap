@@ -2015,8 +2015,6 @@ class OrdersController extends AppController
 	// Hardcoded:	* User Roles
 	function editBooking()
 	{   
-		// error_reporting(E_ALL);
-		// print_r("jbvjb"); die;
 		$this->layout='edit';
 		$fromTech = isset($this->params['url']['from_tech_page']) ? $this->params['url']['from_tech_page'] :0;
 		$techOrderId = isset($this->params['url']['techOrderId']) ? $this->params['url']['techOrderId'] :0;
@@ -14513,15 +14511,29 @@ function deleteUserFromCampaign()
 		}
 		if($from_schedule != 1)
 		{
-			$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$cusId.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
-			$result = $db->_execute($query);
-			if ($result) {
-	 			$response  = array("res" => "OK");
-	 			echo json_encode($response);
-	 			exit();
- 			}
+			if(!empty($cusId)) {
+				$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$cusId.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
+				$result = $db->_execute($query);
+				if ($result) {
+		 			$response  = array("res" => "OK");
+		 			echo json_encode($response);
+		 			exit();
+	 			}
+			} else {
+				$getUserByEmail = "SELECT id from ace_rp_customers where email ='".$email."'";
+				$userEmailRes = $db->_execute($getUserByEmail);
+				while ($row = mysql_fetch_array($userEmailRes, MYSQL_BOTH))
+				{
+					$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$row['id'].",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
+					$result = $db->_execute($query);
+				}
+				if ($result) {
+		 			$response  = array("res" => "OK");
+		 			echo json_encode($response);
+		 			exit();
+	 			}
+			}			
 		}
-		
 		exit();
 	}
 	// Loki: Set campId for sending emails

@@ -253,7 +253,8 @@ if( $_SESSION['user']['id'] > 0 ) {
 		}
         $img1 = ROOT_URL."/app/webroot/img/icon-lg-all-bookings.png";
         echo "<div class='icon'><a href='JavaScript:void(0);' class='openAnonymousMailBox' onclick='openNewSendMail();' ><img src='$img1' style=\"width:27px;height:27px\" /><br/>Send Mail</a></div>";
-		$on_off = "display: none;";
+        echo "</div>";
+		 $on_off = "display: none;";
 		$idx++;
 	}
 }
