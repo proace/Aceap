@@ -897,6 +897,15 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-mail.png'
 
+						),
+						array(
+
+							'name' => 'Membership Template',
+
+							'url' => BASE_URL.'/settings/editBulkEmail?title=membership',
+
+							'img' => 'icon-lg-mail.png'
+
 						)
 					),
 					array(
