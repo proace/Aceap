@@ -83,14 +83,8 @@ jQuery( document ).ready(function($) {
             $('.show_email_content').dialog('open');
           });
     });
-        $('#refreshData').live('click', function(){
-            $.ajax({
-              url: "<?=BASE_URL;?>/users/showUserEmailResponse",
-              type: "GET",
-              data: {},
-              success: function(data){
-              }
-           });
+        $('.refreshData').live('click', function(){
+            $(this).css("background-color", "#3cb371");
       });
       $('#markAll').live('click', function(){
               $(".delete_email").attr('checked', this.checked);
@@ -227,7 +221,7 @@ table thead th:nth-child(4){
         </div>
     <?php }?>
    <input class="btn" id="deleteAll" type="button" name="Update Status" value="Hide">
-   <a class="button" href="<?=BASE_URL?>/users/showUserEmailResponse?page_no=1">Refresh</a>
+   <a class="button refreshData" href="<?=BASE_URL?>/users/showUserEmailResponse?page_no=1">Refresh</a>
 </table>
 <div class="show_email_content" style="display: none, background-color: #ffffff">
 </div>
