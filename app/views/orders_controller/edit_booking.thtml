@@ -737,7 +737,7 @@ function ValidateFields(jobstatus)
 		if(submitForm){
 		    if((submitForm==true) && (OrderID!='')){
 				//alert('ImIn');
-				if(document.getElementById('sendMailOnEstimate').value==1){				
+				if(document.getElementById('sendMailOnEstimate').value==1){	
 					CheckMailSent(OrderID);
 					return false;
 				}
@@ -756,7 +756,9 @@ function ValidateFields(jobstatus)
 					var res = data.trim();
 					if (data.indexOf('OK') > 0) {
 						//alert('submitFormNEW');
-						document.forms['editBookingform'].submit();
+						$("#msgbx").html("Do you want to send the email?");
+						showme();
+						//document.forms['editBookingform'].submit();
 					}						
 						
 					else{

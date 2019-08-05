@@ -5395,7 +5395,7 @@ class OrdersController extends AppController
 
 	function emailCustomerBooking($id, $send_cancalled_email = 0)
 	{
-
+		$currentDate = date('Y-m-d');
 		//Get E-mail Settings
 		$settings = $this->Setting->find(array('title'=>'email_fromaddress'));
 		$from_address = $settings['Setting']['valuetxt'];
@@ -5431,7 +5431,7 @@ class OrdersController extends AppController
 		$query = "
 			SELECT CONCAT(u2.first_name, \" \", u2.last_name) source,
 				u.first_name, u.last_name, u.email, u.phone, u.cell_phone, CONCAT(u.address_unit,', ',u.address_street_number,', ',u.address_street) as address, u.city, u.email,
-				o.order_number,
+				o.order_number,o.order_type_id, u.id as cus_id,
 				DATE_FORMAT(o.job_date, '%M %D, %Y') job_date,
 				DATE_FORMAT(o.job_time_beg, '%r') job_time_beg,
 				DATE_FORMAT(o.job_time_end, '%r') job_time_end
@@ -5455,6 +5455,8 @@ class OrdersController extends AppController
 			$firstname = $row['first_name'];
 			$lastname = $row['last_name'];
 			$email = $row['email'];
+			$cusId = $row['cus_id'];
+			$orderTypeId = $row['order_type_id'];
 		}
 
 		$query = "
@@ -5502,6 +5504,15 @@ class OrdersController extends AppController
 		$email =$this->data['Customer']['email'];
 
 		$res = $this->sendEmailUsingMailgun($email,$template_subject,$msg,$id);
+		if (strpos($res, '@acecare') !== false) 
+		{
+			$is_sent = 1;
+		} else {
+			$is_sent = 0;
+		}
+		$message = mysql_real_escape_string($msg);
+		$query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$id.",".$cusId.",".$orderTypeId.",'".$currentDate."',".$is_sent.", '".$message."', '".$res."')";
+		$result1 = $db->_execute($query1);
 		return $template_subject;
 		//$res = mail($email, $template_subject, $msg, $headers);
 	}
