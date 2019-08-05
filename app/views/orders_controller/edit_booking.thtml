@@ -244,7 +244,7 @@ function hideEmailBox() {
 // }
 function emailInvoice(order_id, i=0){
 	var email = $('#emailinput').val();
-	 	window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office', '_new');
+	 	window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office'+'&fromBooking=1', '_new');
 	 	return false;	 
 }
 function invoiceprint(order_id) {

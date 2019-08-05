@@ -5517,10 +5517,11 @@ class OrdersController extends AppController
 		//$res = mail($email, $template_subject, $msg, $headers);
 	}
 	function sendEmailUsingMailgun($to,$subject,$body,$order_id = null){
+		
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
 		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".$body);
+		curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".urlencode($body));
 		// receive server response ...
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$msgid = curl_exec ($ch);//exit;
@@ -11153,7 +11154,7 @@ class OrdersController extends AppController
 		} 
 		if(isset($_REQUEST['review'])){
 			//echo 'OID='.$order_id.' == ='.$cemail;exit;
-			$return = $this->emailInvoiceReviewLinks($order_id,$cemail);
+			$return = $this->emailInvoiceReviewLinks($order_id,$cemail, $current_customer_id);
                         if($this->Common->getLoggedUserRoleID() == 6){
                              //$this->redirect("orders/invoiceTabletPrint?order_id=$order_id&type=$type");exit;
                              $this->redirect(BASE_PATH."pages/main");exit;
@@ -11164,7 +11165,7 @@ class OrdersController extends AppController
 		if(isset($_POST['newEmail'])){
 			if(isset($_REQUEST['invoice'])){
 				//die('M IN Invoice');
-				$return = $this->invoiceTabletEprint($order_id,$cemail);	
+				$return = $this->invoiceTabletEprint($order_id,$cemail, $current_customer_id);	
 				$this->redirect("orders/invoiceTablet?order_id=$order_id");exit;
 			}
 		}
@@ -13470,8 +13471,10 @@ class OrdersController extends AppController
 		$this->layout = "blank";
 	}
 
-	function invoiceTabletEprint($orderid,$email){
+	function invoiceTabletEprint($orderid,$email, $cus_id){
 		//END Save Notes
+		// error_reporting(E_ALL);
+		$fromBooking = 0;
 		if(isset($orderid) && $orderid!=''){
 			$order_id = $orderid;
 		}else{
@@ -13483,7 +13486,9 @@ class OrdersController extends AppController
 		}else{
 			$email = $_GET['email'];
 		}
-		//echo ''.$order_id.'=='.$email;
+		if(isset($_GET['fromBooking'])){
+			$fromBooking = $_GET['fromBooking'];
+		}
 		$this->layout = "blank";
 
 
@@ -13499,22 +13504,23 @@ class OrdersController extends AppController
 		$msg = $template;
 	
 		$msg = str_replace('{file_url}', $fileUrl, $msg);
+		
 		// $invoice = file_get_contents(BASE_PATH."orders/invoiceTabletPrint?order_id=$order_id&type=office");
-		$invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
-		$boundary = md5(time());
-		$header = "From: info@acecare.ca \r\n";
-		$header .= "MIME-Version: 1.0\r\n";
-		$header .= "Content-Type: multipart/mixed;boundary=\"" . $boundary . "\"\r\n";
+		// $invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
+		// $boundary = md5(time());
+		// $header = "From: info@acecare.ca \r\n";
+		// $header .= "MIME-Version: 1.0\r\n";
+		// $header .= "Content-Type: multipart/mixed;boundary=\"" . $boundary . "\"\r\n";
 
-		$output = "--".$boundary."\r\n";
-		//$output .= "Content-Type: text/csv; name=\"invoice.html\";\r\n";
-		//$output .= "Content-Disposition: attachment;\r\n\r\n";
-		$output .= $invoice."\r\n\r\n";
-		$output .= "--".$boundary."\r\n";
-		$output .= "Content-type: text/html; charset=\"utf-8\"\r\n";
-		$output .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-		$output .= $msg."\r\n\r\n";
-		$output .= "--".$boundary."--\r\n\r\n";
+		// $output = "--".$boundary."\r\n";
+		// //$output .= "Content-Type: text/csv; name=\"invoice.html\";\r\n";
+		// //$output .= "Content-Disposition: attachment;\r\n\r\n";
+		// $output .= $invoice."\r\n\r\n";
+		// $output .= "--".$boundary."\r\n";
+		// $output .= "Content-type: text/html; charset=\"utf-8\"\r\n";
+		// $output .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
+		// $output .= $msg."\r\n\r\n";
+		// $output .= "--".$boundary."--\r\n\r\n";
 
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
@@ -13524,9 +13530,24 @@ class OrdersController extends AppController
 			WHERE id = $order_id
 		";
 		$db->_execute($query);
-		$res = mail($email, $subject, $output, $header);
+		
+		if($fromBooking !=1)
+		{
+			//$message = mysql_real_escape_string($msg);
+			$res = $this->sendEmailUsingMailgun($email,$subject,$msg);
+			$currentDate = date('Y-m-d');
+			if (strpos($res, '@acecare') !== false) 
+			{
+				$is_sent = 1;
+			} else 
+			{
+				$is_sent = 0;
+			}
+			$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$orderid.",".$cus_id.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
+			$result = $db->_execute($query);
+			// $res = mail($email, $subject, $output, $header);
+		}
 		$this->set('printerNumber', $printerNumber);
-
 		$this->redirect("orders/invoiceTabletPrint?order_id=$order_id&type=$type");
 
 
@@ -13568,7 +13589,7 @@ class OrdersController extends AppController
 
 
 
-	function emailInvoiceReviewLinks($orderid,$email){
+	function emailInvoiceReviewLinks($orderid,$email, $cus_id){
 		//END Save Notes
 		if(isset($orderid) && $orderid!=''){
 			$order_id = $orderid;
@@ -13589,22 +13610,21 @@ class OrdersController extends AppController
 		$template = $settings['Setting']['valuetxt'];
 		$msg = $template;
 		$msg = str_replace('{file_url}', $fileUrl, $msg);
-		$invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
+		// $invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
+		// $boundary = md5(time());
+		// $header = "From: info@acecare.ca \r\n";
+		// $header .= "MIME-Version: 1.0\r\n";
+		// $header .= "Content-Type: multipart/mixed;boundary=\"" . $boundary . "\"\r\n";
 
-		$boundary = md5(time());
-		$header = "From: info@acecare.ca \r\n";
-		$header .= "MIME-Version: 1.0\r\n";
-		$header .= "Content-Type: multipart/mixed;boundary=\"" . $boundary . "\"\r\n";
-
-		$output = "--".$boundary."\r\n";
-		//$output .= "Content-Type: text/csv; name=\"invoice.html\";\r\n";
-		//$output .= "Content-Disposition: attachment;\r\n\r\n";
-		$output .= $invoice."\r\n\r\n";
-		$output .= "--".$boundary."\r\n";
-		$output .= "Content-type: text/html; charset=\"utf-8\"\r\n";
-		$output .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-		$output .= $msg."\r\n\r\n";
-		$output .= "--".$boundary."--\r\n\r\n";
+		// $output = "--".$boundary."\r\n";
+		// //$output .= "Content-Type: text/csv; name=\"invoice.html\";\r\n";
+		// //$output .= "Content-Disposition: attachment;\r\n\r\n";
+		// $output .= $invoice."\r\n\r\n";
+		// $output .= "--".$boundary."\r\n";
+		// $output .= "Content-type: text/html; charset=\"utf-8\"\r\n";
+		// $output .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
+		// $output .= $msg."\r\n\r\n";
+		// $output .= "--".$boundary."--\r\n\r\n";
 
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
@@ -13614,7 +13634,19 @@ class OrdersController extends AppController
 			WHERE id = $order_id
 		";
 		$db->_execute($query);
-		$res = mail($email, $subject, $output, $header);
+		$message = mysql_real_escape_string($msg);
+		$res = $this->sendEmailUsingMailgun($email,$subject,$msg);
+		$currentDate = date('Y-m-d');
+		if (strpos($res, '@acecare') !== false) 
+		{
+			$is_sent = 1;
+		} else 
+		{
+			$is_sent = 0;
+		}
+		$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$orderid.",".$cus_id.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
+		$result = $db->_execute($query);
+		//$res = mail($email, $subject, $output, $header);
 		$this->redirect("orders/invoiceTabletPrint?order_id=$order_id&type=$type");
 	}
 
