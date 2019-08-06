@@ -61,6 +61,25 @@ tinyMCE.init({
             gecko_spellcheck : true, browser_spellcheck : true
         });
 	}
+/* Loki: show/ hide email history data.
+   type: 1 = show
+   		 2 = hide
+*/
+
+function showHideEmail(type)
+{
+	var cus_id = $('#CustomerId').val();
+	$.ajax({
+		url: '<?=BASE_URL?>/orders/showHideEmailHistory',
+		dataType: 'html',
+		type: 'POST',
+		cache: false,
+		data:{type:type, cus_id: cus_id},
+		success: function(data) {
+			$("#sent_email").html(data);
+		}
+	});	
+}
 // Loki: Send Email
 function sendSeparateEmail()
 {
@@ -1294,6 +1313,36 @@ function upload_photo(cur,i) {
   }
 }
 $(document).ready(function(){
+	
+	 $('#markAll').live('click', function(){
+              $(".delete_email").attr('checked', this.checked);
+          });
+
+      $('#deleteAll').live('click', function(){
+          var Id = '';
+           $(".delete_email:checkbox:checked").each(function(){
+              Id += (Id != "")? "," : "";
+              Id += $(this).val();
+          });
+          Updateflag(Id);
+      });
+
+	function Updateflag(Id)
+	  {
+	  	var button_type = $("#button_type").val();
+	      $.ajax({
+	      url: "<?=BASE_URL;?>/orders/updateEmailStatus",
+	      type: "POST",
+	      data: {id : Id, button_type: button_type},
+	      success: function(data){
+	        res = JSON.parse(data);
+	            if(res.res == "OK")
+	            {
+	                window.location.reload();
+	            }
+	      }
+	    });
+	  }
 	//Loki- Show email log content
 		$(function () {
 			$(".show_email_content").dialog({
@@ -1979,6 +2028,18 @@ $(document).ready(function(){
 body {
 	display: block !important;
 }
+
+.hide_show_btn {
+    padding: 2px;
+    background: #6c757d;
+    color: white;
+    font-size: 13px;
+    margin-left: 10px !important;
+    font-weight: bold;
+    float: right;
+    margin-bottom: 5px;
+}
+
 .reminder-button{
     width: 50px;
     height: 25px;
@@ -3627,14 +3688,18 @@ function get_data($url)
 </div>
 <div id="tabA11" style="display:<?=$page11?>; width:100%">
 	<div><h1>Email History</h1></div>
+	<input type="button" class="hide_show_btn" name="showEmail" value="Show" id="showEmailHistory" onclick="showHideEmail(1);">
+	<input type="button" class="hide_show_btn" name="hideEmail" value="Hide" id="hideEmailHistory" onclick="showHideEmail(2);">
+	<input type="button" class="hide_show_btn" name="deleteAll" value="Hide/Show" id="deleteAll">
 	<div><h3>Sent</h3></div>
-	<div>
+	<div id="sent_email">
 		<table class="tab11-table">
 			<tr>
 				<th>Sent On</th>
 				<th>Status</th>
 				<th>Job type</th>
 				<th>Message</th>
+				<th><input id="markAll" type="checkbox" name="delete_all">Hide All</th>
 			</tr>
 			 <?php
 			 foreach($emailLogs as $log) { ?>
@@ -3650,9 +3715,12 @@ function get_data($url)
 				 	}
 				 	?>
 				 	<td><?php echo $log['job_type_name'] ?></td>
+		 	        <input type="hidden" name="button_type" id="button_type" value="2">
+
 				 	<textarea class="log_content" style="display:none" id="log_content_<?=$log['id']?>"><?=$log['message']?></textarea>
 				 	<!-- <input type="textarea"> -->
 				 	<td><input type="button" class="viewContents" name="viewContents" value="View Content" content_id="<?=$log['id']?>"></td>
+				 	<td><input type="checkbox" class="delete_email" name="markCheck[]" value="<?=$log['id']?>" ></td>
 			 	</tr>
 			<? }?>
 		</table>

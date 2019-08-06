@@ -1,5 +1,5 @@
 <? ob_start();
-//error_reporting(E_ALL );
+error_reporting(E_ALL );
 //error_reporting(2047);
 
 class OrdersController extends AppController
@@ -2346,7 +2346,7 @@ class OrdersController extends AppController
 		{
 			$cusId = $this->data['Order']['customer_id'];
 		}
-		$query =  "SELECT el.*, ot.name as job_type_name FROM ace_rp_reminder_email_log el LEFT JOIN ace_rp_order_types ot ON el.job_type = ot.id where el.customer_id='".$cusId."' order by id desc";
+		$query =  "SELECT el.*, ot.name as job_type_name FROM ace_rp_reminder_email_log el LEFT JOIN ace_rp_order_types ot ON el.job_type = ot.id where el.customer_id='".$cusId."' and el.is_show = 1 order by id desc";
 			// $query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
 		$result = $db->_execute($query);
 		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
@@ -13533,7 +13533,7 @@ class OrdersController extends AppController
 		
 		if($fromBooking !=1)
 		{
-			//$message = mysql_real_escape_string($msg);
+			$message = mysql_real_escape_string($msg);
 			$res = $this->sendEmailUsingMailgun($email,$subject,$msg);
 			$currentDate = date('Y-m-d');
 			if (strpos($res, '@acecare') !== false) 
@@ -14844,6 +14844,73 @@ function deleteUserFromCampaign()
 			$result = $db->_execute($mailData);
 		}
 		exit();
+	}
+
+	//Loki: Send membership expire reminder email before 7 days.
+	function sendMembershipReminderEmail()
+	{
+		error_reporting(E_ALL);
+		$maildate = date('Y-m-d', strtotime("+7 days"));
+		$db 	  =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "select i.id, i.first_name, i.last_name, i.email, i.phone, i.cell_phone, i.card_number, i.card_exp, i.next_service, i.is_deactive from ace_rp_customers i where i.card_number!='' and i.card_exp ='".$maildate."' and is_deactive !=1";
+		$result = $db->_execute($query);
+		$settings = $this->Setting->find(array('title'=>'membership'));
+		$template = $settings['Setting']['valuetxt'];
+		$template_subject = $settings['Setting']['subject'];
+		$currentDate = date('Y-m-d');
+
+		while($row = mysql_fetch_array($result, MYSQL_BOTH)) {
+				$msg = $template;
+				$msg = str_replace('{first_name}', $row['first_name'], $msg);
+				$msg = str_replace('{last_name}', $row['last_name'], $msg);
+				
+				$res = $this->sendEmailUsingMailgun($row['email'],$template_subject,$msg);
+				if (strpos($res, '@acecare') !== false) {
+	    			$is_sent = 1;
+				} else {
+					$is_sent = 0;
+				}
+				$message = mysql_real_escape_string($msg);
+				$query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$row['id'].",'','".$currentDate."',".$is_sent.", '".$message."', '".$res."')";
+				$result1 = $db->_execute($query1);	
+		}	
+		exit();
+	}
+
+	/* Loki: show/ hide email history data.
+	   type: 1 = show
+	   		 2 = hide
+	*/
+	function showHideEmailHistory()
+	{
+		$type = $_POST['type'];
+		$cusId = $_POST['cus_id'];
+		$db 	  =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query =  "SELECT el.*, ot.name as job_type_name FROM ace_rp_reminder_email_log el LEFT JOIN ace_rp_order_types ot ON el.job_type = ot.id where el.customer_id='".$cusId."' and el.is_show =".$type." order by id desc";
+		$result = $db->_execute($query);
+		$emailLogs = array();
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			array_push($emailLogs, $row);
+		}
+		$this->layout = false;
+		$this->set("emailLogs", $emailLogs);
+		$this->set("button_type", $type);
+	}
+
+	function updateEmailStatus()
+	{
+		$ids = $_POST['id'];
+		$button_type = $_POST['button_type'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$updateQuery = "UPDATE ace_rp_reminder_email_log set is_show = ".$button_type." where id IN (".$ids.")";
+		$res = $db->_execute($updateQuery);
+		if ($res) {
+	 			$response  = array("res" => "OK");
+	 			echo json_encode($response);
+	 			exit();
+	 		}
+	 	exit();
 	}
 }
 ?>
