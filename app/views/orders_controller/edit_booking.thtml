@@ -2036,7 +2036,7 @@ body {
     font-size: 13px;
     margin-left: 10px !important;
     font-weight: bold;
-    float: right;
+    float: left;
     margin-bottom: 5px;
 }
 
@@ -3688,9 +3688,12 @@ function get_data($url)
 </div>
 <div id="tabA11" style="display:<?=$page11?>; width:100%">
 	<div><h1>Email History</h1></div>
-	<input type="button" class="hide_show_btn" name="showEmail" value="Show" id="showEmailHistory" onclick="showHideEmail(1);">
-	<input type="button" class="hide_show_btn" name="hideEmail" value="Hide" id="hideEmailHistory" onclick="showHideEmail(2);">
-	<input type="button" class="hide_show_btn" name="deleteAll" value="Hide/Show" id="deleteAll">
+	<div>
+		<input type="button" class="hide_show_btn" name="showEmail" value="Show History" id="showEmailHistory" onclick="showHideEmail(1);">
+		<input type="button" class="hide_show_btn" name="hideEmail" value="Hide History" id="hideEmailHistory" onclick="showHideEmail(2);">
+		<input type="button" style="float: right;" class="hide_show_btn" name="deleteAll" value="Hide Email" id="deleteAll">
+	</div>
+	<!-- <br> -->
 	<div><h3>Sent</h3></div>
 	<div id="sent_email">
 		<table class="tab11-table">
