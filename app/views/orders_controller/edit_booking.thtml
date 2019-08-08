@@ -3694,7 +3694,7 @@ function get_data($url)
 		<input type="button" style="float: right;" class="hide_show_btn" name="deleteAll" value="Hide Email" id="deleteAll">
 	</div>
 	<!-- <br> -->
-	<div><h3>Sent</h3></div>
+	<div style="width:10px"><h3>Sent</h3></div>
 	<div id="sent_email">
 		<table class="tab11-table">
 			<tr>

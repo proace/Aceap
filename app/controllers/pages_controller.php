@@ -735,5 +735,13 @@ class PagesController extends AppController{
 	{
 		
 	}
+
+	function showMembershipReminder()
+	{		
+		$cusId = $_GET['cid'];
+		$userData = $this->Common->getUserDetails($cusId);
+		$this->set('userData', $userData);
+
+	}
 }
 ?>

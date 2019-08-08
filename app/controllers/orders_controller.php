@@ -13490,8 +13490,6 @@ class OrdersController extends AppController
 			$fromBooking = $_GET['fromBooking'];
 		}
 		$this->layout = "blank";
-
-
 		$fileUrl ="http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
 
 		// $fileUrl =BASE_PATH."orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
@@ -14849,7 +14847,7 @@ function deleteUserFromCampaign()
 	//Loki: Send membership expire reminder email before 7 days.
 	function sendMembershipReminderEmail()
 	{
-		error_reporting(E_ALL);
+		// error_reporting(E_ALL);
 		$maildate = date('Y-m-d', strtotime("+7 days"));
 		$db 	  =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$query = "select i.id, i.first_name, i.last_name, i.email, i.phone, i.cell_phone, i.card_number, i.card_exp, i.next_service, i.is_deactive from ace_rp_customers i where i.card_number!='' and i.card_exp ='".$maildate."' and is_deactive !=1";
@@ -14860,19 +14858,24 @@ function deleteUserFromCampaign()
 		$currentDate = date('Y-m-d');
 
 		while($row = mysql_fetch_array($result, MYSQL_BOTH)) {
-				$msg = $template;
-				$msg = str_replace('{first_name}', $row['first_name'], $msg);
-				$msg = str_replace('{last_name}', $row['last_name'], $msg);
-				
-				$res = $this->sendEmailUsingMailgun($row['email'],$template_subject,$msg);
-				if (strpos($res, '@acecare') !== false) {
-	    			$is_sent = 1;
-				} else {
-					$is_sent = 0;
-				}
-				$message = mysql_real_escape_string($msg);
-				$query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$row['id'].",'','".$currentDate."',".$is_sent.", '".$message."', '".$res."')";
-				$result1 = $db->_execute($query1);	
+			$url = $this->G_URL.BASE_URL."/pages/showMembershipReminder?cid=".$row['id']."";
+			$link = '<a href='\.urlencode($url).\'>Click Here</a>';
+			$msg = $template;
+			$msg = str_replace('{first_name}', $row['first_name'], $msg);
+			$msg = str_replace('{last_name}', $row['last_name'], $msg);
+			$msg = str_replace('{card_number}', $row['card_number'], $msg);
+			$msg = str_replace('{card_exp}', $row['card_exp'], $msg);
+			$msg = str_replace('{url_confirm}', $link, $msg);
+			
+			$res = $this->sendEmailUsingMailgun($row['email'],$template_subject,$msg);
+			if (strpos($res, '@acecare') !== false) {
+    			$is_sent = 1;
+			} else {
+				$is_sent = 0;
+			}
+			$message = mysql_real_escape_string($msg);
+			$query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$row['id'].",'','".$currentDate."',".$is_sent.", '".$message."', '".$res."')";
+			$result1 = $db->_execute($query1);	
 		}	
 		exit();
 	}
@@ -14911,6 +14914,40 @@ function deleteUserFromCampaign()
 	 			exit();
 	 		}
 	 	exit();
+	}
+
+	function saveMemberShipResponse()
+	{
+		$email = 'info@acecare.ca';
+		// $email = 'lokendra.k@cisinlabs.com';
+		$subject = 'Membership Request';
+		$msg = "<p>Hi Admin,</p><p>Please find users membership request details:</p>
+				<p><strong>Customer Name</strong>&nbsp; &nbsp;: {cus_name}</p>
+				<p><strong>Address&nbsp;</strong> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;: {address}</p>
+				<p><strong>City</strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;: {city}</p>
+				<p><strong>Phone </strong><strong>Number</strong>&nbsp; &nbsp; &nbsp;: {phone}</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p><strong>Credit Card&nbsp;Number</strong>&nbsp; : {credit_card}</p>
+				<p><strong>Expiry</strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; : {expiry}</p>
+				<p><strong>CVV&nbsp;Number</strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; : {cvv}</p>
+				<p><strong>Amount</strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;: {amount}&nbsp;</p>
+				<p><strong>One Year&nbsp;</strong> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;: {one_year}</p>
+				<p>&nbsp;</p>";
+				
+		$msg = str_replace('{cus_name}', $_POST['cus_name'], $msg);
+		$msg = str_replace('{address}', $_POST['address'], $msg);
+		$msg = str_replace('{city}', $_POST['city'], $msg);
+		$msg = str_replace('{phone}', $_POST['phone'], $msg);
+		$msg = str_replace('{credit_card}', $_POST['credit_card_number'], $msg);
+		$msg = str_replace('{expiry}', $_POST['expiry'], $msg);
+		$msg = str_replace('{cvv}', $_POST['cvv_number'], $msg);
+		$msg = str_replace('{amount}', $_POST['amount'], $msg);
+		$msg = str_replace('{one_year}', $_POST['one_year'], $msg);
+
+		$res = $this->sendEmailUsingMailgun($email, $subject, $msg);
+		$this->redirect('/pages/thankYouPage');
+		exit();
 	}
 }
 ?>

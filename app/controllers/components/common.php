@@ -1958,5 +1958,16 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 			$item_model_number, $item_location_to, $move_date);
 	}
 
+
+	function getUserDetails($id)
+	{
+		$db =& ConnectionManager::getDataSource('default');
+		$query = "SELECT * from ace_rp_customers where id =".$id;
+		$result = $db->_execute($query);
+
+		$row = mysql_fetch_array($result);
+
+		return $row;
+	}
 }
 ?>
