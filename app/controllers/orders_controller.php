@@ -628,7 +628,9 @@ class OrdersController extends AppController
 
 		//Save Notes
 			if(isset($this->data['Note']['message']) && trim($this->data['Note']['message']) != '') {
-				$message = trim($this->data['Note']['message']);
+				// $message = trim($this->data['Note']['message']);
+				$message = mysql_real_escape_string(trim($this->data['Note']['message']));
+
 				$user_id = $_SESSION['user']['id'];
 				$urgency_id = $this->data['Note']['urgency_id'];
 				if($_SESSION['user']['role_id'] == 1 || $_SESSION['user']['role_id'] == 2 || $_SESSION['user']['role_id'] == 12) {
@@ -1937,7 +1939,9 @@ class OrdersController extends AppController
 
 		//Save Notes
 			if(isset($this->data['Note']['message']) && trim($this->data['Note']['message']) != '') {
-				$message = trim($this->data['Note']['message']);
+				// $message = trim($this->data['Note']['message']);
+				$message = mysql_real_escape_string(trim($this->data['Note']['message']));
+
 				$user_id = $_SESSION['user']['id'];
 				$urgency_id = $this->data['Note']['urgency_id'];
 				if($_SESSION['user']['role_id'] == 1 || $_SESSION['user']['role_id'] == 2 || $_SESSION['user']['role_id'] == 12) {
@@ -10494,7 +10498,7 @@ class OrdersController extends AppController
          $todayDate = date('Y-m-d')	;
 		 $db =& ConnectionManager::getDataSource($this->User->useDbConfig);        	
          $techId = $_SESSION['user']['id'];
-         $query = "SELECT MAX(job_date) as max_job_date from ace_rp_orders where (booking_source_id=".$techId." OR booking_source2_id=".$techId." OR job_technician1_id=".$techId." OR job_technician2_id=".$techId.") AND tech_visible = 1";
+         $query = "SELECT MAX(job_date) as max_job_date from ace_rp_orders where (booking_source_id=".$techId." OR booking_source2_id=".$techId." OR job_technician1_id=".$techId." OR job_technician2_id=".$techId.") AND tech_visible = 1 AND order_status_id != 3";
          
          $result = $db->_execute($query);
 		 $getCommDate = mysql_fetch_array($result, MYSQL_ASSOC);
@@ -11232,7 +11236,7 @@ class OrdersController extends AppController
 		$office_rating = $this->data['Feedback']['office_rating'];
 		$tech_rating = $this->data['Feedback']['tech_rating'];
 		$customer_initial = $this->data['Feedback']['customer_initial'];
-		$job_notes_tech = $this->data['Feedback']['job_notes_tech'];
+		$job_notes_tech = mysql_real_escape_string($this->data['Feedback']['job_notes_tech']);
 		$follow_up = $this->data['Feedback']['follow_up'];
 
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
@@ -12081,7 +12085,7 @@ class OrdersController extends AppController
 	}
 
 	function addInvoiceTabletNotes() {
-		$message = $_POST['message'];
+		$message = mysql_real_escape_string($_POST['message']);
 		$note_type_id = $_POST['note_type_id'];
 		$order_id = $_POST['order_id'];
 		$user_id = $this->Common->getLoggedUserID();
@@ -14258,9 +14262,10 @@ function deleteUserFromCampaign()
 	$commDate = date("Y-m-d", strtotime("-1 days", strtotime($commDate)));
 	$techId = $techId;
  	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-    $query = "SELECT job_date as max_job_date from ace_rp_orders where job_date ='".$commDate."' AND ( booking_source_id=".$techId." OR booking_source2_id=".$techId." OR job_technician1_id=".$techId." OR job_technician2_id=".$techId.") AND tech_visible = 1 limit 1"; 	
+    $query = "SELECT job_date as max_job_date from ace_rp_orders where job_date ='".$commDate."' AND ( booking_source_id=".$techId." OR booking_source2_id=".$techId." OR job_technician1_id=".$techId." OR job_technician2_id=".$techId.") AND tech_visible = 1 AND order_status_id != 3 limit 1"; 	
     $result = $db->_execute($query);
     $getCommDate = mysql_fetch_array($result, MYSQL_ASSOC);
+
 	 $commDate1 = $getCommDate['max_job_date'];
 	  if (!empty($commDate1) || $commDate1 != '') {
 	    // end the recursion
@@ -14847,11 +14852,12 @@ function deleteUserFromCampaign()
 	//Loki: Send membership expire reminder email before 7 days.
 	function sendMembershipReminderEmail()
 	{
-		// error_reporting(E_ALL);
+		error_reporting(E_ALL);
 		$maildate = date('Y-m-d', strtotime("+7 days"));
 		$db 	  =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$query = "select i.id, i.first_name, i.last_name, i.email, i.phone, i.cell_phone, i.card_number, i.card_exp, i.next_service, i.is_deactive from ace_rp_customers i where i.card_number!='' and i.card_exp ='".$maildate."' and is_deactive !=1";
 		$result = $db->_execute($query);
+
 		$settings = $this->Setting->find(array('title'=>'membership'));
 		$template = $settings['Setting']['valuetxt'];
 		$template_subject = $settings['Setting']['subject'];
@@ -14868,6 +14874,7 @@ function deleteUserFromCampaign()
 			$msg = str_replace('{url_confirm}', $link, $msg);
 			
 			$res = $this->sendEmailUsingMailgun($row['email'],$template_subject,$msg);
+
 			if (strpos($res, '@acecare') !== false) {
     			$is_sent = 1;
 			} else {
