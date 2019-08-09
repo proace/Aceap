@@ -290,7 +290,6 @@ function showestimate(order_id){
 
 
 function showestimateSubmit(){
-
 	document.getElementById('preViewEstimate').value=0;
 	document.getElementById('sendMailOnEstimate').value=0;
 	var status = ValidateFields(1);
@@ -601,7 +600,6 @@ function isValidEmail(email)
 }
 function ValidateFields(jobstatus)
 {
-
 	if ( jobstatus == 5 ) {
 		
 		showInvoiceReview();
@@ -775,9 +773,14 @@ function ValidateFields(jobstatus)
 					var res = data.trim();
 					if (data.indexOf('OK') > 0) {
 						//alert('submitFormNEW');
-						$("#msgbx").html("Do you want to send the email?");
-						showme();
-						//document.forms['editBookingform'].submit();
+						if(jobstatus != 1)
+						{	
+							$("#msgbx").html("Do you want to send the email?");
+							showme();
+						}
+						else {
+							document.forms['editBookingform'].submit();
+						}
 					}						
 						
 					else{
