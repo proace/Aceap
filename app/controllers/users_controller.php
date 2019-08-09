@@ -89,34 +89,34 @@ class UsersController extends AppController
 			}
 			// print_r($_SESSION['user']['username_chat']);
 			// print_r($this->data['User']['username']);die;
-		if(empty($userId)) {
-			$sql = "SELECT * FROM lh_users where  username ='".$userName."'";
-			$result = mysqli_query($connectionObj,$sql);
-			$row = mysqli_fetch_array($result);
-			if(empty($row )) {
-				$sql = "INSERT INTO lh_users(username, password, email, name, surname, disabled, all_departments, exclude_autoasign, hide_online, invisible_mode, inactive_mode, rec_per_req, active_chats_counter, closed_chats_counter, pending_chats_counter, auto_accept, max_active_chats, pswd_updated, attr_int_1, attr_int_2, attr_int_3, time_zone, filepath,filename, job_title, departments_ids, chat_nickname, xmpp_username, session_id, operation_admin, skype)
-					VALUES ('".$userName."','".$hashed_password."','".$userEmail."','".$userFirstName."','".$userLastName."',0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'','','','',0,'".$userFirstName."','', 0, '', '')";
+			if(empty($userId)) {
+				$sql = "SELECT * FROM lh_users where  username ='".$userName."'";
+				$result = mysqli_query($connectionObj,$sql);
+				$row = mysqli_fetch_array($result);
+				if(empty($row )) {
+					$sql = "INSERT INTO lh_users(username, password, email, name, surname, disabled, all_departments, exclude_autoasign, hide_online, invisible_mode, inactive_mode, rec_per_req, active_chats_counter, closed_chats_counter, pending_chats_counter, auto_accept, max_active_chats, pswd_updated, attr_int_1, attr_int_2, attr_int_3, time_zone, filepath,filename, job_title, departments_ids, chat_nickname, xmpp_username, session_id, operation_admin, skype)
+						VALUES ('".$userName."','".$hashed_password."','".$userEmail."','".$userFirstName."','".$userLastName."',0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'','','','',0,'".$userFirstName."','', 0, '', '')";
 
-			if(mysqli_query($connectionObj,$sql)) {
-				$chatUserId = mysqli_insert_id($connectionObj);
-				$sql= "INSERT INTO lh_groupuser (user_id, group_id) VALUES ('".$chatUserId."',2)";
-				mysqli_query($connectionObj,$sql);	
+				if(mysqli_query($connectionObj,$sql)) {
+					$chatUserId = mysqli_insert_id($connectionObj);
+					$sql= "INSERT INTO lh_groupuser (user_id, group_id) VALUES ('".$chatUserId."',2)";
+					mysqli_query($connectionObj,$sql);	
+					}
 				}
-			}
-		} else {
-			$db =& ConnectionManager::getDataSource('default');
-			$query = "select username from ace_rp_users where id=".$userId."";
-			$result = $db->_execute($query);
-			if($row = mysql_fetch_array($result)) {
-			$oldUserName = $row['username'];
-			$query = "UPDATE lh_users SET username ='".$userName."', password ='".$hashed_password."' WHERE username ='".$oldUserName."'";
-			$result = mysqli_query($connectionObj,$query);
+			} else {
+				$db =& ConnectionManager::getDataSource('default');
+				$query = "select username from ace_rp_users where id=".$userId."";
+				$result = $db->_execute($query);
+				if($row = mysql_fetch_array($result)) {
+				$oldUserName = $row['username'];
+				$query = "UPDATE lh_users SET username ='".$userName."', password ='".$hashed_password."' WHERE username ='".$oldUserName."'";
+				$result = mysqli_query($connectionObj,$query);
 
-			// $query1 = "UPDATE Customers SET ContactName = 'Alfred Schmidt', City= 'Frankfurt' WHERE CustomerID = 1";
-				
-			}
+				// $query1 = "UPDATE Customers SET ContactName = 'Alfred Schmidt', City= 'Frankfurt' WHERE CustomerID = 1";
 					
-		}
+				}
+						
+			}
 			// check if email is entered
 			// edited by Maxim Kudryavtsev - 06.02.2013 - Ali decided that email here shouldn't be mandatory
 			/*if($this->data['User']['email'] == ''){
@@ -199,14 +199,14 @@ class UsersController extends AppController
 						
 						//die();
 					}
-					$roleId = $_POST['roleId'];
+					//$roleId = $_POST['roleId'];
 					//Forward user where they need to be - if this is a single action per view
 					if ($this->data['rurl'][0])
 					{	
 						$this->redirect($this->data['rurl'][0]);
 					}
-					else if(!empty($roleId)) {
-						$this->redirect('/users?action=view&order=&sort=&currentPage=&data%5Brole%5D%5B%5D='.$roleId.'&submit2=Update');
+					else if(!empty($roleID)) {
+						$this->redirect('/users?action=view&order=&sort=&currentPage=&roleId='.$roleID.'&data%5Brole%5D%5B%5D=&submit2=Update');
 					} else {
 						$this->redirect('/users/');
 					}
@@ -371,13 +371,13 @@ class UsersController extends AppController
 		$order = $_GET['order'];
 		$roleId = $_GET['roleId'];
 		if (!$order) $order = 'username asc';
-		
 		$conditions = "and u.is_active=1";
 		$ShowInactive = $_GET['ShowInactive'];
 		if ($ShowInactive) $conditions = "";
 		
 		$disable_roles = array();
-		$role = $_GET['data']['role'][0];
+		// $role = $_GET['data']['role'][0];
+		$role = $roleId;
 		if ($this->Common->getLoggedUserRoleID() == 13) {$role = 3; $disable_roles = array('disabled'=>'1');}
 		if ($role) $conditions .= " and exists (select * from ace_rp_users_roles r where r.user_id=u.id and r.role_id=$role)";
 		
