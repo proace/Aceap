@@ -72,7 +72,11 @@
 <div style="clear: both; float: left;">
 	<div class="dhcell" style="width: 110px;">Last Name<?=$last_name?></div>
 	<div class="dhcell" style="width: 85px;"><b>First Name<?=$first_name?></b></div>
+	<?php if($from_reminder == 1) {?>
+	<div class="dhcell" style="width: 95px;">Reminder Sent</div>
+	<?php }else {?>
 	<div class="dhcell" style="width: 95px;">Status</div>
+	<?php } ?>
 	<div class="dhcell" style="width: 175px;">Email</div>
 
 	<div class="dhcell sort_data" style="width: 70px;"  sort_type='' sort_val="call-result">Call Result <?php if($sort_by == 'call-result'){ echo $sortTypeImg ?> <?php } ?></div>
@@ -134,7 +138,11 @@
 	
 	<div class="dcell" style="width: 110px;<? echo $color?>"><?php echo $obj["User"]["last_name"] ?> </div>
 	<div class="dcell" style="width: 85px;<? echo $color?>"><b><?php echo $obj['User']['first_name']; ?></b> </div>
-	<div class="dcell" style="width: 85px;<?php if( $obj['User']['is_sent'] == 1){ echo 'color:green' ;} else { echo 'color:red';}; ?>"><b><?php if( $obj['User']['is_sent'] == 1)
+	<?php if($from_reminder == 1) {?>
+		<div class="dcell" style="width: 85px;"><?php echo date("d M Y", !empty($obj['User']['last_reminder_date']) ? strtotime($obj['User']['last_reminder_date']) : '' );?></div>
+	<?php } else { ?> 
+		<div class="dcell" style="width: 85px;<?php if( $obj['User']['is_sent'] == 1){ echo 'color:green' ;} else { echo 'color:red';}; ?>"><b>
+		<?php if( $obj['User']['is_sent'] == 1)
 		{ 
 			echo 'Sent' ;
 		} elseif ($obj['User']['is_sent'] == NULL)
@@ -145,7 +153,8 @@
 		 {
 		 	echo 'Failed';
 		 }
-	?></b> </div>
+		?></b> </div>
+	<?php } ?>
 	<div class="dcell" style="width: 175px;<? echo $color?>"><?=$obj['User']['email'] ?></div>
 	<div class="dcell" style="width: 70px;<? echo $color?>"><?php echo $call_results[$obj['User']['callresult']]; ?> </div>
 	<div class="dcell" style="width: 80px;<? echo $color?>"><?php echo date("d M Y", strtotime($obj['User']['lastcall_date'])); ?></a> </div>

@@ -3592,6 +3592,8 @@ class OrdersController extends AppController
 		$conditions = array();
 		$is_campaing = 0;
 		$campaignId = 0;
+		$from_reminder = 0;
+		$this->set('from_reminder', $from_reminder);
 		if ($_GET['sq_crit'] == 'phone')
 		{
 			$sq_str = preg_replace("/[- \.]/", "", $_GET['sq_str']);
@@ -3648,6 +3650,7 @@ class OrdersController extends AppController
 			$isCampaing = 1;
 			$callResult = $_GET['is_call_result'];
 			$is_search = $_GET['is_search'];
+			
 			$this->set('is_search', $is_search);
 			$this->set('is_campaing', $isCampaing);
 			$data = explode('-', $_GET['sq_str']);
@@ -14370,12 +14373,9 @@ function deleteUserFromCampaign()
 				$message = mysql_real_escape_string($msg);
 				$query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$row['id'].",". $row['customer_id'].",".$row['order_type_id'].",'".$currentDate."',".$is_sent.", '".$message."', '".$res."')";
 				$result1 = $db->_execute($query1);
-				// if($row['reminder_type'] == 1)
-				// {
-				// 	$reminderDate = date('Y-m-d', strtotime("+".$row['reminder_month']."months", strtotime($maildate)));
-				// 	$setReminderDate = "UPDATE ace_rp_orders set reminder_date='".$reminderDate."' where id=".$row['id'];
-				// 	$reminderRes = $db->_execute($setReminderDate);
-				// }
+
+				$setLastReminder = "UPDATE ace_rp_customers set last_reminder_date = '".$currentDate."' where id =". $row['customer_id'];
+				$db->_execute($setLastReminder);
 			}
 		}
 		
@@ -14390,6 +14390,8 @@ function deleteUserFromCampaign()
 		$currentSelected = $_GET['currentSelected'];
 		$selectedStr = $_GET['selectedStr'];
 		$is_search = $_GET['is_search'];
+		$from_reminder = 1;
+		$this->set('from_reminder', $from_reminder);
 		$this->set('is_search', $is_search);
 		$campId = !empty($_GET['sq_str']) ? $_GET['sq_str'] : 0 ;
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
@@ -14417,9 +14419,7 @@ function deleteUserFromCampaign()
 				}
 			}
 		}
-		if($currentSelected == 1 || $currentSelected == 2)
-		{
-			if(!empty($selectedStr)) 
+		if(!empty($selectedStr)) 
 			{
 				if($selectedStr == 'today')
 				{
@@ -14430,6 +14430,9 @@ function deleteUserFromCampaign()
 			} else {
 				$callWhere .= ' AND o.reminder_date IS NOT NULL ';
 			}
+		if($currentSelected == 1 || $currentSelected == 2)
+		{
+			
 			if($currentSelected == 1) {
 				$compare = 1;
 			} elseif($currentSelected == 2) {
@@ -14438,6 +14441,7 @@ function deleteUserFromCampaign()
 			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
 				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
 				LIMIT 0 , 1) =".$compare." ".$callWhere." limit ".$limit;
+
 			$result = $db->_execute($sql);
 			
 			$countSql = "SELECT count(*) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL AND (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC LIMIT 0 , 1) =".$compare." ".$callWhere;
@@ -14451,7 +14455,6 @@ function deleteUserFromCampaign()
 			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
 				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere." group by o.id limit ".$limit;
 			$result = $db->_execute($sql);
-				//print_r($sql); die;
 		} else {
 			$countSql = "SELECT count(*) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE c.email= ''".$emptyEmailWhere;
 			$resultTotal = $db->_execute($countSql);

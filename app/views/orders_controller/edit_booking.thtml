@@ -479,7 +479,7 @@ function CloseQuestions(){
   $('#CloseQuestionsText').hide();
 }
 function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, part_number, show_purchase='', model_number, item_brand=''){
-	console.log("brand=", item_brand);
+	
 	$("#item_selector0").html("").hide();
 	$("#item_selector1").html("").hide();
 	var index=1*document.getElementById("NumberOfItems").value;
@@ -1529,7 +1529,6 @@ $(document).ready(function(){
 	}
 
 	$(".disply_preview").live("change",function(e){
-		console.log("hua");
 	    var img_ct = $(this).attr("data-ct").trim();
 	    var cur = $(this);
 	   upload_photo(cur[0],img_ct);
