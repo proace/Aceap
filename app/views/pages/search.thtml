@@ -1,3 +1,4 @@
+
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -62,6 +63,8 @@
 			else if (on == "Campaign_data")
 			{
 				document.getElementById("Campaign_source_id_frontend").selectedIndex = "0";
+				document.getElementById('callback_missed_call_dropdown').style.display = 'none';
+				document.getElementById('missed_callback_dates').style.display = 'none';
 				document.getElementById('sq_str').style.display = 'none';
 				document.getElementById('booking_source_id').style.display = 'none';
 				document.getElementById('Campaign_source_id_frontend').style.display = '';
@@ -99,11 +102,20 @@
 				document.getElementById('order_type_id').style.display = 'none';
 				document.getElementById('Campaign_source_id_frontend').style.display = 'none';
 				document.getElementById('callresult').style.display = 'none';
+			} else if (on == "reminder")
+			{
+				// document.getElementById('reminderLogs').style.display = 'none';
+				document.getElementById('callback_agent_option_frontend').style.display = '';
+				document.getElementById('sq_str').style.display = 'none';
+				document.getElementById('booking_source_id').style.display = 'none';
+				document.getElementById('order_type_id').style.display = 'none';
+				document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+				document.getElementById('callresult').style.display = 'none';
 			}
 			else
 			{
 				// document.getElementById('reminderLogs').style.display = 'none';
-
+				console.log("aaya");
 				document.getElementById('callback_missed_call_dropdown').style.display = 'none';
 				document.getElementById('missed_callback_dates').style.display = 'none';
 
@@ -174,7 +186,7 @@
 
 			var ffromdate = document.getElementById('ffromdate').value;
 			var ftodate = document.getElementById('ftodate').value;
-
+			
 			if(ffromdate == '' && ftodate == ''){
 				var ffromdate_new = '';
 				var ftodate_new = '';
@@ -329,6 +341,7 @@ Date.prototype.format = function (mask, utc) {
 
 	
 </script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
 <input type="hidden" id="hidden_flag_hotlist" name="hidden_flag_hotlist" value="not_select">
 <form id="searchform" onSubmit="submitRequest();return false;">
 <div id="searchbox" style="width: 99%; padding: 1px; text-align: center; background: #CCCCCC;">
@@ -356,6 +369,7 @@ Date.prototype.format = function (mask, utc) {
 		<option value="callresult">Call Result</option>
 		<option value="card_number">Card #</option>
 		<option value="email">Email</option>
+		<option value="reminder" id="reminder_option_id">Reminder</option>
 		<? } ?>
 	</select>
       <?php echo
@@ -381,11 +395,11 @@ Date.prototype.format = function (mask, utc) {
 	      &nbsp;&nbsp;
 	      Date from: 
 	      &nbsp;&nbsp;
-		  <input type="text" id="ffromdate" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($fdate) echo $fdate; else echo ''; ?>">
+		  <input type="text" id="ffromdate" name="ffromdate" onclick="scwShow(this,event);" onkeydown="return false;" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($fdate) echo $fdate; else echo ''; ?>">
 	      &nbsp;&nbsp;
 	      Date to:
 	      &nbsp;&nbsp;
-		  <input type="text" id="ftodate" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($tdate) echo $tdate; else echo ''; ?>">
+		  <input type="text" id="ftodate" name="ftodate"  onclick="scwShow(this,event);" onkeydown="return false;" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" placeholder="yyyy/mm/dd" value="<? if ($tdate) echo $tdate; else echo ''; ?>">
 	  </div>
       <?php 
       echo
@@ -399,4 +413,4 @@ Date.prototype.format = function (mask, utc) {
 	<!-- input type="button" value="callback" style="width: 52px; font-size: 9px;" / -->
 </div>	
 </form>
-<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
+

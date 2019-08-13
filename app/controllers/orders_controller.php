@@ -3593,6 +3593,7 @@ class OrdersController extends AppController
 		$is_campaing = 0;
 		$campaignId = 0;
 		$from_reminder = 0;
+
 		$this->set('from_reminder', $from_reminder);
 		if ($_GET['sq_crit'] == 'phone')
 		{
@@ -3618,7 +3619,66 @@ class OrdersController extends AppController
 		$sort = null;
 		$callback_search_head = "";
 
-		if ($_GET['sq_crit'] == 'phone')
+		if($_GET['sq_crit'] == 'reminder')
+		{
+			$sq_str = $_GET['sq_str'];
+			$callWhere = "";
+			$from_reminder = 1;
+
+			$this->set('is_search', 2);
+			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+			$this->set('from_reminder', $from_reminder);
+			if ($sq_str == 'all_missed_callback' || $sq_str == 'btw_missed_callback')
+			{
+				$dates = explode('_', $_GET['sq_dates']);
+	        	$fdate = $this->Common->formateDate($dates[0]);
+	        	$tdate = $this->Common->formateDate($dates[1]);
+				if($_GET['sq_str'] == 'all_missed_callback'){
+					$callWhere = "";
+				}else{
+					if(isset($fdate))
+					{
+						$callWhere = " AND o.reminder_date >= '".$fdate."'";
+					}
+					if(isset($tdate))
+					{
+						$callWhere .= (!empty($callWhere))? " AND " : "";
+						$callWhere .= " o.reminder_date <= '".$tdate."'";
+					}
+				}
+			} else {
+				$callWhere .= " AND o.reminder_date = '".$sq_str."'";
+			}
+
+			$countSql = "SELECT count(DISTINCT o.id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere;
+			
+			$countResult = $db->_execute($countSql);
+
+			$row = mysql_fetch_array($countResult, MYSQL_ASSOC);
+			$totalCus = $row ['total']; 
+			$this->set('totalCus', $totalCus);
+			$totalPages = ceil($totalCus / 500);
+			$this->set('totalPages', $totalPages);
+
+			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
+				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere." group by o.id limit ".$limit;
+			$result = $db->_execute($sql);
+			$cust = array();
+			$i=0;
+			$cust_temp = array();
+			while ($row = mysql_fetch_array($result, MYSQL_BOTH))
+			{
+				
+				foreach ($row as $k => $v)
+				$cust_temp['User'][$k] = $v;
+				$cust_temp['User']['telemarketer_id']= $row['telemarketer_id'];
+				$cust_temp['User']['callback_time']= date("H:i", strtotime($row['callback_time']));
+				array_push($cust, $cust_temp);
+				$i++;
+			}
+		}
+
+		else if ($_GET['sq_crit'] == 'phone')
 		{
 			if($this->Common->getLoggedUserRoleID() != 6) {
 				$allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);

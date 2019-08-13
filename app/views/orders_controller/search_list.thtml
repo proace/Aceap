@@ -1,3 +1,8 @@
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tinymce/tinymce.min.js"></script>
 <style type="text/css">
 .new-btn {
 	position: relative;
@@ -27,10 +32,10 @@
 <div id='missed_callback_dates' style="display: none;">
 	      from: 
 	      &nbsp;&nbsp;
-		  <input type="text" name="ffromdate" id="datepicker1" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?php echo isset($fdate) ? $fdate : ''?>">
+		  <input type="text" name="ffromdate" id="datepicker1" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?php echo isset($fdate) ? $fdate : ''?>" autocomplete="off">
 	      to:
 	      &nbsp;&nbsp;
-		  <input type="text" name="ftodate" id="datepicker2" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?php echo isset($tdate) ? $tdate : ''?>">
+		  <input type="text" name="ftodate" id="datepicker2" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?php echo isset($tdate) ? $tdate : ''?>" autocomplete="off">
 </div>
 <input type="button" name="call-back-result" id="user_serch_go" value="Go" onclick="searchList('Campaign_data',<?php echo isset($campId) ? $campId : '' ?>);">
 <br>
@@ -54,6 +59,11 @@
 		<?php $j = 1;
 		for( $j; $j <= $totalPages; $j++){ ?>
 			<a href="javascript:void(0)" onclick="searchList('Campaign_data',<?php echo $campId ?>, <?php echo $j ?> );"><?php echo $j ?></a>		
+	 	<?php } ?>
+	 <?php } elseif($is_search == 2) {?>	
+	 		<?php $j = 1;
+	 		for( $j; $j <= $totalPages; $j++){ ?>
+			<a href="javascript:void(0)" onclick="searchList('reminder','<?php echo $sq_str ?>', <?php echo $j ?> );"><?php echo $j ?></a>		
 	 	<?php } ?>
 	<?php } else {?>
 		<?php $j = 1;

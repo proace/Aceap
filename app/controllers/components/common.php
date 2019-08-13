@@ -1969,5 +1969,12 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 
 		return $row;
 	}
+
+	function formateDate($date)
+	{
+		$date = explode("/", $date);
+		$new_date = $date[2]."-".$date[1]."-".$date[0];
+		return $new_date;
+	}
 }
 ?>
