@@ -3678,6 +3678,41 @@ class OrdersController extends AppController
 			}
 		}
 
+		else if($_GET['sq_crit'] == 'order_type_id')
+		{
+			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+			$callWhere = '';
+			$this->set('is_search', 3);
+			if(!empty($_GET['sq_str']))
+			{
+				$callWhere .= " AND order_type_id = ".$_GET['sq_str'];
+			}
+			$countSql = "SELECT count(DISTINCT o.customer_id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.id IS NOT NULL ".$callWhere;
+			$countResult = $db->_execute($countSql);
+
+			$row = mysql_fetch_array($countResult, MYSQL_ASSOC);
+			$totalCus = $row ['total']; 
+			$this->set('totalCus', $totalCus);
+			$totalPages = ceil($totalCus / 500);
+			$this->set('totalPages', $totalPages);
+
+			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
+				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.customer_id IS NOT NULL ".$callWhere." group by o.customer_id limit ".$limit;
+			$result = $db->_execute($sql);
+			$cust = array();
+			$i=0;
+			$cust_temp = array();
+			while ($row = mysql_fetch_array($result, MYSQL_BOTH))
+			{
+				
+				foreach ($row as $k => $v)
+				$cust_temp['User'][$k] = $v;
+				$cust_temp['User']['telemarketer_id']= $row['telemarketer_id'];
+				$cust_temp['User']['callback_time']= date("H:i", strtotime($row['callback_time']));
+				array_push($cust, $cust_temp);
+				$i++;
+			}
+		}
 		else if ($_GET['sq_crit'] == 'phone')
 		{
 			if($this->Common->getLoggedUserRoleID() != 6) {

@@ -65,6 +65,11 @@
 	 		for( $j; $j <= $totalPages; $j++){ ?>
 			<a href="javascript:void(0)" onclick="searchList('reminder','<?php echo $sq_str ?>', <?php echo $j ?> );"><?php echo $j ?></a>		
 	 	<?php } ?>
+	 <?php } elseif($is_search == 3) {?>	
+	 		<?php $j = 1;
+	 		for( $j; $j <= $totalPages; $j++){ ?>
+			<a href="javascript:void(0)" onclick="searchList('order_type_id','<?php echo $sq_str ?>', <?php echo $j ?> );"><?php echo $j ?></a>		
+	 <?php } ?>
 	<?php } else {?>
 		<?php $j = 1;
 		for( $j; $j <= $totalPages; $j++){ ?>

@@ -124,7 +124,7 @@ class PagesController extends AppController{
 		$agent_id = $_SESSION['user']['id'];
 		$this->layout = 'inline';
 		$this->set('booking_sources', $this->HtmlAssist->table2array($this->Order->Source->execute('SELECT ace_rp_users.id, ace_rp_users.first_name, ace_rp_users.last_name FROM ace_rp_users, ace_rp_users_roles WHERE ace_rp_users.id=ace_rp_users_roles.user_id AND (ace_rp_users_roles.role_id=3 OR ace_rp_users_roles.role_id=7)'), 'id', 'first_name'));
-		$this->set('job_types', $this->HtmlAssist->table2array($this->OrderType->findAll(), 'id', 'name'));
+		$this->set('job_types', $this->HtmlAssist->table2array($this->OrderType->findAllByFlagactive(1), 'id', 'name'));
 		$this->set('call_results', $this->HtmlAssist->table2array($this->CallResult->findAll(), 'id', 'name'));
 		$this->set('common', $this->Common);
 		if($_SESSION['user']['role_id'] == 6){
