@@ -2330,7 +2330,7 @@ function get_data($url)
 
 
  <!-- #Loki Show reminder sms popup  -->
-<div id="reminderSms">
+<div id="reminderSms" style="display: none">
 		<table>
 			<tr>
 				<td>
@@ -2343,7 +2343,7 @@ function get_data($url)
 		<input type="button"  name="cancel" value="Cancel" onclick="hideInvoiceReview();" style="padding: 5px;margin-top: 5px;">
 </div>
 
-<div id="sendSeparateEmail">
+<div id="sendSeparateEmail" style="display: none;">
 		<table>
 			<tr>
 				<td>
@@ -4085,6 +4085,7 @@ function get_data($url)
 	        height: 500,
 	    });
 	    $('.openMailBox').live('click', function(){
+
 	    	if(tinymce.get("emailVal")) 
 			{
 				tinymce.remove('#emailVal');

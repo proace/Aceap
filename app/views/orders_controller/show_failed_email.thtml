@@ -13,9 +13,14 @@ jQuery( document ).ready(function($) {
               }
            });
       });
-      $('#markAll').on('click', function(){
-              $(".delete_email").attr('checked', this.checked);
-          });
+      $('#markAll').on('change', function(){
+          if($(this).prop("checked") == true)
+          {
+            $(".delete_email").prop('checked', true);
+          }else{
+            $(".delete_email").prop('checked', false);
+          }          
+      });
       $('#deleteAll').on('click', function(){
           var Id = '';
            $(".delete_email:checkbox:checked").each(function(){
