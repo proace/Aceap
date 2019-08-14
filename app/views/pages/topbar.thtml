@@ -53,8 +53,8 @@ function get_chat_count(){
             count = res['total'];
             if(count >= 1 && count > 0)
             {
-            	// $('#showMessage').text(count);
-            	// window.open("<?=BASE_URL?>/messages/ShowMessages?fromMessage=1", "", "width=50,height=50", "left=1000","top=50");
+            	$('#showMessage').text(count);
+            	window.open("<?=BASE_URL?>/messages/ShowMessages?fromMessage=1", "", "width=50,height=50,top=100, left=1300");
 
             } if( count == 0)
             {

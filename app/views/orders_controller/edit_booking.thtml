@@ -1455,6 +1455,7 @@ $(document).ready(function(){
 	});
 
 	$('#save-reminder-email').live("click", function(){
+		var hide_modal = $("#hide_modal").val();
 		var reminderMonths = $("#reminder-months").val();
 		var reminderDate = $("#reminder-date").val();
 		var reminderType = $("#reminder-type-val").val();
@@ -1486,7 +1487,10 @@ $(document).ready(function(){
 				if(res.res == "OK")
 				{
 					hideInvoiceReview();
-					showMyModal();
+					if (hide_modal != 1)
+					{
+						showMyModal();
+					}
 
 				}
 			}			
@@ -1929,7 +1933,8 @@ function showme(){
 	document.getElementById("myModal").style.display = "block";
 }
 
-function showInvoiceReview(){
+function showInvoiceReview(hideModal = 0){
+	$("#hide_modal").val(hideModal);
 	// document.getElementById("myModalNew").style.display = "block";
 	document.getElementById("reminderEmail").style.display = "block";
 }
@@ -2272,6 +2277,7 @@ function get_data($url)
 	<body>
 	<div class="reminder-modal-content">
 			<input type="hidden" id="reminder-type-val" name="reminderType">
+			<input type="hidden" id="hide_modal" name="hide_modal">
 			<h3>Reminder E-mail</h3>
 		<table class="reminder-email-table">
 			<tr>
@@ -2314,6 +2320,7 @@ function get_data($url)
 				</td>
 			</tr>
 		</table>
+    <input type="button" style="float: left;width: 100;" class="reminder-button" id="quick_reminder" name="Quick Reminder" value="Quick Reminder" onclick="createMessage();">
     <input type="button" class="reminder-button" id="save-reminder-email" name="OK" value="OK">
 	<input type="button"  class="reminder-button" name="cancel" value="Cancel" onclick="hideInvoiceReview();">
 	</div>	
@@ -3488,7 +3495,7 @@ function get_data($url)
 					<input type="button" id="mailbut" send-estmt = "<?= $this->data['Order']['estimate_sent']?>" frm-estmt = "<?=$from_estimate?>" value="Send Estimate" onclick="sendEmail(<?php echo $this->data['Order']['id'] ?>)" class="buttons">
 
                     <input type="button" value="Booked" onclick="ValidateFields(1);" class="buttons">
-                    <input type="button" value="Reminder" onclick="ValidateFields(2);" class="buttons">
+                    <input type="button" value="Reminder" onclick="showInvoiceReview(1);" class="buttons">
                     <?php if ($common->getLoggedUserRoleID() == 6) { ?>
                     <input type="button" value="Cancelled" onclick="javascript:document.getElementById('havetoprint').value=3;ValidateFields(3);" class="buttons">
 						<?php if($this->data['Order']['order_status_id'] == 5) { ?>
