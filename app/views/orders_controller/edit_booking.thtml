@@ -598,7 +598,7 @@ function isValidEmail(email)
 		var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 		return re.test(email);
 }
-function ValidateFields(jobstatus)
+function ValidateFields(jobstatus, show_box=0)
 {
 	if ( jobstatus == 5 ) {
 		
@@ -773,7 +773,7 @@ function ValidateFields(jobstatus)
 					var res = data.trim();
 					if (data.indexOf('OK') > 0) {
 						//alert('submitFormNEW');
-						if(jobstatus != 1)
+						if(show_box == 1)
 						{	
 							$("#msgbx").html("Do you want to send the email?");
 							showme();
@@ -3488,7 +3488,7 @@ function get_data($url)
 					<input type="button" id="mailbut" send-estmt = "<?= $this->data['Order']['estimate_sent']?>" frm-estmt = "<?=$from_estimate?>" value="Send Estimate" onclick="sendEmail(<?php echo $this->data['Order']['id'] ?>)" class="buttons">
 
                     <input type="button" value="Booked" onclick="ValidateFields(1);" class="buttons">
-                    <input type="button" value="Reschedule" onclick="ValidateFields(2);" class="buttons">
+                    <input type="button" value="Reminder" onclick="ValidateFields(2);" class="buttons">
                     <?php if ($common->getLoggedUserRoleID() == 6) { ?>
                     <input type="button" value="Cancelled" onclick="javascript:document.getElementById('havetoprint').value=3;ValidateFields(3);" class="buttons">
 						<?php if($this->data['Order']['order_status_id'] == 5) { ?>
@@ -3500,7 +3500,7 @@ function get_data($url)
                     	<?php } else {
 							//echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(1); return false;" ));
 							//echo "&nbsp;&nbsp;&nbsp;";
-							echo $html->submit("Save", array("class" => "buttons","onclick" => "javascript:document.getElementById('havetoprint').value=1;ValidateFields(1); return false;" ));
+							echo $html->submit("Save", array("class" => "buttons","onclick" => "javascript:document.getElementById('havetoprint').value=1;ValidateFields(1,1); return false;" ));
 
 							echo "&nbsp;&nbsp;&nbsp;";
 							/*echo $html->submit("Send Estimate", array("class" => "buttons","onclick" => "javascript:document.getElementById('sendestimate').value=1;ValidateFields(1); return false;", "name"=>"sendestimate","value"=>"sendestimate" ));*/
