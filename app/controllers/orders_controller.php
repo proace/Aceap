@@ -14772,8 +14772,15 @@ function deleteUserFromCampaign()
 			{
 				$message = mysql_real_escape_string($value->$delivery_status->description);
 			}
-			$query = "INSERT INTO ace_rp_failed_email (email, subject, reason,message_id) VALUES ('".$toEmail."', '".$subject."', '".$message."', '".$messageId."')";
-			$res = $db->_execute($query);
+
+			$matchUserEmail = "SELECT email from ace_rp_customers where email ='".$toEmail."'";
+			$matchResult = $db->_execute($matchUserEmail);
+			$row = mysql_fetch_array($matchResult, MYSQL_ASSOC);
+			if(!empty($row))
+			{
+				$query = "INSERT INTO ace_rp_failed_email (email, subject, reason,message_id) VALUES ('".$toEmail."', '".$subject."', '".$message."', '".$messageId."')";
+				$res = $db->_execute($query);
+			}
 		}
 		
 		if((!empty($link) || $link != '') && (!empty($explodeLink[1]) && $explodeLink[1] != '')) 	
