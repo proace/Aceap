@@ -14804,7 +14804,7 @@ function deleteUserFromCampaign()
 		$offset = ($pageNo-1) * $no_of_records_per_page;
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		// $query = "SELECT fe.*, cus.first_name, cus.last_name from ace_rp_failed_email fe LEFT JOIN ace_rp_customers cus ON fe.email = cus.email where fe.status = 0 LIMIT ".$offset.", ". $no_of_records_per_page."";
-		$query = "SELECT fe.*, cus.first_name, cus.last_name from ace_rp_failed_email fe LEFT JOIN ace_rp_reminder_email_log rel ON rel.message_id = fe.message_id LEFT JOIN ace_rp_customers cus ON rel.customer_id = cus.id where fe.status = 0 LIMIT ".$offset.", ". $no_of_records_per_page."";
+		$query = "SELECT fe.*, cus.first_name, cus.last_name from ace_rp_failed_email fe LEFT JOIN ace_rp_reminder_email_log rel ON rel.message_id = fe.message_id LEFT JOIN ace_rp_customers cus ON rel.customer_id = cus.id where fe.status = 0 order by fe.id desc LIMIT ".$offset.", ". $no_of_records_per_page."";
 		$res = $db->_execute($query);
 		$emails = array();
 		// $totalQuery = "SELECT count(*) as total from ace_rp_failed_email fe LEFT JOIN ace_rp_customers cus ON fe.email = cus.email where fe.status = 0";
