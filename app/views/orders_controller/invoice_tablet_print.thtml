@@ -345,8 +345,13 @@ th {
             <td colspan=5 class="item_string" style="border-left-style:solid;border-left-color:black;border-left-width:1px;border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;padding-right:10px;">
                 <b style="font-size: 7pt">DEPOSIT</b>
             </td>
-            <td colspan=10 class="item_string_last" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">
-                <?php //if ($obj['Order']['customer_deposit']>0) echo $obj['Order']['customer_deposit']; else echo '&nbsp;';?>
+            <td colspan=10 class="item_string_last right" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">
+                <?php if ($obj['Order']['customer_deposit']>0){?>
+
+                 <?php  $deposit = number_format($obj['Order']['customer_deposit'], 2, '.', '');
+                  echo $deposit; 
+                 } else{?>
+                 <?php echo '&nbsp;';}?>
             </td>
         </tr>
         <tr>
@@ -354,8 +359,15 @@ th {
             <td colspan=5 class="item_string" style="border-left-style:solid;border-left-color:black;border-left-width:1px;border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">
                 <b style="font-size: 7pt">REMAINING</b>
             </td>
-            <td colspan=10 class="item_string_last" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;
+           <!--  <td colspan=10 class="item_string_last" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;">&nbsp;
 
+            </td> -->
+          <td colspan=10 class="item_string_last right" style="border-bottom-style:solid;border-bottom-color:black;border-bottom-width:1px;"> <?php if ($deposit){?>
+
+           <?php $remaining =  ($subtotal+round(0.05*$subtotal,2)) - $deposit;
+                echo number_format($remaining, 2, '.', '');
+                } else{ ?>
+            <?php echo '&nbsp;';}?>
             </td>
         </tr>
                 <?php //} ?>

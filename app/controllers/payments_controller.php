@@ -493,5 +493,16 @@ class PaymentsController extends AppController
 		$this->redirect('payments/showPaymentTypes');
 		exit();
 	}
+
+	function updateDeposit()
+	{
+		$deposit = $_POST['deposit'];
+		$orderId = $_POST['orderId'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "UPDATE ace_rp_orders set customer_deposit = ".$deposit." where id = ".$orderId;
+		$result = $db->_execute($query);
+		exit();
+	}
+	
 }
 ?>

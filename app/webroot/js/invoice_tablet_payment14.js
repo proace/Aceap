@@ -422,6 +422,17 @@ function computeValues() {
 	current_tax1 = current_cost*0.05;
 	current_tax = current_tax1.toFixed(2);
 	current_deposit = parseFloat($("#current_deposit").val());
+	var id = $('#InvoiceOrderId').val();
+
+	$.ajax({
+		url: G_URL + "payments/updateDeposit",
+		type: "post",
+		data: {deposit:current_deposit, orderId:id},
+		success: function(data)
+		{
+
+		}
+	});
 	
 	$("#current_subtotal").val(current_cost);
 	$("#current_tax").val(current_tax); 
