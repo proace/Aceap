@@ -106,7 +106,7 @@ function sendSeparateEmail()
 //Loki: Send SMS
 function SendSms()
 {
-	var phone = $('#editphone').val();
+	var phone_number = $('#CustomerCellPhone').val();
 	var customerId = $('#CustomerId').val();
 	var message = $('#messageVal').val();
 	$.ajax({
@@ -114,7 +114,7 @@ function SendSms()
 		dataType: 'html',
 		type: 'POST',
 		cache: false,
-		data:{phone:phone, cusId:customerId, message:message},
+		data:{phone:phone_number, cusId:customerId, message:message},
 		success: function(data) {
 			res = JSON.parse(data);
 			if(res.res == "OK")
@@ -232,6 +232,9 @@ function showSmsBox() {
 	$( "#reminderSms" ).dialog("open");
 }
 
+function hideSmsBox() {
+	$( "#reminderSms" ).dialog("close");
+}
 // function showEmailBox() {
 
 // 	setTimeout(function(){ addTinyMCE(); }, 50);
@@ -2340,7 +2343,7 @@ function get_data($url)
 			</tr>
 		</table>
 		<input type="button" name="OK" value="Send" style="padding: 5px;margin-top: 5px;" onclick="SendSms()">
-		<input type="button"  name="cancel" value="Cancel" onclick="hideInvoiceReview();" style="padding: 5px;margin-top: 5px;">
+		<input type="button"  name="cancel" value="Cancel" onclick="hideSmsBox();" style="padding: 5px;margin-top: 5px;">
 </div>
 
 <div id="sendSeparateEmail" style="display: none;">

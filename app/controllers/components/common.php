@@ -1976,5 +1976,30 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 		$new_date = $date[2]."-".$date[1]."-".$date[0];
 		return $new_date;
 	}
+
+
+	// Loki: send sms
+	function sendTextMessage($phone = null, $message = null)
+	{
+		$phone = "+1".str_replace ('-','', $phone);
+		// $phone = str_replace ('-','', $phone);
+
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/send_text_sms.php");
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS,"phone=".urlencode($phone)."&body=".urlencode($message));
+		// receive server response ...
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$result = curl_exec($ch);
+		$err = curl_error($ch);
+		curl_close($ch);
+
+		if ($err) {
+		  return "cURL Error #:" . $err;
+		} else {
+		  return $response = json_decode($result);
+		}
+		exit();
+	}
 }
 ?>

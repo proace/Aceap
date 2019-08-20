@@ -14622,11 +14622,20 @@ function deleteUserFromCampaign()
  		}
 		exit();		
 	}
+
+	//Loki: Send text message
 	function SendSms()
 	{
+		// error_reporting(E_ALL);
+
 		$phone_number = $_POST['phone'];
 		$cusId = $_POST['cusId'];
 		$message = $_POST['message'];
+		if(!empty($phone_number))
+		{
+			$response = $this->Common->sendTextMessage($phone_number, $message);
+		}
+		print_r($response);
 		exit();
 	}
 
