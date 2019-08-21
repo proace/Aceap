@@ -106,6 +106,7 @@ function sendSeparateEmail()
 //Loki: Send SMS
 function SendSms()
 {
+
 	var phone_number = $('#CustomerCellPhone').val();
 	var customerId = $('#CustomerId').val();
 	var message = $('#messageVal').val();
@@ -119,7 +120,8 @@ function SendSms()
 			res = JSON.parse(data);
 			if(res.res == "OK")
 			{
-				window.location.reload();
+				hideSmsBox();
+				//window.location.reload();
 			}
 		}
 	});	
@@ -1384,6 +1386,41 @@ $(document).ready(function(){
 		    });
 		});
 
+
+	//Loki- Show sms log content
+		$(function () {
+			$(".show_sms_content").dialog({
+		        modal: true,
+		        autoOpen: false,
+		        title: "Message",
+		        autoOpen: false,
+		        width: 1024,
+		        height: 786,
+		    });
+		    $(".viewSmsContents").live("click",function () {
+		    	var id = $(this).attr("content_id");
+				var message = $("#sms_log_content_"+id).val();
+		    	$('.show_sms_content').html(message);
+		        $('.show_sms_content').dialog('open');
+		    });
+		});
+
+		$(function () {
+			$(".show_sms_content").dialog({
+		        modal: true,
+		        autoOpen: false,
+		        title: "Message",
+		        autoOpen: false,
+		        width: 1024,
+		        height: 786,
+		    });
+		    $(".receiveViewSmsContents").live("click",function () {
+		    	var id = $(this).attr("content_id");
+				var message = $("#received_sms_log_content_"+id).val();
+		    	$('.show_sms_content').html(message);
+		        $('.show_sms_content').dialog('open');
+		    });
+		});
 	//Loki- Delete payment image
 	$("#delete-image").live("click", function (){
 		var id = $('#OrderId').val();
@@ -2437,6 +2474,9 @@ function get_data($url)
     <?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 3) {?>
     <div class="tabtrigger <?=$tab11?>" id="trigger11" onclick="openTab(11);">Email History</div>
     <?php }?>
+    <?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 3) {?>
+    <div class="tabtrigger <?=$tab12?>" id="trigger12" onclick="openTab(12);">SMS History</div>
+    <?php }?>
 <?php if (!isset($_GET['hotlist'])) {?>
     <!--<div class="tabtrigger" id="trigger4" onclick="openTab(4);">Feedback</div>-->
 	<?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13) {?>
@@ -2520,7 +2560,7 @@ function get_data($url)
                     <?php echo $html->input('Customer/phone',array("value"=>$common->displayPhone($html->tagValue('Customer/phone')), 'style' => 'width: 145px;')); ?><br>
                     <span class="fa fa-phone call_icon"  onclick="call_phone();" aria-hidden="true"></span>
                     <?php echo $html->tagErrorMsg('Order/CustomerPhone','Please enter in a phone for this customer.') ?>
-                    <span class="fa fa-envelope call_icon openMailBox" style="font-size: 15px; color:#3c8dbc;" aria-hidden="true"></span>
+                    <span class="fa fa-envelope openMailBox" style="font-size: 15px; color:#3c8dbc;" aria-hidden="true"></span>
                     </td>
                 </tr>
                 <tr>
@@ -2533,7 +2573,7 @@ function get_data($url)
                     <td>
                     <?php echo $html->input('Customer/cell_phone',array("value"=>$common->displayPhone($html->tagValue('Customer/cell_phone')), 'style' => 'width: 140px;')); ?><br/>
                     <span class="fa fa-phone call_icon" onclick="call_cell_phone();" aria-hidden="true"></span>
-                    <span class="fa fa-comments call_icon" style="font-size: 17px; color:green;" onclick="showSmsBox();" aria-hidden="true"></span>
+                    <span class="fa fa-comments" style="font-size: 17px; color:green;" onclick="showSmsBox();" aria-hidden="true"></span>
                     <?php echo $html->tagErrorMsg('Customer/cell_phone','Please enter in a cell phone for this customer.'); ?>
                     </td>
                 </tr>
@@ -3761,6 +3801,59 @@ function get_data($url)
 		</table>
 	</div>
 </div>
+
+<div id="tabA12" style="display:<?=$page12?>; width:100%">
+	<div><h1>SMS History</h1></div>
+	<div style="width:10px"><h3>Sent</h3></div>
+	<div id="sent_email">
+		<table class="tab11-table">
+			<tr>
+				<th>Sent On</th>
+				<th>Status</th>
+				<th>Message</th>
+				<!-- <th><input id="markAllSms" type="checkbox" name="delete_all">Hide All</th> -->
+			</tr>
+			 <?php
+			 foreach($smsLogs as $log) { ?>
+			 	<tr>
+				 	<td><b><?php echo $log['sms_date'] ?></b></td>
+				 	<?php if (1 == $log['is_sent']) {
+				 		echo '<td style="color:green"><b>Sent</b></td>';
+				 	} elseif (("" != $log['is_sent'])) {
+				 		echo '<td style="color:red"><b>Failed</b></td>';
+				 	}
+				 	else{
+				 		echo '<td></td>';
+				 	}
+				 	?>
+		 	        <input type="hidden" name="button_type" id="button_type" value="2">
+
+				 	<textarea class="log_content" style="display:none" id="sms_log_content_<?=$log['id']?>"><?=$log['message']?></textarea>
+				 	<td><input type="button" class="viewSmsContents" name="viewContents" value="View Content" content_id="<?=$log['id']?>"></td>
+				 	<!-- <td><input type="checkbox" class="delete_email" name="markCheck[]" value="<?=$log['id']?>" ></td> -->
+			 	</tr>
+			<? }?>
+		</table>
+	</div>
+	<div><h3>Received</h3></div>
+	<div>
+		<table class="tab11-table">
+			<tr>
+				<th>Received Date</th>
+				<th>Message</th>
+			</tr>
+			 <?php
+			 foreach($receivedSmsLogs as $log) { ?>
+			 	<tr>
+				 	<td><b><?php echo $log['received_date'] ?></b></td>
+				 	<textarea style="display:none" id="received_sms_log_content_<?=$log['id']?>"><?=$log['message']?></textarea>
+				 	<!-- <input type="textarea"> -->
+				 	<td><input type="button" class="receiveViewSmsContents" name="receiveViewContents" value="View Content" content_id="<?=$log['id']?>"></td>
+			 	</tr>
+			<? }?>
+		</table>
+	</div>
+</div>
 <div id="tabA10" style="display:<?=$page10?>; width:100%">
 	<table style="width:100%">
 	<tr>
@@ -4076,6 +4169,8 @@ function get_data($url)
 	<img src="<?=$imgPath?>" style="width:100%;">
 </div>
 <div class="show_email_content" style="display: none, background-color: #ffffff">
+</div>
+<div class="show_sms_content" style="display: none, background-color: #ffffff">
 </div>
 <script>
 	$(function () {

@@ -2285,23 +2285,27 @@ class OrdersController extends AppController
 				$this->set('tab3','tabOff');
 				$this->set('tab10','tabOff');
 				$this->set('tab11','tabOff');
+				$this->set('tab12','tabOff');
 				$this->set('page1','block');
 				$this->set('page3','none');
 				$this->set('page7','none');
 				$this->set('page10','none');
 				$this->set('page11','none');
+				$this->set('page12','none');
 			} else {
 				$this->set('tab_num',3);
 				$this->set('tab1','tabOff');
 				$this->set('tab7','tabOff');
 				$this->set('tab10','tabOff');
 				$this->set('tab11','tabOff');
+				$this->set('tab12','tabOff');
 				$this->set('tab3','tabOver');
 				$this->set('page1','none');
 				$this->set('page3','block');
 				$this->set('page10','none');
 				$this->set('page7','none');
 				$this->set('page11','none');
+				$this->set('page12','none');
 			}
 					
 		}else if($hotlist){
@@ -2311,11 +2315,13 @@ class OrdersController extends AppController
 			$this->set('tab3','tabOff');
 			$this->set('tab10','tabOff');
 			$this->set('tab11','tabOff');
+			$this->set('tab12','tabOff');
 			$this->set('page1','none');
 			$this->set('page3','none');
 			$this->set('page10','none');
 			$this->set('page7','block');
 			$this->set('page11','none');
+			$this->set('page12','none');
 		} 
 		else
 		{
@@ -2325,11 +2331,13 @@ class OrdersController extends AppController
 			$this->set('tab3','tabOff');
 			$this->set('tab10','tabOff');
 			$this->set('tab11','tabOff');
+			$this->set('tab12','tabOff');
 			$this->set('page1','block');
 			$this->set('page3','none');
 			$this->set('page7','none');
 			$this->set('page10','none');
 			$this->set('page11','none');
+			$this->set('page12','none');
 
 		}
 		// Get call recordings 1 800 394 1980
@@ -2368,6 +2376,29 @@ class OrdersController extends AppController
 		$this->set('receivedLogs', $receivedLogs);
 		$this->set('emailLogs',$emailLogs);
 		$this->set('callRecordings',$recordings);
+
+		//Get the sms logs
+		$smsLogs = array();
+		$smsLog =  "SELECT * FROM ace_rp_sms_log where customer_id='".$cusId."' order by id desc";
+		$result = $db->_execute($smsLog);
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			array_push($smsLogs, $row);
+		}
+		$this->set("smsLogs", $smsLogs);
+
+		//Get the received sms logs
+
+		
+		$receivedSmsLogs = array();
+
+		$receivedSms =  "SELECT * FROM ace_rp_sms_response where from_num = '".$this->data['Customer']['cell_phone']."' order by id desc";
+		$smsResult = $db->_execute($receivedSms);
+		while($row = mysql_fetch_array($smsResult, MYSQL_ASSOC))
+		{
+			array_push($receivedSmsLogs, $row);
+		}
+		$this->set("receivedSmsLogs", $receivedSmsLogs);
 		// PREPARE DATA FOR UI
 		// Get Associated Options
 		if (!$this->data['Order']['permit_applied_date'])
@@ -14626,16 +14657,28 @@ function deleteUserFromCampaign()
 	//Loki: Send text message
 	function SendSms()
 	{
-		// error_reporting(E_ALL);
-
+		error_reporting(E_ALL);
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$phone_number = $_POST['phone'];
 		$cusId = $_POST['cusId'];
-		$message = $_POST['message'];
+		$message = mysql_real_escape_string($_POST['message']);
+		$today = date("Y-m-d");
 		if(!empty($phone_number))
 		{
 			$response = $this->Common->sendTextMessage($phone_number, $message);
+			if(!empty($response))
+			{
+				$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
+					'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+				$result = $db->_execute($query);
+				
+				if($result)
+				{
+					$data  = array("res" => "OK");
+					echo json_encode($data);
+				}
+			}
 		}
-		print_r($response);
 		exit();
 	}
 
@@ -15069,6 +15112,34 @@ function deleteUserFromCampaign()
 		$res = $this->sendEmailUsingMailgun($email, $subject, $msg);
 		$this->redirect('/pages/thankYouPage');
 		exit();
+	}
+
+	//Loki: This function is used to receive sms and save into database. 
+	function receivedSms()
+	{
+		error_reporting(E_ALL); 
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$data = file_get_contents('php://input');
+		$data = json_decode($data);
+		$today = date("Y-m-d");
+		$sender = $data->message->sender_phone;
+		$message = mysql_real_escape_string($data->message->content);
+		if($sender != '+16042933770')
+		{
+			$searchStr = str_replace("+1","",$sender);
+			$query = "SELECT id from ace_rp_customers where cell_phone = '".$searchStr."'";
+			$result = $db->_execute($query);
+			$row = mysql_fetch_array($result, MYSQL_ASSOC);
+			if(!empty($row))
+			{
+				$insertLog = "INSERT INTO ace_rp_sms_response (from_num, message, received_date) VALUES ('".$searchStr."', '".$message."', '".$today."')";
+				$response = $db->_execute($insertLog);
+			}
+			
+		}
+		
+		exit();
+
 	}
 }
 ?>
