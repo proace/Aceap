@@ -906,6 +906,25 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-mail.png'
 
+						),
+
+						array(
+
+							'name' => 'SMS Booking Template',
+
+							'url' => BASE_URL.'/settings/edit?title=booking_sms',
+
+							'img' => 'icon-lg-mail.png'
+
+						),
+						array(
+
+							'name' => 'Blast Sms Template',
+
+							'url' => BASE_URL.'/settings/edit?title=bulk_sms',
+
+							'img' => 'icon-lg-mail.png'
+
 						)
 					),
 					array(
