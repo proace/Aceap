@@ -2001,5 +2001,25 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 		}
 		exit();
 	}
+
+	function getSmsStatus($id)
+	{
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/get_sms_status.php");
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS,"id=".$id);
+		// receive server response ...
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$result = curl_exec($ch);
+		$err = curl_error($ch);
+		curl_close($ch);
+
+		if ($err) {
+		  return "cURL Error #:" . $err;
+		} else {
+		  return $response = json_decode($result);
+		}
+		exit();
+	}
 }
 ?>

@@ -14657,7 +14657,7 @@ function deleteUserFromCampaign()
 	//Loki: Send text message
 	function SendSms()
 	{
-		error_reporting(E_ALL);
+		// error_reporting(E_ALL);
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$phone_number = $_POST['phone'];
 		$cusId = $_POST['cusId'];
@@ -15117,7 +15117,7 @@ function deleteUserFromCampaign()
 	//Loki: This function is used to receive sms and save into database. 
 	function receivedSms()
 	{
-		error_reporting(E_ALL); 
+		// error_reporting(E_ALL); 
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$data = file_get_contents('php://input');
 		$data = json_decode($data);
@@ -15137,9 +15137,28 @@ function deleteUserFromCampaign()
 			}
 			
 		}
-		
 		exit();
 
+	}
+
+	//Loki: Update sms status
+	function updateSmsStatus()
+	{
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "SELECT log_id from ace_rp_sms_log where is_sent = 0 order by id asc limit 25";
+		$result = $db->_execute($query);
+
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			$response = $this->Common->getSmsStatus($row['log_id']);
+
+			if($response->status == 'delivered')
+			{
+				$updateStatus = "UPDATE ace_rp_sms_log set is_sent = 1 where log_id =".$row['log_id'];
+				$updateResult = $db->_execute($updateStatus);
+			}		
+		}
+		exit();
 	}
 }
 ?>

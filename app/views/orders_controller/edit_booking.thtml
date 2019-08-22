@@ -3820,10 +3820,10 @@ function get_data($url)
 				 	<?php if (1 == $log['is_sent']) {
 				 		echo '<td style="color:green"><b>Sent</b></td>';
 				 	} elseif (("" != $log['is_sent'])) {
-				 		echo '<td style="color:red"><b>Failed</b></td>';
+				 		echo '<td><b>In Progress</b></td>';
 				 	}
 				 	else{
-				 		echo '<td></td>';
+				 		echo '<td><b>In Progress</b></td>';
 				 	}
 				 	?>
 		 	        <input type="hidden" name="button_type" id="button_type" value="2">
