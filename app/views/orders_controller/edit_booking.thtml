@@ -2349,7 +2349,7 @@ function get_data($url)
 			</tr>
 			<tr>
 				<td>
-					<span>SMS:</span><input type="Checkbox" checked id ="reminder-type-sms" name="reminder-type-sms">
+					<span>Text:</span><input type="Checkbox" checked id ="reminder-type-sms" name="reminder-type-sms">
 					<input type="text" id ="reminder_text_num" name="reminder_text_num" value="<?=$this->data['Customer']['cell_phone']?>">
 				</td>
 			</tr>		
@@ -2555,6 +2555,20 @@ function get_data($url)
                     </td>
                 </tr>
                 <tr>
+                    <td align="right">Cell Phone:</td>
+                    <td>
+                    <?php echo $html->input('Customer/cell_phone',array("value"=>$common->displayPhone($html->tagValue('Customer/cell_phone')), 'style' => 'width: 140px;')); ?><br/>
+                    <span class="fa fa-phone call_icon" onclick="call_cell_phone();" aria-hidden="true"></span>
+                    <span class="fa fa-comments" style="font-size: 17px; color:green;" onclick="showSmsBox();" aria-hidden="true"></span>
+                    <?php echo $html->tagErrorMsg('Customer/cell_phone','Please enter in a cell phone for this customer.'); ?>
+                    </td>
+                </tr>
+                 <tr>
+                   <td></td>
+                   <td><!-- <a href="javascript:void(0)" id="dial2" class="green" onclick=call('dial2','hangup2')>Dial</a>  -->
+                    <a href="javascript:void(0)" id="hangup2" class="red" onclick=hangup('dial2','hangup2')>Hang Up</a></td>
+                </tr>
+                <tr>
                     <td align="right">Home Phone*:</td>
                     <td>
                     <?php echo $html->input('Customer/phone',array("value"=>$common->displayPhone($html->tagValue('Customer/phone')), 'style' => 'width: 145px;')); ?><br>
@@ -2568,20 +2582,7 @@ function get_data($url)
                    <td><!-- <a href="javascript:void(0)" id="dial" class="green" onclick=call('dial','hangup')>Dial</a> -->
                     <a href="javascript:void(0)"    id="hangup" class="red" onclick=hangup('dial','hangup') >Hang Up</a></td>
                 </tr>
-                <tr>
-                    <td align="right">Cell Phone:</td>
-                    <td>
-                    <?php echo $html->input('Customer/cell_phone',array("value"=>$common->displayPhone($html->tagValue('Customer/cell_phone')), 'style' => 'width: 140px;')); ?><br/>
-                    <span class="fa fa-phone call_icon" onclick="call_cell_phone();" aria-hidden="true"></span>
-                    <span class="fa fa-comments" style="font-size: 17px; color:green;" onclick="showSmsBox();" aria-hidden="true"></span>
-                    <?php echo $html->tagErrorMsg('Customer/cell_phone','Please enter in a cell phone for this customer.'); ?>
-                    </td>
-                </tr>
-                <tr>
-                   <td></td>
-                   <td><!-- <a href="javascript:void(0)" id="dial2" class="green" onclick=call('dial2','hangup2')>Dial</a>  -->
-                    <a href="javascript:void(0)" id="hangup2" class="red" onclick=hangup('dial2','hangup2')>Hang Up</a></td>
-                </tr>
+               
                 <tr>
                     <td align="right">Business Phone:</td>
                     <td>
