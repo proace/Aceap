@@ -623,13 +623,16 @@ function ValidateFields(jobstatus, show_box=0)
 	var jobType = $("#OrderOrderTypeId").val();
 	if (jobType<=0){submitForm = false; errorMsg += "Please select a job type.\n";}
 	// Customer's phone
-	var phone = $("#CustomerPhone").val();
-	if((phone == null) || trim(phone) == ''){
+	var cell_phone = $("#CustomerCellPhone").val();
+	if((cell_phone == null) || trim(cell_phone) == ''){
 		submitForm = false;
-		errorMsg += "Please enter in a phone for this customer.\n";
+		errorMsg += "Please enter a cell phone for this customer.\n";
 	}
 	else
-		$("#CustomerPhone").val(trim(phone));
+		$("#CustomerCellPhone").val(trim(cell_phone));
+	// Customer landline Number
+	var phone = $("#CustomerPhone").val();
+	$("#CustomerPhone").val(trim(phone));
 	// Customer's Email
 	var email = $("#emailinput").val();
 	if((email == null) || trim(email) == ''){
