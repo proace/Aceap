@@ -183,8 +183,7 @@
 
 	$("#save_bulk_sms_content").live("click", function(){
 		//var content = tinyMCE.get('append_email_content').getContent();
-		var content1 = tinyMCE.activeEditor.getContent();
-		return false;
+		var content = tinyMCE.activeEditor.getContent();
 		 $.ajax({
 				url: '<?=BASE_URL?>/settings/saveBulkSmsContent',
 				type: 'POST',	
