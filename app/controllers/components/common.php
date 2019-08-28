@@ -910,7 +910,7 @@ class CommonComponent extends Object
 
 						array(
 
-							'name' => 'SMS Booking Template',
+							'name' => 'Text Booking Template',
 
 							'url' => BASE_URL.'/settings/edit?title=booking_sms',
 
@@ -919,9 +919,27 @@ class CommonComponent extends Object
 						),
 						array(
 
-							'name' => 'Blast Sms Template',
+							'name' => 'Blast Text Template',
 
 							'url' => BASE_URL.'/settings/edit?title=bulk_sms',
+
+							'img' => 'icon-lg-mail.png'
+
+						),
+						array(
+
+							'name' => 'Cancelled Text Template',
+
+							'url' => BASE_URL.'/settings/edit?title=cancel_booking_sms',
+
+							'img' => 'icon-lg-mail.png'
+
+						),
+						array(
+
+							'name' => 'Reminder Text Template',
+
+							'url' => BASE_URL.'/settings/edit?title=reminder_text',
 
 							'img' => 'icon-lg-mail.png'
 

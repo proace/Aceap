@@ -243,5 +243,32 @@ class SettingsController extends AppController
 		}
 		exit();
 	}
+
+	//Loki: Save the bulk SMS template content
+	function saveBulkSmsContent()
+	{
+		$title = 'bulk_sms';
+		$content = $_POST['content'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$update = "UPDATE  ace_rp_settings set valuetxt = '".$content."' where title = '".$title."'";
+		$result = $db->_execute($update);
+		if($result)
+		{			
+ 			$response  = array("res" => "OK");
+ 			echo json_encode($response);
+ 			exit();
+		}
+		exit();
+	}
+
+	//Loki: Get the bulk Sms template content
+	function getBulkSmsContent()
+	{
+		$settings = $this->Setting->find(array('title'=>'bulk_sms'));
+		$message = $settings['Setting']['valuetxt'];
+		$response  = array("msgBody" => $message);
+		echo json_encode($response);
+		exit();
+	}
 }
 ?>

@@ -53,6 +53,22 @@
  <option value="all">All</option>
 </select>
 <input type="button" name="reminder-email-result" id="email_serch_go" value="Go" onclick="showReminderHotList(1, <?php echo $campId ?>);">
+<br>
+<b>Text:</b><br>
+<div class="new-btn">
+<input class="new-btn-input selected-btn" type="button" id="" value="Sent" onclick="showTextBar(1);">
+<input class="new-btn-input selected-btn" type="button" id="" value="In Progress" onclick="showTextBar(2);">
+
+<input class="new-btn-input selected-btn send_bulk_sms" type="button" value="Text All" campId = "<?php echo $campId ?>">
+<input class="new-btn-input selected-btn" type="button" id="" value="Reminders" onclick="showTextBar(3)">
+<!-- <input class="new-btn-input" type="button" id="" value="No email" onclick="showReminderBar(4);"> -->
+</div>
+<select id="text-select" style="display: none" onchange="textSourceType(this.value);">
+ <option value="today">Todays</option>
+ <option value="all">All</option>
+</select>
+<input type="button" name="reminder-sms-result" id="sms_serch_go" value="Go" onclick="showTextList(1, <?php echo $campId ?>);">
+
 <?php if($totalPages > 1){?>
 		<div style="margin-top: 10px;">
 	<?php if($is_search == 1) {?>
@@ -68,8 +84,13 @@
 	 <?php } elseif($is_search == 3) {?>	
 	 		<?php $j = 1;
 	 		for( $j; $j <= $totalPages; $j++){ ?>
-			<a href="javascript:void(0)" onclick="searchList('order_type_id','<?php echo $sq_str ?>', <?php echo $j ?> );"><?php echo $j ?></a>		
-	 <?php } ?>
+			<a href="javascript:void(0)" onclick="searchList('order_type_id','<?php echo $sq_str ?>', <?php echo $j ?> );"><?php echo $j ?></a>	
+		 <?php } ?>
+	 <?php } elseif($is_search == 4) {?>	
+	 		<?php $j = 1;
+	 		for( $j; $j <= $totalPages; $j++){ ?>
+			<a href="javascript:void(0)" onclick="showTextList(<?php echo $j ?>, <?php echo $campId ?>);"><?php echo $j ?></a>		
+	<?php } ?>
 	<?php } else {?>
 		<?php $j = 1;
 		for( $j; $j <= $totalPages; $j++){ ?>

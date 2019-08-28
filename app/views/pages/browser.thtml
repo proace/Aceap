@@ -11,7 +11,7 @@
 
 	function addTinyMCE(){
 		tinyMCE.init({
-			selector: '#append_email_content',
+			selector: '.append_email_content',
 	        // mode: 'textareas',
 	        theme : "modern",
 	        browser_spellcheck: true,
@@ -80,9 +80,9 @@
 					// addTinyMCE();
 					if(tinymce.get("append_email_content")) 
 					{
-						tinymce.remove('#append_email_content');
+						tinymce.remove('.append_email_content');
 					}
-					$('#append_email_content').val(data.msgBody);
+					$('.append_email_content').val(data.msgBody);
 					setTimeout(() => {
 						addTinyMCE();	
 					},50);
@@ -92,8 +92,46 @@
 	    });
 	});
 
+	 $("#cancel_bulk_sms_content").live("click", function(){
+    	$('.show_sms_content').dialog('close');
+    });
+	// Open bulk Sms template
+
+	$(function () {
+
+			$(".show_sms_content").dialog({
+		        modal: true,
+		        autoOpen: false,
+		        title: "Message",
+		        autoOpen: false,
+		        width: 300,
+		        height: 200,
+		        resizable: true
+		    });
+			$(".send_bulk_sms").live("click",function () {
+			    $.ajax({
+				url: '<?=BASE_URL?>/settings/getBulkSmsContent',
+				dataType: 'json',
+				type: 'GET',				
+				success: function(data) {
+					// addTinyMCE();
+					if(tinymce.get("append_email_content")) 
+					{
+						tinymce.remove('.append_email_content');
+					}
+					$('.append_email_content').val(data.msgBody);
+					setTimeout(() => {
+						addTinyMCE();	
+					},50);
+					$('.show_sms_content').dialog('open');
+				}
+			});
+	    });
+	});
+
 	$("#save_bulk_email_content").live("click", function(){
-		var content = tinyMCE.get('append_email_content').getContent();
+		//var content = tinyMCE.get('append_email_content').getContent();
+		var content = tinyMCE.activeEditor.getContent();
 		 $.ajax({
 				url: '<?=BASE_URL?>/settings/saveBulkEmailContent',
 				type: 'POST',	
@@ -139,7 +177,59 @@
 
 				}
 			});
+	});
 
+	// Save sms template
+
+	$("#save_bulk_sms_content").live("click", function(){
+		//var content = tinyMCE.get('append_email_content').getContent();
+		var content1 = tinyMCE.activeEditor.getContent();
+		return false;
+		 $.ajax({
+				url: '<?=BASE_URL?>/settings/saveBulkSmsContent',
+				type: 'POST',	
+				dataType: 'json',			
+				data: {'content':content},
+				success: function(data) {
+					if(data.res == 'OK')
+					{
+						$('.show_sms_content').dialog('close');
+						 $('<div></div>').appendTo('body')
+					    .html('<div style="font-size:19px"><h6>Do you want to send the text</h6></div>')
+					    .dialog({
+					        modal: true, title: 'Send Text', zIndex: 10000, autoOpen: true,
+					        width: 'auto', resizable: false,
+					        buttons: {
+					            Yes: function () {
+					            	var cur = $(this);
+					            	var campId = $('.send_bulk_sms').attr('campId');
+					                $.ajax({
+										url: '<?=BASE_URL?>/orders/sendBulkSms',
+										data: {'campId':campId},
+										dataType: 'json',
+										type: 'POST',				
+										success: function(data) {
+											if(data.res == 'OK')
+											{
+												cur.dialog("close");
+											}
+										}
+									});
+					             },
+					            No: function () {                                                                 
+					                $(this).dialog("close");
+					            }
+					        },
+					        close: function (event, ui) {
+					            $(this).remove();
+					        }
+    					});
+					}
+				},
+				error: function(error){
+
+				}
+			});
 	});
 
 	function showSelectBar(nval)
@@ -160,6 +250,16 @@
 			$('#call-back-select option[value="today"]').attr("selected","selected");
 			//document.getElementById('missed_callback_dates').style.display = 'none';
 	 		$('#reminder-select').show();
+	 }
+	 function showTextBar(nval)
+	 {		
+	 		$('#call-back-select').hide();
+	 		$('#reminder-select').hide();
+			$("#current-seleted-text-button").val(nval);
+			$('#text-selected-str').val('today');
+			$('#call-back-select option[value="today"]').attr("selected","selected");
+			//document.getElementById('missed_callback_dates').style.display = 'none';
+	 		$('#text-select').show();
 	 }
 	 function callbackSourceType(callType)
 	 {	
@@ -182,10 +282,50 @@
 	 	// 	document.getElementById('missed_callback_dates').style.display = 'none';
 	 	// }
 	 }
+	 function textSourceType(callType)
+	 {	
+	 	$("#text-selected-str").val(callType);
+	 }
 	var last_sq_crit, last_sq_str, last_dates;
 	var lpp = 500;	//lines per page
-	// var lpp = 5;
+	// var lpp = 2;
 	var maxpage = 1;
+
+	function showTextList(page='', sq_str)
+	{
+
+		//document.getElementById("append_count_div").style.display = 'none';
+		//document.getElementById("listbox").style.display = 'none';
+		if (typeof(page) == 'undefined' || page == '')
+			page = 1;
+		limit = ((page-1)*lpp) + "," + (lpp);
+		var currentSelected = $("#current-seleted-text-button").val();
+	 	if( 0 <currentSelected)
+	 	{
+	 		var selectedStr = $("#text-selected-str").val();
+	 	}
+	 	if(typeof(selectedStr) == 'undefined') 
+		{
+			selectedStr = '';	
+		}
+	 	if (typeof(currentSelected) == 'undefined')
+			currentSelected = 0;
+
+		if(typeof(sq_str) == 'undefined' || sq_str == '') 
+		{
+			sq_str = 0;	
+		}
+		divID = document.getElementById('listbox');
+		divID2 = document.getElementById('count_of_cust_div1');
+		$.get('<?=BASE_URL;?>/orders/textList?page='+page+'&limit='+limit+'&currentSelected='+currentSelected+'&selectedStr='+selectedStr+'&is_search=4'+'&sq_str='+sq_str,
+				function(data){
+					divID.innerHTML=data;
+					count_of_cust = document.getElementById('count_of_cust').value;
+					document.getElementById('append_count_div').style.display = '';
+					divID2.innerHTML=count_of_cust;
+				});
+
+	}
 	function showReminderHotList(page='', sq_str)
 	{
 
@@ -193,7 +333,7 @@
 		//document.getElementById("listbox").style.display = 'none';
 		if (typeof(page) == 'undefined' || page == '')
 			page = 1;
-		limit = ((page-1)*lpp) + "," + (page*lpp);
+		limit = ((page-1)*lpp) + "," + (lpp);
 		var currentSelected = $("#current-seleted-reminder-button").val();
 	 	if( 0 <currentSelected)
 	 	{
@@ -426,10 +566,19 @@
 	</div>
 	
 </div>
+
+<div class="show_sms_content" style="display: none; background-color: #ffffff;">
+	<textarea class="append_email_content" id="append_sms_content"></textarea>
+	<div>
+		<input type="button" id="save_bulk_sms_content" name="save" value="Save">
+		<input type="button" id="cancel_bulk_sms_content" name="cancel" value="Cancel" >
+	</div>	
+</div>
 <input type="hidden" id = "current-seleted-button" name="current-seleted-button" value="">
 <input type="hidden" id = "current-seleted-reminder-button" name="current-seleted-reminder-button" value="">
-
+<input type="hidden" id = "current-seleted-text-button" name="current-seleted-text-button" value="">
 <input type="hidden" id = "reminder-selected-str" name="reminder-selected-str" value="">
+<input type="hidden" id = "text-selected-str" name="text-selected-str" value="">
 <input type="hidden" id = "selected-str" name="selected-str" value="">
 <input type="hidden" id = "sort_type" name="sort_type" value="">
 <div id='append_count_div' style="display: none;margin-left: 10px;">

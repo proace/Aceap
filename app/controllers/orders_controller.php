@@ -456,30 +456,107 @@ class OrdersController extends AppController
 	
 		if($_POST['sendMailOnEstimate']){
 			$mail_sent = false;
+			$today = date('Y-m-d');
+			$homePhone = $this->data['Customer']['phone'];
+			$cellPhone = $this->data['Customer']['cell_phone'];
+			$cusId = $this->data['Customer']['id'];
+			$settings = $this->Setting->find(array('title'=>'booking_sms'));
+			$message = $settings['Setting']['valuetxt'];
+			$jobTime = $this->data['Order']['job_time_beg'].' to '.$this->data['Order']['job_time_end'];
+			$jobDate = date_format(date_create($fdate),"l F d,Y");
 			if ($this->data['Order']['order_status_id'] != 5)
 			{
 			  	if($_POST['havetoprint'] == "1")
 					{
-
+						$message = str_replace('{time}', $jobTime, $message);
+						$message = str_replace('{date}', $jobDate, $message);
 						if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==1){
 					  		if($paidById != 11) {
-						  		$subject = $this->emailCustomerBooking($order_id);			  		$mail_sent = true;
+						  		$subject = $this->emailCustomerBooking($order_id);			  		   $mail_sent = true;
 								$queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$emal_send_date."' WHERE id = '".$order_id."'";
 								$db->_execute($queryEmailDateUpdate);
+								if(!empty($cellPhone))
+								{
+									$response = $this->Common->sendTextMessage($cellPhone, $message); 
+									if(!empty($response))
+									{
+										$message = mysql_real_escape_string($message);
+										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
+											'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+										$result = $db->_execute($query);
+									}
+								}
+								if(!empty($homePhone))
+								{
+									$response = $this->Common->sendTextMessage($homePhone, $message); 
+									if(!empty($response))
+									{
+										$message = mysql_real_escape_string($message);
+										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
+											'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+										$result = $db->_execute($query);
+									}
+								}
 							}
 					  	}else if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==0){
 					  		'';	
 					  	}else{
+
 						  		$queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$emal_send_date."' WHERE id = '".$order_id."'";
 								$db->_execute($queryEmailDateUpdate);
 						  		$subject = $this->emailCustomerBooking($order_id);
 						  		$mail_sent = true;
-					  	}
+								
+								if(!empty($cellPhone))
+								{
+									$response = $this->Common->sendTextMessage($cellPhone, $message); 
+									if(!empty($response))
+									{
+										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
+											'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+										$result = $db->_execute($query);
+									}
+								}
+								if(!empty($homePhone))
+								{
+									$response = $this->Common->sendTextMessage($homePhone, $message); 
+									if(!empty($response))
+									{
+										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
+											'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+										$result = $db->_execute($query);
+									}
+								}
+
+					  		}
 					}
 			}
 		if($paidById != 11) {
 			if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==1 && $mail_sent== false ){
+				$settings = $this->Setting->find(array('title'=>'cancel_booking_sms'));
+				$message = $settings['Setting']['valuetxt'];
+				$message = str_replace('{date}', $jobDate, $message);
 				$this->emailCustomerBooking($order_id, $send_cancalled_email);
+				if(!empty($cellPhone))
+				{
+					$response = $this->Common->sendTextMessage($cellPhone, $message); 
+					if(!empty($response))
+					{
+						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
+							'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+						$result = $db->_execute($query);
+					}
+				}
+				if(!empty($homePhone))
+				{
+					$response = $this->Common->sendTextMessage($homePhone, $message); 
+					if(!empty($response))
+					{
+						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
+							'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+						$result = $db->_execute($query);
+					}
+				}
 			}
 		}
 	}
@@ -3756,7 +3833,8 @@ class OrdersController extends AppController
 						c.phone, c.cell_phone, c.created, c.modified,
 						c.telemarketer_id, '' callback_note, c.callresult,
 						c.callback_date, CAST(c.callback_time AS TIME) callback_time,
-						c.lastcall_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name
+						c.lastcall_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name, (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
+							LIMIT 0 , 1) as is_sent
 					FROM ace_rp_customers as c
 						left join ace_rp_users u on u.id=c.telemarketer_id
 					WHERE (c.phone REGEXP '".$sq_str."'
@@ -3764,6 +3842,7 @@ class OrdersController extends AppController
 						c.cell_phone REGEXP '".$sq_str."')
 					$telem_clause
 					LIMIT ".$limit;
+
 			$cust = $this->User->query($sql);
 		}
 		else if ($_GET['sq_crit'] == 'Campaign_data')
@@ -3893,7 +3972,8 @@ class OrdersController extends AppController
 						c.phone, c.cell_phone, c.created, c.modified,
 						c.telemarketer_id, '' callback_note,c.callresult,
 						c.callback_date, CAST(c.callback_time AS TIME) callback_time,
-						c.lastcall_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name
+						c.lastcall_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name, (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
+							LIMIT 0 , 1) as is_sent
 					FROM ace_rp_customers as c
 						join ace_rp_orders o on c.id=o.customer_id
 						left join ace_rp_users u on u.id=c.telemarketer_id
@@ -4168,6 +4248,7 @@ class OrdersController extends AppController
 		}
 		else if (($_GET['sq_crit'] != 'booking_source_id') && ($_GET['sq_crit'] != 'order_type_id') && ($_GET['sq_crit'] != 'callback_date'))
 		{
+
 			//$cust = $this->User->findAll($conditions, null, $sort, $limit);
 			if($this->Common->getLoggedUserRoleID() != 6) {
 				$allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
@@ -4185,7 +4266,8 @@ class OrdersController extends AppController
 						c.phone, c.cell_phone, c.created, c.modified,c.selected_customer_from_search as customer_row_color,c.selected_customer_from_search_agent as customer_row_color_agent,
 						c.telemarketer_id, '' callback_note, c.callresult, arc.order_type_id as job_type,
 						c.callback_date, CAST(c.callback_time AS TIME) callback_time,
-						c.lastcall_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name
+						c.lastcall_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name, (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
+							LIMIT 0 , 1) as is_sent
 					FROM ace_rp_customers as c
 						left join ace_rp_users u on u.id=c.telemarketer_id
 						left join ace_rp_orders arc on c.id = arc.customer_id
@@ -4228,6 +4310,10 @@ class OrdersController extends AppController
 				foreach ($cur['c'] as $k => $v)
 				$cust[$cnt]['User'][$k] = str_replace("'","`",str_replace("\"","`",$v));
 			}
+			if(isset($cur[0])) {
+				foreach ($cur[0] as $k => $v)
+				$cust[$cnt]['User'][$k] = str_replace("'","`",str_replace("\"","`",$v));
+			}
 		}
 
 		$vicidial_fields=array('phone'=>'phone_number','postal_code'=>'postal_code','city'=>'city','address_street'=>'address1','last_name'=>'last_name','first_name'=>'first_name');
@@ -4239,7 +4325,6 @@ class OrdersController extends AppController
 		}
 		else
 			$this->set('vicidial', 0);
-
 		$this->set('cust', $cust);
 		$this->set('callback_search_head',$callback_search_head);
 		$this->set('add', $add);
@@ -11088,7 +11173,6 @@ class OrdersController extends AppController
 		}			
 	}
 	function saveInvoiceTabletItems() {
-		//echo '<BR>REQUEST<BR><pre>';print_r($_REQUEST);exit;
 		
 		$fromTech = isset($_GET['fromTech']) ? $_GET['fromTech'] : 0;
 		if(isset($_REQUEST['order_id'])){
@@ -11096,7 +11180,6 @@ class OrdersController extends AppController
 		}else{
 			$order_id = $this->data['Invoice']['order_id'];
 		}	
-		//echo '<pre>';print_r($this->data);exit;
 		$order_type_id = $this->data['Invoice']['order_type_id'];
 		$order_status_id = $this->data['Invoice']['order_status_id'];
 		$has_booking = $this->data['Invoice']['has_booking'];
@@ -14467,7 +14550,7 @@ function deleteUserFromCampaign()
 		// error_reporting(E_ALL);
 		$maildate = date('Y-m-d', strtotime("+7 days"));
 		$db 	  =& ConnectionManager::getDataSource($this->User->useDbConfig);
-		$query 	  = "SELECT DISTINCT o.id, o.job_time_beg,o.job_date, o.job_time_end ,o.customer_id, o.order_type_id, o.reminder_type , o.reminder_date, o.job_date, o.reminder_month, o.order_number,c.email, c.first_name, c.last_name, ot.name as job_type, rel.is_sent from ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_order_types ot ON ot.id= o.order_type_id LEFT JOIN ace_rp_reminder_email_log rel ON rel.order_id = o.id  WHERE o.reminder_date='".$maildate."'";
+		$query 	  = "SELECT DISTINCT o.id, o.job_time_beg,o.job_date, o.job_time_end ,o.customer_id, o.order_type_id, o.reminder_type , o.reminder_date, o.job_date, o.reminder_month, o.order_number,c.email, c.first_name, c.last_name, ot.name as job_type, rel.is_sent, c.phone, c.cell_phone from ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_order_types ot ON ot.id= o.order_type_id LEFT JOIN ace_rp_reminder_email_log rel ON rel.order_id = o.id  WHERE o.reminder_date='".$maildate."'";
 		$result = $db->_execute($query);
 		$settings = $this->Setting->find(array('title'=>'email_template_jobnotification'));
 		$template = $settings['Setting']['valuetxt'];
@@ -14475,6 +14558,9 @@ function deleteUserFromCampaign()
 		$settings = $this->Setting->find(array('title'=>'email_template_jobnotification_subject'));
 		$template_subject = $settings['Setting']['subject'];
 		$currentDate = date('Y-m-d');
+		$settings = $this->Setting->find(array('title'=>'reminder_text'));
+		$textMessage = $settings['Setting']['valuetxt'];
+
 
 		while($row = mysql_fetch_array($result, MYSQL_BOTH)) {
 				$url = $this->G_URL.BASE_URL."/pages/showReminderBookingPage?oid=".$row['id']."&cid=".$row['customer_id']."&otype=".$row['order_type_id']."&rdate=".$row['reminder_date']."&onum=".$row['order_number'];
@@ -14484,10 +14570,13 @@ function deleteUserFromCampaign()
 				$msg = str_replace('{first_name}', $row['first_name'], $msg);
 				$msg = str_replace('{last_name}', $row['last_name'], $msg);
 				$msg = str_replace('{job_type}','<b>'. $row['job_type'].'</b>', $msg);
-				$msg = str_replace('{last_job_date}', date("d-M-Y",strtotime($row['job_date'])), $msg);
+				$msg = str_replace('{last_date}', date("d-M-Y",strtotime($row['job_date'])), $msg);
 				$msg = str_replace('{url_confirm}', $link, $msg);
 				$msg = str_replace("&nbsp;", nl2br("\n"), $msg);
-
+				$textMessage = str_replace('{first_name}', $row['first_name'], $textMessage);
+				$textMessage = str_replace('{last_name}', $row['last_name'], $textMessage);
+				$textMessage = str_replace('{job_type}','<b>'. $row['job_type'].'</b>', $textMessage);
+				$textMessage = str_replace("&nbsp;", nl2br("\n"), $textMessage);
 			if($row['reminder_type'] != 3) 
 			{
 				$res = $this->sendEmailUsingMailgun($row['email'],$template_subject,$msg);
@@ -14502,6 +14591,30 @@ function deleteUserFromCampaign()
 
 				$setLastReminder = "UPDATE ace_rp_customers set last_reminder_date = '".$currentDate."' where id =". $row['customer_id'];
 				$db->_execute($setLastReminder);
+
+				if(!empty($row['cell_phone']))
+				{
+					$response = $this->Common->sendTextMessage($row['cell_phone'], $textMessage);
+					if(!empty($response))
+					{
+						$textMessage = mysql_real_escape_string($textMessage);
+						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
+							'',".$row['customer_id'].", ".$response->id.",'".$textMessage."','".$currentDate."')";
+						$result = $db->_execute($query);
+					}
+				}
+
+				if(!empty($row['phone']))
+				{
+					$response = $this->Common->sendTextMessage($row['phone'], $textMessage); 
+					if(!empty($response))
+					{
+						$textMessage = mysql_real_escape_string($textMessage);
+						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
+							'',".$row['customer_id'].", ".$response->id.",'".$textMessage."','".$currentDate."')";
+						$result = $db->_execute($query);
+					}
+				}
 			}
 		}
 		
@@ -14545,8 +14658,44 @@ function deleteUserFromCampaign()
 				}
 			}
 		}
-		if(!empty($selectedStr)) 
+
+		if($currentSelected == 1 || $currentSelected == 2)
+		{
+			if(!empty($selectedStr)) 
 			{
+				
+				if($selectedStr == 'today')
+				{
+					$callWhere .= " AND rel.sent_date = CURDATE()"; 
+				} else {
+					$callWhere .= '';
+				}
+			} else {
+					$callWhere .= ' AND rel.sent_date IS NOT NULL ';
+			}
+			
+			if($currentSelected == 1) {
+				$compare = 1;
+			} elseif($currentSelected == 2) {
+				$compare = 0;
+			}
+			// $sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
+			// 	LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
+			// 	LIMIT 0 , 1) =".$compare." ".$callWhere." limit ".$limit;
+
+			$sql = "SELECT rel . *, o . * , c . * , c.id AS cid, (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE  customer_id = c.id ORDER BY id DESC LIMIT 0 , 1) AS is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids LEFT JOIN ace_rp_reminder_email_log rel ON o.customer_id = rel.customer_id
+				WHERE (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id
+				ORDER BY id DESC LIMIT 0 , 1 ) =".$compare." ".$callWhere." group by c.id limit ".$limit;
+
+			$result = $db->_execute($sql);
+			
+			$countSql = "SELECT count(DISTINCT c.id) as total FROM ace_rp_reminder_email_log o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids LEFT JOIN ace_rp_reminder_email_log rel ON o.customer_id = rel.customer_id WHERE o.sent_date IS NOT NULL AND (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC LIMIT 0 , 1) =".$compare." ".$callWhere;
+			$resultTotal = $db->_execute($countSql);
+			$rowTotal = mysql_fetch_array($resultTotal);
+		} else if($currentSelected == 3 ) {
+			if(!empty($selectedStr)) 
+			{
+				
 				if($selectedStr == 'today')
 				{
 					$callWhere .= " AND o.reminder_date = CURDATE()"; 
@@ -14554,32 +14703,14 @@ function deleteUserFromCampaign()
 					$callWhere .= '';
 				}
 			} else {
-				$callWhere .= ' AND o.reminder_date IS NOT NULL ';
+					$callWhere .= ' AND o.reminder_date IS NOT NULL ';
 			}
-		if($currentSelected == 1 || $currentSelected == 2)
-		{
-			
-			if($currentSelected == 1) {
-				$compare = 1;
-			} elseif($currentSelected == 2) {
-				$compare = 0;
-			}
-			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
-				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
-				LIMIT 0 , 1) =".$compare." ".$callWhere." limit ".$limit;
-
-			$result = $db->_execute($sql);
-			
-			$countSql = "SELECT count(*) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL AND (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC LIMIT 0 , 1) =".$compare." ".$callWhere;
-			$resultTotal = $db->_execute($countSql);
-			$rowTotal = mysql_fetch_array($resultTotal);
-		} else if($currentSelected == 3 ) {
-			$countSql = "SELECT count(DISTINCT o.id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere;
+			$countSql = "SELECT count(DISTINCT c.id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere;
 			$resultTotal = $db->_execute($countSql);
 			$rowTotal = mysql_fetch_array($resultTotal);
 			
 			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
-				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere." group by o.id limit ".$limit;
+				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere." group by c.id limit ".$limit;
 			$result = $db->_execute($sql);
 		} else {
 			$countSql = "SELECT count(*) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE c.email= ''".$emptyEmailWhere;
@@ -14611,7 +14742,123 @@ function deleteUserFromCampaign()
 		$this->render('search_list');
 	}
 
-	//LOki: Remove payment image
+	//Loki: Get the text status of customers 
+
+	function textList()
+	{
+		// error_reporting(E_ALL);
+		$limit = isset($_GET['limit']) ?$_GET['limit'] : 500;
+		$currentDate = date('Y-m-d');
+		$currentSelected = $_GET['currentSelected'];
+		$selectedStr = $_GET['selectedStr'];
+		$is_search = $_GET['is_search'];
+		$from_reminder = 1;
+		$this->set('from_reminder', $from_reminder);
+		$this->set('is_search', $is_search);
+		$campId = !empty($_GET['sq_str']) ? $_GET['sq_str'] : 0 ;
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		if($campId > 0)
+		{
+			$this->set('campId', $campId);
+			$callWhere = ' AND ec.last_inserted_id ='.$campId.''; 
+			$emptyEmailWhere = ' AND ec.last_inserted_id ='.$campId.'';
+		} else {
+			if($this->Common->getLoggedUserRoleID() == 6) 
+			{
+				$allCampList = $this->Lists->allCampaingList();
+				$arrayString = implode(',', $allCampList);
+				$callWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
+				$emptyEmailWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
+			} else {
+				$allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
+
+				if(!empty($allCampList)) {
+					$arrayString = implode(',', $allCampList);
+				
+					$callWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
+					$emptyEmailWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
+				}
+			}
+		}
+		
+		if($currentSelected == 1 || $currentSelected == 2)
+		{
+			if(!empty($selectedStr)) 
+			{
+				if($selectedStr == 'today')
+				{
+					$callWhere .= " AND rel.sms_date = CURDATE()"; 
+				} else {
+					$callWhere .= '';
+				}
+			} else {
+				$callWhere .= ' AND rel.sms_date IS NOT NULL ';
+			}
+			
+			if($currentSelected == 1) {
+				$compare = 1;
+			} elseif($currentSelected == 2) {
+				$compare = 0;
+			}
+			$sql = "SELECT rel.*, o.*, c.*, c.id AS cid,  (SELECT is_sent FROM ace_rp_sms_log WHERE customer_id = c.id ORDER BY id DESC 
+				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids LEFT JOIN ace_rp_sms_log rel ON o.customer_id = rel.customer_id WHERE (SELECT is_sent FROM ace_rp_sms_log WHERE customer_id = c.id ORDER BY id DESC 
+				LIMIT 0 , 1) =".$compare." ".$callWhere." group by c.id limit ".$limit;
+
+			$result = $db->_execute($sql);
+			
+			$countSql = "SELECT count(DISTINCT c.id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids LEFT JOIN ace_rp_sms_log rel ON o.customer_id = rel.customer_id WHERE rel.sms_date IS NOT NULL AND (SELECT is_sent FROM ace_rp_sms_log WHERE customer_id = c.id ORDER BY id DESC LIMIT 0 , 1) =".$compare." ".$callWhere;
+			$resultTotal = $db->_execute($countSql);
+			$rowTotal = mysql_fetch_array($resultTotal);
+		} else if($currentSelected == 3 ) {
+			if(!empty($selectedStr)) 
+			{
+				if($selectedStr == 'today')
+				{
+					$callWhere .= " AND o.reminder_date = CURDATE()"; 
+				} else {
+					$callWhere .= '';
+				}
+			} else {
+				$callWhere .= ' AND o.reminder_date IS NOT NULL ';
+			}
+			$countSql = "SELECT count(DISTINCT c.id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere;
+			$resultTotal = $db->_execute($countSql);
+			$rowTotal = mysql_fetch_array($resultTotal);
+			
+			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT is_sent FROM ace_rp_sms_log WHERE customer_id = cid ORDER BY id DESC 
+				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere." group by c.id limit ".$limit;
+			$result = $db->_execute($sql);
+		} else {
+			$countSql = "SELECT count(*) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE c.email= ''".$emptyEmailWhere;
+			$resultTotal = $db->_execute($countSql);
+			$rowTotal = mysql_fetch_array($resultTotal, MYSQL_ASSOC);
+			$sql = "SELECT o.*, o.id as order_id , c.* FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE c.email= ''".$emptyEmailWhere." limit ".$limit;	
+			$result = $db->_execute($sql);
+		}
+		
+		$totalCus = $rowTotal['total']; 
+		$this->set('totalCus', $totalCus);
+		$totalPages = ceil($totalCus / 500);
+		$this->set('totalPages', $totalPages);
+		$cust = array();
+		$i=0;
+		$cust_temp = array();
+		while ($row = mysql_fetch_array($result, MYSQL_BOTH))
+		{
+			
+			foreach ($row as $k => $v)
+			$cust_temp['User'][$k] = $v;
+			$cust_temp['User']['telemarketer_id']= $row['telemarketer_id'];
+			$cust_temp['User']['callback_time']= date("H:i", strtotime($row['callback_time']));
+			array_push($cust, $cust_temp);
+			$i++;
+		}
+		$this->set('cust', $cust);
+		$this->set('call_results', $this->HtmlAssist->table2array($this->CallResult->findAll(), 'id', 'name'));
+		$this->render('search_list');
+	}
+
+	//Loki: Remove payment image
 
 	function removePaymentImage()
 	{
@@ -14665,7 +14912,7 @@ function deleteUserFromCampaign()
 		$today = date("Y-m-d");
 		if(!empty($phone_number))
 		{
-			$response = $this->Common->sendTextMessage($phone_number, $message);
+			$response = $this->Common->sendTextMessage($phone_number, $message); 
 			if(!empty($response))
 			{
 				$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
@@ -14747,6 +14994,77 @@ function deleteUserFromCampaign()
 		exit();	
 	}
 
+	// Loki: Set campId for sending Text
+	function sendBulkSms()
+	{
+		$campId  = $_POST['campId'];
+		$db 	 =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query   = "INSERT INTO ace_rp_camp_sms (camp_id,status) VALUES (".$campId.", 0)";
+		$res 	 =	$db->_execute($query);
+		if ($res) {
+	 			$response  = array("res" => "OK");
+	 			echo json_encode($response);
+	 			exit();
+	 		}
+		exit();	
+	}
+
+	/* LOki: send Text to all campaign users
+	 status 0 = not complete, 1 = queue, 2 = complete 
+	 */ 	
+	function sendTextToAll()
+	{
+		$db 	 		=& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$getCampIdSql 	= "SELECT camp_id,id from ace_rp_camp_sms where status=0 limit 1";
+		$result 		= $db->_execute($getCampIdSql);
+		$campId 		= mysql_fetch_array($result, MYSQL_ASSOC);
+		if(!empty($campId))
+		{
+
+			$updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_sms set status=1 where id=".$campId['id']."");
+			$today = date('Y-m-d');
+			$settings = $this->Setting->find(array('title'=>'bulk_sms'));
+			$message = $settings['Setting']['valuetxt'];
+			$sql = "SELECT u2.cell_phone,u2.phone,u2.first_name,u2.last_name, u2.id AS cid,ord.job_date, ort.name as job_type ,(SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids INNER JOIN ace_rp_order_types ort ON ord.order_type_id = ort.id WHERE 
+				u2.campaign_id IS NOT NULL AND ec.last_inserted_id = ".$campId['camp_id']." AND ec.show_default =0 AND u2.callresult NOT IN ( 7, 3 ) AND ord.id = (SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) GROUP BY ord.customer_id";
+			$res = $db->_execute($sql);
+
+			while ($row = mysql_fetch_array($res, MYSQL_ASSOC))
+			{
+				$phone_number = $row['cell_phone'];
+				$landline_number = $row['phone'];
+				$cusId = $row['cid'];
+				$message = str_replace('{first_name}', $row['first_name'], $message);
+				$message = str_replace('{last_name}', $row['last_name'], $message);
+				$message = str_replace('{job_type}','<b>'. $row['job_type'].'</b>', $message);
+				if(!empty($phone_number))
+				{
+					$response = $this->Common->sendTextMessage($phone_number, $message); 
+					if(!empty($response))
+					{
+						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
+							".$row['order_Id'].",".$cusId.", ".$response->id.",'".$message."','".$today."')";
+						$result = $db->_execute($query);
+					}
+				}
+				if(!empty($landline_number))
+				{
+					$response = $this->Common->sendTextMessage($landline_number, $message); 
+					if(!empty($response))
+					{
+						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
+							".$row['order_Id'].",".$cusId.", ".$response->id.",'".$message."','".$today."')";
+						$result = $db->_execute($query);
+					}
+				}
+			}
+		
+			$updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_sms set status=2 where id=".$campId['id']."");
+			echo "done";
+		}
+		exit();
+	}
+
 	/* LOki: send mail to all campaign users
 	 status 0 = not complete, 1 = queue, 2 = complete 
 	 */ 	
@@ -14758,19 +15076,26 @@ function deleteUserFromCampaign()
 		$campId 		= mysql_fetch_array($result, MYSQL_ASSOC);
 		if(!empty($campId))
 		{
-
-
 			$updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_email set status=1 where id=".$campId['id']."");
 			$currentDate = date('Y-m-d');
 			$settings = $this->Setting->find(array('title'=>'bulk_email'));
 			$message = $settings['Setting']['valuetxt'];
 			$subject = $settings['Setting']['subject'];
-			$sql = "SELECT u2.email, u2.id AS cid, (SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids 		ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN 						ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids WHERE 
-				u2.campaign_id IS NOT NULL AND ec.last_inserted_id = ".$campId['camp_id']." AND ec.show_default =0 AND u2.callresult NOT IN ( 7, 3 ) GROUP BY ord.customer_id";
+			$sql = "SELECT u2.email,u2.first_name, u2.last_name, u2.id AS cid, ort.name as job_type,ord.job_date,ord.order_type_id, ord.order_number,(SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids 		ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN 						ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids INNER JOIN ace_rp_order_types ort ON ord.order_type_id = ort.id WHERE 
+				u2.campaign_id IS NOT NULL AND ec.last_inserted_id = ".$campId['camp_id']." AND ec.show_default =0 AND u2.callresult NOT IN ( 7, 3 ) AND ord.id = (SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) GROUP BY ord.customer_id";
 			$res = $db->_execute($sql);
 
 			while ($row = mysql_fetch_array($res, MYSQL_ASSOC))
 			{
+				$url = $this->G_URL.BASE_URL."/pages/showReminderBookingPage?oid=".$row['order_Id']."&cid=".$row['cid']."&otype=".$row['order_type_id']."&rdate=&onum=".$row['order_number'];
+				$link = '<a href='\.urlencode($url).\'>Book Now</a>';
+				
+				$message = str_replace('{first_name}', $row['first_name'], $message);
+				$message = str_replace('{last_name}', $row['last_name'], $message);
+				$message = str_replace('{job_type}', $row['job_type'], $message);
+				$message = str_replace('{url_confirm}', $link, $message);
+				$message = str_replace('{last_date}', $row['job_date'], $message);
+				
 				$res1 = $this->sendEmailUsingMailgun($row['email'],$subject,$message);
 				
 				if (strpos($res1, '@acecare') !== false) 
@@ -15134,6 +15459,15 @@ function deleteUserFromCampaign()
 			{
 				$insertLog = "INSERT INTO ace_rp_sms_response (from_num, message, received_date) VALUES ('".$searchStr."', '".$message."', '".$today."')";
 				$response = $db->_execute($insertLog);
+			} else {
+				$query = "SELECT id from ace_rp_customers where phone = '".$searchStr."'";
+				$result = $db->_execute($query);
+				$row = mysql_fetch_array($result, MYSQL_ASSOC);
+				if(!empty($row))
+				{
+					$insertLog = "INSERT INTO ace_rp_sms_response (from_num, message, received_date) VALUES ('".$searchStr."', '".$message."', '".$today."')";
+					$response = $db->_execute($insertLog);
+				} 
 			}
 			
 		}
@@ -15160,5 +15494,6 @@ function deleteUserFromCampaign()
 		}
 		exit();
 	}
+
 }
 ?>
