@@ -248,11 +248,14 @@ if( $_SESSION['user']['id'] > 0 ) {
     				if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
     				echo "<a href='$url' target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']."</a>";
     				echo "</div>";
+                    if($tbi['name'] == 'Received Email')
+                    {
+                         $img1 = ROOT_URL."/app/webroot/img/icon-lg-all-bookings.png";
+                         echo "<div class='icon'><a href='JavaScript:void(0);' class='openAnonymousMailBox' onclick='openNewSendMail();' ><img src='$img1' style=\"width:27px;height:27px\" /><br/>Send Mail</a></div>";
+                    }
     			}
 			
-		}
-        $img1 = ROOT_URL."/app/webroot/img/icon-lg-all-bookings.png";
-        echo "<div class='icon'><a href='JavaScript:void(0);' class='openAnonymousMailBox' onclick='openNewSendMail();' ><img src='$img1' style=\"width:27px;height:27px\" /><br/>Send Mail</a></div>";
+		}    
         echo "</div>";
 		 $on_off = "display: none;";
 		$idx++;
