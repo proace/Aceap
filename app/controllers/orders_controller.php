@@ -462,6 +462,7 @@ class OrdersController extends AppController
 			$cusId = $this->data['Customer']['id'];
 			$settings = $this->Setting->find(array('title'=>'booking_sms'));
 			$message = $settings['Setting']['valuetxt'];
+			$message = $this->Common->removeSlash($message);
 			$jobTime = $this->data['Order']['job_time_beg'].' to '.$this->data['Order']['job_time_end'];
 			$jobDate = date_format(date_create($fdate),"l F d,Y");
 			if ($this->data['Order']['order_status_id'] != 5)
@@ -535,6 +536,7 @@ class OrdersController extends AppController
 			if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==1 && $mail_sent== false ){
 				$settings = $this->Setting->find(array('title'=>'cancel_booking_sms'));
 				$message = $settings['Setting']['valuetxt'];
+				$message = $this->Common->removeSlash($message);
 				$message = str_replace('{date}', $jobDate, $message);
 				$this->emailCustomerBooking($order_id, $send_cancalled_email);
 				if(!empty($cellPhone))
@@ -5626,6 +5628,7 @@ class OrdersController extends AppController
 			$settings = $this->Setting->find(array('title'=>'email_template_cancelbookingnotification'));
 			$template = $settings['Setting']['valuetxt'];
 
+
 			$settings = $this->Setting->find(array('title'=>'email_template_canceljobnotification_subject'));	
 		} else {
 			$settings = $this->Setting->find(array('title'=>'email_template_bookingnotification'));
@@ -5706,7 +5709,7 @@ class OrdersController extends AppController
 			$summary .= "<td>" . $row['grandtotal'] . "</td>";
 			$summary .= "</tr>";
 		}
-
+		$template = $this->Common->removeSlash($template);
 		$msg = $template;
 		$msg = str_replace('{source}', $source, $msg);
 		$msg = str_replace('{first_name}', $firstname, $msg);
@@ -13714,7 +13717,7 @@ class OrdersController extends AppController
 		$subject = 'Ace Services Ltd';
 		$settings = $this->Setting->find(array('title'=>'email_template_custom1'));
 		$template = $settings['Setting']['valuetxt'];
-
+		$template = $this->Common->removeSlash($template);
 		$msg = $template;
 	
 		$msg = str_replace('{file_url}', $fileUrl, $msg);
@@ -13822,6 +13825,7 @@ class OrdersController extends AppController
 		$subject = 'Ace Services Ltd';
 		$settings = $this->Setting->find(array('title'=>'email_template_custom'));
 		$template = $settings['Setting']['valuetxt'];
+		$template = $this->Common->removeSlash($template);
 		$msg = $template;
 		$msg = str_replace('{file_url}', $fileUrl, $msg);
 		// $invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
@@ -14554,6 +14558,7 @@ function deleteUserFromCampaign()
 		$result = $db->_execute($query);
 		$settings = $this->Setting->find(array('title'=>'email_template_jobnotification'));
 		$template = $settings['Setting']['valuetxt'];
+		$template = $this->Common->removeSlash($template);
 		//$template_subject = "Acecare Reminder Email for Job";
 		$settings = $this->Setting->find(array('title'=>'email_template_jobnotification_subject'));
 		$template_subject = $settings['Setting']['subject'];
@@ -14934,7 +14939,8 @@ function deleteUserFromCampaign()
 		// error_reporting(E_ALL);
 		$email   = $_POST['email'];
 		$cusId 	 = !empty($_POST['cusId']) ? $_POST['cusId'] : '';
-		$message = $_POST['message'].'<br/><br/> <p>Have a nice day!</p>
+		$inputMsg = $this->Common->removeSlash($_POST['message']);
+		$message = $inputMsg.'<br/><br/> <p>Have a nice day!</p>
 			<p>ACE Services Ltd<br />phone: 604-293-3770<br />email: info@acecare.ca</p> <br> <img src="http://hvacproz.ca/acesys/app/webroot/img/ProAceLogo.png" style="width: 20%;">';
 		$from_schedule = isset($_POST['from_schedule']) ? $_POST['from_schedule'] : 0;
 		$subject = 'Pro Ace  Heating and AIR Conditioning';
@@ -15025,6 +15031,7 @@ function deleteUserFromCampaign()
 			$today = date('Y-m-d');
 			$settings = $this->Setting->find(array('title'=>'bulk_sms'));
 			$message = $settings['Setting']['valuetxt'];
+			$message = $this->Common->removeSlash($message);
 			$sql = "SELECT u2.cell_phone,u2.phone,u2.first_name,u2.last_name, u2.id AS cid,ord.job_date, ort.name as job_type ,(SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids INNER JOIN ace_rp_order_types ort ON ord.order_type_id = ort.id WHERE 
 				u2.campaign_id IS NOT NULL AND ec.last_inserted_id = ".$campId['camp_id']." AND ec.show_default =0 AND u2.callresult NOT IN ( 7, 3 ) AND ord.id = (SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) GROUP BY ord.customer_id";
 			$res = $db->_execute($sql);
@@ -15080,6 +15087,7 @@ function deleteUserFromCampaign()
 			$currentDate = date('Y-m-d');
 			$settings = $this->Setting->find(array('title'=>'bulk_email'));
 			$message = $settings['Setting']['valuetxt'];
+			$message = $this->Common->removeSlash($message);
 			$subject = $settings['Setting']['subject'];
 			$sql = "SELECT u2.email,u2.first_name, u2.last_name, u2.id AS cid, ort.name as job_type,ord.job_date,ord.order_type_id, ord.order_number,(SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids 		ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN 						ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids INNER JOIN ace_rp_order_types ort ON ord.order_type_id = ort.id WHERE 
 				u2.campaign_id IS NOT NULL AND ec.last_inserted_id = ".$campId['camp_id']." AND ec.show_default =0 AND u2.callresult NOT IN ( 7, 3 ) AND ord.id = (SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) GROUP BY ord.customer_id";
@@ -15334,7 +15342,7 @@ function deleteUserFromCampaign()
 	//Loki: Send membership expire reminder email before 7 days.
 	function sendMembershipReminderEmail()
 	{
-		error_reporting(E_ALL);
+		// error_reporting(E_ALL);
 		$maildate = date('Y-m-d', strtotime("+7 days"));
 		$db 	  =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$query = "select i.id, i.first_name, i.last_name, i.email, i.phone, i.cell_phone, i.card_number, i.card_exp, i.next_service, i.is_deactive from ace_rp_customers i where i.card_number!='' and i.card_exp ='".$maildate."' and is_deactive !=1";
@@ -15342,6 +15350,7 @@ function deleteUserFromCampaign()
 
 		$settings = $this->Setting->find(array('title'=>'membership'));
 		$template = $settings['Setting']['valuetxt'];
+		$template = $this->Common->removeSlash($template);
 		$template_subject = $settings['Setting']['subject'];
 		$currentDate = date('Y-m-d');
 

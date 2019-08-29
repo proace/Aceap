@@ -2058,5 +2058,10 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 		}
 		exit();
 	}
+
+	function removeSlash($str)
+	{
+		return $newStr = stripcslashes($str);
+	}
 }
 ?>
