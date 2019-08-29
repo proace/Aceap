@@ -132,7 +132,8 @@
             // mode: 'textareas',
             theme : "modern",
             browser_spellcheck: true,
-            plugins : "code,safari,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,visualchars,nonbreaking,xhtmlxtras,template,imagemanager,filemanager, nanospell, link unlink, anchor, image, media",
+            plugins : "code,safari,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,visualchars,nonbreaking,xhtmlxtras,template,imagemanager,filemanager, nanospell, link unlink, anchor, image, media, textcolor",
+            toolbar: "forecolor backcolor link image code bold italic formatselect numlist bullist indent outdent underline alignleft aligncenter alignright table ",
             external_plugins: {"nanospell": "plugins/nanospell/plugin.js"},
                 nanospell_server: "php", // choose "php" "asp" "asp.net" or "java"
             // Theme options
