@@ -6752,27 +6752,35 @@ class OrdersController extends AppController
 		echo '</tr>';
 		echo "<tr><td colspan=8 style=\"background: #AAAAAA; height: 5px;\"></td></tr>\n";
 
-		if ($phone)
-		{
+		// if ($phone)
+		// {
 			$sq_str = preg_replace("/[- \.]/", "", $phone);
 			$sq_str = preg_replace("/([?])*/", "[-]*", $phone);
-//	    $past_orders = $this->Order->findAll(array('Order.customer_id'=> $customer_id), null, "job_date DESC", null, null, 1);
-//			$past_orders = $this->Order->findAll(array('Customer.phone'=> $phone), null, "job_date DESC", null, null, 1);
-//	      $past_orders = $this->Order->findAll(array('Order.customer_phone'=> $phone), null, "job_date DESC", null, null, 1);
+			//	    $past_orders = $this->Order->findAll(array('Order.customer_id'=> $customer_id), null, "job_date DESC", null, null, 1);
+			//			$past_orders = $this->Order->findAll(array('Customer.phone'=> $phone), null, "job_date DESC", null, null, 1);
+			//	      $past_orders = $this->Order->findAll(array('Order.customer_phone'=> $phone), null, "job_date DESC", null, null, 1);
 			$past_orders = array();
 			$db =& ConnectionManager::getDataSource('default');
+			// if($fromDialer > 0)
+			// {
+			// 	$query = "select * from ace_rp_orders where customer_phone regexp '$sq_str' order by job_date DESC limit 1";
+			// } else {
+			// 	$query = "select * from ace_rp_orders where customer_phone regexp '$sq_str' order by job_date DESC";
+			// }
+			
 			if($fromDialer > 0)
 			{
-				$query = "select * from ace_rp_orders where customer_phone regexp '$sq_str' order by job_date DESC limit 1";
+				$query = "select * from ace_rp_orders where customer_id =".$customer_id." order by job_date DESC limit 1";
 			} else {
-				$query = "select * from ace_rp_orders where customer_phone regexp '$sq_str' order by job_date DESC";
+				$query = "select * from ace_rp_orders where customer_id =".$customer_id." order by job_date DESC";
 			}
-			
-
+			// print_r($query); die;
 			$result = $db->_execute($query);
 			while($row = mysql_fetch_array($result))
 				$past_orders[$row['id']] = $row['id'];
- $loopstart=1;
+ 			$loopstart=1;
+ 			// echo "<pre>";
+ 			// print_r($past_orders); die;
 			foreach ($past_orders as $cur)
 			{
 				$p_order = $this->Order->findAll(array('Order.id'=> $cur), null, "job_date DESC", null, null, 1);
@@ -6850,7 +6858,7 @@ class OrdersController extends AppController
 					}
 				}
 
-    if($loopstart==1)$class='';else $class = 'showjobhistory';
+    		if($loopstart==1)$class='';else $class = 'showjobhistory';
     
 	          echo "<tr class='orderline  ".$class."' valign='top' ".$add."  loopstart='".$loopstart."'>";
 	          echo "<td rowspan=1>".date('d-m-Y', strtotime($p_order['Order']['job_date']))."<br>REF#".$p_order['Order']['order_number']."</td>";
@@ -6880,12 +6888,12 @@ class OrdersController extends AppController
 	          echo "</tr>\n";
 	          echo "<tr class='tr_break ".$class."' loopstart='".$loopstart."'><td colspan=8 style=\"background: #AAAAAA; height: 5px;\" ></td></tr>\n";
 	          $loopstart++;
-	        }
-	    }
+	     }
+		//}
 
 	    echo "</table>";
 	    exit;
-	}
+}
 
   // Method returns an HTML code for the given order's item
   function _itemHTML($index, $item, $actions)
