@@ -1166,13 +1166,14 @@ $h .= ' 		<tr>
   	// Loki: Update the customer information
   	function editCustomerInfo()
   	{
+  		$cellPhone = $_POST['cellPhone'];
   		$phone = $_POST['phone'];
 		$email = $_POST['email'];
 		$firstName = $_POST['firstName'];
 		$lastName = $_POST['lastName'];  
 		$customerId = $_POST['cusId'];
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
- 		$query = "UPDATE ace_rp_customers set phone='".$phone."', first_name='".$firstName."', last_name='".$lastName."', email= '".$email."' where id=".$customerId;
+ 		$query = "UPDATE ace_rp_customers set phone='".$phone."', first_name='".$firstName."', last_name='".$lastName."', email= '".$email."', cell_phone='".$cellPhone."' where id=".$customerId;
  		$result = $db->_execute($query);
  		if ($result) {
  			$response  = array("res" => "OK");

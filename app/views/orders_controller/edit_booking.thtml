@@ -128,6 +128,7 @@ function SendSms()
 	});	
 }
 
+
 function editUserInfo()
 {
 	var firstName = $('#editFirstName').val();
@@ -135,36 +136,13 @@ function editUserInfo()
 	var email = $('#editEmail').val();
 	var phone = $('#editphone').val();
 	var customerId = $('#CustomerId').val();
-
+	var cellPhone = $('#edit_cell_phone').val();
 	$.ajax({
 		url: '<?=BASE_URL?>/users/editCustomerInfo',
 		dataType: 'html',
 		type: 'POST',
 		cache: false,
-		data:{phone:phone, firstName:firstName, lastName:lastName, email:email, cusId:customerId},
-		success: function(data) {
-			res = JSON.parse(data);
-			if(res.res == "OK")
-			{
-				window.location.reload();
-			}
-		}
-	});	
-}
-function editUserInfo()
-{
-	var firstName = $('#editFirstName').val();
-	var lastName = $('#editLastName').val();
-	var email = $('#editEmail').val();
-	var phone = $('#editphone').val();
-	var customerId = $('#CustomerId').val();
-
-	$.ajax({
-		url: '<?=BASE_URL?>/users/editCustomerInfo',
-		dataType: 'html',
-		type: 'POST',
-		cache: false,
-		data:{phone:phone, firstName:firstName, lastName:lastName, email:email, cusId:customerId},
+		data:{cellPhone:cellPhone,phone:phone, firstName:firstName, lastName:lastName, email:email, cusId:customerId},
 		success: function(data) {
 			res = JSON.parse(data);
 			if(res.res == "OK")
@@ -4143,7 +4121,14 @@ function get_data($url)
 <div id="editUserInfo">
 	<table>
 		<tr>
-			<td><b>Phone/Cell:</b>
+			<td><b>Cell Phone:</b>
+			</td>
+			<td><input style="width:150px" type="text" id="edit_cell_phone" name="editcellphone" value="<?=$this->data['Customer']['cell_phone']?>"/>
+			</td>
+		</tr>
+		
+		<tr>
+			<td><b>Phone:</b>
 			</td>
 			<td><input style="width:150px" type="text" id="editphone" name="editphone" value="<?=$this->data['Customer']['phone']?>"/>
 			</td>
