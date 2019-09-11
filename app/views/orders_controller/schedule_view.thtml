@@ -867,7 +867,6 @@ $(document).ready(function(){
 <?php
 function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $substatuses, $jobtypes, $method) {
     $returnValue = '';
-
     $icon_prn = ROOT_URL."/app/webroot/img/icon-vsm-printer.png";
     $border2 = '';
     $enable_access = '';

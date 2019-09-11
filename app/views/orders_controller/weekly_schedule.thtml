@@ -7,6 +7,7 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.cookie.js"></script>
 
 <style type="text/css">
+	*{padding:0;}
 	/* all context menus has this class */
 	.context-menu {
 	  -webkit-border-radius: 4px;
@@ -386,8 +387,7 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
 		||($common->getLoggedUserID()==$order['booking_source2_id'])
 		||($common->getLoggedUserID()==$order['job_technician1_id'])
 		||($common->getLoggedUserID()==$order['job_technician2_id'])
-		||(($common->getLoggedUserRoleID() != "1")&&($common->getLoggedUserRoleID() != "9")
-     &&($common->getLoggedUserRoleID() != "3")))
+		||(($common->getLoggedUserRoleID() != "1")&&($common->getLoggedUserRoleID() != "9")))
 	{
 		$enable_access = "onclick='document.location.href=\"$method?order_id={$order['id']}&rurl=$rurl\"'";
 		$open = "style='cursor:hand;cursor:pointer;'";

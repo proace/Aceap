@@ -1331,17 +1331,18 @@ class CommonComponent extends Object
 
 							'img' => 'voice.jpg'
 
-						),
-						array(
-
-							'name' => 'Dialer',
-
-							'url' => BASE_URL.'/calls',
-
-							'img' => 'icon-lg-callback.png',
-							'target' => '_top'
-
 						)
+						// ,
+						// array(
+
+						// 	'name' => 'Dialer',
+
+						// 	'url' => BASE_URL.'/calls',
+
+						// 	'img' => 'icon-lg-callback.png',
+						// 	'target' => '_top'
+
+						// )
 					)
 				)
 			);
