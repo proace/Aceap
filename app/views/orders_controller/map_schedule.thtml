@@ -1,4 +1,4 @@
-s<meta http-equiv="refresh" content="300">
+<meta http-equiv="refresh" content="300">
 
 <style>
 .results1{
@@ -27,6 +27,9 @@ s<meta http-equiv="refresh" content="300">
 .last_cell{
 	border-right: 2px solid #4f4f4f;
 }
+.test{
+	margin-top: 70px;
+}
 </style>
 
 <form method="GET" name="viewform">
@@ -34,7 +37,7 @@ s<meta http-equiv="refresh" content="300">
 <table width="82%" border="0" cellspacing="0" cellpadding="5" ><!-- align=left -->
 	<tr>
 		<td colspan=3>
-			<input type="button" value="Daily" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/scheduleView?p_code=<?=$p_code?>&city=<?=$city?>&fdate=<?=$date_from?>'" style="font-size: 8pt;">
+			<input type="button" value="Daily" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/scheduleView?p_code=<?=$p_code?>&city=<?=$city?>&fdate=<?=$date_from?>&daily=1'" style="font-size: 8pt;">
 			&nbsp;&nbsp;
 			<input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.date_from.value='<?=$ydate?>'; document.viewform.submit();" style="font-size: 8pt;">
 			&nbsp;&nbsp;

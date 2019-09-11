@@ -1,0 +1,274 @@
+<html> 
+<head>
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/text_chat.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> -->
+
+<style type="text/css">
+table {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: collapse;
+  margin-top: 30px;
+}
+ .ui-widget-content{
+        background: white !important;
+    }
+table td,
+table th {
+  border: 1px solid #dadada;
+  padding: 5px;
+}
+.icon-size{
+    font-size: 18px !important;
+    padding: 3px;
+}
+.messagebox{
+   width: 100%; height: 20%; padding: 1px;
+}
+.textus-ConversationListItem-previewDetails {
+    font-weight: 400;
+    margin-top: 8px;
+}
+.textus-MessageInputForm-submit {
+    background-color: #8cc63f;
+    border-radius: 4px;
+    float: right;
+    height: 24px;
+    width: 28px !important;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    color: #fff;
+    display: inline-block;
+    text-decoration: none;
+    color: #fff;
+    margin: 1px auto;
+    font-size: 22px !important;
+}
+.textus-ConversationListItem-preview {
+    float: left;
+    display: block;
+    margin-right: 2.35765%;
+    width: 91.4702%;
+}
+.textus-ConversationListItem-arrowContainer {
+    float: left;
+    display: block;
+    margin-right: 2.35765%;
+    width: 6.17215%;
+    padding: 12px 0;
+}
+.textus-ConversationListItem-link {
+    display: block;
+    padding: 10px;
+    padding-right: 5px;
+    border: 1px solid #d4dce4;
+    cursor: pointer;
+    color: white;
+    background: #29abe2;
+}
+.wrapper
+{
+    padding: 10px 10px 10px 0px;
+}
+.search_box{
+    width: 50%;
+    border-radius: 5px;
+}
+#searched_msg{
+    display: none;
+}
+.search_button{
+    width: 47px;
+    font-size: 10px;
+}
+.textus-ConversationListItem-previewMessage{
+    display: inline-block;
+    width: 180px;
+    white-space: nowrap;
+    overflow: hidden !important;
+    text-overflow: ellipsis;
+}
+</style>
+</head>
+<body>
+<form id="messageform" name="messageform" method="POST" action="">
+<div style="padding-left: 5px;margin-top: -5px;">
+    <input type="text" class="search_box" name="search_str" id="search_str">
+    <input type="button" class="search_button" name="search" value="search" id="search_number" >
+    <input type="button" name="search_clear" value="clear" id="search_clear" >
+</div>
+<div id="messagebox" class="messagebox">
+    <i class="fa fa-envelope-o icon-size" id="show_unread_message" aria-hidden="true" title="Unread"></i>
+    <i class="fa fa-commenting-o icon-size"></i>
+    <i class="textus-MessageInputForm-submit fa fa-paper-plane fa-fw" id="send_text_message" title="Send Text" onclick="sendTextMessage();"></i>
+</div>  
+<div id="latest_msg">
+    <?php //foreach($messages as $message) {?>
+        <!-- <div class=" textus-ConversationListItem-link textus-ConversationListItem-preview" onclick="showMessageHistory(<?php echo $message['phone_number']; ?>);">
+            <input type="hidden" id="message_id" value="<?php echo $message['id']?>">
+            <h4 class="textus-ConversationListItem-contactName"><?php echo $message['phone_number']; ?></h4>
+            <div class="textus-ConversationListItem-previewDetails"><span class="textus-ConversationListItem-previewMessage"><?php echo $message['message']; ?>
+            </div>
+        </div> -->
+  <?php //}?>
+</div>
+<div id="searched_msg"></div>
+<div id="chat-window-card1" class="chat-window-card" style="display: none;">
+</div>
+</form>
+<script language="JavaScript" type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+
+<script language="JavaScript">
+$(document).ready(function() {
+    getNewMessage();
+    // setInterval( function(){     
+    //     var optionVal = $("#message_crit").val();
+    //     if(optionVal == 'message')
+    //     {
+    //         getMessageData('getInternalMessage');
+    //     } else {
+    //         getMessageData('getTextData');
+    //     }
+    //   }, 30000 );
+
+    setInterval( function(){     
+        getNewMessage();
+      }, 30000 );
+        $("#chat-window-card1").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "",
+            autoOpen: false,
+            width: 400,
+            height: 500,
+            open: function(e) {
+                $(e.target).parent().css('background-color','white');
+            },
+            position: { my: "right top", at: "right top"}
+        });
+    $("#close_chat_popup").live("click",function(){
+         parent.document.getElementById("adjust_size").setAttribute("cols","230, *, 230");
+         parent.document.getElementById("adjust_row_size").setAttribute("rows","33%,33%,33%");
+         $( "#chat-window-card1" ).dialog("close");
+    });
+    $("#search_number").live("click", function(){
+        var phone_number = $("#search_str").val();
+         $.ajax({
+            url:"<?=BASE_URL;?>/pages/message", 
+            type: "POST",
+            dataType: 'html',
+            data:{search_str:phone_number},
+            success:function(data){ 
+                $("#latest_msg").hide();
+                $("#searched_msg").html(data).show();
+            }
+        });
+        
+    });
+
+    $("#search_clear").live("click", function(){
+        $('#search_str').val('');
+        $('#searched_msg').hide();
+        $("#latest_msg").show();
+
+    });
+
+    $("#send_text_message_to_user").live("click", function(e){
+        e.preventDefault();
+        var phone_number = $("#phone_number").val();
+        var textMessage = $("#text_message").val();
+        $.ajax({
+            url:"<?=BASE_URL;?>/messages/sendTextMessage", 
+            type: "POST",
+            data:{phone_num:phone_number, message:textMessage},
+            success:function(data){ 
+                res = JSON.parse(data);
+                if(res.res == "OK")
+                {
+                   showChatBox(phone_number);
+                }
+            }
+        });
+    });
+
+    $("#show_unread_message").live("click", function(){
+        var offset = 0;
+        $.ajax({
+            url:"<?=BASE_URL;?>/pages/message", 
+            type: "POST",
+            dataType: 'html',
+            data:{offset:offset},
+            success:function(data){ 
+                $("#latest_msg").hide();
+                $("#searched_msg").html(data).show();
+            }
+        });
+    });
+
+});
+function showChatBox(phone_number)
+{
+    var messageId = $("#message_id").val();
+     $.ajax({
+            url:"<?=BASE_URL;?>/messages/getMessageHistory", 
+            type: "POST",
+            dataType: 'html',
+            data:{phone_number:phone_number, messageId:messageId},
+            success:function(data){
+                parent.document.getElementById("adjust_size").setAttribute("cols","230, *, 400");
+                parent.document.getElementById("adjust_row_size").setAttribute("rows","*,20%,20%");
+                $("#chat-window-card1").css({ 'display' : 'block'});
+                $("#chat-window-card1").html(data);
+                $("#chat-window-card1" ).dialog("open");
+                $(".ui-dialog-titlebar").hide();
+            }
+        });
+}
+function createMessage()
+{
+  var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>",'',
+  "width=450, height=300, left=300,top=200");
+}
+
+function sendTextMessage()
+{
+  var answer = window.open("<?=BASE_URL?>/messages/sendTextMessage",'',
+  "width=800, height=500, left=300,top=200");
+}
+
+//document.forms['editBookingform'].submit();
+function getMessageData(nval)
+{
+  $.ajax({
+    url:"<?=BASE_URL;?>/messages/"+nval, 
+    type: "GET",
+    success:function(result){ 
+           
+        }
+   });
+}
+function showMessageHistory(phone_number)
+{
+    // parent.frames['main_view'].showChatBox(phone_number);
+    showChatBox(phone_number);
+}
+
+function getNewMessage()
+{
+    $.ajax({
+    url:"<?=BASE_URL;?>/messages/getNewMessage", 
+     dataType: 'html',
+    type: "GET",
+    success:function(data){ 
+             $("#latest_msg").html(data);
+        }
+   });
+}
+</script>
+</body>
+</html>

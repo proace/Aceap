@@ -35,8 +35,8 @@ var nopen = 1;
 
 $(document).ready(function(e){
 	   setInterval( function(){     
-        get_chat_count();
-        get_mail_count();
+        //get_chat_count();
+       // get_mail_count();
 	    }, 30000 );
 
 	   // var blink_speed = 500; 

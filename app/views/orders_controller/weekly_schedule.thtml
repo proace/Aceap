@@ -285,7 +285,7 @@ $(document).ready(function(){
 	
 
 
-	<?php if (($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13)) { ?>
+	<?php if (($common->getLoggedUserRoleID()==3)|| ($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13)) { ?>
 	$('.draggable').contextMenu('context-menu-1', {
 		'+1 hour extra':{click: function(el){setEndTime(el, 1);}},
 		'+2 hours extra':{click: function(el){setEndTime(el, 2);}},

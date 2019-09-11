@@ -151,6 +151,7 @@ class OrdersController extends AppController
     	if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
 			$this->preViewEstimate($_POST);
 		}else{
+
 		//Prepare the date for entry into the DB
 		//Set nulls into the empty selects
 		$this->Common->SetNull($this->data['Order']['booking_source_id']);
@@ -456,7 +457,7 @@ class OrdersController extends AppController
 	
 		if($_POST['sendMailOnEstimate']){
 			$mail_sent = false;
-			$today = date('Y-m-d');
+			$today = gmdate("Y-m-d\TH:i:s\Z");
 			$homePhone = $this->data['Customer']['phone'];
 			$cellPhone = $this->data['Customer']['cell_phone'];
 			$cusId = $this->data['Customer']['id'];
@@ -464,7 +465,9 @@ class OrdersController extends AppController
 			$message = $settings['Setting']['valuetxt'];
 			$message = $this->Common->removeSlash($message);
 			$jobTime = $this->data['Order']['job_time_beg'].' to '.$this->data['Order']['job_time_end'];
-			$jobDate = date_format(date_create($fdate),"l F d,Y");
+			// $fdate = $this->data['Order']['job_date'];
+			$jobDate = date_format(date_create($this->data['Order']['job_date']),"l F d,Y");
+			$sender_id = $this->Common->getLoggedUserID();
 			if ($this->data['Order']['order_status_id'] != 5)
 			{
 			  	if($_POST['havetoprint'] == "1")
@@ -482,8 +485,8 @@ class OrdersController extends AppController
 									if(!empty($response))
 									{
 										$message = mysql_real_escape_string($message);
-										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
-											'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type,sender_id) VALUES (
+											'',".$cusId.", ".$response->id.",'".$message."','".$today."', '".$cellPhone."', 1, ".$sender_id.")";
 										$result = $db->_execute($query);
 									}
 								}
@@ -493,8 +496,8 @@ class OrdersController extends AppController
 									if(!empty($response))
 									{
 										$message = mysql_real_escape_string($message);
-										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
-											'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type ,sender_id) VALUES (
+											'',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$homePhone."', 1, ".$sender_id.")";
 										$result = $db->_execute($query);
 									}
 								}
@@ -513,8 +516,8 @@ class OrdersController extends AppController
 									$response = $this->Common->sendTextMessage($cellPhone, $message); 
 									if(!empty($response))
 									{
-										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
-											'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, , phone_number, sms_type, sender_id) VALUES (
+											'',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$cellPhone."', 1, ".$sender_id.")";
 										$result = $db->_execute($query);
 									}
 								}
@@ -523,8 +526,8 @@ class OrdersController extends AppController
 									$response = $this->Common->sendTextMessage($homePhone, $message); 
 									if(!empty($response))
 									{
-										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
-											'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, , phone_number, sms_type, sender_id) VALUES (
+											'',".$cusId.", ".$response->id.",'".$message."','".$today."', '".$homePhone."', 1, ".$sender_id.")";
 										$result = $db->_execute($query);
 									}
 								}
@@ -544,8 +547,8 @@ class OrdersController extends AppController
 					$response = $this->Common->sendTextMessage($cellPhone, $message); 
 					if(!empty($response))
 					{
-						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
-							'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
+							'',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$cellPhone."', 1, ".$sender_id.")";
 						$result = $db->_execute($query);
 					}
 				}
@@ -554,8 +557,8 @@ class OrdersController extends AppController
 					$response = $this->Common->sendTextMessage($homePhone, $message); 
 					if(!empty($response))
 					{
-						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
-							'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
+							'',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$homePhone."', 1, ".$sender_id.")";
 						$result = $db->_execute($query);
 					}
 				}
@@ -4356,6 +4359,8 @@ class OrdersController extends AppController
 	{
 		// error_reporting(E_ALL);
 		//Get a list of all technicians
+		// $this->layout = false;
+
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
         $this->set('allTechnician', $this->Lists->Technicians());
@@ -5060,6 +5065,7 @@ class OrdersController extends AppController
 
 	function scheduleView()
 	{
+		// error_reporting(E_ALL & ~E_NOTICE);
 		//$this->layout = 'frameless';
 		$db =& ConnectionManager::getDataSource('default');
 		/*
@@ -5100,7 +5106,7 @@ class OrdersController extends AppController
 		$p_code = strtoupper(substr($_REQUEST['p_code'],0,3));
 		$city = $_REQUEST['city'];
 		$neighbours = array();
-
+		$daily = isset($_REQUEST['daily']) ? $_REQUEST['daily'] : 0;
 
 
 		// Get neighbouring areas
@@ -5477,6 +5483,9 @@ class OrdersController extends AppController
 		}
 
 		$this->set("ismobile", $this->Session->read("ismobile"));
+		if($this->Common->getLoggedUserRoleID() == 3 && $daily != 1){
+			 $this->redirect("/orders/weeklySchedule?p_code=".$p_code."&city=".$city."&route_type=".$_REQUEST['route_type']);
+		}
 
 	}
 
@@ -8724,6 +8733,7 @@ class OrdersController extends AppController
 	}
 
 	function toggleVisible() {
+
 		$order_id = $_REQUEST['order_id'];
 		$visibility = $_REQUEST['visibility'];
 
@@ -14571,9 +14581,10 @@ function deleteUserFromCampaign()
 		$settings = $this->Setting->find(array('title'=>'email_template_jobnotification_subject'));
 		$template_subject = $settings['Setting']['subject'];
 		$currentDate = date('Y-m-d');
+		$today = gmdate("Y-m-d\TH:i:s\Z");
 		$settings = $this->Setting->find(array('title'=>'reminder_text'));
 		$textMessage = $settings['Setting']['valuetxt'];
-
+		$sender_id = $this->Common->getLoggedUserID();
 
 		while($row = mysql_fetch_array($result, MYSQL_BOTH)) {
 				$url = $this->G_URL.BASE_URL."/pages/showReminderBookingPage?oid=".$row['id']."&cid=".$row['customer_id']."&otype=".$row['order_type_id']."&rdate=".$row['reminder_date']."&onum=".$row['order_number'];
@@ -14611,8 +14622,8 @@ function deleteUserFromCampaign()
 					if(!empty($response))
 					{
 						$textMessage = mysql_real_escape_string($textMessage);
-						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
-							'',".$row['customer_id'].", ".$response->id.",'".$textMessage."','".$currentDate."')";
+						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id) VALUES (
+							'',".$row['customer_id'].", ".$response->id.",'".$textMessage."','".$today."', '".$row['cell_phone']."', 1, ".$sender_id.")";
 						$result = $db->_execute($query);
 					}
 				}
@@ -14623,8 +14634,8 @@ function deleteUserFromCampaign()
 					if(!empty($response))
 					{
 						$textMessage = mysql_real_escape_string($textMessage);
-						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
-							'',".$row['customer_id'].", ".$response->id.",'".$textMessage."','".$currentDate."')";
+						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
+							'',".$row['customer_id'].", ".$response->id.",'".$textMessage."','".$today."', '".$row['phone']."' , 1, ".$sender_id.")";
 						$result = $db->_execute($query);
 					}
 				}
@@ -14922,14 +14933,15 @@ function deleteUserFromCampaign()
 		$phone_number = $_POST['phone'];
 		$cusId = $_POST['cusId'];
 		$message = mysql_real_escape_string($_POST['message']);
-		$today = date("Y-m-d");
+		$today = gmdate("Y-m-d\TH:i:s\Z");
+		$sender_id = $this->Common->getLoggedUserID();
 		if(!empty($phone_number))
 		{
 			$response = $this->Common->sendTextMessage($phone_number, $message); 
 			if(!empty($response))
 			{
-				$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
-					'',".$cusId.", ".$response->id.",'".$message."','".$today."')";
+				$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id) VALUES (
+					'',".$cusId.", ".$response->id.",'".$message."','".$today."', '".$phone_number."',1, ".$sender_id.")";
 				$result = $db->_execute($query);
 				
 				if($result)
@@ -15032,6 +15044,7 @@ function deleteUserFromCampaign()
 		$getCampIdSql 	= "SELECT camp_id,id from ace_rp_camp_sms where status=0 limit 1";
 		$result 		= $db->_execute($getCampIdSql);
 		$campId 		= mysql_fetch_array($result, MYSQL_ASSOC);
+		$sender_id = $this->Common->getLoggedUserID();
 		if(!empty($campId))
 		{
 
@@ -15057,8 +15070,8 @@ function deleteUserFromCampaign()
 					$response = $this->Common->sendTextMessage($phone_number, $message); 
 					if(!empty($response))
 					{
-						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
-							".$row['order_Id'].",".$cusId.", ".$response->id.",'".$message."','".$today."')";
+						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
+							".$row['order_Id'].",".$cusId.", ".$response->id.",'".$message."','".$today."', '".$phone_number."', 1, ".$sender_id.")";
 						$result = $db->_execute($query);
 					}
 				}
@@ -15067,8 +15080,8 @@ function deleteUserFromCampaign()
 					$response = $this->Common->sendTextMessage($landline_number, $message); 
 					if(!empty($response))
 					{
-						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date) VALUES (
-							".$row['order_Id'].",".$cusId.", ".$response->id.",'".$message."','".$today."')";
+						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
+							".$row['order_Id'].",".$cusId.", ".$response->id.",'".$message."','".$today."', '".$landline_number."',1, ".$sender_id.")";
 						$result = $db->_execute($query);
 					}
 				}
@@ -15459,11 +15472,12 @@ function deleteUserFromCampaign()
 	//Loki: This function is used to receive sms and save into database. 
 	function receivedSms()
 	{
+
 		// error_reporting(E_ALL); 
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$data = file_get_contents('php://input');
 		$data = json_decode($data);
-		$today = date("Y-m-d");
+		$today = $data->message->created_at;
 		$sender = $data->message->sender_phone;
 		$message = mysql_real_escape_string($data->message->content);
 		if($sender != '+16042933770')
@@ -15474,15 +15488,20 @@ function deleteUserFromCampaign()
 			$row = mysql_fetch_array($result, MYSQL_ASSOC);
 			if(!empty($row))
 			{
-				$insertLog = "INSERT INTO ace_rp_sms_response (from_num, message, received_date) VALUES ('".$searchStr."', '".$message."', '".$today."')";
+				$insertLog = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id) VALUES (
+					'','','','".$message."','".$today."', '".$searchStr."',2,'')";
+				// $insertLog = "INSERT INTO ace_rp_sms_response (from_num, message, received_date) VALUES ('".$searchStr."', '".$message."', '".$today."')";
 				$response = $db->_execute($insertLog);
-			} else {
+			} 
+			else {
 				$query = "SELECT id from ace_rp_customers where phone = '".$searchStr."'";
 				$result = $db->_execute($query);
 				$row = mysql_fetch_array($result, MYSQL_ASSOC);
 				if(!empty($row))
 				{
-					$insertLog = "INSERT INTO ace_rp_sms_response (from_num, message, received_date) VALUES ('".$searchStr."', '".$message."', '".$today."')";
+					$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id) VALUES (
+					'','', '','".$message."','".$today."', '".$searchStr."',2,'')";
+					// $insertLog = "INSERT INTO ace_rp_sms_response (from_num, message, received_date) VALUES ('".$searchStr."', '".$message."', '".$today."')";
 					$response = $db->_execute($insertLog);
 				} 
 			}
@@ -15512,5 +15531,9 @@ function deleteUserFromCampaign()
 		exit();
 	}
 
+	function saveUserReviewResponse()
+	{
+		
+	}
 }
 ?>

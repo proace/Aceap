@@ -29,9 +29,9 @@ document.title += " :: Edit Booking";
 //**********************
 </script>
 <script language="JavaScript">
-function addTinyMCE(){
+function addTinyMCE(ele){
 tinyMCE.init({
-            selector: '#emailVal',
+            selector: ele,
             // mode: 'textareas',
             theme : "modern",
             browser_spellcheck: true,
@@ -216,6 +216,15 @@ function showSmsBox() {
 function hideSmsBox() {
 	$( "#reminderSms" ).dialog("close");
 }
+
+function showReviewTextBox() {
+    $( "#reviewText" ).dialog("open");
+}
+
+function hideReviewTextBox() {
+    $( "#reviewText" ).dialog("close");
+}
+
 // function showEmailBox() {
 
 // 	setTimeout(function(){ addTinyMCE(); }, 50);
@@ -2364,16 +2373,16 @@ function get_data($url)
 		<input type="button" name="OK" value="Send" style="padding: 5px;margin-top: 5px;" onclick="SendSms()">
 		<input type="button"  name="cancel" value="Cancel" onclick="hideSmsBox();" style="padding: 5px;margin-top: 5px;">
 </div>
-
+<div id="reviewText" style="display: none">
+       
+        <textarea class="emailVal" id="emailVal1" style="width: 300px;height: 100px;"></textarea>
+        <input type="button" name="OK" value="Send" style="padding: 5px;margin-top: 5px;" onclick="SendReviewText()">
+        <input type="button"  name="cancel" value="Cancel" onclick="hideReviewTextBox();" style="padding: 5px;margin-top: 5px;">
+</div>
 <div id="sendSeparateEmail" style="display: none;">
-		<table>
-			<tr>
-				<td>
+		
 					<!-- <input type="text" name="sms"> -->
-					<textarea id="emailVal" style="width: 500px;height: 300px;display: block;"></textarea>
-				</td>
-			</tr>
-		</table>
+		<textarea class="emailVal" id="emailVal2" style="width: 500px;height: 300px;display: block;"></textarea>
 		<input type="button" name="OK" value="Send" style="padding: 5px;margin-top: 5px;" onclick="sendSeparateEmail()">
 		<input type="button"  name="cancel" value="Cancel" onclick="hideEmailBox();" style="padding: 5px;margin-top: 5px;">
 </div>
@@ -2543,7 +2552,9 @@ function get_data($url)
                     <span class="fa fa-phone call_icon" onclick="call_cell_phone();" aria-hidden="true"></span>
                     <span class="fa fa-comments" style="font-size: 17px; color:green;" onclick="showSmsBox();" aria-hidden="true"></span>
                     <?php echo $html->tagErrorMsg('Customer/cell_phone','Please enter in a cell phone for this customer.'); ?>
+                    <span class="fa fa-commenting-o openReviewBox" style='font-size:17px' aria-hidden="true" title="Review Text" onclick="showReviewTextBox();"></span>
                     </td>
+                    
                 </tr>
                  <tr>
                    <td></td>
@@ -2828,7 +2839,7 @@ function get_data($url)
                          ($this->data['Order']['order_status_id']==2)||
                          ($this->data['Order']['order_status_id']==5)))
                     {
-                        if (($common->getLoggedUserRoleID() == "3") || ($common->getLoggedUserRoleID() == "9") || ($common->getLoggedUserRoleID() == "13"))
+                        if (($common->getLoggedUserRoleID() == "9") || ($common->getLoggedUserRoleID() == "13"))
                         {
                             $Enbl=false;
                         }
@@ -2843,7 +2854,7 @@ function get_data($url)
                     ?>
                     </td>
                     <td align="right">Schedule:</td>
-                    <?php if (($common->getLoggedUserRoleID() == "3") || ($common->getLoggedUserRoleID() == "9") || ($common->getLoggedUserRoleID() == "13")) { ?>
+                    <?php if (($common->getLoggedUserRoleID() == "9") || ($common->getLoggedUserRoleID() == "13")) { ?>
 					<td>
                     <select id="OrderJobTimeBegHour" name="data[Order][job_time_beg_hour]">
                     <option value="">&nbsp;</option>
@@ -3049,7 +3060,7 @@ function get_data($url)
                 <tr>
                 	<td align="right">Paid By:</td>
                 	<td >
-                		<?php if ($_SESSION['user']['role_id'] == 6) {?>
+                		<?php if ($_SESSION['user']['role_id'] == 6 || $_SESSION['user']['role_id'] == 3) {?>
                 			<select id="PaymentPaymentMethodId" name="data[Order][payment_method_type]">
                 			<option value="0">--</option>
 		              		 <?php foreach($payment_types as $method) {?>
@@ -4163,6 +4174,36 @@ function get_data($url)
 <div class="show_sms_content" style="display: none, background-color: #ffffff">
 </div>
 <script>
+    // openReviewBox
+    $(function () {
+        $("#reviewText").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Send Email",
+            autoOpen: false,
+            width: 700,
+            height: 500,
+        });
+        $('.openReviewBox').live('click', function(){
+                $.ajax({
+                url: '<?=BASE_URL?>/settings/getReviewTextContent',
+                dataType: 'json',
+                type: 'GET',                
+                success: function(data) {
+                    if(tinymce.get("emailVal1")) 
+                    {
+                        tinymce.remove('#emailVal1');
+                    }
+                    $('#emailVal1').val(data.msgBody);
+                    setTimeout(() => {
+                        addTinyMCE("#emailVal1");
+                    },10);
+                    $( "#reviewText" ).dialog("open");
+                }
+            });
+        });
+    });
+
 	$(function () {
 	    $("#sendSeparateEmail").dialog({
 	        modal: true,
@@ -4173,15 +4214,14 @@ function get_data($url)
 	        height: 500,
 	    });
 	    $('.openMailBox').live('click', function(){
-
-	    	if(tinymce.get("emailVal")) 
+	    	if(tinymce.get("emailVal2")) 
 			{
-				tinymce.remove('#emailVal');
+				tinymce.remove('#emailVal2');
 			}
-			$('#emailVal').val('Write Here');
-					setTimeout(() => {
-						addTinyMCE();	
-					},50);
+			$('#emailVal2').val('Write Here');
+			setTimeout(() => {
+				addTinyMCE("#emailVal2");	
+			},10);
 			$( "#sendSeparateEmail" ).dialog("open");
 	    });
     });

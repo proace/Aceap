@@ -1,0 +1,117 @@
+<html> 
+<head>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<script>
+jQuery( document ).ready(function($) {
+  $(".contact_way").on("change", function(){
+       $('.contact_way').not(this).prop('checked', false);  
+  });
+});
+
+function deleteUser(Id)
+  {
+      $.ajax({
+      url: "<?=BASE_URL;?>/orders/deleteEmailEntry",
+      type: "POST",
+      data: {id : Id},
+      success: function(data){
+        res = JSON.parse(data);
+            if(res.res == "OK")
+            {
+                window.location.reload();
+            }
+      }
+    });
+  }
+</script>
+<style type="text/css">
+ body{margin: 10px}
+
+ ol {margin: 0; padding: 0; }
+  li {    margin: 4.0em 0; font-weight: bold; }
+  
+  #info label { 
+    font-size: 13px;
+    float: left; 
+    width: 270px; 
+    margin-right: 15px; 
+    margin-top: 2px;
+    font-weight: bold;
+  }
+.question {
+  font-size: 15px;
+  width: 50%;
+  border: 1px solid black;
+  height: 50%;
+}
+.btn {
+  background-color: #2287ca;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 13px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+.mid_form{
+     width: 40%;
+    margin: auto;
+    border: 1px solid black;
+    padding-left: 30px;
+    height: 60%;
+    border-radius: 20px;
+}
+.footer {
+   position: fixed;
+   left: 0;
+   bottom: 0;
+   width: 100%;
+   background-color: grey;
+   color: white;
+   text-align: center;
+   height: 13%;
+   font-size: 12px;
+   padding: 0px;
+}
+</style>
+</head>
+<body>
+  <div>
+    <div style="text-align: center;">
+      <img src="/acesys/app/webroot/img/ProAceLogo.png" style="width: 25%;">
+    </div>
+    <form id="info" method="POST" action="<?=BASE_URL;?>/orders/saveMemberShipResponse" class="mid_form">
+      <h1> User Information</h1>
+      <input type="hidden" name="cus_name" value="<?=$userData['first_name'].' '.$userData['last_name']?>">
+      <input type="hidden" name="address" value="<?=$userData['address_street_number'].', '.$userData['address_street']?>">
+      <input type="hidden" name="city" value="<?=$userData['city']?>">
+      <input type="hidden" name="phone" value="<?=$userData['phone']?>">
+      <ol>
+        <li><label>Credit Card Number</label> <input type="text" name="credit_card_number"></li>
+        <li><label>Expiry</label><input type="text" name="expiry"></li>
+        <li><label>CVV Number</label><input class="" type="text" name="cvv_number" >
+        <li><label>Amount</label><input class="" type="text" name="amount" >
+        <li><label>One Year</label><input class="" type="text" name="one_year">
+        <li><label>Review Credit : $35</label>
+        </li>
+      </ol>
+      <h4>To put an 5 star review please click below link:</h4>
+      <!-- <p><span style="background: green none repeat scroll 0% 0%; padding: 10px; margin: 20px; color: white; font-size: 20px;">Review us on Google</span></p> -->
+      <h4>Review us on Google: <a href="https://www.google.ca/search?q=Pro+Ace+Heating+and+Air+Conditioning+Service+Ltd.+-+Burnaby,+3855+Henning+Dr,+Burnaby,+BC+V5C+6N3&amp;ludocid=780432867667229528#lrd=0x5486772f9a631049:0xad4a78ee8583b58,3" target="_blank"><span style="font-size: small;"><strong>Burnaby</strong></span></a></h4>
+     <!--  <div style="padding-top: 25px;">1- <a href="https://www.google.ca/search?q=Pro+Ace+Heating+and+Air+Conditioning+Service+Ltd.+-+Burnaby,+3855+Henning+Dr,+Burnaby,+BC+V5C+6N3&amp;ludocid=780432867667229528#lrd=0x5486772f9a631049:0xad4a78ee8583b58,3"><span style="font-size: small;"><strong>Burnaby</strong></span></a></div> -->
+      <input class="btn" type="Submit" name="Submit" value="Submit">
+    </form>
+  </div>
+  <div class="footer">
+    <h3 style="margin: 10px;">Contact Us</h3>
+      phone: 604-293-3770 <br>
+     email: info@acecare.ca
+  <p>&#9400; <?= date('Y')?><b> Acecare</b>. All Rights Reserved. Proudly Canadian Owned Since 1995. 
+    Privacy And Security Policy <br>
+SEO Website Marketing By Anney Ha</p>
+</div>
+</body>
+</html>

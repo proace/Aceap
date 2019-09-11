@@ -176,11 +176,13 @@
                 <input type="button" value="Accessories" class="items_button accessories_tab" />
                 <input type="button" value="Parts" class="items_button parts_tab" />
                 <input type="button" value="Permit" class="items_button permit_tab" />
-                <input type="button" value="Heat Pumps" class="items_button heatpumps_tab" /> -->            
-            	<?php foreach($job_type_id as $jid => $jobtype) { ?>
+                <input type="button" value="Heat Pumps" class="items_button heatpumps_tab" /> --> 
+
+                <input type="button" value="Items" class="items_button tab1" />           
+            	<!-- <?php foreach($job_type_id as $jid => $jobtype) { ?>
                 	<input type="button" value="<?php echo $jobtype ?>" class="items_button tab<?php echo $jid ?>" />
                 <?php } ?>                
-                
+                 -->
                 <input type="button" value="Purchase from supplier" class="" id="add_supplier_item" />
                 
         </div>

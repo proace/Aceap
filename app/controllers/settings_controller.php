@@ -270,5 +270,14 @@ class SettingsController extends AppController
 		echo json_encode($response);
 		exit();
 	}
+	//Loki: Get the Review text template content
+	function getReviewTextContent()
+	{
+		$settings = $this->Setting->find(array('title'=>'review_text'));
+		$message = $settings['Setting']['valuetxt'];
+		$response  = array("msgBody" => $message);
+		echo json_encode($response);
+		exit();
+	}
 }
 ?>

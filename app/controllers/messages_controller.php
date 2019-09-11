@@ -616,5 +616,180 @@ class MessagesController extends AppController
 		$this->set('notes', $notes);	
 	}
 	
+	//Loki: get incoming internal message
+	function getInternalMessage()
+	{
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$currentDate = date("Y-m-d");
+		$messageData = "select m.id, m.from_date,m.state,m.txt as message,
+					 m.from_user, concat(fu.first_name, ' ', fu.last_name) from_name,
+					 m.to_user, concat(tu.first_name, ' ', tu.last_name) to_name,
+					 m.txt, m.file_link, m.customer_link, m.state
+					from ace_rp_messages m left outer join ace_rp_users tu on tu.id=m.to_user
+					left outer join ace_rp_users fu on fu.id=m.from_user
+				 where m.state = 0 and m.to_user='".$this->Common->getLoggedUserID()."' and m.to_date='".$currentDate."' order by to_date desc";		
+		$messages = array();
+		$messageIds = array();
+		$result = $db->_execute($messageData);
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			foreach ($row as $k => $v)
+			  $messages[$row['id']][$k] = $v;
+			  $messageIds[] = $row['id'] ;
+
+		}
+		$this->set('messages', $messages);
+		$this->layout = false;
+		$this->render('pages/message');
+		exit();
+	}
+
+	// Loki: Set message frame
+	function sendTextMessage() 
+	{	
+		// error_reporting(E_ALL);
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$phone_number = isset($_POST['phone_num']) ? $_POST['phone_num']: '';
+		$message = isset($_POST['message']) ? mysql_real_escape_string($_POST['message']) : '';
+		$today = gmdate("Y-m-d\TH:i:s\Z");
+		$sender_id = $this->Common->getLoggedUserID();
+		if(!empty($phone_number))
+		{
+			$response = $this->Common->sendTextMessage($phone_number, $message); 
+			if(!empty($response))
+			{
+				$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id) VALUES ('','', ".$response->id.",'".$message."','".$today."', '".$phone_number."',1, ".$sender_id.")";
+				$result = $db->_execute($query);	
+				if($result)
+				{
+					$data  = array("res" => "OK");
+					echo json_encode($data);
+					exit();
+
+				}
+			}
+		}
+
+	}
+
+	// Loki: get the message history
+	function getMessageHistory() 
+	{	
+		$this->layout = false;
+		// error_reporting(E_ALL);
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$phone_number = $_POST['phone_number'];
+		$messageId = $_POST['messageId'];
+		$updateMessageRead = $db->_execute("UPDATE ace_rp_sms_log set is_read = 1 where id=".$messageId);
+		$textData = "SELECT concat(cu.first_name, ' ', cu.last_name) from_name, sl . * FROM 			ace_rp_sms_log sl LEFT JOIN ace_rp_users cu ON  cu.id = sl.sender_id
+					WHERE sl.phone_number = '".$phone_number."' GROUP BY sl.id ORDER BY sms_date ASC";
+		$result = $db->_execute($textData);
+		$msg = ' <div class="chat-header">
+		<div class="chat-h-option">
+                <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+            </div>
+		<div class="contact-user">
+				<input type="hidden" id="phone_number" value="'.$phone_number.'">
+                <p class="c-user-name"><i class="fa fa-mobile" aria-hidden="true"> ('.$phone_number.')</i></p>
+            </div>
+            <div class="user-status">
+                <span class="" id="close_chat_popup"><i class="fa fa-times-circle" aria-hidden="true"></i></span>
+            </div>
+        </div>
+        <div class="chat-body">
+            <ul class="chat-msgs">';
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			//receive-msg sent-msg
+			$orgDate = $this->Common->convertTimeZone($row['sms_date']);
+
+			if($row["sms_type"]== 1) 
+			{ 
+				$class =  'sent-msg';
+				$userName = $row['from_name'].',';
+			} else if($row["sms_type"]== 2){
+			  	$class =  'receive-msg';
+			  	$userName = '';
+			}
+			 $msg .= '<li class="'.$class.'">
+	                    <p class="user-name-date"><span class="user-name-span"><b>'.$userName.'</b></span> <span class="date-span">'.$orgDate.'</span></p> 
+	                <span class="msg-text">'.$row['message'].'</span>
+	                 </li>';
+		}
+		$msg .='</ul>
+        </div>
+        <div class="chat-footer">
+            <div class="chat-form">
+                <form>
+                    <div class="form-grp">
+                        <div class="form-input"> <input id="text_message" type="text" placeholder="Enter text" ></div>
+                        <div class="form-submit"><input id="send_text_message_to_user" type="submit" class="submit"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="footer-bottom-nav">
+                <ul class="icon-set">
+                    <li><i class="fa fa-meh-o" aria-hidden="true"></i></li>
+                    <li><i class="fa fa-calendar" aria-hidden="true"></i></li>
+                    <li><i class="fa fa-file-text" aria-hidden="true"></i></li>
+                </ul>
+                <p class="chat-counter">0/420</p>
+            </div>
+        </div>';
+
+        echo $msg;
+        exit();
+		
+	}
+
+	//Loki: get the count of the new message
+	function getNewMessage()
+	{
+		$this->layout = false;
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+		// $textData = "SELECT id from ace_rp_sms_log where sms_type = 2 AND is_read = 0 order by sms_date desc limit 1";
+		$textData = "SELECT concat(cu.first_name, ' ', cu.last_name) from_name, sl.message, sl.phone_number, sl.sms_type, sl.id from ace_rp_sms_log sl INNER JOIN ace_rp_customers cu ON ((sl.phone_number = cu.cell_phone) OR (sl.phone_number = cu.phone)) where sl.sms_type = 2 AND sl.is_read = 0 order by sms_date desc limit 1";
+
+		$result = $db->_execute($textData);
+		$messages = array();
+		$row = mysql_fetch_array($result, MYSQL_ASSOC);
+		if(!empty($row['id']))
+		{
+			$res .= '<div class=" textus-ConversationListItem-link textus-ConversationListItem-preview" onclick="showMessageHistory('.$row["phone_number"].')">
+			<input type="hidden" id="message_id" value="'.$row['id'].'"?>
+            		<h4 class="textus-ConversationListItem-contactName">'.$row["phone_number"].'</h4>
+            		<div class="textus-ConversationListItem-previewDetails"><span class="textus-ConversationListItem-previewMessage">'. $row["message"].'
+            		</div>
+       			 </div>';
+       			 echo $res;
+       			 exit();
+		}
+		exit();
+	}
+
+	function showUnreadMesssages()
+	{
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$textData = "SELECT concat(cu.first_name, ' ', cu.last_name) from_name, sl.message, sl.phone_number, sl.sms_type, sl.id from ace_rp_sms_log sl INNER JOIN ace_rp_customers cu ON ((sl.phone_number = cu.cell_phone) OR (sl.phone_number = cu.phone)) where sl.sms_type = 2 AND sl.is_read = 0 order by sms_date desc group by sl.phone_number";
+
+		$result = $db->_execute($textData);
+		$messages = array();
+		$row = mysql_fetch_array($result, MYSQL_ASSOC);
+		$res = '';
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			$res .= '<div class=" textus-ConversationListItem-link textus-ConversationListItem-preview" onclick="showMessageHistory('.$row["phone_number"].')">
+			<input type="hidden" id="message_id" value="'.$row['id'].'"?>
+            		<h4 class="textus-ConversationListItem-contactName">'.$row["phone_number"].'</h4>
+            		<div class="textus-ConversationListItem-previewDetails"><span class="textus-ConversationListItem-previewMessage">'. $row["message"].'
+            		</div>
+       			 </div>';
+       			 echo $res;
+		}	
+		die();
+
+		exit();
+	}
 }
 ?>

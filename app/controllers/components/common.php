@@ -943,6 +943,15 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-mail.png'
 
+						),
+						array(
+
+							'name' => 'Review Template',
+
+							'url' => BASE_URL.'/settings/edit?title=review_text',
+
+							'img' => 'icon-lg-mail.png'
+
 						)
 					),
 					array(
@@ -1271,7 +1280,7 @@ class CommonComponent extends Object
 					array(
 						array(
 							'name' => 'New Client', //new customer
-							'url' => BASE_URL.'/orders/editBooking?action_type=callback',
+							'url' => BASE_URL.'/orders/editBooking?customer_id=&order_id=0',
 							'img' => 'icon-lg-customers.png'
 						),
 						array(
@@ -2062,6 +2071,16 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 	function removeSlash($str)
 	{
 		return $newStr = stripcslashes($str);
+	}
+
+	// Loki : Convert UTC time to GMT-7
+	function convertTimeZone($date)
+	{
+		$timezone  = -7; //(GMT -5:00) EST (U.S. & Canada) 
+		$orgTime = strtotime($date);
+		$convertedTime =  gmdate("Y-m-d h:i:s a", $orgTime + 3600*($timezone+date("I"))); 
+		return $convertedTime;
+		exit();
 	}
 }
 ?>
