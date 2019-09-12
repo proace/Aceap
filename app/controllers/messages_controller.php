@@ -672,6 +672,12 @@ class MessagesController extends AppController
 
 	}
 
+	
+	 // <ul class="icon-set">
+	       // <li><i class="fa fa-meh-o" aria-hidden="true"></i></li>
+	       // <li><i class="fa fa-calendar" aria-hidden="true"></i></li>
+	       // <li><i class="fa fa-file-text" aria-hidden="true"></i></li>
+	//  </ul>
 	// Loki: get the message history
 	function getMessageHistory() 
 	{	
@@ -682,9 +688,22 @@ class MessagesController extends AppController
 		$messageId = $_POST['messageId'];
 		$updateMessageRead = $db->_execute("UPDATE ace_rp_sms_log set is_read = 1 where id=".$messageId);
 		$textData = "SELECT concat(cu.first_name, ' ', cu.last_name) from_name, sl . * FROM 			ace_rp_sms_log sl LEFT JOIN ace_rp_users cu ON  cu.id = sl.sender_id
-					WHERE sl.phone_number = '".$phone_number."' GROUP BY sl.id ORDER BY sms_date ASC";
+					WHERE sl.phone_number = '".$phone_number."' GROUP BY sl.id ORDER BY sms_date DESC";
 		$result = $db->_execute($textData);
-		$msg = ' <div class="chat-header">
+		$msg = '<div class="chat-footer">
+            <div class="chat-form">
+                <form>
+                    <div class="form-grp">
+                        <div class="form-input"> <input id="text_message" type="text" placeholder="Enter text" ></div>
+                        <div class="form-submit"><input id="send_text_message_to_user" type="submit" class="submit"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="footer-bottom-nav">
+				<p class="chat-counter">0/420</p>
+            </div>
+        </div>
+		<div class="chat-header">
 		<div class="chat-h-option">
                 <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
             </div>
@@ -717,24 +736,6 @@ class MessagesController extends AppController
 	                 </li>';
 		}
 		$msg .='</ul>
-        </div>
-        <div class="chat-footer">
-            <div class="chat-form">
-                <form>
-                    <div class="form-grp">
-                        <div class="form-input"> <input id="text_message" type="text" placeholder="Enter text" ></div>
-                        <div class="form-submit"><input id="send_text_message_to_user" type="submit" class="submit"></div>
-                    </div>
-                </form>
-            </div>
-            <div class="footer-bottom-nav">
-                <ul class="icon-set">
-                    <li><i class="fa fa-meh-o" aria-hidden="true"></i></li>
-                    <li><i class="fa fa-calendar" aria-hidden="true"></i></li>
-                    <li><i class="fa fa-file-text" aria-hidden="true"></i></li>
-                </ul>
-                <p class="chat-counter">0/420</p>
-            </div>
         </div>';
 
         echo $msg;
@@ -749,7 +750,7 @@ class MessagesController extends AppController
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
 		// $textData = "SELECT id from ace_rp_sms_log where sms_type = 2 AND is_read = 0 order by sms_date desc limit 1";
-		$textData = "SELECT concat(cu.first_name, ' ', cu.last_name) from_name, sl.message, sl.phone_number, sl.sms_type, sl.id from ace_rp_sms_log sl INNER JOIN ace_rp_customers cu ON ((sl.phone_number = cu.cell_phone) OR (sl.phone_number = cu.phone)) where sl.sms_type = 2 AND sl.is_read = 0 order by sms_date desc limit 1";
+		$textData = "SELECT sl.message, sl.phone_number, sl.sms_type, sl.id from ace_rp_sms_log sl where sl.sms_type = 2 AND sl.is_read = 0 order by sms_date desc limit 1";
 
 		$result = $db->_execute($textData);
 		$messages = array();
@@ -771,7 +772,7 @@ class MessagesController extends AppController
 	function showUnreadMesssages()
 	{
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-		$textData = "SELECT concat(cu.first_name, ' ', cu.last_name) from_name, sl.message, sl.phone_number, sl.sms_type, sl.id from ace_rp_sms_log sl INNER JOIN ace_rp_customers cu ON ((sl.phone_number = cu.cell_phone) OR (sl.phone_number = cu.phone)) where sl.sms_type = 2 AND sl.is_read = 0 order by sms_date desc group by sl.phone_number";
+		$textData = "SELECT sl.message, sl.phone_number, sl.sms_type, sl.id from ace_rp_sms_log sl where sl.sms_type = 2 AND sl.is_read = 0 order by sms_date desc group by sl.phone_number";
 
 		$result = $db->_execute($textData);
 		$messages = array();

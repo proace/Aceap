@@ -226,6 +226,13 @@ function showChatBox(phone_number)
                 $("#chat-window-card1").html(data);
                 $("#chat-window-card1" ).dialog("open");
                 $(".ui-dialog-titlebar").hide();
+                $("html, body").animate({
+                        scrollTop:  0
+                },'slow');
+                $("html, #chat-window-card1").animate({
+                        scrollTop:  0
+                },'slow');
+               
             }
         });
 }
