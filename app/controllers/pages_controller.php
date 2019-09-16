@@ -747,19 +747,19 @@ class PagesController extends AppController{
     // Loki: Set message frame
     function message() 
     {   
-        // $this->layout = false;
-        // error_reporting(E_ALL);
         if(!empty($_POST))
         {
-            $search_str = isset($_POST['search_str']) ? trim($_POST['search_str']) : '';
-            $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-            $currentDate = date("Y-m-d");
-            $limit = 15;
-            $where = '';
-            $groupBy = '';
+            $search_str     = isset($_POST['search_str']) ? trim($_POST['search_str']) : '';
+            $db             =& ConnectionManager::getDataSource($this->User->useDbConfig);
+            $currentDate    = date("Y-m-d");
+            $limit          = 5;
+            $where          = '';
+            $groupBy        = '';
+            $pageNo         = 0;
             if(isset($_POST["offset"]))
             {
-                $off = (int)$_POST["offset"] * $limit;            
+                $off        = (int)$_POST["offset"] * $limit;
+                $pageNo     = $_POST["offset"]+1;
             }       
 
             if(!empty($search_str)) 
@@ -768,7 +768,7 @@ class PagesController extends AppController{
                 $off   = 0;
                 $where = "where sl.phone_number = '".$search_str."' ";
             } else {
-                $where   = "where sl.id in (select max(id) from ace_rp_sms_log where sms_type = 2 AND is_read = 0 group by phone_number order by id desc )";
+                $where   = "where sl.id in (select max(id) from ace_rp_sms_log where sms_type = 2  group by phone_number order by id desc )";
             }
 
           /*  $textData = "SELECT concat(cu.first_name, ' ', cu.last_name) from_name, sl.message, sl.phone_number, sl.sms_type, sl.id from ace_rp_sms_log sl INNER JOIN ace_rp_customers cu ON ((sl.phone_number = cu.cell_phone) OR (sl.phone_number = cu.phone)) ".$where." order by sms_date desc limit ".$off.", ".$limit;*/
@@ -778,8 +778,7 @@ class PagesController extends AppController{
                 $res = '';
                 while($row = mysql_fetch_array($result, MYSQL_ASSOC))
                 {
-                    // print_r($row); die;
-                    $res .= '<div class=" textus-ConversationListItem-link textus-ConversationListItem-preview" onclick="showMessageHistory('.$row["phone_number"].')">
+                    $res .= '<div class=" textus-ConversationListItem-link textus-ConversationListItem-preview" onclick="showMessageHistory('.$row["phone_number"].')" page_num="'.$pageNo.'">
                         <input type="hidden" id="message_id" value="'.$row['id'].'">
                         <h4 class="textus-ConversationListItem-contactName">'.$row["phone_number"].'</h4>
                         <div class="textus-ConversationListItem-previewDetails"><span class="textus-ConversationListItem-previewMessage">'. $row["message"].'

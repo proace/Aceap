@@ -80,6 +80,8 @@ table th {
 }
 #searched_msg{
     display: none;
+    height: 160px;
+    overflow-y: scroll;
 }
 .search_button{
     width: 47px;
@@ -96,6 +98,7 @@ table th {
 </head>
 <body>
 <form id="messageform" name="messageform" method="POST" action="">
+    <input type="hidden" name="pageNo" id="pageNo" value="<?=$pageNo?>">
 <div style="padding-left: 5px;margin-top: -5px;">
     <input type="text" class="search_box" name="search_str" id="search_str">
     <input type="button" class="search_button" name="search" value="search" id="search_number" >
@@ -126,6 +129,24 @@ table th {
 <script language="JavaScript">
 $(document).ready(function() {
     getNewMessage();
+   
+   $("#searched_msg").scroll( function() {
+        if($(this)[0].scrollHeight - $(this).scrollTop() == $(this).outerHeight()) {
+            var pageNo = parseInt($("#searched_msg .textus-ConversationListItem-link:last-child").attr("page_num"));
+            $.ajax({
+                url:"<?=BASE_URL;?>/pages/message", 
+                type: "POST",
+                dataType: 'html',
+                data:{offset:pageNo},
+                success:function(data){ 
+                    $("#latest_msg").hide();
+                    $("#searched_msg").append(data);
+                }
+            });
+            // getNewMessage();
+        }
+    });
+    
     // setInterval( function(){     
     //     var optionVal = $("#message_crit").val();
     //     if(optionVal == 'message')
@@ -174,8 +195,7 @@ $(document).ready(function() {
     $("#search_clear").live("click", function(){
         $('#search_str').val('');
         $('#searched_msg').hide();
-        $("#latest_msg").show();
-
+        getNewMessage();
     });
 
     $("#send_text_message_to_user").live("click", function(e){
@@ -245,7 +265,7 @@ function createMessage()
 function sendTextMessage()
 {
   var answer = window.open("<?=BASE_URL?>/messages/sendTextMessage",'',
-  "width=800, height=500, left=300,top=200");
+  "width=400, height=500, left=300,top=200");
 }
 
 //document.forms['editBookingform'].submit();
@@ -265,16 +285,33 @@ function showMessageHistory(phone_number)
     showChatBox(phone_number);
 }
 
+// function getNewMessage()
+// {
+//     $.ajax({
+//         url:"<?=BASE_URL;?>/messages/getNewMessage", 
+//          dataType: 'html',
+//         type: "GET",
+//         success:function(data){ 
+//             $("#latest_msg", data).html(data);
+
+//              $("#latest_msg").html(data);
+//         }
+//    });
+// }
 function getNewMessage()
 {
-    $.ajax({
-    url:"<?=BASE_URL;?>/messages/getNewMessage", 
-     dataType: 'html',
-    type: "GET",
-    success:function(data){ 
-             $("#latest_msg").html(data);
-        }
-   });
+    var offset = 0;
+     //var offset = 0;
+        $.ajax({
+            url:"<?=BASE_URL;?>/pages/message", 
+            type: "POST",
+            dataType: 'html',
+            data:{offset:offset},
+            success:function(data){ 
+                $("#latest_msg").hide();
+                $("#searched_msg").html(data).show();
+            }
+        });
 }
 </script>
 </body>

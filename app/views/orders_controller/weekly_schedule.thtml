@@ -7,7 +7,6 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.cookie.js"></script>
 
 <style type="text/css">
-	*{padding:0;}
 	/* all context menus has this class */
 	.context-menu {
 	  -webkit-border-radius: 4px;
@@ -176,7 +175,7 @@ function getLocation(truck, beg_hour, end_hour, padding,jobday)
 	tableleft = window.tableleft;
 	top_mod = 0;
 	left_mod = 0;
-	<?php if (($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13)) { ?>
+	<?php if (($common->getLoggedUserRoleID()==3) || ($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13)) { ?>
 	top_mod = 95;
 	left_mod = 10;
 	<? } ?>
@@ -209,7 +208,6 @@ function getLocation(truck, beg_hour, end_hour, padding,jobday)
 function repositionAll()
 {
 	orders = window.orders;
-
 	for (i=0; i < orders.length; i++)
 		repositionOrder(orders[i]);
 }

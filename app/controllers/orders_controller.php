@@ -15050,21 +15050,22 @@ function deleteUserFromCampaign()
 
 			$updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_sms set status=1 where id=".$campId['id']."");
 			$today = date('Y-m-d');
-			$settings = $this->Setting->find(array('title'=>'bulk_sms'));
-			$message = $settings['Setting']['valuetxt'];
-			$message = $this->Common->removeSlash($message);
+			
 			$sql = "SELECT u2.cell_phone,u2.phone,u2.first_name,u2.last_name, u2.id AS cid,ord.job_date, ort.name as job_type ,(SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids INNER JOIN ace_rp_order_types ort ON ord.order_type_id = ort.id WHERE 
 				u2.campaign_id IS NOT NULL AND ec.last_inserted_id = ".$campId['camp_id']." AND ec.show_default =0 AND u2.callresult NOT IN ( 7, 3 ) AND ord.id = (SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) GROUP BY ord.customer_id";
 			$res = $db->_execute($sql);
-
 			while ($row = mysql_fetch_array($res, MYSQL_ASSOC))
 			{
+				$settings = $this->Setting->find(array('title'=>'bulk_sms'));
+				$message = $settings['Setting']['valuetxt'];
+				$message = $this->Common->removeSlash($message);
 				$phone_number = $row['cell_phone'];
 				$landline_number = $row['phone'];
 				$cusId = $row['cid'];
 				$message = str_replace('{first_name}', $row['first_name'], $message);
 				$message = str_replace('{last_name}', $row['last_name'], $message);
 				$message = str_replace('{job_type}','<b>'. $row['job_type'].'</b>', $message);
+
 				if(!empty($phone_number))
 				{
 					$response = $this->Common->sendTextMessage($phone_number, $message); 
@@ -15085,8 +15086,7 @@ function deleteUserFromCampaign()
 						$result = $db->_execute($query);
 					}
 				}
-			}
-		
+			}		
 			$updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_sms set status=2 where id=".$campId['id']."");
 			echo "done";
 		}
@@ -15106,16 +15106,15 @@ function deleteUserFromCampaign()
 		{
 			$updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_email set status=1 where id=".$campId['id']."");
 			$currentDate = date('Y-m-d');
-			$settings = $this->Setting->find(array('title'=>'bulk_email'));
-			$message = $settings['Setting']['valuetxt'];
-			$message = $this->Common->removeSlash($message);
-			$subject = $settings['Setting']['subject'];
 			$sql = "SELECT u2.email,u2.first_name, u2.last_name, u2.id AS cid, ort.name as job_type,ord.job_date,ord.order_type_id, ord.order_number,(SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids 		ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN 						ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids INNER JOIN ace_rp_order_types ort ON ord.order_type_id = ort.id WHERE 
 				u2.campaign_id IS NOT NULL AND ec.last_inserted_id = ".$campId['camp_id']." AND ec.show_default =0 AND u2.callresult NOT IN ( 7, 3 ) AND ord.id = (SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) GROUP BY ord.customer_id";
 			$res = $db->_execute($sql);
-
 			while ($row = mysql_fetch_array($res, MYSQL_ASSOC))
 			{
+				$settings = $this->Setting->find(array('title'=>'bulk_email'));
+				$message = $settings['Setting']['valuetxt'];
+				$message = $this->Common->removeSlash($message);
+				$subject = $settings['Setting']['subject'];
 				$url = $this->G_URL.BASE_URL."/pages/showReminderBookingPage?oid=".$row['order_Id']."&cid=".$row['cid']."&otype=".$row['order_type_id']."&rdate=&onum=".$row['order_number'];
 				$link = '<a href='\.urlencode($url).\'>Book Now</a>';
 				
@@ -15125,17 +15124,21 @@ function deleteUserFromCampaign()
 				$message = str_replace('{url_confirm}', $link, $message);
 				$message = str_replace('{last_date}', $row['job_date'], $message);
 				
-				$res1 = $this->sendEmailUsingMailgun($row['email'],$subject,$message);
+				if(!empty($row['email']))
+				{
+					$res1 = $this->sendEmailUsingMailgun($row['email'],$subject,$message);
 				
-				if (strpos($res1, '@acecare') !== false) 
-				{
-			    	$is_sent = 1;
-				} else 
-				{
-					$is_sent = 0;
+					if (strpos($res1, '@acecare') !== false) 
+					{
+				    	$is_sent = 1;
+					} else 
+					{
+						$is_sent = 0;
+					}
+					$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$row['cid'].",'','".$currentDate."',".$is_sent.",'".$message."', '".$res1."')";
+					$result = $db->_execute($query);
 				}
-				$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$row['cid'].",'','".$currentDate."',".$is_sent.",'".$message."', '".$res1."')";
-				$result = $db->_execute($query);
+				
 			}
 			$updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_email set status=2 where id=".$campId['id']."");
 			echo "done";

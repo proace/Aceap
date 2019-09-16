@@ -748,7 +748,7 @@ class MessagesController extends AppController
 	{
 		$this->layout = false;
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-
+		
 		// $textData = "SELECT id from ace_rp_sms_log where sms_type = 2 AND is_read = 0 order by sms_date desc limit 1";
 		$textData = "SELECT sl.message, sl.phone_number, sl.sms_type, sl.id from ace_rp_sms_log sl where sl.sms_type = 2 AND sl.is_read = 0 order by sms_date desc limit 1";
 
@@ -757,7 +757,7 @@ class MessagesController extends AppController
 		$row = mysql_fetch_array($result, MYSQL_ASSOC);
 		if(!empty($row['id']))
 		{
-			$res .= '<div class=" textus-ConversationListItem-link textus-ConversationListItem-preview" onclick="showMessageHistory('.$row["phone_number"].')">
+			$res .= '<div class="textus-ConversationListItem-link textus-ConversationListItem-preview" onclick="showMessageHistory('.$row["phone_number"].')" get_text_id="'.$row["id"].'">
 			<input type="hidden" id="message_id" value="'.$row['id'].'"?>
             		<h4 class="textus-ConversationListItem-contactName">'.$row["phone_number"].'</h4>
             		<div class="textus-ConversationListItem-previewDetails"><span class="textus-ConversationListItem-previewMessage">'. $row["message"].'
