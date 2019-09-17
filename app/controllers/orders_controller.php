@@ -7,6 +7,7 @@ class OrdersController extends AppController
 	//To avoid possible PHP4 problemfss
 	var $name = "OrdersController";
 	var $G_URL  = "http://hvacproz.ca";
+	// var $G_URL  = "http://localhost";
 
 	var $uses = array('OrderEstimate','Order', 'CallRecord', 'User', 'Customer', 'OrderItem',
                     'Timeslot', 'OrderStatus', 'OrderType', 'Item',
@@ -15535,8 +15536,51 @@ function deleteUserFromCampaign()
 	}
 
 	function saveUserReviewResponse()
-	{
+	{	$email 					= "info@acecare.ca";
+		$phone_number 			= "604-293-3770";
+		$customerEmail 			= $_POST['email'];
+		$customerPhoneNumber 	= $_POST['phone_num'];
+		$message 				= $this->Common->removeSlash($_POST['Notes']);
+		$rating 				= $_POST['rating'];
+		$message 				= "Hi Admin, <br> Please find the customers feedback. <br><br><label>Email:</label> ".$customerEmail." <br><br><label> Cell Phone:</label> ".$customerPhoneNumber." <br><br> <label> Rating:</label>".$rating ." <br><br><label> Feedback:</label> ".$message;
 		
+		$subject = "Customer review";
+		$res = $this->sendEmailUsingMailgun($email,$subject,$message);
+		$response = $this->Common->sendTextMessage($phone_number, $message); 
+		exit;
+	}
+
+	//Loki: Send Review text
+	function sendReviewText()
+	{
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$phone_number = $_POST['phone'];
+		$cusId = $_POST['cusId'];
+		$email = $_POST['email'];
+		$message = mysql_real_escape_string($_POST['message']);
+		$today = gmdate("Y-m-d\TH:i:s\Z");
+		$sender_id = $this->Common->getLoggedUserID();
+		if(!empty($phone_number))
+		{
+			$url = $this->G_URL.BASE_URL."/pages/showUserReview?email=".$email."&phone_number=".$phone_number;
+			// $link = '<a href='\.urlencode($url).\'>No</a>';
+			$message = str_replace('{No}', $url, $message);
+			$response = $this->Common->sendTextMessage($phone_number, $message); 
+			if(!empty($response))
+			{
+				$message = mysql_real_escape_string($message);
+				$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id) VALUES (
+					'',".$cusId.", ".$response->id.",'".$message."','".$today."', '".$phone_number."',1, ".$sender_id.")";
+				$result = $db->_execute($query);
+				
+				if($result)
+				{
+					$data  = array("res" => "OK");
+					echo json_encode($data);
+				}
+			}
+		}
+		exit();
 	}
 }
 ?>

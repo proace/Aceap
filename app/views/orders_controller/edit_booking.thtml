@@ -1,4 +1,3 @@
-
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/edit_help.js"></script>
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/showhint.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
@@ -128,6 +127,29 @@ function SendSms()
 	});	
 }
 
+//Loki: Send Review SMS
+function SendReviewText()
+{
+
+    var phone_number    = $('#CustomerCellPhone').val();
+    var customerId      = $('#CustomerId').val();
+    var message         = tinyMCE.activeEditor.getContent();
+    var email           = $('#editEmail').val();
+    $.ajax({
+        url: '<?=BASE_URL?>/orders/sendReviewText',
+        dataType: 'html',
+        type: 'POST',
+        cache: false,
+        data:{phone:phone_number, cusId:customerId, message:message, email:email},
+        success: function(data) {
+            res = JSON.parse(data);
+            if(res.res == "OK")
+            {
+                hideReviewTextBox();
+            }
+        }
+    }); 
+}
 
 function editUserInfo()
 {
@@ -3805,7 +3827,6 @@ function get_data($url)
 				<th>Sent On</th>
 				<th>Status</th>
 				<th>Message</th>
-				<!-- <th><input id="markAllSms" type="checkbox" name="delete_all">Hide All</th> -->
 			</tr>
 			 <?php
 			 foreach($smsLogs as $log) { ?>
@@ -3824,7 +3845,7 @@ function get_data($url)
 
 				 	<textarea class="log_content" style="display:none" id="sms_log_content_<?=$log['id']?>"><?=$log['message']?></textarea>
 				 	<td><input type="button" class="viewSmsContents" name="viewContents" value="View Content" content_id="<?=$log['id']?>"></td>
-				 	<!-- <td><input type="checkbox" class="delete_email" name="markCheck[]" value="<?=$log['id']?>" ></td> -->
+				 	
 			 	</tr>
 			<? }?>
 		</table>
@@ -3841,7 +3862,6 @@ function get_data($url)
 			 	<tr>
 				 	<td><b><?php echo $log['received_date'] ?></b></td>
 				 	<textarea style="display:none" id="received_sms_log_content_<?=$log['id']?>"><?=$log['message']?></textarea>
-				 	<!-- <input type="textarea"> -->
 				 	<td><input type="button" class="receiveViewSmsContents" name="receiveViewContents" value="View Content" content_id="<?=$log['id']?>"></td>
 			 	</tr>
 			<? }?>

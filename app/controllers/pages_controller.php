@@ -752,7 +752,7 @@ class PagesController extends AppController{
             $search_str     = isset($_POST['search_str']) ? trim($_POST['search_str']) : '';
             $db             =& ConnectionManager::getDataSource($this->User->useDbConfig);
             $currentDate    = date("Y-m-d");
-            $limit          = 5;
+            $limit          = 20;
             $where          = '';
             $groupBy        = '';
             $pageNo         = 0;
@@ -794,8 +794,8 @@ class PagesController extends AppController{
     //Loki: Show page to user for service review
     function showUserReview()
     {
-        // $this->layout = false;
-
+        $this->set("email", $_GET['email']);
+        $this->set("phone_number", $_GET['phone_number']);
     }
 }
 ?>

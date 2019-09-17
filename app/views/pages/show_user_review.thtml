@@ -110,7 +110,7 @@ textarea{
               <label>Phone Number:</label>
             </td>
             <td>
-              <input type="text" name="phone_num" placeholder="6042933770">
+              <input type="text" name="phone_num" placeholder="6042933770" value="<?php echo $phone_number ?>">
             </td>
           </tr>
            <tr>
@@ -118,7 +118,7 @@ textarea{
               <label>Email:</label>
             </td>
             <td>
-              <input type="text" name="email" placeholder="info@acecae.ca">
+              <input type="text" style="width: 70%;" name="email" placeholder="info@acecae.ca" value="<?php echo $email ?>">
             </td>
           </tr>
           <tr >
@@ -126,7 +126,7 @@ textarea{
               <label>How much star you  want to give us out of 5 ?</label>
             </td>
             <td>
-              <input type="text" name="workDate" placeholder="5">
+              <input type="text" name="rating" placeholder="5">
             </td>
           </tr>
           <tr>
@@ -142,7 +142,7 @@ textarea{
         <label style="margin-top: 15px">Note:</label> <textarea name="Notes"></textarea> -->
      
       <input class="btn" type="Submit" name="Submit" value="Submit">
-      <p><b>Note:</b> Your feedback will help us to provide you better services so please write your experience with us. </p>
+      <p style="font-size: 12px;"><b>Note:</b> Your feedback will help us to provide you better services so please write your experience with us. </p>
     </form>
   </div>
   <div class="footer">

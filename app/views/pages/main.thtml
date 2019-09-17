@@ -32,10 +32,10 @@ echo "&nbsp";
   	</frameset>
   	<frame src="<?=BASE_URL;?>/orders/scheduleView" name="main_view" id="main_view" />
     <!-- <frameset rows="50%,25%,25%"> -->
-  <frameset id="adjust_row_size" rows="33%,33%,33%">
+  <frameset id="adjust_row_size" rows="60%,40%">
      <frame src="<?=BASE_URL;?>/pages/message" name="frame_search" id="" scrolling="no" />
-     <frame src="" name="" id="" />
-     <frame src="" name="" id="" />
+<!--      <frame src="" name="" id="" />
+ -->     <frame src="" name="" id="" />
   </frameset>
 <!-- 
     <frameset rows = "200, *"frameBorder="0">
