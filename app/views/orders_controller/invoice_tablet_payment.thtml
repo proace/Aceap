@@ -347,6 +347,7 @@ function upload_photo(cur,i) {
         <?php echo $html->input('Invoice/order_type_id', array('type'=>'hidden', 'value'=>$job['Order']['order_type_id'])); ?>
         <?php echo $html->input('Invoice/customer_id', array('type'=>'hidden', 'value'=>$job['Order']['customer_id'])); ?> 
         <?php echo $html->input('Invoice/phone', array('type'=>'hidden', 'value'=>$job['Customer']['phone'])); ?>
+        <?php echo $html->input('Invoice/cell_phone', array('type'=>'hidden', 'value'=>$job['Customer']['cell_phone'])); ?>
         <?php echo $html->input('Invoice/has_booking', array('type'=>'hidden', 'id'=>'has_booking', 'value'=>0)); ?>
         <?php echo $html->input('Invoice/city_id', array('type'=>'hidden', 'id'=>'city_id', 'value'=>$city_id)); ?>
         <div class="order_div">            
@@ -609,7 +610,7 @@ function upload_photo(cur,i) {
               <!--  <input type="button" style="margin-left: 20px;" name="estimate" onclick="location.href = '<?php echo BASE_URL ?>/orders/techBooking?order_id=<?php echo $job['Order']['id']?> & rurl=&fromTech=2'" value="Estimate" /> -->
          </div>
             <a style="padding: 15px;text-decoration: navajowhite;font-size: 13px;" href="https://www.acecare.ca/pay-here?orderId=<?php echo base64_encode($job['Order']['id']); ?>" target="_balnk"> Pay Here </a>
-            <input type="submit" name="invoice" class="next_submit" id="test_required" value="Email Invoice" />
+            <!-- <input type="submit" name="invoice" class="next_submit" id="test_required" value="Email Invoice" /> -->
             <input type="submit" name="review" value="Email invoice with Review links" />
             <!--<input type="button" id="compute_values" value="compute" />-->
         	<!--<input type="button" class="next_submit" id="test_required" value="Save" />

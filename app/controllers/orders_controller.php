@@ -11195,13 +11195,13 @@ class OrdersController extends AppController
 		}			
 	}
 	function saveInvoiceTabletItems() {
-		
 		$fromTech = isset($_GET['fromTech']) ? $_GET['fromTech'] : 0;
 		if(isset($_REQUEST['order_id'])){
 			$order_id = $_REQUEST['order_id'];	
 		}else{
 			$order_id = $this->data['Invoice']['order_id'];
 		}	
+		$cphone = $this->data['Invoice']['cell_phone'];
 		$order_type_id = $this->data['Invoice']['order_type_id'];
 		$order_status_id = $this->data['Invoice']['order_status_id'];
 		$has_booking = $this->data['Invoice']['has_booking'];
@@ -11392,7 +11392,7 @@ class OrdersController extends AppController
 		} 
 		if(isset($_REQUEST['review'])){
 			//echo 'OID='.$order_id.' == ='.$cemail;exit;
-			$return = $this->emailInvoiceReviewLinks($order_id,$cemail, $current_customer_id);
+			$return = $this->emailInvoiceReviewLinks($order_id,$cemail, $current_customer_id, $cphone);
                         if($this->Common->getLoggedUserRoleID() == 6){
                              //$this->redirect("orders/invoiceTabletPrint?order_id=$order_id&type=$type");exit;
                              $this->redirect(BASE_PATH."pages/main");exit;
@@ -13825,7 +13825,7 @@ class OrdersController extends AppController
 
 
 
-	function emailInvoiceReviewLinks($orderid,$email, $cus_id){
+	function emailInvoiceReviewLinks($orderid,$email, $cus_id, $cphone=null){
 		//END Save Notes
 		if(isset($orderid) && $orderid!=''){
 			$order_id = $orderid;
@@ -13840,6 +13840,8 @@ class OrdersController extends AppController
 		}
 			
 		$fileUrl = "http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
+		$url = $this->G_URL.BASE_URL."/pages/showUserReview?email=".$email."&phone_number=".$cphone;
+		$link = '<a href='\.urlencode($url).\' target="_blank">No</a>';
 		set_time_limit(300);
 		$subject = 'Ace Services Ltd';
 		$settings = $this->Setting->find(array('title'=>'email_template_custom'));
@@ -13847,6 +13849,7 @@ class OrdersController extends AppController
 		$template = $this->Common->removeSlash($template);
 		$msg = $template;
 		$msg = str_replace('{file_url}', $fileUrl, $msg);
+		$msg = str_replace('{NO}', $link, $msg);
 		// $invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
 		// $boundary = md5(time());
 		// $header = "From: info@acecare.ca \r\n";
@@ -15536,7 +15539,8 @@ function deleteUserFromCampaign()
 	}
 
 	function saveUserReviewResponse()
-	{	$email 					= "info@acecare.ca";
+	{	
+		$email 					= "info@acecare.ca";
 		$phone_number 			= "604-293-3770";
 		$customerEmail 			= $_POST['email'];
 		$customerPhoneNumber 	= $_POST['phone_num'];
@@ -15547,6 +15551,7 @@ function deleteUserFromCampaign()
 		$subject = "Customer review";
 		$res = $this->sendEmailUsingMailgun($email,$subject,$message);
 		$response = $this->Common->sendTextMessage($phone_number, $message); 
+		$this->redirect('/pages/thankYouPage');
 		exit;
 	}
 
