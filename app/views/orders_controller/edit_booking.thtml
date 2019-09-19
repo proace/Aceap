@@ -153,12 +153,15 @@ function SendSms()
 }
 
 //Loki: Send Review SMS
-function SendReviewText()
+function SendReviewText(done_by_tech=0)
 {
-
     var phone_number    = $('#CustomerCellPhone').val();
     var customerId      = $('#CustomerId').val();
-    var message         = tinyMCE.activeEditor.getContent();
+    if(done_by_tech == 1){
+        var message = '';
+    } else {
+        var message = tinyMCE.activeEditor.getContent();
+    }
     var email           = $('#editEmail').val();
     $.ajax({
         url: '<?=BASE_URL?>/orders/sendReviewText',
@@ -311,6 +314,7 @@ function hideEmailBox() {
 // }
 function emailInvoice(order_id, i=0){
 	var email = $('#emailinput').val();
+        SendReviewText(1);
 	 	window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office'+'&fromBooking=1', '_new');
 	 	return false;	 
 }

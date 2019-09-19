@@ -15562,7 +15562,14 @@ function deleteUserFromCampaign()
 		$phone_number = $_POST['phone'];
 		$cusId = $_POST['cusId'];
 		$email = $_POST['email'];
-		$message = mysql_real_escape_string($_POST['message']);
+		if(!empty($_POST['message']))
+		{
+			$message = mysql_real_escape_string($_POST['message']);
+		} else {
+			$settings = $this->Setting->find(array('title'=>'review_text'));
+			$message = $settings['Setting']['valuetxt'];
+			$message = mysql_real_escape_string($message);
+		}
 		$today = gmdate("Y-m-d\TH:i:s\Z");
 		$sender_id = $this->Common->getLoggedUserID();
 		if(!empty($phone_number))
@@ -15598,7 +15605,7 @@ function deleteUserFromCampaign()
 		$message = $_POST['message'];
 		$currentDate = gmdate("Y-m-d\TH:i:s\Z");
 		$sender_id = $this->Common->getLoggedUserID();
-		$template_subject = "Ace Services Ltd";
+		$template_subject = "Rate Our Service";
 		if(!empty($email))
 		{	
 			
