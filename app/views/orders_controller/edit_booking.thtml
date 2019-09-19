@@ -103,6 +103,31 @@ function sendSeparateEmail()
 		}
 	});	
 }
+//Loki: Send review email
+
+function sendReviewEmail()
+{
+    var email = $('#editEmail').val();
+    var phone = $('#CustomerCellPhone').val();
+    var customerId = $('#CustomerId').val();
+    // var message = $('#emailVal').val();
+    var message  = tinyMCE.activeEditor.getContent();
+    $.ajax({
+        url: '<?=BASE_URL?>/orders/sendReviewEmail',
+        dataType: 'html',
+        type: 'POST',
+        cache: false,
+        data:{email:email, cusId:customerId, message:message,phone:phone},
+        success: function(data) {
+            res = JSON.parse(data);
+            if(res.res == "OK")
+            {
+                hideReviewEmailBox();
+            }
+        }
+    }); 
+}
+
 //Loki: Send SMS
 function SendSms()
 {
@@ -245,6 +270,14 @@ function showReviewTextBox() {
 
 function hideReviewTextBox() {
     $( "#reviewText" ).dialog("close");
+}
+
+function showReviewEmailBox() {
+    $( "#reviewEmail" ).dialog("open");
+}
+
+function hideReviewEmailBox() {
+    $( "#reviewEmail" ).dialog("close");
 }
 
 // function showEmailBox() {
@@ -2401,6 +2434,12 @@ function get_data($url)
         <input type="button" name="OK" value="Send" style="padding: 5px;margin-top: 5px;" onclick="SendReviewText()">
         <input type="button"  name="cancel" value="Cancel" onclick="hideReviewTextBox();" style="padding: 5px;margin-top: 5px;">
 </div>
+<div id="reviewEmail" style="display: none">
+       
+        <textarea class="emailVal" id="reviewEmailVal1" style="width: 300px;height: 100px;"></textarea>
+        <input type="button" name="OK" value="Send" style="padding: 5px;margin-top: 5px;" onclick="sendReviewEmail()">
+        <input type="button"  name="cancel" value="Cancel" onclick="hideReviewEmailBox();" style="padding: 5px;margin-top: 5px;">
+</div>
 <div id="sendSeparateEmail" style="display: none;">
 		
 					<!-- <input type="text" name="sms"> -->
@@ -2590,6 +2629,7 @@ function get_data($url)
                     <span class="fa fa-phone call_icon"  onclick="call_phone();" aria-hidden="true"></span>
                     <?php echo $html->tagErrorMsg('Order/CustomerPhone','Please enter in a phone for this customer.') ?>
                     <span class="fa fa-envelope openMailBox" style="font-size: 15px; color:#3c8dbc;" aria-hidden="true"></span>
+                    <span class='fa fa-envelope-open-o openReviewMailBox' style='font-size:15px' aria-hidden="true" title="Review Email"></span>
                     </td>
                 </tr>
                 <tr>
@@ -4245,6 +4285,35 @@ function get_data($url)
 			$( "#sendSeparateEmail" ).dialog("open");
 	    });
     });
+    $(function () {
+        $("#reviewEmail").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Send Email",
+            autoOpen: false,
+            width: 700,
+            height: 500,
+        });
+        $('.openReviewMailBox').live('click', function(){
+            $.ajax({
+                url: '<?=BASE_URL?>/settings/getReviewTextContent',
+                dataType: 'json',
+                type: 'GET',                
+                success: function(data) {
+                    if(tinymce.get("reviewEmailVal1")) 
+                    {
+                        tinymce.remove('#reviewEmailVal1');
+                    }
+                    $('#reviewEmailVal1').val(data.msgBody);
+                    setTimeout(() => {
+                        addTinyMCE("#reviewEmailVal1");
+                    },10);
+                    $( "#reviewEmail" ).dialog("open");
+                }
+            });
+        });
+    });
+
 	$(function () {
 	    $("#reminderSms").dialog({
 	        modal: true,

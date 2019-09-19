@@ -15540,7 +15540,7 @@ function deleteUserFromCampaign()
 
 	function saveUserReviewResponse()
 	{	
-		$email 					= "info@acecare.ca";
+		$email 					= "review@acecare.ca";
 		$phone_number 			= "604-293-3770";
 		$customerEmail 			= $_POST['email'];
 		$customerPhoneNumber 	= $_POST['phone_num'];
@@ -15584,6 +15584,44 @@ function deleteUserFromCampaign()
 					echo json_encode($data);
 				}
 			}
+		}
+		exit();
+	}
+
+	//Loki: Send Review Email
+	function sendReviewEmail()
+	{
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$phone_number = $_POST['phone'];
+		$cusId = $_POST['cusId'];
+		$email = $_POST['email'];
+		$message = $_POST['message'];
+		$currentDate = gmdate("Y-m-d\TH:i:s\Z");
+		$sender_id = $this->Common->getLoggedUserID();
+		$template_subject = "Ace Services Ltd";
+		if(!empty($email))
+		{	
+			
+			$yesLink = '<a href='\.urlencode("http://bit.ly/2kQ2oxN").\'>Click Here</a>';
+			$noUrl = $this->G_URL.BASE_URL."/pages/showUserReview?email=".$email."&phone_number=".$phone_number;
+			$noLink = '<a href='\.urlencode($noUrl).\'>Click Here</a>';
+			$message = str_replace('{No}', $noLink, $message);
+			$message = str_replace('http://bit.ly/2kQ2oxN', $yesLink, $message);
+			$res = $this->sendEmailUsingMailgun($email, $template_subject,$message);
+			if (strpos($res, '@acecare') !== false) 
+			{
+    			$is_sent = 1;
+			} else {
+				$is_sent = 0;
+			}
+			$message = mysql_real_escape_string($message);
+			$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$cusId.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
+			$result = $db->_execute($query);
+			if ($result) {
+	 			$response  = array("res" => "OK");
+	 			echo json_encode($response);
+	 			exit();
+ 			}	
 		}
 		exit();
 	}
