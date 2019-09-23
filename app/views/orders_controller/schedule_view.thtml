@@ -1026,7 +1026,7 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
             if ($k > 1)
             {
                 echo '<td style="width: 75px;" class="truck_number">';
-                echo '<b style="color:#444444">Truck #'.$truck_numbers[$k].'</b><br/>   ';
+                echo '<b style="color:#444444">'.$truck_numbers[$k].'</b><br/>   ';
                 $link = "#";
                 if ($common->getLoggedUserRoleID() == "6") $link = BASE_URL.'/commissions/editTech/'.$default_techs[$k]["tech1_id"].'?view=2&date='.$norm_date;
                 echo '<a href="'.$link.'" style="color:#666666">'.$allTechnician[$default_techs[$k]["tech1_id"]].'</a>';

@@ -571,6 +571,7 @@ function ErasePayment(payment_id){
 function hideInvoiceReview(){
 	// document.getElementById("myModalNew").style.display = "none";
 	document.getElementById("reminderEmail").style.display = "none";
+	window.location.reload();
 }
 
 function showInvoiceReview(){

@@ -4206,27 +4206,27 @@ class OrdersController extends AppController
 
  $sql = "SELECT distinct d.id,c.id, c.card_number, c.first_name, c.last_name, c.postal_code, c.email, c.address_unit, c.address_street_number, c.address_street, c.city, c.phone, c.cell_phone, h.call_user_id, h.call_note, h.call_result_id, h.callback_date, h.callback_time,h.call_date FROM ace_rp_customers AS c left join ace_rp_call_history as h on c.id=h.customer_id left join ace_rp_questions As d on d.id=h.questions_id WHERE c.id=h.customer_id AND h.callback_date LIKE '%".$_GET['sq_str']."%' AND d.id='".$_GET['curpage']."'";
 
-        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-			$result = $db->_execute($sql);
-			while ($row = mysql_fetch_array($result, MYSQL_ASSOC))
-			{	//var_dump($row);
-				foreach ($row as $k => $v)
-					$cust_temp['User'][$k] = $v;
+	        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+				$result = $db->_execute($sql);
+				while ($row = mysql_fetch_array($result, MYSQL_ASSOC))
+				{	//var_dump($row);
+					foreach ($row as $k => $v)
+						$cust_temp['User'][$k] = $v;
 
-				$cust_temp['User']['telemarketer_id']= $row['call_user_id'];
-				$cust_temp['User']['callback_note']= str_replace("'","`",str_replace("\"","`",$row['call_note']));
-				$cust_temp['User']['callresult']= $row['call_result_id'];
-				$cust_temp['u']['telemarketer_first_name']= $row['telemarketer_first_name'];
-				$cust_temp['u']['telemarketer_last_name']= $row['telemarketer_last_name'];
+					$cust_temp['User']['telemarketer_id']= $row['call_user_id'];
+					$cust_temp['User']['callback_note']= str_replace("'","`",str_replace("\"","`",$row['call_note']));
+					$cust_temp['User']['callresult']= $row['call_result_id'];
+					$cust_temp['u']['telemarketer_first_name']= $row['telemarketer_first_name'];
+					$cust_temp['u']['telemarketer_last_name']= $row['telemarketer_last_name'];
 
-				$cust_temp['User']['callback_time']= date("H:i", strtotime($row['callback_time']));
-				$cust_temp['User']['callback_time']= date("H:i", strtotime($row['callback_time']));
+					$cust_temp['User']['callback_time']= date("H:i", strtotime($row['callback_time']));
+					$cust_temp['User']['callback_time']= date("H:i", strtotime($row['callback_time']));
 
-				$cust[$row['id']] = $cust_temp;
-			 
-			
+					$cust[$row['id']] = $cust_temp;
+				 
+				
+			}
 		}
-	}
 		
 		else if ($_GET['sq_crit'] == 'address_street')
 		{
@@ -4297,6 +4297,44 @@ class OrdersController extends AppController
 				$cust[$row['id']] = $cust_temp;
 			}
 		}
+		else if($_GET['sq_crit'] == 'booking_source_id') 
+		{
+			$is_search = 5;
+			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+			$this->set('is_search', $is_search);
+			$count = $this->Order->query("SELECT count(*) as total FROM ace_rp_orders where booking_source_id =".$_GET['sq_str'].";");
+			$total = $count[0][0]['total'];
+			$this->set('totalCus', $total);
+			$totalPages = ceil($total / 500);
+			$this->set('totalPages', $totalPages);
+
+			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
+				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.booking_source_id = ".$_GET['sq_str']." limit ".$limit;
+			$result = $db->_execute($sql);
+			$cust = array();
+			$i=0;
+			$cust_temp = array();
+			while ($row = mysql_fetch_array($result, MYSQL_BOTH))
+			{
+				
+				foreach ($row as $k => $v)
+				$cust_temp['User'][$k] = $v;
+				$cust_temp['User']['telemarketer_id']= $row['telemarketer_id'];
+				$cust_temp['User']['callback_time']= date("H:i", strtotime($row['callback_time']));
+				array_push($cust, $cust_temp);
+				$i++;
+			}
+
+			// $cust = $this->Order->findAll($conditions, null, $sort, $limit);
+			// $i = 0;
+
+			// foreach ($cust as $order)
+			// {
+			// 	$cust[$i]['c'] = $order['Customer'];
+			// 	$cust[$i]['Order'] = $order['Order'];
+			// 	$i++;
+			// }
+		}
 		else	//by source, order type
 		{
 			$cust = $this->Order->findAll($conditions, null, $sort, $limit);
@@ -4321,7 +4359,6 @@ class OrdersController extends AppController
 				$cust[$cnt]['User'][$k] = str_replace("'","`",str_replace("\"","`",$v));
 			}
 		}
-
 		$vicidial_fields=array('phone'=>'phone_number','postal_code'=>'postal_code','city'=>'city','address_street'=>'address1','last_name'=>'last_name','first_name'=>'first_name');
 		if (isset($vicidial_fields[$_GET['sq_crit']])) {
 			$this->set('vicidial', 1);
@@ -11392,6 +11429,7 @@ class OrdersController extends AppController
 		} 
 		if(isset($_REQUEST['review'])){
 			//echo 'OID='.$order_id.' == ='.$cemail;exit;
+			$textSend = $this->sendReviewText($cphone, $cemail , $cusMessage = '', $current_customer_id);
 			$return = $this->emailInvoiceReviewLinks($order_id,$cemail, $current_customer_id, $cphone);
                         if($this->Common->getLoggedUserRoleID() == 6){
                              //$this->redirect("orders/invoiceTabletPrint?order_id=$order_id&type=$type");exit;
@@ -15556,13 +15594,15 @@ function deleteUserFromCampaign()
 	}
 
 	//Loki: Send Review text
-	function sendReviewText()
+	function sendReviewText($cusPhone = NULL, $cusEmail = NULL, $cusMessage = NUll, $cusId = NUll)
 	{
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-		$phone_number = $_POST['phone'];
-		$cusId = $_POST['cusId'];
-		$email = $_POST['email'];
-		if(!empty($_POST['message']))
+		$phone_number = !empty($cusPhone) ? $cusPhone : $_POST['phone'];
+		$cusId = !empty($cusId) ? $cusId : $_POST['cusId'];
+		$email = !empty($cusEmail) ? $cusEmail : $_POST['email'];
+		$textMessage = 	!empty($cusMessage) ? $cusMessage : $_POST['email'];	
+
+		if(!empty($textMessage))
 		{
 			$message = mysql_real_escape_string($_POST['message']);
 		} else {
@@ -15580,15 +15620,17 @@ function deleteUserFromCampaign()
 			$response = $this->Common->sendTextMessage($phone_number, $message); 
 			if(!empty($response))
 			{
-				$message = mysql_real_escape_string($message);
 				$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id) VALUES (
 					'',".$cusId.", ".$response->id.",'".$message."','".$today."', '".$phone_number."',1, ".$sender_id.")";
 				$result = $db->_execute($query);
 				
-				if($result)
+				if($result && empty($cusPhone))
 				{
 					$data  = array("res" => "OK");
 					echo json_encode($data);
+				} else {
+					return true;
+					exit();
 				}
 			}
 		}
@@ -15609,11 +15651,11 @@ function deleteUserFromCampaign()
 		if(!empty($email))
 		{	
 			
-			$yesLink = '<a href='\.urlencode("http://bit.ly/2kQ2oxN").\'>Click Here</a>';
+			$yesLink = '<a href='\.urlencode("https://search.google.com/local/writereview?placeid=ChIJSRBjmi93hlQRWDtY6I6n1Ao").\'>Yes</a>';
 			$noUrl = $this->G_URL.BASE_URL."/pages/showUserReview?email=".$email."&phone_number=".$phone_number;
-			$noLink = '<a href='\.urlencode($noUrl).\'>Click Here</a>';
+			$noLink = '<a href='\.urlencode($noUrl).\'>NO</a>';
 			$message = str_replace('{No}', $noLink, $message);
-			$message = str_replace('http://bit.ly/2kQ2oxN', $yesLink, $message);
+			$message = str_replace('https://search.google.com/local/writereview?placeid=ChIJSRBjmi93hlQRWDtY6I6n1Ao', $yesLink, $message);
 			$res = $this->sendEmailUsingMailgun($email, $template_subject,$message);
 			if (strpos($res, '@acecare') !== false) 
 			{

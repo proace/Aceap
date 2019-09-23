@@ -197,7 +197,8 @@
                 {
                     hideInvoiceReview();
                     // location.reload();
-                    window.opener.location.reload();
+                    window.location.reload();
+                    // window.opener.location.reload();
                 }
             }           
         });

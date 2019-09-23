@@ -259,6 +259,7 @@ $(document).ready(function()
     });
 	$(".disply_preview").live("change",function(e){
 	    var img_ct = $(this).attr("data-ct").trim();
+        console.log(img_ct);
 	    var cur = $(this);
 	   upload_photo(cur[0],img_ct);
 	});
@@ -684,8 +685,8 @@ $(document).ready(function()
     					<? } else { ?>
     					 	<img id="pre-image_photo3" class="pre-image_<?php echo $obj['id'] ?>_photo3 invoice-openImg" src="#" alt="your image" />
     					 			<div class="acecare-td-adjust">
-    						 			<label for="Fileinput" >Upload</label>
-    					 				<input class="paymentImage disply_preview" type="file" name="techCommArr[<?php echo $obj['id'] ?>][uploadFile]" id="Fileinput" data-ct="_<?php echo $obj['id'] ?>_photo3" orderId="<?=$obj['order_number']?>" order_type="<?=$obj['order_type_id']?>" show-picture="<?= $obj['show_picture']?>" >
+    						 			<label for="Fileinput_<?=$obj['order_number']?>" >Upload</label>
+    					 				<input class="paymentImage disply_preview" type="file" name="techCommArr[<?php echo $obj['id'] ?>][uploadFile]" id="Fileinput_<?=$obj['order_number']?>" data-ct="_<?php echo $obj['id'] ?>_photo3" orderId="<?=$obj['order_number']?>" order_type="<?=$obj['order_type_id']?>" show-picture="<?= $obj['show_picture']?>" >
     					 			</div>	
     				<?php } ?>	
 				</td>
@@ -699,8 +700,8 @@ $(document).ready(function()
 						} else { ?>
 							<img id="pre-image_photo1" class="pre-image_<?php echo $obj['id'] ?>_photo1 invoice-openImg" src="#" alt="your image" />
 							<div class="acecare-td-adjust">
-								<label for="sortpicture1" >Upload</label>
-								<input type="file" name="techCommArr[<?php echo $obj['id'] ?>][sortpic1]" id="sortpicture1" class="disply_preview" data-ct="_<?php echo $obj['id'] ?>_photo1">
+								<label for="sortpicture1_<?php echo $obj['id'] ?>" >Upload</label>
+								<input type="file" name="techCommArr[<?php echo $obj['id'] ?>][sortpic1]" id="sortpicture1_<?php echo $obj['id'] ?>" class="disply_preview" data-ct="_<?php echo $obj['id'] ?>_photo1">
 							</div>
 					<?php }	?>
 				<br>
@@ -712,8 +713,8 @@ $(document).ready(function()
 					} else { ?>
 							<img id="pre-image_photo2" class="pre-image_<?php echo $obj['id'] ?>_photo2 invoice-openImg" src="#" alt="your image" />
 							<div class="acecare-td-adjust">
-								<label for="sortpicture2" >Upload</label>
-								<input type="file" name="techCommArr[<?php echo $obj['id'] ?>][sortpic2]" id="sortpicture2" class="disply_preview" data-ct="_<?php echo $obj['id'] ?>_photo2">
+								<label for="sortpicture2_<?php echo $obj['id'] ?>" >Upload</label>
+								<input type="file" name="techCommArr[<?php echo $obj['id'] ?>][sortpic2]" id="sortpicture2_<?php echo $obj['id'] ?>" class="disply_preview" data-ct="_<?php echo $obj['id'] ?>_photo2">
 							</div>
 					<?php } ?>
 			     </td>
