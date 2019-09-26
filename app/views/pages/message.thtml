@@ -1,4 +1,4 @@
-<html> 
+    <html> 
 <head>
 <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
 <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/text_chat.css" rel="stylesheet" />
@@ -52,7 +52,7 @@ table th {
     float: left;
     display: block;
     margin-right: 2.35765%;
-    width: 91.4702%;
+    width: 100%;
 }
 .textus-ConversationListItem-arrowContainer {
     float: left;
@@ -105,8 +105,8 @@ table th {
     <input type="button" name="search_clear" value="clear" id="search_clear" >
 </div>
 <div id="messagebox" class="messagebox">
-    <i class="fa fa-envelope-o icon-size" id="show_unread_message" aria-hidden="true" title="Unread"></i>
-    <i class="fa fa-commenting-o icon-size"></i>
+ <!--    <i class="fa fa-envelope-o icon-size" id="show_unread_message" aria-hidden="true" title="Unread"></i>
+    <i class="fa fa-commenting-o icon-size"></i> -->
     <i class="textus-MessageInputForm-submit fa fa-paper-plane fa-fw" id="send_text_message" title="Send Text" onclick="sendTextMessage();"></i>
 </div>  
 <div id="latest_msg">
@@ -174,7 +174,7 @@ $(document).ready(function() {
         });
     $("#close_chat_popup").live("click",function(){
          parent.document.getElementById("adjust_size").setAttribute("cols","230, *, 230");
-         parent.document.getElementById("adjust_row_size").setAttribute("rows","33%,33%,33%");
+         parent.document.getElementById("adjust_row_size").setAttribute("rows","60%,40%");
          $( "#chat-window-card1" ).dialog("close");
     });
     $("#search_number").live("click", function(){

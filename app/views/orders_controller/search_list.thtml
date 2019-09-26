@@ -105,7 +105,7 @@
 	<?php }?>
  	</div>
 <?php }?>
-<div style="width: 1250px; float: left;  margin-top: 70px;">
+<div style="width: 1300px; float: left;  margin-top: 70px;">
 <input type="hidden" id ="first_call" name="first_call" value="0">
 <input type="hidden" id ="call_mode" name="call_mode" value="3">
 <input type="hidden" id="currentUserId" val="">
@@ -113,22 +113,22 @@
 
 <div style="clear: both; float: left;">
 	<div class="dhcell" style="width: 110px;">Last Name<?=$last_name?></div>
-	<div class="dhcell" style="width: 85px;"><b>First Name<?=$first_name?></b></div>
+	<div class="dhcell" style="width: 85px;">First Name<?=$first_name?></div>
 	<?php if($from_reminder == 1) {?>
 	<div class="dhcell" style="width: 95px;">Reminder Sent</div>
 	<?php }else {?>
 	<div class="dhcell" style="width: 95px;">Status</div>
 	<?php } ?>
-	<div class="dhcell" style="width: 175px;">Email</div>
+	<div class="dhcell sort_data" style="width: 175px; cursor:pointer" sort_type='' sort_val="email"><b>Email</b>&nbsp<?php if($sort_by == 'email') { echo $sortTypeImg ?> <?php } ?></div>
 
-	<div class="dhcell sort_data" style="width: 70px;"  sort_type='' sort_val="call-result">Call Result <?php if($sort_by == 'call-result'){ echo $sortTypeImg ?> <?php } ?></div>
-	<div class="dhcell sort_data" style="width: 80px;"  sort_type='' sort_val="last-call">Last Call <?php if($sort_by == 'last-call') { echo $sortTypeImg ?> <?php } ?></div>
-	<div class="dhcell sort_data" style="width: 80px;"  sort_type='' sort_val="call-back">Callback <?php if($sort_by == 'call-back') { echo $sortTypeImg ?> <?php } ?></div>
+	<div class="dhcell sort_data" style="width: 85px; cursor:pointer"  sort_type='' sort_val="call-result"><b>Call Result </b>&nbsp<?php if($sort_by == 'call-result'){ echo $sortTypeImg ?> <?php } ?></div>
+	<div class="dhcell sort_data" style="width: 80px; cursor:pointer"  sort_type='' sort_val="last-call"><b>Last Call</b> &nbsp<?php if($sort_by == 'last-call') { echo $sortTypeImg ?> <?php } ?></div>
+	<div class="dhcell sort_data" style="width: 80px; cursor:pointer"  sort_type='' sort_val="call-back"><b>Callback </b>&nbsp<?php if($sort_by == 'call-back') { echo $sortTypeImg ?> <?php } ?></div>
 	<?php if($callback_search_head == 'yes'){?>
 	<div class="dhcell" style="width: 125px;">Job Type</div>
 	<div class="dhcell" style="width: 125px;">Last Job Date</div>
 	<?php } ?>
-	<div class="dhcell" style="width: 150px;">City</div>
+	<div class="dhcell sort_data" style="width: 150px; cursor:pointer" sort_type='' sort_val="city"><b>City</b>&nbsp<?php if($sort_by == 'city') { echo $sortTypeImg ?> <?php } ?></div>
 	<div class="dhcell" style="width: 95px;">Phone<?=$phone?></div>
 	<div class="dhcell" style="width: 95px;">Cell Phone<?=$cell_phone?></div>
 	<div class="dhcell" style="width: 95px;">Address<?=$address?></div>
@@ -181,9 +181,9 @@
 	<div class="dcell" style="width: 110px;<? echo $color?>"><?php echo $obj["User"]["last_name"] ?> </div>
 	<div class="dcell" style="width: 85px;<? echo $color?>"><b><?php echo $obj['User']['first_name']; ?></b> </div>
 	<?php if($from_reminder == 1) {?>
-		<div class="dcell" style="width: 85px;"><?php echo date("d M Y", !empty($obj['User']['last_reminder_date']) ? strtotime($obj['User']['last_reminder_date']) : '' );?></div>
+		<div class="dcell" style="width: 95px;"><?php echo date("d M Y", !empty($obj['User']['last_reminder_date']) ? strtotime($obj['User']['last_reminder_date']) : '' );?></div>
 	<?php } else { ?> 
-		<div class="dcell" style="width: 85px;<?php if( $obj['User']['is_sent'] == 1){ echo 'color:green' ;} else { echo 'color:red';}; ?>"><b>
+		<div class="dcell" style="width: 95px;<?php if( $obj['User']['is_sent'] == 1){ echo 'color:green' ;} else { echo 'color:red';}; ?>"><b>
 		<?php if( $obj['User']['is_sent'] == 1)
 		{ 
 			echo 'Sent' ;
@@ -198,7 +198,7 @@
 		?></b> </div>
 	<?php } ?>
 	<div class="dcell" style="width: 175px;<? echo $color?>"><?=$obj['User']['email'] ?></div>
-	<div class="dcell" style="width: 70px;<? echo $color?>"><?php echo $call_results[$obj['User']['callresult']]; ?> </div>
+	<div class="dcell" style="width: 75px;<? echo $color?>"><?php echo $call_results[$obj['User']['callresult']]; ?> </div>
 	<div class="dcell" style="width: 80px;<? echo $color?>"><?php echo date("d M Y", strtotime($obj['User']['lastcall_date'])); ?></a> </div>
 	<div class="dcell" style="width: 80px;<? echo $color?>"><?php echo date("d M Y", strtotime($obj['User']['callback_date'])); ?></a> </div>
 	<?php if($callback_search_head == 'yes'){?>

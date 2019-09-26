@@ -153,15 +153,11 @@ function SendSms()
 }
 
 //Loki: Send Review SMS
-function SendReviewText(done_by_tech=0)
+function SendReviewText()
 {
     var phone_number    = $('#CustomerCellPhone').val();
     var customerId      = $('#CustomerId').val();
-    if(done_by_tech == 1){
-        var message = '';
-    } else {
-        var message = tinyMCE.activeEditor.getContent();
-    }
+    var message = tinyMCE.activeEditor.getContent();
     var email           = $('#editEmail').val();
     $.ajax({
         url: '<?=BASE_URL?>/orders/sendReviewText',
@@ -314,7 +310,6 @@ function hideEmailBox() {
 // }
 function emailInvoice(order_id, i=0){
 	var email = $('#emailinput').val();
-        SendReviewText(1);
 	 	window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office'+'&fromBooking=1', '_new');
 	 	return false;	 
 }
@@ -830,7 +825,7 @@ function ValidateFields(jobstatus, show_box=0)
 						//alert('submitFormNEW');
 						if(show_box == 1)
 						{	
-							$("#msgbx").html("Do you want to send the email?");
+							$("#msgbx").html("Do you want to send the email/text?");
 							showme();
 						}
 						else {
@@ -1371,7 +1366,20 @@ function upload_photo(cur,i) {
   }
 }
 $(document).ready(function(){
-	
+     $("#resendEmail").live("change", function(){
+        if($(this).is(":checked"))
+        {
+             $("#resendEmailVal").val(1);
+        }
+     });
+    $("#resendText").live("change", function(){
+        if($(this).is(":checked"))
+        {
+            console.log("val",$("#resendTextVal").val());
+            $("#resendTextVal").val(1);
+        }
+     });
+
 	 $('#markAll').live('click', function(){
               $(".delete_email").attr('checked', this.checked);
           });
@@ -1974,7 +1982,7 @@ function CheckMailSent(OrderID){
 		success: function(data) {
 		var res = data.split("@@");
 			if(res[0]==1){
-				$("#msgbx").html("You have already sent an email to this client on ("+res[1]+") would like to send another email with all changes?");
+				$("#msgbx").html("You have already sent an email and text to this client on ("+res[1]+") would like to send another email/text  with all changes?");
 				showme();
 
 				/*if (window.confirm("You have already sent an email to this client on ("+res[1]+") would like to send another email with all changes?")) { 
@@ -2354,6 +2362,8 @@ function get_data($url)
     <span class="close" onclick="hideme()">&times;</span>
     <p id="msgbx"></p>
     <p id="confbtn">
+        <b><span style="font-size: 12px">Email</span></b><input type="checkbox" name="resendEmail" id="resendEmail">
+        <b><span style="font-size: 12px">Text</span></b><input type="checkbox" name="resendText" id="resendText">
     	<input type="button" name="yes" value="Yes" onclick="clickYes()" class="btncls">
     	<input type="button" name="no" value="No" onclick="clickNo()" class="btncls">
     </p>
@@ -2495,7 +2505,8 @@ function get_data($url)
 <form name="editBookingform" action="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
 <!-- This tag creates our form tag -->
  <!-- Set booking from campaing value -->
-
+<input type="hidden" id="resendEmailVal" name="data[Order][resendEmailVal]" value="0">
+<input type="hidden" id="resendTextVal" name="data[Order][resendTextVal]" value="0">
 <input type="hidden" name="currentUrl" id="currentUrl" value="<?=$currentUrl?>">
 <input type="hidden" name="showDefault" id="show-default" value="">
 <input type="hidden" name="campaingId" id="CuscampaingId"value="<?= $campaingId ?>">

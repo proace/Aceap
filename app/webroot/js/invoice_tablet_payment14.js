@@ -243,7 +243,16 @@ $(function() {
 	});
 	showPayments();
 	
-	
+	// check attach payment checkbox is checked
+
+	$("#attachPaymentImage").live("change", function(){
+        if($(this).is(":checked"))
+        {
+             $("#attachPaymentImage").val(1);
+        } else {
+        	$("#attachPaymentImage").val(0);
+        }
+     });
 });
 
 function addItem(container, item_id, name, item_category_id, price, price_purchase, isNew) {
@@ -477,6 +486,8 @@ function showPayments(){
 }
 
 function SavePayment(){
+	var userRole = $("#userRole").val();
+	var imageName = $("#imageName").val();
     var id = $('#InvoiceOrderId').val();
 	var method = $("#PaymentPaymentMethodId").val();	
 	var element = $("#PaymentPaymentMethodId").find('option:selected'); 
@@ -498,7 +509,9 @@ function SavePayment(){
 	formdata.append("amount",amount);
 	formdata.append("payment_type",1);
 	formdata.append("show_message",MessageOption);
-	if(option == 1)
+	if(!imageName)
+	{
+		if(option == 1)
 	{
 		var fileval = $('#FileinputImg')[0].files[0];
 		if(fileval)
@@ -508,13 +521,15 @@ function SavePayment(){
 			alert('Payment Image is required!');
 			return;
 		}
-	}else {
-		var fileval = $('#FileinputImg')[0].files[0];
-		if(fileval)
-		{
-			formdata.append('payment_image', fileval); 
+		}else {
+			var fileval = $('#FileinputImg')[0].files[0];
+			if(fileval)
+			{
+				formdata.append('payment_image', fileval); 
+			}
 		}
-	}
+	} 
+	
 	$.ajax({
 		url: G_URL + "payments/savePayment",
 		type: "post",
@@ -532,8 +547,12 @@ function SavePayment(){
 			
 			$("#PaymentPaymentMethodId").val(0);
 			$("#paid_by_amount").val(0);
-			 showInvoiceReview();
-			//location.reload(); 
+			 if(userRole == 6)
+			 {
+			 	location.reload(); 
+			 } else {
+			 	 showInvoiceReview();
+			 }
 		}
 	});
 }

@@ -147,9 +147,9 @@ class OrdersController extends AppController
 
     // Method saves order's data that was recieved from the order's page.
     // Created: 06/02/2010, Anthony Chernikov
-    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null, $techOrderId=null, $send_cancalled_email = null, $showDefault=null, $jobDate = null)
+    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null, $techOrderId=null, $send_cancalled_email = null, $showDefault=null, $jobDate = null )
     {
-    	if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
+       	if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
 			$this->preViewEstimate($_POST);
 		}else{
 
@@ -472,46 +472,59 @@ class OrdersController extends AppController
 			if ($this->data['Order']['order_status_id'] != 5)
 			{
 			  	if($_POST['havetoprint'] == "1")
-					{
+				{
 						$message = str_replace('{time}', $jobTime, $message);
 						$message = str_replace('{date}', $jobDate, $message);
 						if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==1){
 					  		if($paidById != 11) {
-						  		$subject = $this->emailCustomerBooking($order_id);			  		   $mail_sent = true;
-								$queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$emal_send_date."' WHERE id = '".$order_id."'";
-								$db->_execute($queryEmailDateUpdate);
-								if(!empty($cellPhone))
-								{
-									$response = $this->Common->sendTextMessage($cellPhone, $message); 
-									if(!empty($response))
+					  			$mail_sent = true;
+						  		if($this->data['Order']['resendEmailVal'] == 1)
+						  		{
+							  		$subject = $this->emailCustomerBooking($order_id);
+							  		
+									$queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$emal_send_date."' WHERE id = '".$order_id."'";
+									$db->_execute($queryEmailDateUpdate);
+						  		}
+						  		if($this->data['Order']['resendTextVal'] == 1)
+						  		{
+									if(!empty($cellPhone))
 									{
-										$message = mysql_real_escape_string($message);
-										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type,sender_id) VALUES (
-											'',".$cusId.", ".$response->id.",'".$message."','".$today."', '".$cellPhone."', 1, ".$sender_id.")";
-										$result = $db->_execute($query);
+										$response = $this->Common->sendTextMessage($cellPhone, $message); 
+										if(!empty($response))
+										{
+											$message = mysql_real_escape_string($message);
+											$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type,sender_id) VALUES (
+												'',".$cusId.", ".$response->id.",'".$message."','".$today."', '".$cellPhone."', 1, ".$sender_id.")";
+											$result = $db->_execute($query);
+										}
 									}
-								}
-								if(!empty($homePhone))
-								{
-									$response = $this->Common->sendTextMessage($homePhone, $message); 
-									if(!empty($response))
+									if(!empty($homePhone))
 									{
-										$message = mysql_real_escape_string($message);
-										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type ,sender_id) VALUES (
-											'',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$homePhone."', 1, ".$sender_id.")";
-										$result = $db->_execute($query);
+										$response = $this->Common->sendTextMessage($homePhone, $message); 
+										if(!empty($response))
+										{
+											$message = mysql_real_escape_string($message);
+											$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type ,sender_id) VALUES (
+												'',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$homePhone."', 1, ".$sender_id.")";
+											$result = $db->_execute($query);
+										}
 									}
 								}
 							}
 					  	}else if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==0){
 					  		'';	
 					  	}else{
+					  		if($this->data['Order']['resendEmailVal'] == 1)
+						  	{
 
 						  		$queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$emal_send_date."' WHERE id = '".$order_id."'";
 								$db->_execute($queryEmailDateUpdate);
 						  		$subject = $this->emailCustomerBooking($order_id);
-						  		$mail_sent = true;
-								
+						  		
+							}
+							$mail_sent = true;
+							if($this->data['Order']['resendTextVal'] == 1)
+						  	{
 								if(!empty($cellPhone))
 								{
 									$response = $this->Common->sendTextMessage($cellPhone, $message); 
@@ -532,9 +545,10 @@ class OrdersController extends AppController
 										$result = $db->_execute($query);
 									}
 								}
+							}
 
 					  		}
-					}
+				}
 			}
 		if($paidById != 11) {
 			if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==1 && $mail_sent== false ){
@@ -542,25 +556,31 @@ class OrdersController extends AppController
 				$message = $settings['Setting']['valuetxt'];
 				$message = $this->Common->removeSlash($message);
 				$message = str_replace('{date}', $jobDate, $message);
-				$this->emailCustomerBooking($order_id, $send_cancalled_email);
-				if(!empty($cellPhone))
+				if($this->data['Order']['resendEmailVal'] == 1)
 				{
-					$response = $this->Common->sendTextMessage($cellPhone, $message); 
-					if(!empty($response))
-					{
-						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
-							'',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$cellPhone."', 1, ".$sender_id.")";
-						$result = $db->_execute($query);
-					}
+					$this->emailCustomerBooking($order_id, $send_cancalled_email);
 				}
-				if(!empty($homePhone))
+				if($this->data['Order']['resendTextVal'] == 1)
 				{
-					$response = $this->Common->sendTextMessage($homePhone, $message); 
-					if(!empty($response))
+					if(!empty($cellPhone))
 					{
-						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
-							'',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$homePhone."', 1, ".$sender_id.")";
-						$result = $db->_execute($query);
+						$response = $this->Common->sendTextMessage($cellPhone, $message); 
+						if(!empty($response))
+						{
+							$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
+								'',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$cellPhone."', 1, ".$sender_id.")";
+							$result = $db->_execute($query);
+						}
+					}
+					if(!empty($homePhone))
+					{
+						$response = $this->Common->sendTextMessage($homePhone, $message); 
+						if(!empty($response))
+						{
+							$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
+								'',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$homePhone."', 1, ".$sender_id.")";
+							$result = $db->_execute($query);
+						}
 					}
 				}
 			}
@@ -2113,6 +2133,7 @@ class OrdersController extends AppController
 		$is_booking = isset($this->params['url']['is_booking'])?$this->params['url']['is_booking'] : "";
 		$orderNo = isset($this->params['url']['orderNo'])?$this->params['url']['orderNo'] : '';
 		$fromEstimate = isset($this->params['url']['fromEstimate']) ? $this->params['url']['fromEstimate'] :0;
+
 
 		if (!empty($this->data['Order']))
 		{
@@ -3797,6 +3818,43 @@ class OrdersController extends AppController
 			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 			$callWhere = '';
 			$this->set('is_search', 3);
+			$sortBy = $_GET['sortBy'];
+			$sortType = $_GET['sortType'];
+
+			$orderBy ='';
+			if(!empty($sortBy))
+			{
+				$this->set('sort_by', $sortBy);
+
+				switch ($sortBy) {
+				    case "call-result":
+				        $orderBy = " ORDER BY c.callresult ".$sortType;
+				        break;
+				    case "call-back":
+				       $orderBy = " ORDER BY c.callback_date ".$sortType;
+				        break;
+				    case "last-call":
+				        $orderBy = " ORDER BY c.lastcall_date ".$sortType;
+				        break;
+				    case "email":
+				        $orderBy = " ORDER BY c.email ".$sortType;
+				        break;
+				   case "city":
+				        $orderBy = " ORDER BY c.city ".$sortType;
+				        break;
+				}	   
+			}
+
+			if(!empty($sortType))
+			{
+				if($sortType == 'desc')
+				{
+					$this->set('sortTypeImg', 'v');
+				} else {
+					$this->set('sortTypeImg', '^');
+				}
+			}
+
 			if(!empty($_GET['sq_str']))
 			{
 				$callWhere .= " AND order_type_id = ".$_GET['sq_str'];
@@ -3811,7 +3869,7 @@ class OrdersController extends AppController
 			$this->set('totalPages', $totalPages);
 
 			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
-				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.customer_id IS NOT NULL ".$callWhere." group by o.customer_id limit ".$limit;
+				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.customer_id IS NOT NULL ".$callWhere." group by o.customer_id ".$orderBy." limit ".$limit;
 			$result = $db->_execute($sql);
 			$cust = array();
 			$i=0;
@@ -3916,14 +3974,33 @@ class OrdersController extends AppController
 			{
 				$this->set('sort_by', $sortBy);
 
-				if($sortBy == "call-result")
-				{
-					$orderBy = " ORDER BY u2.callresult ".$sortType;
-				} else if($sortBy == "call-back") {
-					$orderBy = " ORDER BY u2.callback_date ".$sortType;
-				} else {
-					$orderBy = " ORDER BY u2.lastcall_date ".$sortType;
+				switch ($sortBy) {
+				    case "call-result":
+				        $orderBy = " ORDER BY u2.callresult ".$sortType;
+				        break;
+				    case "call-back":
+				       $orderBy = " ORDER BY u2.callback_date ".$sortType;
+				        break;
+				    case "last-call":
+				        $orderBy = " ORDER BY u2.lastcall_date ".$sortType;
+				        break;
+				    case "email":
+				        $orderBy = " ORDER BY u2.email ".$sortType;
+				        break;
+				   case "city":
+				        $orderBy = " ORDER BY u2.city ".$sortType;
+				        break;
+				   
 				}
+
+				// if($sortBy == "call-result")
+				// {
+				// 	$orderBy = " ORDER BY u2.callresult ".$sortType;
+				// } else if($sortBy == "call-back") {
+				// 	$orderBy = " ORDER BY u2.callback_date ".$sortType;
+				// } else {
+				// 	$orderBy = " ORDER BY u2.lastcall_date ".$sortType;
+				// }
 			}
 			if(!empty($sortType))
 			{
@@ -3945,7 +4022,7 @@ class OrdersController extends AppController
 			$totalPages = ceil($totalCus / 500);
 			$this->set('totalPages', $totalPages);
 			$sql = "SELECT o . * , ec . * , u2 . * , u2.id AS uid, (SELECT delivery_status FROM ace_rp_reminder_email_log rel WHERE customer_id = uid ORDER BY id DESC 
-				LIMIT 0 , 1) AS is_sent, ord.reminder_date FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id LEFT JOIN ace_rp_reminder_email_log rel ON rel.customer_id = ec.call_history_ids INNER JOIN ace_rp_orders ord ON ord.customer_id = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere.$orderBy." group by uid limit ".$limit;
+				LIMIT 0 , 1) AS is_sent, ord.reminder_date FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id LEFT JOIN ace_rp_reminder_email_log rel ON rel.customer_id = ec.call_history_ids INNER JOIN ace_rp_orders ord ON ord.customer_id = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere." group by uid ".$orderBy." limit ".$limit;
 					$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 					$result = $db->_execute($sql);
 
@@ -4003,11 +4080,47 @@ class OrdersController extends AppController
 		}
 		else if($_GET['sq_crit'] == 'callback_date_dropdown')
 		{
+
 			$telem_clause = '';
 			$telem_clause1 = '';
 			$callback_search_head = 'yes';
 			$today_date = date("Y-m-d");
-			
+			$sortBy = $_GET['sortBy'];
+			$sortType = $_GET['sortType'];
+			$orderBy ='ORDER BY reminder_flag desc, h.callback_date, h.callback_time asc';
+			if(!empty($sortBy))
+			{
+				$this->set('sort_by', $sortBy);
+
+				switch ($sortBy) {
+				    case "call-result":
+				        $orderBy = " ORDER BY h.call_result_id ".$sortType;
+				        break;
+				    case "call-back":
+				       $orderBy = " ORDER BY h.callback_date ".$sortType;
+				        break;
+				    case "last-call":
+				        $orderBy = " ORDER BY c.lastcall_date ".$sortType;
+				        break;
+				    case "email":
+				        $orderBy = " ORDER BY c.email ".$sortType;
+				        break;
+				   case "city":
+				        $orderBy = " ORDER BY c.city ".$sortType;
+				        break;
+				   
+				}
+			}
+
+			if(!empty($sortType))
+			{
+				if($sortType == 'desc')
+				{
+					$this->set('sortTypeImg', 'v');
+				} else {
+					$this->set('sortTypeImg', '^');
+				}
+			}
 			if ($_GET['sq_str'] == 'all_missed_callback' || $_GET['sq_str'] == 'btw_missed_callback'){
 
 				if($this->Common->getLoggedUserRoleID() != 6) {
@@ -4047,8 +4160,7 @@ class OrdersController extends AppController
 
 				$sql = "SELECT distinct
 						c.id, c.card_number, c.first_name, c.last_name,
-						c.postal_code, c.email, c.address_unit, c.address_street_number, c.address_street, c.city,
-						c.phone, c.cell_phone,c.selected_customer_from_search as customer_row_color,c.selected_customer_from_search_agent as customer_row_color_agent,
+						c.postal_code, c.email, c.address_unit, c.address_street_number, c.address_street, c.city, c.lastcall_date, c.phone, c.cell_phone,c.selected_customer_from_search as customer_row_color,c.selected_customer_from_search_agent as customer_row_color_agent,
 						h.call_user_id, h.call_note, h.call_result_id, arc.order_type_id as job_type,arc.job_date as last_job_done_date,
 						h.callback_date, h.callback_time,
 						if((h.callback_date=current_date())&&(TIME_TO_SEC(CAST(now() AS TIME))>= TIME_TO_SEC(CAST(h.callback_time AS TIME))-300),1,0) reminder_flag,
@@ -4067,9 +4179,7 @@ class OrdersController extends AppController
 							(select * from ace_rp_call_history y
 								where y.customer_id=h.customer_id ".$telem_clause1."
 									and (y.call_date>h.call_date
-									or y.call_date=h.call_date and y.call_time>h.call_time))
-					order by reminder_flag desc, h.callback_date, h.callback_time asc
-					LIMIT ".$limit;
+									or y.call_date=h.call_date and y.call_time>h.call_time)) ".$orderBy." LIMIT ".$limit;
 			}
 			else
 			{
@@ -4103,8 +4213,7 @@ class OrdersController extends AppController
 								where y.customer_id=h.customer_id ".$telem_clause1."
 									and (y.call_date>h.call_date
 									or y.call_date=h.call_date and y.call_time>h.call_time))
-					order by reminder_flag desc, h.callback_date, h.callback_time asc
-					LIMIT ".$limit;
+									".$orderBy."	LIMIT ".$limit;
 			}
 			
 			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
@@ -4204,7 +4313,7 @@ class OrdersController extends AppController
 			$telem_clause = ' AND d.questions_id='.$_GET['curpage'];
 	      $telem_clause1 = ' AND y.call_user_id='.$this->Common->getLoggedUserID();
 
- $sql = "SELECT distinct d.id,c.id, c.card_number, c.first_name, c.last_name, c.postal_code, c.email, c.address_unit, c.address_street_number, c.address_street, c.city, c.phone, c.cell_phone, h.call_user_id, h.call_note, h.call_result_id, h.callback_date, h.callback_time,h.call_date FROM ace_rp_customers AS c left join ace_rp_call_history as h on c.id=h.customer_id left join ace_rp_questions As d on d.id=h.questions_id WHERE c.id=h.customer_id AND h.callback_date LIKE '%".$_GET['sq_str']."%' AND d.id='".$_GET['curpage']."'";
+ 		$sql = "SELECT distinct d.id,c.id, c.card_number, c.first_name, c.last_name, c.postal_code, c.email, c.address_unit, c.address_street_number, c.address_street, c.city, c.phone, c.cell_phone, h.call_user_id, h.call_note, h.call_result_id, h.callback_date, h.callback_time,h.call_date FROM ace_rp_customers AS c left join ace_rp_call_history as h on c.id=h.customer_id left join ace_rp_questions As d on d.id=h.questions_id WHERE c.id=h.customer_id AND h.callback_date LIKE '%".$_GET['sq_str']."%' AND d.id='".$_GET['curpage']."'";
 
 	        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 				$result = $db->_execute($sql);
@@ -4254,7 +4363,42 @@ class OrdersController extends AppController
 		}
 		else if (($_GET['sq_crit'] != 'booking_source_id') && ($_GET['sq_crit'] != 'order_type_id') && ($_GET['sq_crit'] != 'callback_date'))
 		{
+			$sortBy = $_GET['sortBy'];
+			$sortType = $_GET['sortType'];
 
+			$orderBy ='';
+			if(!empty($sortBy))
+			{
+				$this->set('sort_by', $sortBy);
+
+				switch ($sortBy) {
+				    case "call-result":
+				        $orderBy = " ORDER BY c.callresult ".$sortType;
+				        break;
+				    case "call-back":
+				       $orderBy = " ORDER BY c.callback_date ".$sortType;
+				        break;
+				    case "last-call":
+				        $orderBy = " ORDER BY c.lastcall_date ".$sortType;
+				        break;
+				    case "email":
+				        $orderBy = " ORDER BY c.email ".$sortType;
+				        break;
+				   case "city":
+				        $orderBy = " ORDER BY c.city ".$sortType;
+				        break;
+				}	   
+			}
+
+			if(!empty($sortType))
+			{
+				if($sortType == 'desc')
+				{
+					$this->set('sortTypeImg', 'v');
+				} else {
+					$this->set('sortTypeImg', '^');
+				}
+			}
 			//$cust = $this->User->findAll($conditions, null, $sort, $limit);
 			if($this->Common->getLoggedUserRoleID() != 6) {
 				$allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
@@ -4278,7 +4422,7 @@ class OrdersController extends AppController
 						left join ace_rp_users u on u.id=c.telemarketer_id
 						left join ace_rp_orders arc on c.id = arc.customer_id
 					WHERE $criteria LIKE '%$sq_str%'
-						$telem_clause
+						$telem_clause ".$orderBy."
 					LIMIT ".$limit;
 			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 			$result = $db->_execute($sql);
@@ -4299,6 +4443,42 @@ class OrdersController extends AppController
 		}
 		else if($_GET['sq_crit'] == 'booking_source_id') 
 		{
+			$sortBy = $_GET['sortBy'];
+			$sortType = $_GET['sortType'];
+			$orderBy ='';
+			if(!empty($sortBy))
+			{
+				$this->set('sort_by', $sortBy);
+
+				switch ($sortBy) {
+				    case "call-result":
+				        $orderBy = " ORDER BY c.callresult ".$sortType;
+				        break;
+				    case "call-back":
+				       $orderBy = " ORDER BY c.callback_date ".$sortType;
+				        break;
+				    case "last-call":
+				        $orderBy = " ORDER BY c.lastcall_date ".$sortType;
+				        break;
+				    case "email":
+				        $orderBy = " ORDER BY c.email ".$sortType;
+				        break;
+				   case "city":
+				        $orderBy = " ORDER BY c.city ".$sortType;
+				        break;
+				   
+				}
+			}
+
+			if(!empty($sortType))
+			{
+				if($sortType == 'desc')
+				{
+					$this->set('sortTypeImg', 'v');
+				} else {
+					$this->set('sortTypeImg', '^');
+				}
+			}
 			$is_search = 5;
 			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 			$this->set('is_search', $is_search);
@@ -4309,7 +4489,7 @@ class OrdersController extends AppController
 			$this->set('totalPages', $totalPages);
 
 			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
-				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.booking_source_id = ".$_GET['sq_str']." limit ".$limit;
+				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.booking_source_id = ".$_GET['sq_str']." ".$orderBy." limit ".$limit;
 			$result = $db->_execute($sql);
 			$cust = array();
 			$i=0;
@@ -4337,6 +4517,7 @@ class OrdersController extends AppController
 		}
 		else	//by source, order type
 		{
+
 			$cust = $this->Order->findAll($conditions, null, $sort, $limit);
 			$i = 0;
 			foreach ($ord as $order)
@@ -5784,18 +5965,24 @@ class OrdersController extends AppController
 		return $template_subject;
 		//$res = mail($email, $template_subject, $msg, $headers);
 	}
-	function sendEmailUsingMailgun($to,$subject,$body,$order_id = null){
-		
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".urlencode($body));
-		// receive server response ...
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		$msgid = curl_exec ($ch);//exit;
-		curl_close ($ch);
-		$this->manageMailgunEmailLogs($msgid, $subject, $order_id);
-		return $msgid;
+	function sendEmailUsingMailgun($to,$subject,$body,$order_id = null, $imagePath =null){
+		try
+		{
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".urlencode($body)."&imagePath=".$imagePath);
+			// receive server response ...
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			$msgid = curl_exec ($ch);//exit;
+			curl_close ($ch);
+			$this->manageMailgunEmailLogs($msgid, $subject, $order_id);
+			return $msgid;
+		}
+		 catch(Exception $e)
+		{
+			file_put_contents("mail_error_log.txt", "mailgun=".$e->getMessage(), FILE_APPEND);
+		}
 		//var_export($response);
 		//$this->verifyEmailUsingMailgun($to,$subject,$order_id,$msgid);
 	}
@@ -11252,7 +11439,7 @@ class OrdersController extends AppController
 		$cemail 	= $newEmail ? $newEmail : $this->getCustomerEmailAdd($this->data['Invoice']['customer_id']);
 
 		$current_customer_id = $this->data['Invoice']['customer_id'];
-
+		$attachPaymentImage = isset($_POST['attachPaymentImage']) ? $_POST['attachPaymentImage'] :0;
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$isValid = $this->validateEmailAddress($cemail);
 		if($isValid==1){			
@@ -11430,7 +11617,7 @@ class OrdersController extends AppController
 		if(isset($_REQUEST['review'])){
 			//echo 'OID='.$order_id.' == ='.$cemail;exit;
 			$textSend = $this->sendReviewText($cphone, $cemail , $cusMessage = '', $current_customer_id);
-			$return = $this->emailInvoiceReviewLinks($order_id,$cemail, $current_customer_id, $cphone);
+			$return = $this->emailInvoiceReviewLinks($order_id,$cemail, $current_customer_id, $cphone, $attachPaymentImage);
                         if($this->Common->getLoggedUserRoleID() == 6){
                              //$this->redirect("orders/invoiceTabletPrint?order_id=$order_id&type=$type");exit;
                              $this->redirect(BASE_PATH."pages/main");exit;
@@ -13863,7 +14050,7 @@ class OrdersController extends AppController
 
 
 
-	function emailInvoiceReviewLinks($orderid,$email, $cus_id, $cphone=null){
+	function emailInvoiceReviewLinks($orderid,$email, $cus_id, $cphone=null, $sendAttchment = null){
 		//END Save Notes
 		if(isset($orderid) && $orderid!=''){
 			$order_id = $orderid;
@@ -13888,6 +14075,20 @@ class OrdersController extends AppController
 		$msg = $template;
 		$msg = str_replace('{file_url}', $fileUrl, $msg);
 		$msg = str_replace('{NO}', $link, $msg);
+		$orgFile = null;
+		if($sendAttchment == 1){
+			// $orgFile = "http://hvacproz.ca/acesys/app/webroot/payment-images/1569459237_F0DB8B1F-5AE8-4716-B59F-7717D0DF14C1.jpeg";
+			$orderDetails = $this->Common->getOrderDetails($order_id, $this->User->useDbConfig);
+			$paymentMethodArray = array(2,3,4,5);
+			if(in_array($orderDetails['payment_method_type'], $paymentMethodArray))
+			{
+				// die("in");
+				if(!empty($orderDetails['payment_image']) || $orderDetails['payment_image'] != '')
+				{
+					$orgFile = $this->G_URL."/acesys/app/webroot/payment-images/".$imageName['payment_image'];
+				}
+			}
+		}
 		// $invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
 		// $boundary = md5(time());
 		// $header = "From: info@acecare.ca \r\n";
@@ -13913,7 +14114,7 @@ class OrdersController extends AppController
 		";
 		$db->_execute($query);
 		$message = mysql_real_escape_string($msg);
-		$res = $this->sendEmailUsingMailgun($email,$subject,$msg);
+		$res = $this->sendEmailUsingMailgun($email,$subject,$msg,null,$orgFile);
 		$currentDate = date('Y-m-d');
 		if (strpos($res, '@acecare') !== false) 
 		{
@@ -15140,50 +15341,57 @@ function deleteUserFromCampaign()
 	 */ 	
 	function sendMailToAll()
 	{
+		error_reporting(E_ALL);
 		$db 	 		=& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$getCampIdSql 	= "SELECT camp_id,id from ace_rp_camp_email where status=0 limit 1";
 		$result 		= $db->_execute($getCampIdSql);
 		$campId 		= mysql_fetch_array($result, MYSQL_ASSOC);
 		if(!empty($campId))
 		{
-			$updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_email set status=1 where id=".$campId['id']."");
-			$currentDate = date('Y-m-d');
-			$sql = "SELECT u2.email,u2.first_name, u2.last_name, u2.id AS cid, ort.name as job_type,ord.job_date,ord.order_type_id, ord.order_number,(SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids 		ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN 						ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids INNER JOIN ace_rp_order_types ort ON ord.order_type_id = ort.id WHERE 
-				u2.campaign_id IS NOT NULL AND ec.last_inserted_id = ".$campId['camp_id']." AND ec.show_default =0 AND u2.callresult NOT IN ( 7, 3 ) AND ord.id = (SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) GROUP BY ord.customer_id";
-			$res = $db->_execute($sql);
-			while ($row = mysql_fetch_array($res, MYSQL_ASSOC))
+			try
 			{
-				$settings = $this->Setting->find(array('title'=>'bulk_email'));
-				$message = $settings['Setting']['valuetxt'];
-				$message = $this->Common->removeSlash($message);
-				$subject = $settings['Setting']['subject'];
-				$url = $this->G_URL.BASE_URL."/pages/showReminderBookingPage?oid=".$row['order_Id']."&cid=".$row['cid']."&otype=".$row['order_type_id']."&rdate=&onum=".$row['order_number'];
-				$link = '<a href='\.urlencode($url).\'>Book Now</a>';
-				
-				$message = str_replace('{first_name}', $row['first_name'], $message);
-				$message = str_replace('{last_name}', $row['last_name'], $message);
-				$message = str_replace('{job_type}', $row['job_type'], $message);
-				$message = str_replace('{url_confirm}', $link, $message);
-				$message = str_replace('{last_date}', $row['job_date'], $message);
-				
-				if(!empty($row['email']))
+				$updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_email set status=1 where id=".$campId['id']."");
+				$currentDate = date('Y-m-d');
+				$sql = "SELECT u2.email,u2.first_name, u2.last_name, u2.id AS cid, ort.name as job_type,ord.job_date,ord.order_type_id, ord.order_number,(SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids 		ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN 						ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids INNER JOIN ace_rp_order_types ort ON ord.order_type_id = ort.id WHERE 
+					u2.campaign_id IS NOT NULL AND ec.last_inserted_id = ".$campId['camp_id']." AND ec.show_default =0 AND u2.callresult NOT IN ( 7, 3 ) AND ord.id = (SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) GROUP BY ord.customer_id";
+				$res = $db->_execute($sql);
+				while ($row = mysql_fetch_array($res, MYSQL_ASSOC))
 				{
-					$res1 = $this->sendEmailUsingMailgun($row['email'],$subject,$message);
-				
-					if (strpos($res1, '@acecare') !== false) 
+					$settings = $this->Setting->find(array('title'=>'bulk_email'));
+					$message = $settings['Setting']['valuetxt'];
+					$message = $this->Common->removeSlash($message);
+					$subject = $settings['Setting']['subject'];
+					$url = $this->G_URL.BASE_URL."/pages/showReminderBookingPage?oid=".$row['order_Id']."&cid=".$row['cid']."&otype=".$row['order_type_id']."&rdate=&onum=".$row['order_number'];
+					$link = '<a href='\.urlencode($url).\'>Book Now</a>';
+					
+					$message = str_replace('{first_name}', $row['first_name'], $message);
+					$message = str_replace('{last_name}', $row['last_name'], $message);
+					$message = str_replace('{job_type}', $row['job_type'], $message);
+					$message = str_replace('{url_confirm}', $link, $message);
+					$message = str_replace('{last_date}', $row['job_date'], $message);
+					
+					if(!empty($row['email']))
 					{
-				    	$is_sent = 1;
-					} else 
-					{
-						$is_sent = 0;
+						$res1 = $this->sendEmailUsingMailgun($row['email'],$subject,$message);
+					
+						if (strpos($res1, '@acecare') !== false) 
+						{
+					    	$is_sent = 1;
+						} else 
+						{
+							$is_sent = 0;
+						}
+						$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$row['cid'].",'','".$currentDate."',".$is_sent.",'".$message."', '".$res1."')";
+						$result = $db->_execute($query);
 					}
-					$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$row['cid'].",'','".$currentDate."',".$is_sent.",'".$message."', '".$res1."')";
-					$result = $db->_execute($query);
+					
 				}
-				
+				$updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_email set status=2 where id=".$campId['id']."");
+				echo "done";
+			} catch(Exception $e)
+			{
+				file_put_contents("mail_error_log.txt", "sendmail=".$e->getMessage(), FILE_APPEND);
 			}
-			$updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_email set status=2 where id=".$campId['id']."");
-			echo "done";
 		}
 		exit();
 	}

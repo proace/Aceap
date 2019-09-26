@@ -67,6 +67,16 @@ class CommonComponent extends Object
 		}
     }
 
+    function getOrderDetails($order_id, $config)
+    {    	
+    	$db =& ConnectionManager::getDataSource($config);
+		$query = "SELECT * from  ace_rp_orders WHERE id=".$order_id;
+		
+
+		$result = $db->_execute($query);
+		$row = mysql_fetch_array($result, MYSQL_ASSOC);
+		return $row; 
+    }
     function uploadPhoto($file,$order_id, $config, $i)
 	{
 		date_default_timezone_set('America/Los_Angeles');

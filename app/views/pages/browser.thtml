@@ -52,10 +52,16 @@
     $(".sort_data").live("click", function()
     {
     	var sort_type =  $("#sort_type").val();
+    	var selected_str = parent.frames['frame_search'].document.getElementById("sq_crit").value;
     	sortBy = $(this).attr('sort_val');
     	sortType = ((sort_type == "")? 'desc' : ((sort_type == 'desc')? 'asc' : 'desc'));
     	$("#sort_type").val(sortType);
-    	$("#user_serch_go").trigger("click");
+    	if(selected_str == "Campaign_data")
+    	{
+    		$("#user_serch_go").trigger("click");
+    	} else {
+    		parent.frames['frame_search'].document.getElementById("submit_go").click();
+    	}
     });
 
     $("#cancel_bulk_email_content").live("click", function(){

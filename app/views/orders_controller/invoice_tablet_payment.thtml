@@ -23,6 +23,10 @@
 
 
 <style type="text/css">
+ .attachChebox {
+    height: 20px;
+    width: 20px;
+ }
 .reminder-button{
     width: 50px;
     height: 25px;
@@ -246,7 +250,6 @@
         });
         $(".invoice-openImg").live("click",function () {
             var imgPath = $(this).attr('src');
-            console.log(imgPath);
             $('.invoice-img-enlarge img').attr('src', imgPath);
             $('.invoice-img-enlarge').dialog('open');
         });
@@ -351,6 +354,8 @@ function upload_photo(cur,i) {
         <?php echo $html->input('Invoice/cell_phone', array('type'=>'hidden', 'value'=>$job['Customer']['cell_phone'])); ?>
         <?php echo $html->input('Invoice/has_booking', array('type'=>'hidden', 'id'=>'has_booking', 'value'=>0)); ?>
         <?php echo $html->input('Invoice/city_id', array('type'=>'hidden', 'id'=>'city_id', 'value'=>$city_id)); ?>
+        <?php echo $html->input('Invoice/userRole', array('type'=>'hidden', 'id'=>'userRole', 'value'=>$common->getLoggedUserRoleID())); ?>
+        <?php echo $html->input('Invoice/imageName', array('type'=>'hidden', 'id'=>'imageName', 'value'=>$invoice_payment_photo)); ?>
         <div class="order_div">            
         <h3>#<?php echo $job['Order']['order_number'] ?> - <?php echo $job['Type']['name'] ?></h3>
         <table class="item_table office">
@@ -612,7 +617,8 @@ function upload_photo(cur,i) {
          </div>
             <a style="padding: 15px;text-decoration: navajowhite;font-size: 13px;" href="https://www.acecare.ca/pay-here?orderId=<?php echo base64_encode($job['Order']['id']); ?>" target="_balnk"> Pay Here </a>
             <!-- <input type="submit" name="invoice" class="next_submit" id="test_required" value="Email Invoice" /> -->
-            <input type="submit" name="review" value="Email invoice with Review links" />
+            <input type="submit" name="review" value="Email invoice with Review links" /> &nbsp
+            <b>Check to attach receipt</b> <input type="checkbox" class="attachChebox" checked id="attachPaymentImage" name="attachPaymentImage" value="1">
             <!--<input type="button" id="compute_values" value="compute" />-->
         	<!--<input type="button" class="next_submit" id="test_required" value="Save" />
             <input type="button" value="END OF INVOICE" style="height:40px;" onclick="window.open('<?php echo BASE_URL. '/orders/invoiceTablet' ?>?id=<?php echo $obj['Order']['id'];?>','_self')" />-->
