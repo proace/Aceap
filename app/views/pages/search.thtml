@@ -48,18 +48,26 @@
 
 	function prepFields(on)
 	{
+        $('#callback_agent_option_frontend, #callback_missed_call_dropdown').each(function(idx, sel) 
+        {
+            $(sel).find('option:eq(0)').prop('selected', true);
+        });
+        document.getElementById('sq_str_missed_dates').value = '';
 		$("#propVal").val(on);
 
 			if (on == "booking_source_id")
 			{
-				
-				document.getElementById('sq_str').style.display = 'none';
-				document.getElementById('booking_source_id').style.display = '';
-				document.getElementById('Campaign_source_id_frontend').style.display = 'none';
-				document.getElementById('order_type_id').style.display = 'none';
-				document.getElementById('callresult').style.display = 'none';
-				document.getElementById('callback_agent_option_frontend').style.display = 'none';
-				document.getElementById('reminder-email-box').style.display = 'block';		}
+                document.getElementById('sq_str').style.display = 'none';
+                document.getElementById('booking_source_id').style.display = '';
+                document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+                document.getElementById('order_type_id').style.display = 'none';
+                document.getElementById('callresult').style.display = 'none';
+                document.getElementById('callback_agent_option_frontend').style.display = 'none';
+                document.getElementById('callback_missed_call_dropdown').style.display = 'none';
+                document.getElementById('missed_callback_dates').style.display = 'none';
+                document.getElementById('callback_missed_call_dropdown').value = '';
+                document.getElementById('order_type_id').value = '';
+			}
 			else if (on == "Campaign_data")
 			{
 				document.getElementById("Campaign_source_id_frontend").selectedIndex = "0";
@@ -71,6 +79,9 @@
 				document.getElementById('order_type_id').style.display = 'none';
 				document.getElementById('callresult').style.display = 'none';
 				document.getElementById('callback_agent_option_frontend').style.display = 'none';
+                document.getElementById('order_type_id').value = '';
+                document.getElementById('callback_missed_call_dropdown').value = '';
+
 				// document.getElementById('reminderLogs').style.display = 'none';
 			}
 			else if (on == "order_type_id")
@@ -82,6 +93,10 @@
 				document.getElementById('order_type_id').style.display = '';
 				document.getElementById('callresult').style.display = 'none';
 				document.getElementById('callback_agent_option_frontend').style.display = 'none';
+                document.getElementById('callback_missed_call_dropdown').style.display = 'none';
+                document.getElementById('missed_callback_dates').style.display = 'none';
+                document.getElementById('callback_missed_call_dropdown').value = '';
+                document.getElementById('order_type_id').value = '';
 			}
 			else if (on == "callresult")
 			{
@@ -92,6 +107,10 @@
 				document.getElementById('Campaign_source_id_frontend').style.display = 'none';
 				document.getElementById('callback_agent_option_frontend').style.display = 'none';
 				document.getElementById('callresult').style.display = '';
+                document.getElementById('order_type_id').value = '';
+                document.getElementById('callback_missed_call_dropdown').value = '';
+                document.getElementById('callback_missed_call_dropdown').style.display = 'none';
+
 			}
 			else if (on == "callback_date_dropdown")
 			{
@@ -102,6 +121,11 @@
 				document.getElementById('order_type_id').style.display = 'none';
 				document.getElementById('Campaign_source_id_frontend').style.display = 'none';
 				document.getElementById('callresult').style.display = 'none';
+                document.getElementById('callback_missed_call_dropdown').style.display = 'none';
+                document.getElementById('missed_callback_dates').style.display = 'none';
+                document.getElementById('callback_missed_call_dropdown').value = '';
+                document.getElementById('order_type_id').value = '';
+
 			} else if (on == "reminder")
 			{
 				// document.getElementById('reminderLogs').style.display = 'none';
@@ -111,11 +135,13 @@
 				document.getElementById('order_type_id').style.display = 'none';
 				document.getElementById('Campaign_source_id_frontend').style.display = 'none';
 				document.getElementById('callresult').style.display = 'none';
+                document.getElementById('order_type_id').value = '';
+                document.getElementById('callback_missed_call_dropdown').value = '';
+                document.getElementById('callback_missed_call_dropdown').style.display = 'none';
 			}
 			else
 			{
 				// document.getElementById('reminderLogs').style.display = 'none';
-				console.log("aaya");
 				document.getElementById('callback_missed_call_dropdown').style.display = 'none';
 				document.getElementById('missed_callback_dates').style.display = 'none';
 
@@ -126,13 +152,15 @@
 				document.getElementById('order_type_id').style.display = 'none';
 				document.getElementById('Campaign_source_id_frontend').style.display = 'none';
 				document.getElementById('callresult').style.display = 'none';
-
+                document.getElementById('order_type_id').value = '';
+                document.getElementById('callback_missed_call_dropdown').value = '';
 			}
 	}
 
 	function callbackSource(val)
 	{
 		document.getElementById('sq_str').value = val;
+		var selectedStr = document.getElementById('sq_crit').value;
 		if(val == 'two_missing_callback')
 		{
 			document.getElementById('callback_missed_call_dropdown').style.display = '';
@@ -163,13 +191,26 @@
 			submitRequest();
 		}
 		else{
-			document.getElementById('callback_missed_call_dropdown').style.display = 'none';
-			submitRequest();
+			if(selectedStr == 'booking_source_id' || selectedStr == 'order_type_id' )
+			{
+				document.getElementById('callback_missed_call_dropdown').style.display = 'block';
+			} else{
+
+				document.getElementById('callback_missed_call_dropdown').style.display = 'none';
+				submitRequest();
+			}
 		}
 	}
 
 	function missed_callbackSource(val){
-		document.getElementById('sq_str').value = val;
+		var selectedStr = document.getElementById('sq_crit').value;
+		if(selectedStr == "booking_source_id" || selectedStr =="order_type_id" )
+		{
+
+			document.getElementById('search_by_date').value = val;
+		} else {
+            document.getElementById('sq_str').value = val;
+        }
 		if(val == 'all_missed_callback')
 		{
 			document.getElementById('missed_callback_dates').style.display = 'none';
@@ -182,7 +223,17 @@
 
 	function submitRequest()
 	{
-		if(document.getElementById('sq_str').value == 'btw_missed_callback'){
+        
+        var search_by_date = document.getElementById('search_by_date').value;
+
+        var search_str = document.getElementById('sq_crit').value;
+        if(search_str == "booking_source_id" || search_str == "order_type_id")
+        {
+            var is_missed_call = search_by_date;
+        } else{
+            var is_missed_call = document.getElementById('sq_str').value;
+        }
+		if(is_missed_call == 'btw_missed_callback'){
 
 			var ffromdate = document.getElementById('ffromdate').value;
 			var ftodate = document.getElementById('ftodate').value;
@@ -215,10 +266,10 @@
 
 			document.getElementById('sq_str_missed_dates').value = total_detes;
 
-			parent.frames['frame_browser'].missing_callbacks_searchlist(document.getElementById('sq_crit').value, document.getElementById('sq_str').value, document.getElementById('sq_str_missed_dates').value);
+			parent.frames['frame_browser'].missing_callbacks_searchlist(document.getElementById('sq_crit').value, document.getElementById('sq_str').value, document.getElementById('sq_str_missed_dates').value, '', search_by_date);
 		}
 		else{
-			parent.frames['frame_browser'].searchList(document.getElementById('sq_crit').value, document.getElementById('sq_str').value,'',1);
+			parent.frames['frame_browser'].searchList(document.getElementById('sq_crit').value, document.getElementById('sq_str').value,'',1, search_by_date);
 		}
 	}
 
@@ -410,6 +461,7 @@ Date.prototype.format = function (mask, utc) {
 	<input type="hidden" name="propVal" id="propVal">
 	<input type='hidden' name="sq_str_missed_dates" id="sq_str_missed_dates" value="" />
 	<input type='hidden' name="current_role" id="current_role_id" value="<?php echo $common->getLoggedUserRoleID();?>" />
+    <input type='hidden' name="search_by_date" id="search_by_date" value="" />
 	<!-- input type="button" value="callback" style="width: 52px; font-size: 9px;" / -->
 </div>	
 </form>

@@ -367,10 +367,20 @@
 				});
 
 	}
-	 function searchList (sq_crit,sq_str='',page, fromTop='') {
+	 
+	 function searchList (sq_crit,sq_str='',page, fromTop='', search_by_date) {
 		var sortType =  $("#sort_type").val();
 	 	var fromDate = $("#datepicker1").val();
 	 	var toDate = $("#datepicker2").val(); 	
+	 	if(page > 1)	
+	 	{
+	 		if(sq_crit == "booking_source_id" || sq_crit == "order_type_id")
+	 		{
+	 			var sq_dates = parent.frames["frame_search"].document.getElementById('sq_str_missed_dates').value;
+	 			var search_by_date = parent.frames["frame_search"].document.getElementById('search_by_date').value;
+	 		}
+	 	}
+
 	 	if(fromTop != 1)
 	 	{
 	 		var is_call_res = $("#current-seleted-button").val();
@@ -427,7 +437,7 @@
 		//alert("requested page "+page+"\nmaxpage "+maxpage+"\nlimit "+limit);
 		divID = document.getElementById('listbox');
 		divID2 = document.getElementById('count_of_cust_div1');
-		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&add=0&curpage='+page+'&is_call_result='+is_call_res+'&seletedStr='+selectedStr+'&fromDate='+fromDate+'&toDate='+toDate+'&sortType='+sortType+'&sortBy='+sortBy+"&is_search=1",
+		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&add=0&curpage='+page+'&is_call_result='+is_call_res+'&seletedStr='+selectedStr+'&fromDate='+fromDate+'&toDate='+toDate+'&sortType='+sortType+'&sortBy='+sortBy+'&is_search=1&search_by_date='+search_by_date+'&sq_dates='+sq_dates,
 				function(data){
 					divID.innerHTML=data;
 					count_of_cust = document.getElementById('count_of_cust').value;
@@ -437,9 +447,14 @@
 			//new Ajax.Updater(divID,, {asynchronous:true, evalScripts:true, requestHeaders:['X-Update', 'listbox']});
 	}
 
-	function missing_callbacks_searchlist (sq_crit,sq_str,sq_dates,page) {
+	function missing_callbacks_searchlist (sq_crit,sq_str,sq_dates,page,search_by_date) {
 		//TODO:Make system work with pages, not limits, remove limit logic from PHP
-		if (typeof(page) == 'undefined')
+		var sortType =  $("#sort_type").val();
+		if(typeof(sortType) == 'undefined') 
+		{
+			sortType = '';	
+		}
+		if (typeof(page) == 'undefined' || page == '')
 			page = 1;
 
 		limit = ((page-1)*lpp) + "," + (page*lpp);	
@@ -469,7 +484,7 @@
 		//alert("requested page "+page+"\nmaxpage "+maxpage+"\nlimit "+limit);
 		divID = document.getElementById('listbox');
 		divID2 = document.getElementById('count_of_cust_div1');
-		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&sq_dates='+sq_dates+'&add=0&curpage='+page,
+		$.get('<?=BASE_URL;?>/orders/searchList?sq_crit='+sq_crit+'&sq_str='+sq_str+'&limit='+limit+'&sq_dates='+sq_dates+'&add=0&curpage='+page+'&search_by_date='+search_by_date+'&sortType='+sortType+'&sortBy='+sortBy,
 				function(data){
 					divID.innerHTML=data;
 					count_of_cust = document.getElementById('count_of_cust').value;

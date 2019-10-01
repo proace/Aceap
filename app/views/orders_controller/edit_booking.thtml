@@ -1371,12 +1371,16 @@ $(document).ready(function(){
         {
              $("#resendEmailVal").val(1);
         }
+        else {
+            $("#resendEmailVal").val(0);
+        }
      });
     $("#resendText").live("change", function(){
         if($(this).is(":checked"))
         {
-            console.log("val",$("#resendTextVal").val());
             $("#resendTextVal").val(1);
+        } else {
+            $("#resendTextVal").val(0);
         }
      });
 
@@ -1663,7 +1667,8 @@ $(document).ready(function(){
 				var constatus = $("#ConnectionStatus").val();
 				if(constatus == "CONNECTED")
 				{
-					call_phone();
+                    call_cell_phone();
+					//call_phone();
 					clearInterval(initcall);
 				}
 			},500);
@@ -1673,7 +1678,8 @@ $(document).ready(function(){
 				var constatus = $("#ConnectionStatus").val();
 				if(constatus == "CONNECTED")
 				{
-					call_phone();
+                    call_cell_phone();
+					//call_phone();
 					clearInterval(initcall);
 				}
 			},500);
@@ -2025,6 +2031,10 @@ function CheckMailSent(OrderID){
 //    }
 //}
 function hideme(){
+    document.getElementById("resendEmail").checked = true;
+    document.getElementById("resendText").checked = true;
+    document.getElementById("resendEmailVal").value= 1;
+    document.getElementById("resendTextVal").value= 1;
 	document.getElementById("myModal").style.display = "none";
 }
 function showme(){
@@ -2362,8 +2372,8 @@ function get_data($url)
     <span class="close" onclick="hideme()">&times;</span>
     <p id="msgbx"></p>
     <p id="confbtn">
-        <b><span style="font-size: 12px">Email</span></b><input type="checkbox" name="resendEmail" id="resendEmail">
-        <b><span style="font-size: 12px">Text</span></b><input type="checkbox" name="resendText" id="resendText">
+        <b><span style="font-size: 12px">Email</span></b><input type="checkbox" checked name="resendEmail" id="resendEmail" value="1">
+        <b><span style="font-size: 12px">Text</span></b><input type="checkbox" checked name="resendText" id="resendText" value="1">
     	<input type="button" name="yes" value="Yes" onclick="clickYes()" class="btncls">
     	<input type="button" name="no" value="No" onclick="clickNo()" class="btncls">
     </p>
@@ -2505,8 +2515,8 @@ function get_data($url)
 <form name="editBookingform" action="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
 <!-- This tag creates our form tag -->
  <!-- Set booking from campaing value -->
-<input type="hidden" id="resendEmailVal" name="data[Order][resendEmailVal]" value="0">
-<input type="hidden" id="resendTextVal" name="data[Order][resendTextVal]" value="0">
+<input type="hidden" id="resendEmailVal" name="data[Order][resendEmailVal]" value="1">
+<input type="hidden" id="resendTextVal" name="data[Order][resendTextVal]" value="1">
 <input type="hidden" name="currentUrl" id="currentUrl" value="<?=$currentUrl?>">
 <input type="hidden" name="showDefault" id="show-default" value="">
 <input type="hidden" name="campaingId" id="CuscampaingId"value="<?= $campaingId ?>">
@@ -2622,7 +2632,7 @@ function get_data($url)
                     </td>
                 </tr>
                 <tr>
-                    <td align="right">Cell Phone:</td>
+                    <td align="right">Cell Phone*:</td>
                     <td>
                     <?php echo $html->input('Customer/cell_phone',array("value"=>$common->displayPhone($html->tagValue('Customer/cell_phone')), 'style' => 'width: 140px;')); ?><br/>
                     <span class="fa fa-phone call_icon" onclick="call_cell_phone();" aria-hidden="true"></span>
@@ -2638,7 +2648,7 @@ function get_data($url)
                     <a href="javascript:void(0)" id="hangup2" class="red" onclick=hangup('dial2','hangup2')>Hang Up</a></td>
                 </tr>
                 <tr>
-                    <td align="right">Home Phone*:</td>
+                    <td align="right">Home Phone:</td>
                     <td>
                     <?php echo $html->input('Customer/phone',array("value"=>$common->displayPhone($html->tagValue('Customer/phone')), 'style' => 'width: 145px;')); ?><br>
                     <span class="fa fa-phone call_icon"  onclick="call_phone();" aria-hidden="true"></span>

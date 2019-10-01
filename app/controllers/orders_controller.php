@@ -498,17 +498,6 @@ class OrdersController extends AppController
 											$result = $db->_execute($query);
 										}
 									}
-									if(!empty($homePhone))
-									{
-										$response = $this->Common->sendTextMessage($homePhone, $message); 
-										if(!empty($response))
-										{
-											$message = mysql_real_escape_string($message);
-											$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type ,sender_id) VALUES (
-												'',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$homePhone."', 1, ".$sender_id.")";
-											$result = $db->_execute($query);
-										}
-									}
 								}
 							}
 					  	}else if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==0){
@@ -528,6 +517,7 @@ class OrdersController extends AppController
 								if(!empty($cellPhone))
 								{
 									$response = $this->Common->sendTextMessage($cellPhone, $message); 
+									
 									if(!empty($response))
 									{
 										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, , phone_number, sms_type, sender_id) VALUES (
@@ -535,19 +525,9 @@ class OrdersController extends AppController
 										$result = $db->_execute($query);
 									}
 								}
-								if(!empty($homePhone))
-								{
-									$response = $this->Common->sendTextMessage($homePhone, $message); 
-									if(!empty($response))
-									{
-										$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, , phone_number, sms_type, sender_id) VALUES (
-											'',".$cusId.", ".$response->id.",'".$message."','".$today."', '".$homePhone."', 1, ".$sender_id.")";
-										$result = $db->_execute($query);
-									}
-								}
 							}
 
-					  		}
+					  	}
 				}
 			}
 		if($paidById != 11) {
@@ -569,16 +549,6 @@ class OrdersController extends AppController
 						{
 							$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
 								'',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$cellPhone."', 1, ".$sender_id.")";
-							$result = $db->_execute($query);
-						}
-					}
-					if(!empty($homePhone))
-					{
-						$response = $this->Common->sendTextMessage($homePhone, $message); 
-						if(!empty($response))
-						{
-							$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
-								'',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$homePhone."', 1, ".$sender_id.")";
 							$result = $db->_execute($query);
 						}
 					}
@@ -3820,6 +3790,37 @@ class OrdersController extends AppController
 			$this->set('is_search', 3);
 			$sortBy = $_GET['sortBy'];
 			$sortType = $_GET['sortType'];
+			$searchStr = $_GET['search_by_date'];
+			if($searchStr  == 'all_missed_callback')
+			{
+				$total_dates = '';
+			} else {
+					$dates = explode('_', str_replace("/","-",$_GET['sq_dates']));
+									
+					$today_date = date("Y-m-d");
+
+					if($dates[0] == '' && $dates[1] == ''){
+						$total_dates = " AND o.booking_date < '$today_date' ";
+					}
+					elseif ($dates[0] != '' && $dates[1] == '') {
+						$date1 = strtotime($dates[0]); 
+	        			$fdates = date("Y-m-d", $date1); 
+						$total_dates = " AND o.booking_date BETWEEN '$fdates' AND '$today_date' ";
+					}
+					elseif ($dates[0] == '' && $dates[1] != '') {
+						$date2 = strtotime($dates[1]); 
+	        			$tdates = date("Y-m-d", $date2); 
+						$total_dates = " AND o.booking_date < '$tdates' ";
+					}
+					else{
+
+						$date1 = strtotime($dates[0]); 
+	        			$fdates = date("Y-m-d", $date1); 
+	        			$date2 = strtotime($dates[1]); 
+	        			$tdates = date("Y-m-d", $date2); 
+						$total_dates = " AND o.booking_date BETWEEN '$fdates' AND '$tdates' ";
+					}
+				}
 
 			$orderBy ='';
 			if(!empty($sortBy))
@@ -3859,7 +3860,7 @@ class OrdersController extends AppController
 			{
 				$callWhere .= " AND order_type_id = ".$_GET['sq_str'];
 			}
-			$countSql = "SELECT count(DISTINCT o.customer_id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.id IS NOT NULL ".$callWhere;
+			$countSql = "SELECT count(DISTINCT o.customer_id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.id IS NOT NULL ".$callWhere.$total_dates;
 			$countResult = $db->_execute($countSql);
 
 			$row = mysql_fetch_array($countResult, MYSQL_ASSOC);
@@ -3869,7 +3870,7 @@ class OrdersController extends AppController
 			$this->set('totalPages', $totalPages);
 
 			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
-				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.customer_id IS NOT NULL ".$callWhere." group by o.customer_id ".$orderBy." limit ".$limit;
+				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.customer_id IS NOT NULL ".$callWhere.$total_dates." group by o.customer_id ".$orderBy." limit ".$limit;
 			$result = $db->_execute($sql);
 			$cust = array();
 			$i=0;
@@ -4133,7 +4134,7 @@ class OrdersController extends AppController
 					$total_dates = " AND h.callback_date < $today_date ";
 				}
 				else{
-					$dates = explode('_', $_GET['sq_dates']);
+					$dates = explode('_', str_replace("/","-",$_GET['sq_dates']));
 					$today_date = date("Y-m-d");
 
 					if($dates[0] == '' && $dates[1] == ''){
@@ -4311,9 +4312,9 @@ class OrdersController extends AppController
 		}
 		elseif($_GET['sq_crit'] == 'servicesselect') {
 			$telem_clause = ' AND d.questions_id='.$_GET['curpage'];
-	      $telem_clause1 = ' AND y.call_user_id='.$this->Common->getLoggedUserID();
+	      	$telem_clause1 = ' AND y.call_user_id='.$this->Common->getLoggedUserID();
 
- 		$sql = "SELECT distinct d.id,c.id, c.card_number, c.first_name, c.last_name, c.postal_code, c.email, c.address_unit, c.address_street_number, c.address_street, c.city, c.phone, c.cell_phone, h.call_user_id, h.call_note, h.call_result_id, h.callback_date, h.callback_time,h.call_date FROM ace_rp_customers AS c left join ace_rp_call_history as h on c.id=h.customer_id left join ace_rp_questions As d on d.id=h.questions_id WHERE c.id=h.customer_id AND h.callback_date LIKE '%".$_GET['sq_str']."%' AND d.id='".$_GET['curpage']."'";
+ 			$sql = "SELECT distinct d.id,c.id, c.card_number, c.first_name, c.last_name, c.postal_code, c.email, c.address_unit, c.address_street_number, c.address_street, c.city, c.phone, c.cell_phone, h.call_user_id, h.call_note, h.call_result_id, h.callback_date, h.callback_time,h.call_date FROM ace_rp_customers AS c left join ace_rp_call_history as h on c.id=h.customer_id left join ace_rp_questions As d on d.id=h.questions_id WHERE c.id=h.customer_id AND h.callback_date LIKE '%".$_GET['sq_str']."%' AND d.id='".$_GET['curpage']."'";
 
 	        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 				$result = $db->_execute($sql);
@@ -4443,9 +4444,41 @@ class OrdersController extends AppController
 		}
 		else if($_GET['sq_crit'] == 'booking_source_id') 
 		{
-			$sortBy = $_GET['sortBy'];
-			$sortType = $_GET['sortType'];
-			$orderBy ='';
+			$searchStr 	=	$_GET['search_by_date'];
+			$sortBy 	=	$_GET['sortBy'];
+			$sortType 	=	$_GET['sortType'];
+			$orderBy 	=	'';
+			if($searchStr  == 'all_missed_callback')
+			{
+				$total_dates = '';
+			} else {
+
+					$dates = explode('_', str_replace("/","-",$_GET['sq_dates']));
+					
+					$today_date = date("Y-m-d");
+
+					if($dates[0] == '' && $dates[1] == ''){
+						$total_dates = " AND o.booking_date < '$today_date' ";
+					}
+					elseif ($dates[0] != '' && $dates[1] == '') {
+						$date1 = strtotime($dates[0]); 
+	        			$fdates = date("Y-m-d", $date1); 
+						$total_dates = " AND o.booking_date BETWEEN '$fdates' AND '$today_date' ";
+					}
+					elseif ($dates[0] == '' && $dates[1] != '') {
+						$date2 = strtotime($dates[1]); 
+	        			$tdates = date("Y-m-d", $date2); 
+						$total_dates = " AND o.booking_date < '$tdates' ";
+					}
+					else{
+
+						$date1 = strtotime($dates[0]); 
+	        			$fdates = date("Y-m-d", $date1); 
+	           			$date2 = strtotime($dates[1]); 
+	        			$tdates = date("Y-m-d", $date2); 
+						$total_dates = " AND o.booking_date BETWEEN '$fdates' AND '$tdates' ";
+					}
+				}
 			if(!empty($sortBy))
 			{
 				$this->set('sort_by', $sortBy);
@@ -4482,14 +4515,14 @@ class OrdersController extends AppController
 			$is_search = 5;
 			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 			$this->set('is_search', $is_search);
-			$count = $this->Order->query("SELECT count(*) as total FROM ace_rp_orders where booking_source_id =".$_GET['sq_str'].";");
+			$count = $this->Order->query("SELECT count(*) as total FROM ace_rp_orders as o where o.booking_source_id =".$_GET['sq_str']. $total_dates.";");
 			$total = $count[0][0]['total'];
 			$this->set('totalCus', $total);
 			$totalPages = ceil($total / 500);
 			$this->set('totalPages', $totalPages);
 
 			$sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
-				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.booking_source_id = ".$_GET['sq_str']." ".$orderBy." limit ".$limit;
+				LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.booking_source_id = ".$_GET['sq_str'].$total_dates." ".$orderBy." limit ".$limit;
 			$result = $db->_execute($sql);
 			$cust = array();
 			$i=0;
@@ -14082,10 +14115,9 @@ class OrdersController extends AppController
 			$paymentMethodArray = array(2,3,4,5);
 			if(in_array($orderDetails['payment_method_type'], $paymentMethodArray))
 			{
-				// die("in");
 				if(!empty($orderDetails['payment_image']) || $orderDetails['payment_image'] != '')
 				{
-					$orgFile = $this->G_URL."/acesys/app/webroot/payment-images/".$imageName['payment_image'];
+					$orgFile = $this->G_URL."/acesys/app/webroot/payment-images/".$orderDetails['payment_image'];
 				}
 			}
 		}
@@ -14870,18 +14902,6 @@ function deleteUserFromCampaign()
 						$result = $db->_execute($query);
 					}
 				}
-
-				if(!empty($row['phone']))
-				{
-					$response = $this->Common->sendTextMessage($row['phone'], $textMessage); 
-					if(!empty($response))
-					{
-						$textMessage = mysql_real_escape_string($textMessage);
-						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
-							'',".$row['customer_id'].", ".$response->id.",'".$textMessage."','".$today."', '".$row['phone']."' , 1, ".$sender_id.")";
-						$result = $db->_execute($query);
-					}
-				}
 			}
 		}
 		
@@ -15009,8 +15029,7 @@ function deleteUserFromCampaign()
 		$this->render('search_list');
 	}
 
-	//Loki: Get the text status of customers 
-
+	//Loki: Get all the users.
 	function textList()
 	{
 		// error_reporting(E_ALL);
@@ -15316,16 +15335,6 @@ function deleteUserFromCampaign()
 					{
 						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
 							".$row['order_Id'].",".$cusId.", ".$response->id.",'".$message."','".$today."', '".$phone_number."', 1, ".$sender_id.")";
-						$result = $db->_execute($query);
-					}
-				}
-				if(!empty($landline_number))
-				{
-					$response = $this->Common->sendTextMessage($landline_number, $message); 
-					if(!empty($response))
-					{
-						$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
-							".$row['order_Id'].",".$cusId.", ".$response->id.",'".$message."','".$today."', '".$landline_number."',1, ".$sender_id.")";
 						$result = $db->_execute($query);
 					}
 				}
@@ -15881,6 +15890,26 @@ function deleteUserFromCampaign()
  			}	
 		}
 		exit();
+	}
+
+	function convertDate()
+	{
+		$dateStr = str_replace("/","-","12/03/2019_11/06/2019");
+
+		$dates = explode('_', $dateStr);
+		print_r($dates[0]);
+		$date1 = strtotime($dates[0]); 
+		
+		$fdates = date("Y-M-D", $date1); 
+		
+		$date2 = strtotime($dates[1]); 
+		$tdates = date("Y-m-d", $date2); 
+
+		echo "<br>";
+		print_r($fdates);
+		echo "<br>";
+		print_r($tdates);
+				exit();
 	}
 }
 ?>
