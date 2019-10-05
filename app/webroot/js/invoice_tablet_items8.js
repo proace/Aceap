@@ -130,6 +130,12 @@ $(function() {
 	$(".discount_presets").live("change", function(){
 		computeValues();	
 	});
+
+	$(".price_payable").live("change", function(){
+		price = $(this).val();
+		$(this).parent().find(".base_price").val(price);
+		computeValues();	
+	});
 	
 	$(".quantity_presets").live("change", function(){
 		computeValues();	
@@ -413,7 +419,8 @@ function addItem(container, item_id, name, item_category_id, price, price_purcha
 		temp += '	</td>';
 	} else {
 		temp += '	<td class="center"><input type="hidden" class="base_price" name="data[' + bookingItem + '][' + index + '][price]" value="' + price + '" />';
-		temp += '	<input type="text" readonly="readonly" class="price_payable" value="0" /></td>';
+		// temp += '	<input type="text" readonly="readonly" class="price_payable" value="0" /></td>';
+		temp += '	<input type="text" class="price_payable" value="0" /></td>';
 	}
 	
 	temp += '	<td><input type="button" value=" X " class="delete_button" /></td>';
@@ -478,7 +485,8 @@ function addSupplierItem(container) {
 	
 	
 	temp += '	<td class="center"><input type="hidden" class="base_price" name="data[' + bookingItem + '][' + index + '][price]" value="0" />';
-	temp += '	<input type="text" readonly="readonly" class="price_payable" value="0" /></td>';
+	// temp += '	<input type="text" readonly="readonly" class="price_payable" value="0" /></td>';
+	temp += '	<input type="text" class="price_payable" value="0" /></td>';
 	
 	
 	temp += '	<td><input type="button" value=" X " class="delete_button" /></td>';
@@ -541,7 +549,7 @@ function filter(selector, query) {
 }		
 //END filter and sort code
 
-function computeValues() {
+function computeValues(is_custom=0) {
 	var discount = 0;
 	var quantity = 1;
 	var price = 0;
@@ -565,10 +573,10 @@ function computeValues() {
 		quantity = parseInt($(this).find(".quantity_presets").val());
 		price = parseFloat($(this).find(".base_price").val());
 		payable = Math.round(((price*quantity) - discount)*100)/100;
-		if(isNaN(payable)) {					
+		if(isNaN(payable)) {	
 			$(this).find(".price_payable").val(0);
 			current_cost += 0;
-		} else {			
+		} else {	
 			$(this).find(".price_payable").val(payable);
 			current_cost += parseFloat(payable);
 		}
@@ -579,17 +587,17 @@ function computeValues() {
 		quantity = parseInt($(this).find(".quantity_presets").val());
 		price = parseFloat($(this).find(".base_price").val());
 		payable = Math.round(((price*quantity) - discount)*100)/100;		
-		if(isNaN(payable)) {					
+		if(isNaN(payable)) {
 			$(this).find(".price_payable").val(0);
 			new_booking_cost += 0;
-		} else {			
+		} else {	
 			$(this).find(".price_payable").val(payable);
 			new_booking_cost += parseFloat(payable);
 		}
 	});
 	
 	current_tax1 = current_cost*0.05;
-	current_tax = current_tax1.toFixed(2);
+	current_tax = parseFloat(current_tax1.toFixed(2));
 	current_deposit = parseFloat($("#current_deposit").val());
 	
 	$("#current_subtotal").val(current_cost);

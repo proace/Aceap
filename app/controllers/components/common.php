@@ -2093,5 +2093,24 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 		return $convertedTime;
 		exit();
 	}
+
+	function sendEmailMailgun($to,$subject,$body,$order_id = null, $imagePath =null){
+		try
+		{
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".urlencode($body)."&imagePath=".$imagePath);
+			// receive server response ...
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			$msgid = curl_exec ($ch);//exit;
+			curl_close ($ch);
+			return $msgid;
+		}
+		 catch(Exception $e)
+		{
+			file_put_contents("mail_error_log.txt", "mailgun=".$e->getMessage(), FILE_APPEND);
+		}
+	}
 }
 ?>

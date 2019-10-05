@@ -23,6 +23,34 @@
 
 
 <style type="text/css">
+.emailBox{
+    margin: 0px auto 0 10px; margin-bottom: 10px; width: 200px; padding: 10px;
+}
+input.largerCheckbox { 
+            width: 20px; 
+            height: 20px; 
+            margin-left: 10px;
+        } 
+.payBtn{
+    background-color:  #ececec; /* Green */
+    border: none;
+    color: white;
+    padding: 13px 27px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px 0 10px;
+    cursor: pointer;
+    min-width: 50px;
+    color: black;
+    border-radius: 3px;
+    border: 1px solid #8e8989;
+}
+.commonCls {
+    cursor: pointer;height: 40px !important;
+    margin-left: 10px;
+}
  .attachChebox {
     height: 20px;
     width: 20px;
@@ -461,12 +489,15 @@ function upload_photo(cur,i) {
             <select id="PaymentPaymentMethodId" name="data[Payment][payment_method_id]">
                 <option value="0">--</option>
                <?php foreach($payment_methods as $method) {?>
-                    <option value="<?=$method['id']?>" <?php echo $job['Order']['payment_method_type'] == $method['id']? 'selected' : '';?> show-picture="<?=$method['show_picture']?>" show-payment="<?=$method['show_payment']?>" show-message="<?=$method['message_to_office']?>" ><? echo $method['name']?></option>
+                    <option value="<?=$method['id']?>" <?php echo $job['Order']['payment_method_type'] == $method['id']? 'selected' : '';?> show-picture="<?=$method['show_picture']?>" show-payment="<?=$method['show_payment']?>" show-message="<?=$method['message_to_office']?>" ><? echo $method['name']?>
+                    </option>
                <?php }?> 
             </select>
             </div>
-            <div>Amount: <input type="text" class="right" id="paid_by_amount" name="data[Payment][amount]" value="<?=$job['Payment']['paid_amount']?>" /></div>
-        	<!-- <div>Auth#: <input type="text" class="right" id="auth_number" name="data[Payment][auth_number]" value="" /></div> -->
+
+          <!--   <div>Amount: <input type="text" class="right" id="paid_by_amount" name="data[Payment][amount]" value="<?=$job['Payment']['paid_amount']?>" /></div> -->
+        	
+            <!-- <div>Auth#: <input type="text" class="right" id="auth_number" name="data[Payment][auth_number]" value="" /></div> -->
             <img id="pre-image_photo1" style="float: right;" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
          <div class="clear_this"></div>
             <div class="right" style="margin-bottom: 10px;">Payment photo:
@@ -492,13 +523,17 @@ function upload_photo(cur,i) {
                     <?php
                 }
             ?> 
-        </div>  
-            <div class="center" id="payment_details" style="width:100%;float: right;"></div>
-            <div><input type="button" value="Save" id="save_payment" /></div> 
-        </div>
-        
-         
-        
+           <!--  </div>  
+                <div class="center" id="payment_details" style="width:100%;float: right;"></div>
+                <div><input type="button" value="Save" id="save_payment" /></div> 
+            </div> -->
+       <!-- <?php if($common->getLoggedUserRoleID() == 6) {?>
+            </div>  
+                <div class="center" id="payment_details" style="width:100%;float: right;"></div>
+                <div><input type="button" value="Save" id="save_payment" /></div> 
+            </div>
+        <?php } ?>
+         -->
         </div><!--END of order_div-->
         <div class="order_div">
         <?php if($last_order['Order']['order_number'] != "") { ?>
@@ -595,7 +630,7 @@ function upload_photo(cur,i) {
         <div class="right">HST: <input type="text" class="right" id="new_tax" name="data[Order2][subtotal]" value="0" readonly="readonly" /></div>
         <div class="right">Total: <input type="text" class="right" id="new_total" name="data[Order2][total]" value="0" readonly="readonly" /></div>
         <div class="right">Deposit: <input type="text" class="right" id="new_deposit" name="data[Order2][deposit]" value="" readonly="readonly" /></div>   
-        <div class="right">Balance: <input type="text" class="right" id="new_balance" name="data[Order2][balance]" value="0" readonly="readonly" /></div>
+        <div class="right">Amount Paid: <input type="text" class="right" id="new_balance" name="data[Order2][balance]" value="0" readonly="readonly" /></div>
         
         <?php } else { ?>
         <div id="new_bookind_div">
@@ -610,18 +645,14 @@ function upload_photo(cur,i) {
         
         <div class="next_div">
             <div>
-             <input type="email" name="newEmail" value="<?php echo isset($job['Customer']['email']) ? $job['Customer']['email'] : ''; ?>" style=" margin: 0px auto; margin-bottom: 10px; width: 200px; padding: 10px;">
-        <!--      <input type="button" style="margin-left: 20px;" name="estimate" onclick="location.href ='<?php echo BASE_URL ?>/orders/techBooking?customer_id= <?php echo $job['Order']['customer_id']?>&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date('d M Y'));?>&job_technician1_id=0&job_technician2_id=0&from_tech_page=2&techOrderId=<?php echo $job['Order']['id']?>';" value="Estimate" /> -->
-               <input type="button" style="margin-left: 20px;" name="estimate" onclick="window.open('<?php echo BASE_URL ?>/orders/techBooking?order_id=<?php echo $job['Order']['id']?> & rurl=&fromTech=2', '_self')" value="Estimate" />
-              <!--  <input type="button" style="margin-left: 20px;" name="estimate" onclick="location.href = '<?php echo BASE_URL ?>/orders/techBooking?order_id=<?php echo $job['Order']['id']?> & rurl=&fromTech=2'" value="Estimate" /> -->
-         </div>
-            <a style="padding: 15px;text-decoration: navajowhite;font-size: 13px;" href="https://www.acecare.ca/pay-here?orderId=<?php echo base64_encode($job['Order']['id']); ?>" target="_balnk"> Pay Here </a>
-            <!-- <input type="submit" name="invoice" class="next_submit" id="test_required" value="Email Invoice" /> -->
-            <input type="submit" name="review" value="Email invoice with Review links" /> &nbsp
-            <b>Check to attach receipt</b> <input type="checkbox" class="attachChebox" checked id="attachPaymentImage" name="attachPaymentImage" value="1">
-            <!--<input type="button" id="compute_values" value="compute" />-->
-        	<!--<input type="button" class="next_submit" id="test_required" value="Save" />
-            <input type="button" value="END OF INVOICE" style="height:40px;" onclick="window.open('<?php echo BASE_URL. '/orders/invoiceTablet' ?>?id=<?php echo $obj['Order']['id'];?>','_self')" />-->
+                <a class="payBtn" style="text-decoration: navajowhite;font-size: 13px;" href="https://www.acecare.ca/pay-here?orderId=<?php echo base64_encode($job['Order']['id']); ?>" target="_balnk"> Pay Here </a>
+                <input type="button" class="commonCls" name="estimate" onclick="window.open('<?php echo BASE_URL ?>/orders/techBooking?order_id=<?php echo $job['Order']['id']?> & rurl=&fromTech=2', '_self')" value="Estimate" />
+                <span style="font-size: 14px">Email Receipt</span><input class="largerCheckbox" type="checkbox" name="paymentReceipt" id="paymnetReceipt" value="0">
+                 <input type="email" name="newEmail" id="receiptEmail"  value="<?php echo isset($job['Customer']['email']) ? $job['Customer']['email'] : ''; ?>" class="emailBox">
+                 <input type="button" class="commonCls" name="saveJobs" id="saveJobPayment" value="Save" />
+            </div>
+           <!--  <input type="submit" name="review" value="Email invoice with Review links" /> &nbsp
+            <b>Check to attach receipt</b> <input type="checkbox" class="attachChebox" checked id="attachPaymentImage" name="attachPaymentImage" value="1"> -->
         </div>
     </form>    
     </div>

@@ -1,10 +1,11 @@
-<?
-error_reporting(E_PARSE  ^ E_ERROR );
+<? ob_start();
+// error_reporting(E_PARSE  ^ E_ERROR );
 class PaymentsController extends AppController
 {
 	//To avoid possible PHP4 problemfss
 	var $name = "PaymentsController";
-
+	var $G_URL  = "http://hvacproz.ca";
+	// var $G_URL  = "localhost";
 	var $uses = array('User');
 
 	var $helpers = array('Time','Javascript','Common');
@@ -170,6 +171,8 @@ class PaymentsController extends AppController
 
 	function savePayment()
 	{
+		$email = $_REQUEST['email'];
+		$send_receipt = $_REQUEST['sendReceipt'];
 		$order_id = $_REQUEST['order_id'];
 		$method = $_REQUEST['method'];
 		$amount = $_REQUEST['amount'];
@@ -207,11 +210,10 @@ class PaymentsController extends AppController
 		$query = "INSERT INTO ace_rp_payments
 								(idorder, creator, payment_method, payment_date, paid_amount, payment_type, notes) 
 							VALUES ($order_id, '$creator', '$method', '$date', '$amount', '$payment_type', '$note')";
-			}
-			else{ 
-				$query = "UPDATE  ace_rp_payments set creator ='".$creator."',payment_method='".$method."',payment_date='".$date."' ,paid_amount='".$amount."',payment_type='".$payment_type."', notes='".$note."' where idorder='".$order_id."'";
-				
-			}				
+		}
+		else{ 
+			$query = "UPDATE  ace_rp_payments set creator ='".$creator."',payment_method='".$method."',payment_date='".$date."' ,paid_amount='".$amount."',payment_type='".$payment_type."', notes='".$note."' where idorder='".$order_id."'";	
+		}				
 		$res = $db->_execute($query);
 		if($res == 1 && $show_message == 1) 
 		{
@@ -234,11 +236,32 @@ class PaymentsController extends AppController
 			$query = $query.$values;
 			$db->_execute($query);
 
-
 		}
-		
-		echo 'ok';
-		exit;
+		if($send_receipt == 1){
+			$orgFile = null;
+			$currentDate = date('Y-m-d');
+			$subject = "Payment Receipt";
+			$msg = '<p>Hi!</p><p>Please find attached payment receipt.</p>';
+			$orderDetails = $this->Common->getOrderDetails($order_id, $this->User->useDbConfig);
+			if(!empty($orderDetails['payment_image']) || $orderDetails['payment_image'] != '')
+			{
+				
+				$orgFile = $this->G_URL."/acesys/app/webroot/payment-images/".$orderDetails['payment_image'];
+				// $orgFile = $this->G_URL."/acesys/app/webroot/payment-images/1570119825_image.jpg";
+				$res = $this->Common->sendEmailMailgun($email,$subject,$msg,null,$orgFile);
+				if (strpos($res, '@acecare') !== false) 
+				{
+					$is_sent = 1;
+				} else 
+				{
+					$is_sent = 0;
+				}
+				$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$order_id.",'','','".$currentDate."',".$is_sent.",'".$msg."', '".$res."')";
+				$result = $db->_execute($query);	
+			}
+			echo 'ok';
+			exit;
+		}
 	}
 	function savePaymentImg()
 	{

@@ -12088,8 +12088,6 @@ class OrdersController extends AppController
 		//$this->set('answers', $answers);
 		$this->set('values', $values);
 
-
-
 		$this->set('history_keys',$history_keys);
 		$this->set('job_truck', $this->params['url']['job_truck']);
 		$this->set('orders', $orders);
@@ -14157,8 +14155,13 @@ class OrdersController extends AppController
 		}
 		$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$orderid.",".$cus_id.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
 		$result = $db->_execute($query);
+		if($result)
+		{
+			return true;
+			exit();
+		}
 		//$res = mail($email, $subject, $output, $header);
-		$this->redirect("orders/invoiceTabletPrint?order_id=$order_id&type=$type");
+		//$this->redirect("orders/invoiceTabletPrint?order_id=$order_id&type=$type");
 	}
 
 	function noInvoiceReviewLinks(){
@@ -15817,8 +15820,7 @@ function deleteUserFromCampaign()
 		$phone_number = !empty($cusPhone) ? $cusPhone : $_POST['phone'];
 		$cusId = !empty($cusId) ? $cusId : $_POST['cusId'];
 		$email = !empty($cusEmail) ? $cusEmail : $_POST['email'];
-		$textMessage = 	!empty($cusMessage) ? $cusMessage : $_POST['email'];	
-
+		$textMessage = 	!empty($cusMessage) ? $cusMessage : $_POST['message'];	
 		if(!empty($textMessage))
 		{
 			$message = mysql_real_escape_string($_POST['message']);
@@ -15892,24 +15894,27 @@ function deleteUserFromCampaign()
 		exit();
 	}
 
-	function convertDate()
+	// function convertDate()
+	// {
+	// 			error_reporting(E_ALL);
+	// 	$data = $this->Customer->query("SELECT DISTINCT phone, first_name, last_name FROM ace_rp_customers where city ='Indore'");
+	// 	exit();
+	// }
+
+	function sendInvoiceWithReviewLink()
 	{
-		$dateStr = str_replace("/","-","12/03/2019_11/06/2019");
-
-		$dates = explode('_', $dateStr);
-		print_r($dates[0]);
-		$date1 = strtotime($dates[0]); 
-		
-		$fdates = date("Y-M-D", $date1); 
-		
-		$date2 = strtotime($dates[1]); 
-		$tdates = date("Y-m-d", $date2); 
-
-		echo "<br>";
-		print_r($fdates);
-		echo "<br>";
-		print_r($tdates);
-				exit();
+		$email = $_POST['email'];
+		$cusPhone = $_POST['cell_phone'];
+		$cusId = $_POST['cus_id'];
+		$orderId = $_POST['order_id'];
+		$textSend = $this->sendReviewText($cusPhone, $email , '', $cusId);
+		$result = $this->emailInvoiceReviewLinks($orderId,$email, $cusId, $cusPhone);
+		if($result)
+		{
+			$response  = array("res" => "OK");
+	 			echo json_encode($response);
+	 			exit();
+		}
 	}
 }
 ?>

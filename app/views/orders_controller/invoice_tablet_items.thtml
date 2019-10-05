@@ -134,7 +134,7 @@
          <?php echo $html->input('Invoice/order_status_id', array('type'=>'hidden', 'value'=>$job['Order']['order_status_id'])); ?>
         <?php echo $html->input('Invoice/order_type_id', array('type'=>'hidden', 'value'=>$job['Order']['order_type_id'])); ?>
         <?php echo $html->input('Invoice/customer_id', array('type'=>'hidden', 'value'=>$job['Order']['customer_id'])); ?> 
-        <?php echo $html->input('Invoice/phone', array('type'=>'hidden', 'value'=>$job['Customer']['phone'])); ?>
+        <?php echo $html->input('Invoice/phone', array('type'=>'hidden', 'value'=>$job['Customer']['cell_phone'])); ?>
         <?php echo $html->input('Invoice/has_booking', array('type'=>'hidden', 'id'=>'has_booking', 'value'=>0)); ?>
         <?php echo $html->input('Invoice/city_id', array('type'=>'hidden', 'id'=>'city_id', 'value'=>$city_id)); ?>
         <div class="order_div">            

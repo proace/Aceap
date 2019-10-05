@@ -457,13 +457,14 @@ if (($common->getLoggedUserID()==$this->data['Order']['job_technician1_id'])
     });
 <? } ?>
     hst = 0;
-    if (subtotal>0) hst = subtotal*0.12;
+    // if (subtotal>0) hst = subtotal*0.12;
+    if (subtotal>0) hst = subtotal*0.05;
  	  total = subtotal+hst;
 		total = total.toFixed(2);
 		
     h = '<table class="total" cellspacing=0>';
 		h += '<tr><td align=right style="border-right:none;">Subtotal:</td><td align=right>'+subtotal.toFixed(2)+'</td></tr>';
-    h += '<tr><td align=right style="border-right:none;">HST:</td><td align=right>'+hst.toFixed(2)+'</td></tr>';
+    h += '<tr><td align=right style="border-right:none;">GST:</td><td align=right>'+hst.toFixed(2)+'</td></tr>';
 		h += '<tr><td align=right style="border-right:none;">Total:</td><td align=right>'+total+'</td></tr>';
 		balance = total;
 

@@ -7,6 +7,11 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_preview.js"></script>
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
 <style>
+.review-btn{
+    padding: 10px;
+    float: left;
+    margin-left: 10px;
+}
 td {
     font-size: 10pt; /* 12pt */
     width: 5mm !important;
@@ -83,7 +88,13 @@ th {
     foreach ($orders as $obj) {
 ?>
     <div id="container" style="width:750px">
+    
+    <input type="hidden" name="cusId" id="cusId" value="<?php echo $obj['Customer']['id']; ?>">
+    <input type="hidden" name="cusCellPhone" id="cusCellPhone" value="<?php echo $obj['Customer']['cell_phone']; ?>">
+    <input type="hidden" name="orderId" id="orderId" value="<?php echo $obj['Order']['id']; ?>">
+    <input type="hidden" name="loggedUserId" id="loggedUserId" value="<?php echo $common->getLoggedUserRoleID(); ?>">
     <div class="rtop">
+
       <div class="r1"></div>
       <div class="r2"><div class="r10"></div></div>
       <div class="r3"><div class="r11"></div></div>
@@ -427,13 +438,19 @@ th {
 <br />
 <br />
 <div class="center">
+<?php if($common->getLoggedUserRoleID() == 6 || $common->getLoggedUserRoleID() == 1){?>
+    <input type="text" class="review-btn" name="cusEmail" id="cusEmail" value="<?php echo $obj['Customer']['email']; ?>">
+<?php } ?>
 <?php if(isset($_GET['type']) && $_GET['type'] == "office") { ?>
 
 <?php } elseif($status == 8 || $status == 1) { ?>
 <!--<input type="button" value="Done" style="height:40px;" onclick="window.open('<?php echo BASE_URL. '/orders/invoiceTablet' ?>','_self')" />-->
-<input type="button" value="Payment" style="height:40px;" onclick="window.open('<?php echo BASE_URL. '/orders/invoiceTabletPayment' ?>?order_id=<?php echo $obj['Order']['id'];?>','_self')" />
+<!-- <input type="button" value="Payment" style="height:40px;" onclick="window.open('<?php echo BASE_URL. '/orders/invoiceTabletPayment' ?>?order_id=<?php echo $obj['Order']['id'];?>','_self')" /> -->
+<input type="button" class="review-btn" value="Email Invoice With Review Links" id="sendReviewEmail">
+
 <?php } else { ?>
-<input type="button" value="Payment" style="height:40px;" onclick="window.open('<?php echo BASE_URL. '/orders/invoiceTabletPayment' ?>?order_id=<?php echo $obj['Order']['id'];?>','_self')" />
+<!-- <input type="button" value="Payment" style="height:40px;" onclick="window.open('<?php echo BASE_URL. '/orders/invoiceTabletPayment' ?>?order_id=<?php echo $obj['Order']['id'];?>','_self')" /> -->
+<input type="button" class="review-btn" value="Email Invoice With Review Links" id="sendReviewEmail">
 <?php } ?>
 </div>
 </body>

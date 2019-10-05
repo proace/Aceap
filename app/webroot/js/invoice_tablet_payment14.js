@@ -235,7 +235,11 @@ $(function() {
 		computeValues();	
 	});
 	
-	$("#save_payment").click(function(){
+	// $("#save_payment").click(function(){
+	// 	SavePayment();	
+	// });
+
+	$("#saveJobPayment").click(function(){
 		SavePayment();	
 	});
 	$("#save-payment-image").click(function(){
@@ -245,12 +249,12 @@ $(function() {
 	
 	// check attach payment checkbox is checked
 
-	$("#attachPaymentImage").live("change", function(){
+	$("#paymnetReceipt").live("change", function(){
         if($(this).is(":checked"))
         {
-             $("#attachPaymentImage").val(1);
+             $("#paymnetReceipt").val(1);
         } else {
-        	$("#attachPaymentImage").val(0);
+        	$("#paymnetReceipt").val(0);
         }
      });
 });
@@ -485,7 +489,7 @@ function showPayments(){
 		});
 }
 
-function SavePayment(){
+/*function SavePayment(){
 	var userRole = $("#userRole").val();
 	var imageName = $("#imageName").val();
     var id = $('#InvoiceOrderId').val();
@@ -553,6 +557,80 @@ function SavePayment(){
 			 } else {
 			 	 showInvoiceReview();
 			 }
+		}
+	});
+}*/
+function SavePayment(){
+	var email = $("#receiptEmail").val();
+	var sendReceipt = $("#paymnetReceipt").val();
+	var userRole = $("#userRole").val();
+	var imageName = $("#imageName").val();
+    var id = $('#InvoiceOrderId').val();
+	var method = $("#PaymentPaymentMethodId").val();	
+	var element = $("#PaymentPaymentMethodId").find('option:selected'); 
+	var option = element.attr("show-picture"); 
+	var paymentOption = element.attr("show-payment"); 
+	var MessageOption = element.attr("show-message"); 
+	// var amount = $("#paid_by_amount").val();	
+	var amount = $("#current_balance").val();	
+	var orderId = $("#remOrderId").val();
+	
+	if (!method) {alert('A payment method should be selected!'); return;}
+	if(amount == '' && paymentOption == 1 )
+	{
+		alert("Payment amount can't be blank"); return;
+	}
+	var formdata = new FormData();
+	formdata.append("order_id",id);
+	formdata.append("method",method);
+	formdata.append("amount",amount);
+	formdata.append("payment_type",1);
+	formdata.append("show_message",MessageOption);
+	formdata.append("sendReceipt",sendReceipt);
+	formdata.append("email",email);
+	if(!imageName)
+	{
+		if(option == 1)
+		{
+			var fileval = $('#FileinputImg')[0].files[0];
+			if(fileval)
+			{
+				formdata.append('payment_image', fileval); 
+			} else {
+				if(sendReceipt == 1)
+				{
+					alert('Payment Image is required!');
+					return;
+				}
+			}
+		}else {
+			var fileval = $('#FileinputImg')[0].files[0];
+			if(fileval)
+			{
+				formdata.append('payment_image', fileval); 
+			}
+		}
+	} 
+	
+	$.ajax({
+		url: G_URL + "payments/savePayment",
+		type: "post",
+		data: formdata,
+		contentType: false,
+		processData: false,
+		cache: false,
+		success: function(data)
+		{
+			//showPayments();
+			$("#PaymentPaymentMethodId").removeAttr("readonly");
+			$("#paid_by_amount").removeAttr("readonly");
+			$("#auth_number").removeAttr("readonly");
+			$("#save_payment").removeAttr("disabled");
+			
+			$("#PaymentPaymentMethodId").val(0);
+			$("#paid_by_amount").val(0);
+			// location.reload(); 
+			window.location.href = G_URL+"orders/invoiceTablet";
 		}
 	});
 }

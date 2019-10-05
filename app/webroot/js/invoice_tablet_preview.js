@@ -1,7 +1,8 @@
 var G_URL;
 $(function() {
 	var test_server = "http://acesys.ace1.ca/acetest/acesys-2.0/index.php/";
-	var live_server = "http://acesys.ace1.ca/index.php/";
+	// var live_server = "http://acesys.ace1.ca/index.php/";
+	var live_server = "/acesys/index.php/"
 	
 	var l = $(location).attr('href');
 
@@ -28,5 +29,32 @@ $(function() {
 	$("#notes_link").click(function(){
 		
 	});
-	
+
+	$("#sendReviewEmail").click(function(){
+		var email = $("#cusEmail").val();
+		var cellPhone = $("#cusCellPhone").val();
+		var orderId = $("#orderId").val();
+		var cusId = $("#cusId").val();
+		var loggedUserId = $("#loggedUserId").val();
+		 $.ajax({
+	        url: G_URL+'orders/sendInvoiceWithReviewLink',
+	        dataType: 'html',
+	        type: 'POST',
+	        cache: false,
+	        data: {order_id:orderId, cus_id:cusId, cell_phone:cellPhone, email:email},
+	        success: function(data) {
+	        		res = JSON.parse(data);
+						if(res.res == "OK")
+						{
+							if(loggedUserId == 6)
+			        		{
+			        			window.location.href = G_URL+"pages/main";
+			        		} else {
+			        			window.location.href = G_URL+"orders/invoiceTabletPayment?order_id="+orderId;
+			        		}
+						}
+	            	}           
+        	});    
+		});
 });
+
