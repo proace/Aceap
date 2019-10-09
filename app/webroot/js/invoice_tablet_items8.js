@@ -124,16 +124,20 @@ $(function() {
 		G_NEW = true;		
 	});
 		
-	
+	$(".customName").live("change", function(){
+		var name = $(this).val();
+		$(this).parent().find(".customPartName").val(name);
+	});
+
 	computeValues();
 	
 	$(".discount_presets").live("change", function(){
 		computeValues();	
 	});
 
-	$(".price_payable").live("change", function(){
+	$(".org_price").live("change", function(){
 		price = $(this).val();
-		$(this).parent().find(".base_price").val(price);
+		$(this).parent().next().find(".base_price").val(price);
 		computeValues();	
 	});
 	
@@ -365,13 +369,20 @@ function addItem(container, item_id, name, item_category_id, price, price_purcha
 	index++;
 		
 	temp += '<tr class="' + bookingDetail + '" item_index="'+index+'">';
-    
+    console.log(name);
 	if(item_id == 1024) {		
 		temp += '	<td class="left">';
 		temp += '	<input type="text" style="width:200px;text-align:left" value="-custom part-" name="data[' + bookingItem + '][' + index + '][name]">';	
 	} else {
-		temp += '	<td class="left">' + name;
-		temp += '	<input type="hidden" value="' + name + '" name="data[' + bookingItem + '][' + index + '][name]">';
+		if(name == "-custom part-")
+		{
+			temp += '	<td class="left">' + '<input type="text" style="width: 145px;text-align: left;" class="customName" value="'+name+'">' ;
+			temp += '	<input type="hidden" class="customPartName" value="' + name + '" name="data[' + bookingItem + '][' + index + '][name]">';
+		} else {
+			temp += '	<td class="left">' + name;
+			temp += '	<input type="hidden" value="' + name + '" name="data[' + bookingItem + '][' + index + '][name]">';
+		}
+		
 	}
 	
 	temp += '	<input type="hidden" value="'+item_id+'" name="data[' + bookingItem + '][' + index + '][item_id]">';
@@ -414,12 +425,25 @@ function addItem(container, item_id, name, item_category_id, price, price_purcha
 	temp += '	</select>';
 	temp += '	</td>';    
 	
+	/*if(item_id == 1024) {
+		temp += '	<td class="center"><input type="text" class="base_price" name="data[' + bookingItem + '][' + index + '][price]" value="' + price + '" />';
+		temp += '	</td>';
+	} else {
+
+		temp += '	<td class="center"><input type="hidden" class="base_price" name="data[' + bookingItem + '][' + index + '][price]" value="' + price + '" />';
+		// temp += '	<input type="text" readonly="readonly" class="price_payable" value="0" /></td>';
+		temp += '	<input type="text" class="price_payable" value="0" /></td>';
+	}*/
+
+
 	if(item_id == 1024) {
 		temp += '	<td class="center"><input type="text" class="base_price" name="data[' + bookingItem + '][' + index + '][price]" value="' + price + '" />';
 		temp += '	</td>';
 	} else {
-		temp += '	<td class="center"><input type="hidden" class="base_price" name="data[' + bookingItem + '][' + index + '][price]" value="' + price + '" />';
+		temp += ' <td><input type="text" class="org_price" value="'+ price +'" /></td>';
+		temp += ' <td class="center"><input type="hidden" class="base_price" name="data[' + bookingItem + '][' + index + '][price]" value="' + price + '" />';
 		// temp += '	<input type="text" readonly="readonly" class="price_payable" value="0" /></td>';
+		
 		temp += '	<input type="text" class="price_payable" value="0" /></td>';
 	}
 	
@@ -483,9 +507,10 @@ function addSupplierItem(container) {
 	temp += '	</select>';
 	temp += '	</td>';    
 	
-	
+	temp += '<td><input type="text" class="org_price" value="0" /></td>';
 	temp += '	<td class="center"><input type="hidden" class="base_price" name="data[' + bookingItem + '][' + index + '][price]" value="0" />';
 	// temp += '	<input type="text" readonly="readonly" class="price_payable" value="0" /></td>';
+	
 	temp += '	<input type="text" class="price_payable" value="0" /></td>';
 	
 	

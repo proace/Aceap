@@ -259,9 +259,9 @@ class PaymentsController extends AppController
 				$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$order_id.",'','','".$currentDate."',".$is_sent.",'".$msg."', '".$res."')";
 				$result = $db->_execute($query);	
 			}
-			echo 'ok';
-			exit;
 		}
+		echo 'ok';
+		exit;
 	}
 	function savePaymentImg()
 	{

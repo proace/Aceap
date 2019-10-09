@@ -84,6 +84,12 @@ $(function() {
 	$(".quantity_presets").live("change", function(){
 		computeValues();	
 	});
+	$(".org_price").live("change", function(){
+		price = $(this).val();
+		console.log(price);
+		$(this).parent().next().find(".base_price").val(price);
+		computeValues();	
+	});
 	
 	//hover effect	
 	$('tbody tr').live('mouseover mouseout', function(event) {

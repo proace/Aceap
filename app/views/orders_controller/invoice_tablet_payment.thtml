@@ -10,7 +10,7 @@
 <!-- <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.quicksearch.js"></script> -->
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
-<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_payment14.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_payment14.js?time=<?= time()?>"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/eff_calculator.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/meio.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
@@ -427,6 +427,7 @@ function upload_photo(cur,i) {
                 <th>Installed/Done</th>
                 <th>Discount</th>                
                 <th>Quantity</th>
+                <th>Price</th>
                 <th>Payable</th> 
                 <th></th>              
             </tr>
@@ -463,6 +464,7 @@ function upload_photo(cur,i) {
                     </select>
                 	<!--<input type="text" name="data[BookingItem][<?php echo $item['item_id'] ?>][quantity]" value="<?php echo $item['quantity'] ?>" />-->
                 </td>
+                <td class="center"><input type="text" class="org_price" value="<?php echo $item['price'] ?>" /></td>
                 <td class="center">
                 	<input type="hidden" class="base_price" name="data[BookingItem][<?php echo $item['item_id'] ?>][price]" value="<?php echo $item['price'] ?>" />
                 	<input type="text" class="price_payable" value="0" />
