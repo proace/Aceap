@@ -56,5 +56,10 @@ $(function() {
 	            	}           
         	});    
 		});
+	$("#next_page").click(function(){
+		var loggedUserId = $("#loggedUserId").val();
+		var orderId = $("#orderId").val();
+		window.location.href = G_URL+"orders/invoiceTabletPayment?order_id="+orderId;
+	})
 });
 

@@ -193,7 +193,7 @@
 		else{
 			if(selectedStr == 'booking_source_id' || selectedStr == 'order_type_id' )
 			{
-				document.getElementById('callback_missed_call_dropdown').style.display = 'block';
+				document.getElementById('callback_missed_call_dropdown').style.display = '';
 			} else{
 
 				document.getElementById('callback_missed_call_dropdown').style.display = 'none';

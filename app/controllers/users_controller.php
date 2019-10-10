@@ -1144,7 +1144,7 @@ $h .= ' 		<tr>
 	{ 
 	 	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 	 	
- 		$query = "SELECT u.id, u.first_name, u.extension_id, u.session_id, r.name from ace_rp_users u INNER JOIN ace_rp_users_roles ur on ur.user_id = u.id INNER JOIN ace_rp_roles r on r.id = ur.role_id where u.is_login=1 AND u.id !=".$_SESSION['user']['id'];
+ 		$query = "SELECT u.id, u.first_name, u.extension_id, u.session_id, r.name from ace_rp_users u INNER JOIN ace_rp_users_roles ur on ur.user_id = u.id INNER JOIN ace_rp_roles r on r.id = ur.role_id where u.is_login=1 AND ur.role_id != 1 AND u.id !=".$_SESSION['user']['id'];
  		$result = $db->_execute($query);
  		$users = array();
  		while($row = mysql_fetch_array($result)) {

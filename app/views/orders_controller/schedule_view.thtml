@@ -474,7 +474,8 @@ $(document).ready(function(){
 //         });
 // });
     openPayPeriodPopup();
-    showChat();
+   
+   // showChat();
    
     // $("#close_chat_popup").live("click",function(){
     //      $( "#chat-window-card1" ).dialog("close");

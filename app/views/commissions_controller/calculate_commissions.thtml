@@ -719,12 +719,20 @@ $(document).ready(function()
 					<?php } ?>
 			     </td>
                 <td><textarea type="text" name="techCommArr[<?php echo $obj['id'] ?>][tech-notes]" placeholder="Notes" value="<?php echo $obj['tech_notes']?>"><?php echo $obj['tech_notes']?></textarea></td>
- 				<td width="100">
-				  <input id="techverify_1_<?=$obj['order_number']?>" class="techVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][1]['tech_verified'];?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,1,this, 1, <?=($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->totalPrPrice($rows_persons[1]['total_comm']) ?>);' comm_val="<?=$rows_persons[1]['total_comm']?>" order_id="<?=$obj['order_number']?>" seq_no="1"/>
-				</td>
- 				<td width="100">
-				  <input id="techUnverify_1_<?=$obj['order_number']?>" class="techUnVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][1]['tech_unverified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-not-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,1,this, 0, <?php echo ($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->totalPrPrice($rows_persons[1]['total_comm']) ?>);' order_id="<?=$obj['order_number']?>" seq_no="1"/>
-				</td>
+ 				<?php if(!empty($rows_persons[1]['total_comm']) || $rows_persons[1]['total_comm'] != '') {?>
+                    <td width="100">
+    				  <input id="techverify_1_<?=$obj['order_number']?>" class="techVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][1]['tech_verified'];?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,1,this, 1, <?=($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->totalPrPrice($rows_persons[1]['total_comm']) ?>);' comm_val="<?=$rows_persons[1]['total_comm']?>" order_id="<?=$obj['order_number']?>" seq_no="1"/>
+    				</td>
+                <?php } else {?>
+                    <td></td>
+                <?php } ?>
+                <?php if(!empty($rows_persons[1]['total_comm']) || $rows_persons[1]['total_comm'] != '') {?>
+     				<td width="100">
+    				  <input id="techUnverify_1_<?=$obj['order_number']?>" class="techUnVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][1]['tech_unverified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-not-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,1,this, 0, <?php echo ($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->totalPrPrice($rows_persons[1]['total_comm']) ?>);' order_id="<?=$obj['order_number']?>" seq_no="1"/>
+    				</td>
+                <?php } else {?>
+                    <td></td>
+                <?php } ?>
     </tr>
     <tr class="<?=$class?>">
 				<?php
@@ -792,12 +800,20 @@ $(document).ready(function()
 				  <input type="checkbox" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[2]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[2]);?>,this);'/>
 				</td>
 				<td></td>
-				<td width="100">
-				  <input id="techverify_2_<?=$obj['order_number']?>" class="techVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][2]['tech_verified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,2,this, 1, <?=($rows_persons[2]['total_comm']==0||$disable_tech[2])?'':$HtmlAssist->totalPrPrice($rows_persons[2]['total_comm']) ?>);' comm_val="<?=$rows_persons[2]['total_comm']?>" order_id="<?=$obj['order_number']?>" seq_no="2"/>
-				</td>
- 				<td width="100">
-				  <input id="techUnverify_2_<?=$obj['order_number']?>" class="techUnVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][2]['tech_unverified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-not-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,2,this, 0, <?php echo ($rows_persons[2]['total_comm']==0||$disable_tech[2])?'':$HtmlAssist->totalPrPrice($rows_persons[2]['total_comm']) ?>);' order_id="<?=$obj['order_number']?>" seq_no="2"/>
-				</td>
+				<?php if(!empty($rows_persons[2]['total_comm']) || $rows_persons[2]['total_comm'] != ''){?>
+                    <td width="100">
+    				  <input id="techverify_2_<?=$obj['order_number']?>" class="techVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][2]['tech_verified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,2,this, 1, <?=($rows_persons[2]['total_comm']==0||$disable_tech[2])?'':$HtmlAssist->totalPrPrice($rows_persons[2]['total_comm']) ?>);' comm_val="<?=$rows_persons[2]['total_comm']?>" order_id="<?=$obj['order_number']?>" seq_no="2"/>
+    				</td>
+                <?php } else{?>
+                    <td></td>
+                <?php } ?>
+                <?php if(!empty($rows_persons[2]['total_comm']) || $rows_persons[2]['total_comm'] != '') {?>
+     				<td width="100">
+    				  <input id="techUnverify_2_<?=$obj['order_number']?>" class="techUnVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][2]['tech_unverified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-not-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,2,this, 0, <?php echo ($rows_persons[2]['total_comm']==0||$disable_tech[2])?'':$HtmlAssist->totalPrPrice($rows_persons[2]['total_comm']) ?>);' order_id="<?=$obj['order_number']?>" seq_no="2"/>
+    				</td>
+                <?php } else {?>
+                    <td></td>
+                <?php } ?>
     </tr>
     <tr class="<?= $class ?>">
         <td rowspan=2 align="center"><b><?php echo $obj['order_type']; ?></b></td>
@@ -862,12 +878,20 @@ $(document).ready(function()
 				  <input type="checkbox" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[3]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[3]);?>,this);'/>
 				</td>
 				<td></td>
+            <?php if(!empty($rows_persons[3]['total_comm']) || $rows_persons[3]['total_comm'] != ''){?>
 			<td width="100">
 				  <input id="techverify_3_<?=$obj['order_number']?>" class="techVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][3]['tech_verified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,3,this, 1, <?=($rows_persons[3]['total_comm']==0||$disable_tech[3])?'':$HtmlAssist->totalPrPrice($rows_persons[3]['total_comm']) ?>);' comm_val="<?=$rows_persons[3]['total_comm']?>" order_id="<?=$obj['order_number']?>" seq_no="3"/>
-				</td>
+			</td>
+            <?php } else {?>
+                <td></td>
+            <?php } ?>
+            <?php if(!empty($rows_persons[3]['total_comm']) || $rows_persons[3]['total_comm'] != '') {?>
  				<td width="100">
 				  <input id="techUnverify_3_<?=$obj['order_number']?>" class="techUnVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][3]['tech_unverified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-not-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,3,this, 0, <?php echo ($rows_persons[3]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->totalPrPrice($rows_persons[3]['total_comm']) ?>);' order_id="<?=$obj['order_number']?>" seq_no="3"/>
 				</td>
+            <?php } else {?>
+                <td></td>
+            <?php } ?>
     </tr>
     <tr class="<?= $class ?>">
 				<?php
@@ -931,12 +955,20 @@ $(document).ready(function()
 				  <input type="checkbox" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[4]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[4]);?>,this);'/>
 				</td>
 				<td></td>
+                <?php if(!empty($rows_persons[4]['total_comm']) || $rows_persons[4]['total_comm'] != '') {?>
 				<td width="100">
 				  <input id="techverify_4_<?=$obj['order_number']?>" class="techVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][4]['tech_verified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,4,this, 1, <?=($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->totalPrPrice($rows_persons[4]['total_comm']) ?>);' comm_val="<?=$rows_persons[4]['total_comm']?>" order_id="<?=$obj['order_number']?>" seq_no="4"/>
 				</td>
- 				<td width="100">
-				  <input id="techUnverify_4_<?=$obj['order_number']?>" class="techUnVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][4]['tech_unverified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-not-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,4,this, 0, <?php echo ($rows_persons[4]['total_comm']==0||$disable_tech[4])?'':$HtmlAssist->totalPrPrice($rows_persons[4]['total_comm']) ?>);' order_id="<?=$obj['order_number']?>" seq_no="4" />
-				</td>		
+                <?php } else {?>
+                    <td></td>
+                <?php } ?>
+                <?php if(!empty($rows_persons[4]['total_comm']) || $rows_persons[4]['total_comm'] != '') {?>
+     				<td width="100">
+    				  <input id="techUnverify_4_<?=$obj['order_number']?>" class="techUnVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][4]['tech_unverified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-not-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,4,this, 0, <?php echo ($rows_persons[4]['total_comm']==0||$disable_tech[4])?'':$HtmlAssist->totalPrPrice($rows_persons[4]['total_comm']) ?>);' order_id="<?=$obj['order_number']?>" seq_no="4" />
+    				</td>		
+                <?php } else {?>
+                    <td></td>
+                <?php } ?>
     </tr>
 <?php endforeach; ?>
 <!-- <?php if ($techid) {?> -->

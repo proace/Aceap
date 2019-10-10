@@ -1366,6 +1366,25 @@ function upload_photo(cur,i) {
   }
 }
 $(document).ready(function(){
+   
+    $("#payment_receipt").live("click", function(){
+        var orderId = $('#OrderId').val();
+        var email = $('#emailinput').val();
+        $.ajax({
+          url: "<?=BASE_URL;?>/orders/sendOrderPaymentReceipt",
+          type: "POST",
+          data: {orderId : orderId, email: email},
+          success: function(data){
+            res = JSON.parse(data);
+            console.log("res=",res);
+                if(res.res == "OK")
+                {
+                    alert("Payment Receipt sent successfully.")
+                    // window.location.reload();
+                }
+          }
+        });
+    });
      $("#resendEmail").live("change", function(){
         if($(this).is(":checked"))
         {
@@ -2139,7 +2158,11 @@ $(document).ready(function(){
 /*#sendSeparateEmail #emailVal_ifr body {
 	display: block !important;
 }*/
-
+.receipt_btn{
+    position: absolute;
+    padding: 5px;
+    margin: 15px;
+}
 body {
 	display: block !important;
 }
@@ -3560,8 +3583,11 @@ function get_data($url)
 								<!-- <img src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png" image-name="<?php echo $imgPath; ?>"> -->
 								<div style="position: relative; padding:0; width: 30px;"> 
 									<span style="position:absolute;right: 0;"><img style="height: 15px;width: 12px;" id="delete-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?php echo $invoice_image_path; ?>"></span>
-									<img id="openImg" class="img" src="<?php echo $imgPath; ?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">					 		
+									<img id="openImg" class="img" src="<?php echo $imgPath; ?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">					 	
+                                    <input type="button" class="receipt_btn" name="payment_receipt" id="payment_receipt" value="Email">
 								</div>
+
+                               <!-- <input type="button" name="payment_receipt" id="payment_receipt" value="Email"> -->
 						 		<?php 
 					 		}else{
 					 			?>

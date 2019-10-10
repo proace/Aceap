@@ -369,22 +369,30 @@ function addItem(container, item_id, name, item_category_id, price, price_purcha
 	index++;
 		
 	temp += '<tr class="' + bookingDetail + '" item_index="'+index+'">';
-    console.log(name);
-	if(item_id == 1024) {		
-		temp += '	<td class="left">';
-		temp += '	<input type="text" style="width:200px;text-align:left" value="-custom part-" name="data[' + bookingItem + '][' + index + '][name]">';	
-	} else {
-		if(name == "-custom part-")
-		{
-			temp += '	<td class="left">' + '<input type="text" style="width: 145px;text-align: left;" class="customName" value="'+name+'">' ;
-			temp += '	<input type="hidden" class="customPartName" value="' + name + '" name="data[' + bookingItem + '][' + index + '][name]">';
-		} else {
-			temp += '	<td class="left">' + name;
-			temp += '	<input type="hidden" value="' + name + '" name="data[' + bookingItem + '][' + index + '][name]">';
-		}
+	// if(item_id == 1024) {		
+	// 	temp += '	<td class="left">';
+	// 	temp += '	<input type="text" style="width:200px;text-align:left" value="-custom part-" name="data[' + bookingItem + '][' + index + '][name]">';	
+	// } else {
+	// 	if(name == "-custom part-")
+	// 	{
+	// 		temp += '	<td class="left">' + '<input type="text" style="width: 145px;text-align: left;" class="customName" value="'+name+'">' ;
+	// 		temp += '	<input type="hidden" class="customPartName" value="' + name + '" name="data[' + bookingItem + '][' + index + '][name]">';
+	// 	} else {
+	// 		temp += '	<td class="left">' + name;
+	// 		temp += '	<input type="hidden" value="' + name + '" name="data[' + bookingItem + '][' + index + '][name]">';
+	// 	}
 		
+	// }
+	console.log("name=",name);
+	if(name == "-custom part-")
+	{
+		temp += '	<td class="left">' + '<input type="text" style="width: 145px;text-align: left;" class="customName" value="'+name+'">' ;
+		temp += '	<input type="hidden" class="customPartName" value="' + name + '" name="data[' + bookingItem + '][' + index + '][name]">';
+	} else {
+		temp += '	<td class="left">' + name;
+		temp += '	<input type="hidden" value="' + name + '" name="data[' + bookingItem + '][' + index + '][name]">';
 	}
-	
+
 	temp += '	<input type="hidden" value="'+item_id+'" name="data[' + bookingItem + '][' + index + '][item_id]">';
 	temp += '	<input type="hidden" value="' + price_purchase + '" name="data[' + bookingItem + '][' + index + '][price_purchase]">';
 	temp += '	<input type="hidden" value="' + item_category_id + '" name="data[' + bookingItem + '][' + index + '][item_category_id]">';
@@ -435,17 +443,18 @@ function addItem(container, item_id, name, item_category_id, price, price_purcha
 		temp += '	<input type="text" class="price_payable" value="0" /></td>';
 	}*/
 
-
-	if(item_id == 1024) {
-		temp += '	<td class="center"><input type="text" class="base_price" name="data[' + bookingItem + '][' + index + '][price]" value="' + price + '" />';
-		temp += '	</td>';
-	} else {
 		temp += ' <td><input type="text" class="org_price" value="'+ price +'" /></td>';
-		temp += ' <td class="center"><input type="hidden" class="base_price" name="data[' + bookingItem + '][' + index + '][price]" value="' + price + '" />';
-		// temp += '	<input type="text" readonly="readonly" class="price_payable" value="0" /></td>';
-		
-		temp += '	<input type="text" class="price_payable" value="0" /></td>';
-	}
+		temp += ' <td class="center"><input type="hidden" class="base_price" name="data[' + bookingItem + '][' + index + '][price]" value="' + price + '" />';		
+		temp += ' <input type="text" class="price_payable" value="0" /></td>';
+
+	// if(item_id == 1024) {
+	// 	temp += '	<td class="center"><input type="text" class="base_price" name="data[' + bookingItem + '][' + index + '][price]" value="' + price + '" />';
+	// 	temp += '	</td>';
+	// } else {
+	// 	temp += ' <td><input type="text" class="org_price" value="'+ price +'" /></td>';
+	// 	temp += ' <td class="center"><input type="hidden" class="base_price" name="data[' + bookingItem + '][' + index + '][price]" value="' + price + '" />';		
+	// 	temp += '	<input type="text" class="price_payable" value="0" /></td>';
+	// }
 	
 	temp += '	<td><input type="button" value=" X " class="delete_button" /></td>';
     temp += '</tr>';

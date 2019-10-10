@@ -281,6 +281,7 @@ $.get("<?=BASE_URL;?>/reports/transferCallbacks",
 
 				&nbsp;&nbsp;
 			</td>
+			Text Export &nbsp;&nbsp; <input type="checkbox" name="export_check" id="export_check">
 		</tr>
 </table>
 
@@ -361,7 +362,8 @@ $.get("<?=BASE_URL;?>/reports/transferCallbacks",
 		<input type="hidden" id='export_data_change' value="false">
 		<input type="button" onclick="Search_dispo()" name="Search_dispo" value="Search">&nbsp;&nbsp;
 		<input type="button" onclick="transfer()" name="save" value="Create">&nbsp;&nbsp;
-		<input type="button" onclick="export_data()" name="save" value="Export Data">&nbsp;&nbsp;
+		<input type="button" onclick="export_data(0)" name="save" value="Export Data">&nbsp;&nbsp;
+		<input type="button" onclick="export_data(1)" name="save" value="Export Text Data">&nbsp;&nbsp;
 
 		<img src="<?=ROOT_URL;?>/app/webroot/img/pink-loder.gif" style="width: 20px;vertical-align: bottom; display: none;" id="loader-img">
 	</tr>
@@ -717,8 +719,6 @@ function jobTypeChange_forcall(){
 
 function cityTypeChange_forcall(){
 
-	console.log("fhhgwefbsdfhdsvfsdfhjsdhjf");
-
 	search_forcall();
 }
 
@@ -830,7 +830,6 @@ function transfer_forcall(){
 				},
 			function(data){	
 				$("#loader-img-oncall").css('display', 'none');
-				console.log(data);
 				if(data == 1){
 					document.getElementById("numberofleads_call").value = 0;
 					document.getElementById("numberofrecords_forcall").innerHTML=0;
@@ -885,59 +884,62 @@ function Search_dispo(){
 }
 
 
-function export_data()
+function export_data(for_text)
 {
 /*var ct = document.getElementById("OrderJobTechnician2Id");
 var city = ct.options[ct.selectedIndex].value;*/
 
-var city = document.getElementById("OrderJobTechnician2Id").value;
+	var city = document.getElementById("OrderJobTechnician2Id").value;
 
-var campaing = document.getElementById("campaing").value;
-var numberofleads = document.getElementById("numberofleads").value;
+	var campaing = document.getElementById("campaing").value;
+	var numberofleads = document.getElementById("numberofleads").value;
 
-var fromdate = document.getElementById("ffromdate1").value;
-var ttodate = document.getElementById("ftodate1").value;
+	var fromdate = document.getElementById("ffromdate1").value;
+	var ttodate = document.getElementById("ftodate1").value;
 
-var job_type = document.getElementById("multi_select_job_types_hidd").value;
-var status = document.getElementById("multi_select_job_status_hidd").value;
-var callmodefrom = document.getElementById("callmodefrom1").value;
-var callmodeto = document.getElementById("callmodeto1").value;
+	var job_type = document.getElementById("multi_select_job_types_hidd").value;
+	var status = document.getElementById("multi_select_job_status_hidd").value;
+	var callmodefrom = document.getElementById("callmodefrom1").value;
+	var callmodeto = document.getElementById("callmodeto1").value;
 
-var disposition = document.getElementById("multi_select_call_result_hidd").value;
+	var disposition = document.getElementById("multi_select_call_result_hidd").value;
 
-var hidden_token = document.getElementById("hidden_token").value;
+	var hidden_token = document.getElementById("hidden_token").value;
 
-var Search_disposition = document.getElementById("Search_disposition").value;
+	var Search_disposition = document.getElementById("Search_disposition").value;
 
-var export_data_val = 'export_data_val';
+	var export_data_val = 'export_data_val';
 
-$.get("<?=BASE_URL;?>/reports/export_csv",
-			{fromdate:fromdate,
-				 ttodate:ttodate,
-				 city:city,
-				 campaing:campaing,
-				 numberofleads:numberofleads,
-				 status:status,
-				 jobtype:job_type,
-				 callmodefrom:callmodefrom,
-				 callmodeto:callmodeto,
-				 disposition:disposition,
-				 hidden_token:hidden_token,
-				 Search_disposition:Search_disposition,
-				 export_data_val:export_data_val
-			},
-		function(data){
-			var data = data.trim();
-			if(data == 'no'){
-				document.getElementById('job_tans_msg').innerHTML = 'File can not be export because currently no data present.';
-			}
-			else{
-				window.location = "/acesys/csv_folder/"+data+".csv";
-				document.getElementById('job_tans_msg').innerHTML = '';
-			}
+	$.get("<?=BASE_URL;?>/reports/export_csv",
+				{fromdate:fromdate,
+					 ttodate:ttodate,
+					 city:city,
+					 campaing:campaing,
+					 numberofleads:numberofleads,
+					 status:status,
+					 jobtype:job_type,
+					 callmodefrom:callmodefrom,
+					 callmodeto:callmodeto,
+					 disposition:disposition,
+					 hidden_token:hidden_token,
+					 Search_disposition:Search_disposition,
+					 export_data_val:export_data_val,
+					 for_text:for_text
+				},
+			function(data){
+				var data = data.trim();
+				if(data == 'no'){
+					document.getElementById('job_tans_msg').innerHTML = 'File can not be export because currently no data present.';
+				}
+				else{
+					window.location = "/acesys/csv_folder/"+data+".csv";
+					document.getElementById('job_tans_msg').innerHTML = '';
+				}
 		}); 
 
 }
+
+
 
 function search()
 {
@@ -978,7 +980,6 @@ $.get("<?=BASE_URL;?>/reports/transferCallbacksrecords",
 				 Search_disposition:Search_disposition
 			},
 		function(data){	
-			console.log(data);
 			document.getElementById("numberofleads").value = data;
 			document.getElementById("numberofrecords").innerHTML=data;
 			
@@ -1029,7 +1030,6 @@ function transfer(){
 				},
 			function(data){	
 				$("#loader-img").css('display', 'none');
-				console.log(data);
 				if(data == 1){
 					document.getElementById("numberofleads").value = 0;
 					document.getElementById("numberofrecords").innerHTML=0;

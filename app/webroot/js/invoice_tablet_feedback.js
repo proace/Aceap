@@ -49,9 +49,10 @@ $(function() {
 		//} else {
 		//	alert("Please put your initials");	
 		//}
-		if($("#FeedbackJobNotesTech").val() == "") {
-			alert("Fill in the notes");
-		} else $("#feedback_form").submit();
+		// if($("#FeedbackJobNotesTech").val() == "") {
+		// 	alert("Fill in the notes");
+		// } else $("#feedback_form").submit();
+		$("#feedback_form").submit();
 	});	
 
 

@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Invoice</title>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
-<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_preview.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_preview.js?time=<?= time()?>"></script>
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
 <style>
 .review-btn{
@@ -451,6 +451,9 @@ th {
 <?php } else { ?>
 <!-- <input type="button" value="Payment" style="height:40px;" onclick="window.open('<?php echo BASE_URL. '/orders/invoiceTabletPayment' ?>?order_id=<?php echo $obj['Order']['id'];?>','_self')" /> -->
 <input type="button" class="review-btn" value="Email Invoice With Review Links" id="sendReviewEmail">
+<?php } ?>
+<?php if($common->getLoggedUserRoleID() == 1) {?>
+<input type="button" class="review-btn" name="skip" value="Next" id="next_page">
 <?php } ?>
 </div>
 </body>
