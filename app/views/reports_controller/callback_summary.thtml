@@ -41,6 +41,16 @@ $.get("<?=BASE_URL;?>/reports/transferCallbacks",
 			document.forms.viewform.submit();
 		});  
 }
+$(document).ready(function(){
+$("#export_check").live("change", function(){
+        if($(this).is(":checked"))
+        {
+             $("#text_check_val").val(1);
+        } else {
+        	$("#text_check_val").val(0);
+        }
+     });
+});
 </script>
 <!-- renaming viewform to viewform1 because when selecting date in calender in new form, old form was submitting-->
 <form method="GET" action="<?= $PHP_SELF ?>" name="viewform1">
@@ -281,7 +291,10 @@ $.get("<?=BASE_URL;?>/reports/transferCallbacks",
 
 				&nbsp;&nbsp;
 			</td>
-			Text Export &nbsp;&nbsp; <input type="checkbox" name="export_check" id="export_check">
+		</tr>
+		<tr>
+			<td>Text Export &nbsp;&nbsp; <input type="checkbox" name="export_check" id="export_check"></td>
+			<input type="hidden" name="text_check_val" id="text_check_val">
 		</tr>
 </table>
 
@@ -964,6 +977,7 @@ var disposition = document.getElementById("multi_select_call_result_hidd").value
 var hidden_token = document.getElementById("hidden_token").value;
 
 var Search_disposition = document.getElementById("Search_disposition").value;
+var is_text = document.getElementById("text_check_val").value;
 
 $.get("<?=BASE_URL;?>/reports/transferCallbacksrecords",
 			{fromdate:fromdate,
@@ -977,7 +991,8 @@ $.get("<?=BASE_URL;?>/reports/transferCallbacksrecords",
 				 callmodeto:callmodeto,
 				 disposition:disposition,
 				 hidden_token:hidden_token,
-				 Search_disposition:Search_disposition
+				 Search_disposition:Search_disposition,
+				 is_text: is_text
 			},
 		function(data){	
 			document.getElementById("numberofleads").value = data;

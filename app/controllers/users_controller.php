@@ -29,6 +29,7 @@ class UsersController extends AppController
   
 	function edit()
 	{
+
 		$id = $_REQUEST['id'];
 		$roleID = $_REQUEST['roleId'];
 		$this->set('sm', 10);
@@ -135,6 +136,9 @@ class UsersController extends AppController
 			if($this->data['User']['phone'] == ''){
 				$this->User->invalidate('phone'); $isValid=false;
 			}
+			if($this->data['User']['extension_id'] == ''){
+				$this->User->invalidate('extension_id'); $isValid=false;
+			}
 			
 			//$this->data['Role']['user_id'] = $this->data['User']['id'];
 			//$this->User->Role->user_id = $this->data['User']['id'];
@@ -153,6 +157,7 @@ class UsersController extends AppController
 			//Validate & Validate
 			if($isValid)
 			{
+
 				if ($this->User->save($this->data['User']))
 				{
 					$this->Userrole->del($this->User->id);
@@ -1144,7 +1149,7 @@ $h .= ' 		<tr>
 	{ 
 	 	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 	 	
- 		$query = "SELECT u.id, u.first_name, u.extension_id, u.session_id, r.name from ace_rp_users u INNER JOIN ace_rp_users_roles ur on ur.user_id = u.id INNER JOIN ace_rp_roles r on r.id = ur.role_id where u.is_login=1 AND ur.role_id != 1 AND u.id !=".$_SESSION['user']['id'];
+ 		$query = "SELECT u.id, u.first_name, u.extension_id, u.session_id, r.name from ace_rp_users u INNER JOIN ace_rp_users_roles ur on ur.user_id = u.id INNER JOIN ace_rp_roles r on r.id = ur.role_id where u.is_login=1 AND ur.role_id != 1 AND u.extension_id !=0 AND u.id !=".$_SESSION['user']['id'];
  		$result = $db->_execute($query);
  		$users = array();
  		while($row = mysql_fetch_array($result)) {

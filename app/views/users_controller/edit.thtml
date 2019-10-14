@@ -73,7 +73,9 @@ $(function() {
 		<td>Eprint Terminal:</td><td><?php echo $html->selectTag('User/eprint_id',$eprint,$data['User']['eprint_id']);?></td>
 	</tr>
     <tr>
-		<td>Extension #:</td><td><?php echo $html->input('User/extension_id');?></td>
+		<td>Extension #:</td><td><?php echo $html->input('User/extension_id');?>
+       <font color="red"><b> <?php echo $html->tagErrorMsg('User/extension_id', 'Please enter extension id for this user.') ?> </b></font>
+        </td>
 		<td>&nbsp;</td>
 	</tr>
 	<tr>

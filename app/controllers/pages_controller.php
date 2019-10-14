@@ -768,7 +768,8 @@ class PagesController extends AppController{
                 $off   = 0;
                 $where = "where sl.phone_number = '".$search_str."' ";
             } else {
-                $where   = "where sl.id in (select max(id) from ace_rp_sms_log where sms_type = 2  group by phone_number order by id desc )";
+                // $where   = "where sl.id in (select max(id) from ace_rp_sms_log where sms_type = 2  group by phone_number order by id desc )";
+                $where   = "where sl.id in (select max(id) from ace_rp_sms_log group by phone_number order by id desc )";
             }
 
           /*  $textData = "SELECT concat(cu.first_name, ' ', cu.last_name) from_name, sl.message, sl.phone_number, sl.sms_type, sl.id from ace_rp_sms_log sl INNER JOIN ace_rp_customers cu ON ((sl.phone_number = cu.cell_phone) OR (sl.phone_number = cu.phone)) ".$where." order by sms_date desc limit ".$off.", ".$limit;*/

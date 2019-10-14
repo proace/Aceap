@@ -1,4 +1,4 @@
-<? 
+<? ob_start();
 //error_reporting(E_ALL);
 
 // This class represents all the reports created under the ACE System
@@ -1802,219 +1802,229 @@ class ReportsController extends AppController
 	}
 
 	function export_csv(){
-		$condtion = "";
-		$condtion2 = "";
-		$records1 = 0;
-		// Dates		
-		$fdate = isset($_REQUEST['fromdate'])?$_REQUEST['fromdate']:'';
-		$tdate = isset($_REQUEST['ttodate'])?$_REQUEST['ttodate']:'';
-		$forText = isset($_REQUEST['for_text'])?$_REQUEST['for_text']:'';
+        $condtion = "";
+        $condtion2 = "";
+        $records1 = 0;
+        // Dates        
+        $fdate = isset($_REQUEST['fromdate'])?$_REQUEST['fromdate']:'';
+        $tdate = isset($_REQUEST['ttodate'])?$_REQUEST['ttodate']:'';
+        $forText = isset($_REQUEST['for_text'])?$_REQUEST['for_text']:'';
 
-		if(isset($_REQUEST['city'])&& !empty($_REQUEST['city'])){
-			$condtion2 .= " AND c.city='".$_REQUEST['city']."'";
-			$condtion .= " AND c.city='".$_REQUEST['city']."'";		
-		}
+        if(isset($_REQUEST['city'])&& !empty($_REQUEST['city'])){
+            $condtion2 .= " AND c.city='".$_REQUEST['city']."'";
+            $condtion .= " AND c.city='".$_REQUEST['city']."'";     
+        }
 
-		if(!empty($fdate)&& !empty($tdate)){
-			$fdate = date("Y-m-d", strtotime($fdate));
-			$tdate = date("Y-m-d", strtotime($tdate));
-			$condtion .= "  AND c.callback_date BETWEEN '".$fdate."' AND '".$tdate."'";
-		}
+        if(!empty($fdate)&& !empty($tdate)){
+            $fdate = date("Y-m-d", strtotime($fdate));
+            $tdate = date("Y-m-d", strtotime($tdate));
+            // $condtion .= "  AND c.callback_date BETWEEN '".$fdate."' AND '".$tdate."'";
+            $condtion .= "  AND arc.booking_date BETWEEN '".$fdate."' AND '".$tdate."'";
+        }
+        if(isset($_REQUEST['jobtype'])&& !empty($_REQUEST['jobtype'])){
+            $ex_data = explode(',', $_REQUEST['jobtype']);
+            $job_type = "'".implode("','", $ex_data)."'";
+            $condtion .= " AND arc.order_type_id IN ($job_type)";   
+        }
 
-		$db =& ConnectionManager::getDataSource('default');
+        if(isset($_REQUEST['status'])&& !empty($_REQUEST['status'])){
+            $ex_data = explode(',', $_REQUEST['status']);
+            $job_status = "'".implode("','", $ex_data)."'";
+            $condtion .= " AND arc.order_status_id IN ($job_status)";
+        }
+        $db =& ConnectionManager::getDataSource('default');
 
-			// if($_REQUEST['hidden_token'] == 'yes'){
-			// 	if(!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])){
-			// 		$callmodefrom = isset($_REQUEST['callmodefrom'])?$_REQUEST['callmodefrom']:'';
-			// 		$callmodeto = isset($_REQUEST['callmodeto'])?$_REQUEST['callmodeto']:'';
+            // if($_REQUEST['hidden_token'] == 'yes'){
+            //  if(!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])){
+            //      $callmodefrom = isset($_REQUEST['callmodefrom'])?$_REQUEST['callmodefrom']:'';
+            //      $callmodeto = isset($_REQUEST['callmodeto'])?$_REQUEST['callmodeto']:'';
 
-			// 		$callmodefrom = date("Y-m-d", strtotime($callmodefrom));
-			// 		$callmodeto = date("Y-m-d", strtotime($callmodeto));
+            //      $callmodefrom = date("Y-m-d", strtotime($callmodefrom));
+            //      $callmodeto = date("Y-m-d", strtotime($callmodeto));
 
-			// 		$condtion2 .= "  AND ach.callback_date BETWEEN '".$callmodefrom."' AND '".$callmodeto."'";
-			// 	}
-			// 	if(isset($_REQUEST['disposition'])&& !empty($_REQUEST['disposition'])){
-			// 		$ex_data = explode(',', $_REQUEST['disposition']);
-			// 		$str3 = "'".implode("','", $ex_data)."'";
-			// 		$condtion2 .= " AND ach.call_result_id IN ($str3)";	
-			// 	}
-			// 	if((!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])) || !empty($_REQUEST['disposition'])){
-			// 		$query1 = "SELECT *, `c`.`first_name`,`c`.`last_name`,`c`.`phone`,`c`.`city`,`c`.`email`,`c`.`address_street`,
-			// 		`c`.`address_street_number`, `ach`.`call_date` , `ach`.`call_result_id` as `disposition` FROM ace_rp_call_history ach INNER JOIN (SELECT customer_id, MAX( id ) 
-			// 	    AS MaxId FROM ace_rp_call_history GROUP BY customer_id ) topscore 
-			// 		ON ach.customer_id = topscore.customer_id
-			// 		AND ach.id = topscore.MaxId INNER JOIN ace_rp_call_results cr 
-			// 		ON cr.id = ach.call_result_id INNER JOIN ace_rp_customers c ON c.id = ach.customer_id
-			// 		WHERE ach.call_result_id !='' ".$condtion2."";
-			// 		$result = $db->_execute($query1);
-			// 	}
-			// } else {
+            //      $condtion2 .= "  AND ach.callback_date BETWEEN '".$callmodefrom."' AND '".$callmodeto."'";
+            //  }
+            //  if(isset($_REQUEST['disposition'])&& !empty($_REQUEST['disposition'])){
+            //      $ex_data = explode(',', $_REQUEST['disposition']);
+            //      $str3 = "'".implode("','", $ex_data)."'";
+            //      $condtion2 .= " AND ach.call_result_id IN ($str3)"; 
+            //  }
+            //  if((!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])) || !empty($_REQUEST['disposition'])){
+            //      $query1 = "SELECT *, `c`.`first_name`,`c`.`last_name`,`c`.`phone`,`c`.`city`,`c`.`email`,`c`.`address_street`,
+            //      `c`.`address_street_number`, `ach`.`call_date` , `ach`.`call_result_id` as `disposition` FROM ace_rp_call_history ach INNER JOIN (SELECT customer_id, MAX( id ) 
+            //      AS MaxId FROM ace_rp_call_history GROUP BY customer_id ) topscore 
+            //      ON ach.customer_id = topscore.customer_id
+            //      AND ach.id = topscore.MaxId INNER JOIN ace_rp_call_results cr 
+            //      ON cr.id = ach.call_result_id INNER JOIN ace_rp_customers c ON c.id = ach.customer_id
+            //      WHERE ach.call_result_id !='' ".$condtion2."";
+            //      $result = $db->_execute($query1);
+            //  }
+            // } else {
 
-			// 	$query1 = "SELECT `c`.`id`,  `c`.`first_name`,`c`.`last_name`,`c`.`phone`,`c`.`city`,`c`.`email`,`c`.`address_street`,
-			// 		`c`.`address_street_number` FROM ace_rp_customers c where id IS NOT NULL".$condtion."";
+            //  $query1 = "SELECT `c`.`id`,  `c`.`first_name`,`c`.`last_name`,`c`.`phone`,`c`.`city`,`c`.`email`,`c`.`address_street`,
+            //      `c`.`address_street_number` FROM ace_rp_customers c where id IS NOT NULL".$condtion."";
 
-			// 		$result = $db->_execute($query1);	
-			// }
+            //      $result = $db->_execute($query1);   
+            // }
 
-			if($_REQUEST['hidden_token'] == 'yes'){
-				if(!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])){
-					$callmodefrom = isset($_REQUEST['callmodefrom'])?$_REQUEST['callmodefrom']:'';
-					$callmodeto = isset($_REQUEST['callmodeto'])?$_REQUEST['callmodeto']:'';
+            if($_REQUEST['hidden_token'] == 'yes'){
+                if(!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])){
+                    $callmodefrom = isset($_REQUEST['callmodefrom'])?$_REQUEST['callmodefrom']:'';
+                    $callmodeto = isset($_REQUEST['callmodeto'])?$_REQUEST['callmodeto']:'';
 
-					$callmodefrom = date("Y-m-d", strtotime($callmodefrom));
-					$callmodeto = date("Y-m-d", strtotime($callmodeto));
+                    $callmodefrom = date("Y-m-d", strtotime($callmodefrom));
+                    $callmodeto = date("Y-m-d", strtotime($callmodeto));
 
-					$condtion2 .= "  AND ach.callback_date BETWEEN '".$callmodefrom."' AND '".$callmodeto."'";
-				}
-				if(isset($_REQUEST['disposition'])&& !empty($_REQUEST['disposition'])){
-					$ex_data = explode(',', $_REQUEST['disposition']);
-					$str3 = "'".implode("','", $ex_data)."'";
-					$condtion2 .= " AND ach.call_result_id IN ($str3)";	
-				}
-				if((!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])) || !empty($_REQUEST['disposition'])){
-					if($forText == 1)
-					{
-						$query1 = "SELECT *, `c`.`first_name`,`c`.`last_name`,`c`.`phone` as phone_number FROM ace_rp_call_history ach INNER JOIN (SELECT customer_id, MAX( id ) 
-					    AS MaxId FROM ace_rp_call_history GROUP BY customer_id ) topscore 
-						ON ach.customer_id = topscore.customer_id
-						AND ach.id = topscore.MaxId INNER JOIN ace_rp_call_results cr 
-						ON cr.id = ach.call_result_id INNER JOIN ace_rp_customers c ON c.id = ach.customer_id
-						WHERE ach.call_result_id !='' ".$condtion2." group by c.phone UNION  SELECT *, `c`.`first_name`,`c`.`last_name`,`c`.`cell_phone` as phone_number FROM ace_rp_call_history ach INNER JOIN (SELECT customer_id, MAX( id ) 
-					    AS MaxId FROM ace_rp_call_history GROUP BY customer_id ) topscore 
-						ON ach.customer_id = topscore.customer_id
-						AND ach.id = topscore.MaxId INNER JOIN ace_rp_call_results cr 
-						ON cr.id = ach.call_result_id INNER JOIN ace_rp_customers c ON c.id = ach.customer_id
-						WHERE ach.call_result_id !='' ".$condtion2." group by c.cell_phone";
-					} else {
-						$query1 = "SELECT *, `c`.`first_name`,`c`.`last_name`,`c`.`phone`,`c`.`city`,`c`.`email`,`c`.`address_street`,
-						`c`.`address_street_number`, `ach`.`call_date` , `ach`.`call_result_id` as `disposition` FROM ace_rp_call_history ach INNER JOIN (SELECT customer_id, MAX( id ) 
-					    AS MaxId FROM ace_rp_call_history GROUP BY customer_id ) topscore 
-						ON ach.customer_id = topscore.customer_id
-						AND ach.id = topscore.MaxId INNER JOIN ace_rp_call_results cr 
-						ON cr.id = ach.call_result_id INNER JOIN ace_rp_customers c ON c.id = ach.customer_id
-						WHERE ach.call_result_id !='' ".$condtion2."";
-						
-					}
-					$result = $db->_execute($query1);
-				}
-			} else {
-				if($forText == 1)
-				{
+                    $condtion2 .= "  AND ach.callback_date BETWEEN '".$callmodefrom."' AND '".$callmodeto."'";
+                }
+                if(isset($_REQUEST['disposition'])&& !empty($_REQUEST['disposition'])){
+                    $ex_data = explode(',', $_REQUEST['disposition']);
+                    $str3 = "'".implode("','", $ex_data)."'";
+                    $condtion2 .= " AND ach.call_result_id IN ($str3)"; 
+                }
+                if((!empty($_REQUEST['callmodefrom'])&& !empty($_REQUEST['callmodeto'])) || !empty($_REQUEST['disposition'])){
+                    if($forText == 1)
+                    {
+                        $query1 = "SELECT *, `c`.`first_name`,`c`.`last_name`,`c`.`phone` as phone_number FROM ace_rp_call_history ach INNER JOIN (SELECT customer_id, MAX( id ) 
+                        AS MaxId FROM ace_rp_call_history GROUP BY customer_id ) topscore 
+                        ON ach.customer_id = topscore.customer_id
+                        AND ach.id = topscore.MaxId INNER JOIN ace_rp_call_results cr 
+                        ON cr.id = ach.call_result_id INNER JOIN ace_rp_customers c ON c.id = ach.customer_id
+                        WHERE ach.call_result_id !='' ".$condtion2." group by c.phone UNION  SELECT *, `c`.`first_name`,`c`.`last_name`,`c`.`cell_phone` as phone_number FROM ace_rp_call_history ach INNER JOIN (SELECT customer_id, MAX( id ) 
+                        AS MaxId FROM ace_rp_call_history GROUP BY customer_id ) topscore 
+                        ON ach.customer_id = topscore.customer_id
+                        AND ach.id = topscore.MaxId INNER JOIN ace_rp_call_results cr 
+                        ON cr.id = ach.call_result_id INNER JOIN ace_rp_customers c ON c.id = ach.customer_id
+                        WHERE ach.call_result_id !='' ".$condtion2." group by c.cell_phone";
+                    } else {
+                        $query1 = "SELECT *, `c`.`first_name`,`c`.`last_name`,`c`.`phone`,`c`.`city`,`c`.`email`,`c`.`address_street`,
+                        `c`.`address_street_number`, `ach`.`call_date` , `ach`.`call_result_id` as `disposition` FROM ace_rp_call_history ach INNER JOIN (SELECT customer_id, MAX( id ) 
+                        AS MaxId FROM ace_rp_call_history GROUP BY customer_id ) topscore 
+                        ON ach.customer_id = topscore.customer_id
+                        AND ach.id = topscore.MaxId INNER JOIN ace_rp_call_results cr 
+                        ON cr.id = ach.call_result_id INNER JOIN ace_rp_customers c ON c.id = ach.customer_id
+                        WHERE ach.call_result_id !='' ".$condtion2."";
+                        
+                    }
+                    $result = $db->_execute($query1);
+                }
+            } else {
+                if($forText == 1)
+                {
 
-					$query1 = "SELECT  `c`.`id`,`c`.`first_name`,`c`.`last_name`,`c`.`phone` as phone_number FROM ace_rp_customers c where id IS NOT NULL".$condtion." group by c.phone UNION SELECT `c`.`id`, `c`.`first_name`,`c`.`last_name`,`c`.`cell_phone` as phone_number FROM ace_rp_customers c where id IS NOT NULL".$condtion." group by c.cell_phone ";
-				} else {
-					$query1 = "SELECT `c`.`id`,  `c`.`first_name`,`c`.`last_name`,`c`.`phone`,`c`.`city`,`c`.`email`,`c`.`address_street`,
-			 		`c`.`address_street_number` FROM ace_rp_customers c where id IS NOT NULL".$condtion."";
-				}
+                    $query1 = "SELECT  `c`.`id`,`c`.`first_name`,`c`.`last_name`,`c`.`phone` as phone_number FROM ace_rp_customers c INNER JOIN ace_rp_orders arc ON arc.customer_id = c.id where c.id IS NOT NULL AND arc.id = (select max(id) from ace_rp_orders where customer_id = c.id) ".$condtion." group by c.phone UNION SELECT `c`.`id`, `c`.`first_name`,`c`.`last_name`,`c`.`cell_phone` as phone_number FROM ace_rp_customers c INNER JOIN ace_rp_orders arc ON arc.customer_id = c.id where c.id IS NOT NULL AND arc.id = (select max(id) from ace_rp_orders where customer_id = c.id) ".$condtion." group by c.cell_phone ";
+                } else {
+                    $query1 = "SELECT `c`.`id`,  `c`.`first_name`,`c`.`last_name`,`c`.`phone`,`c`.`city`,`c`.`email`,`c`.`address_street`,
+                    `c`.`address_street_number` FROM ace_rp_customers c INNER JOIN ace_rp_orders arc ON arc.customer_id = c.id where c.id IS NOT NULL  AND arc.id = (select max(id) from ace_rp_orders where customer_id = c.id) ".$condtion."";
+                }
 
-					$result = $db->_execute($query1);	
-			}
+                    $result = $db->_execute($query1);   
+            }
 
 
-			$total_records = array();
+            $total_records = array();
 
-			$i=0;
-			$reference = null;
-			$job_type = null;
-			$address_street = null;
-			$first_name = null;
-			$last_name = null;
-			$city = null;
-			$disposition = null;
-			$last_job_date = null;
-			$phone = null;
-			$email = null;
-			$call_date = null;
-			$address_street_number = null;
+            $i=0;
+            $reference = null;
+            $job_type = null;
+            $address_street = null;
+            $first_name = null;
+            $last_name = null;
+            $city = null;
+            $disposition = null;
+            $last_job_date = null;
+            $phone = null;
+            $email = null;
+            $call_date = null;
+            $address_street_number = null;
 
-			$CallResult_despo = $this->HtmlAssist->table2array($this->CallResult->findAll(), 'id', 'name');
+            $CallResult_despo = $this->HtmlAssist->table2array($this->CallResult->findAll(), 'id', 'name');
 
-			if($forText == 1) 
-			{
-				while($row1 = mysql_fetch_array($result)) 
-				{
-					$total_records[$i] = $row1['id'];
-					$first_name[$i] = $row1['first_name'];
-					$last_name[$i] = $row1['last_name'];
-					$phone[$i] = $row1['phone_number'];
-					$i++;
-				}
-				if(count($total_records) != 0){
-					$j = 0;
-					for ($i=1; $i <= count($total_records); $i++) {
-						if($i == count($total_records)){
-							if($i == 1){
-								$whole_str[] = "First Name,Last Name,Phone Number";
-							}
-							$whole_str[] ="$first_name[$j],$last_name[$j],$phone[$j]";
-						}
-						else{
-							if($i == 1){
-								$whole_str[] = "First Name,Last Name, Phone Number";
-							}
-							$whole_str[] ="$first_name[$j],$last_name[$j],$phone[$j]";
-						}
-						$j++;
-					}
-				}
-			}
-			 else
-			 {
-				while($row1 = mysql_fetch_array($result)) 
-				{
-					$total_records[$i] = $row1['id'];
-					$first_name[$i] = $row1['first_name'];
-					$last_name[$i] = $row1['last_name'];
-					$city[$i] = $row1['city'];
-					$address_street[$i] = $row1['address_street'];
-					$phone[$i] = $row1['phone'];
-					$disposition[$i] = isset($CallResult_despo[$row1['disposition']]) ? $CallResult_despo[$row1['disposition']] :'';
-					$reference[$i] = $row1['reference'];
-					$email[$i] = $row1['email'];
-					$call_date[$i] = isset($row1['call_date']) ? $row1['call_date'] : '';
-					$address_street_number[$i] = $row1['address_street_number'];
+            if($forText == 1) 
+            {
+                while($row1 = mysql_fetch_array($result)) 
+                {
+                    $total_records[$i] = $row1['id'];
+                    $first_name[$i] = $row1['first_name'];
+                    $last_name[$i] = $row1['last_name'];
+                    $phone[$i] = $row1['phone_number'];
+                    $i++;
+                }
+                if(count($total_records) != 0){
+                    $j = 0;
+                    for ($i=1; $i <= count($total_records); $i++) {
+                        if($i == count($total_records)){
+                            if($i == 1){
+                                $whole_str[] = "First Name,Last Name,Phone Number";
+                            }
+                            $whole_str[] ="$first_name[$j],$last_name[$j],$phone[$j]";
+                        }
+                        else{
+                            if($i == 1){
+                                $whole_str[] = "First Name,Last Name, Phone Number";
+                            }
+                            $whole_str[] ="$first_name[$j],$last_name[$j],$phone[$j]";
+                        }
+                        $j++;
+                    }
+                }
+            }
+             else
+             {
+                while($row1 = mysql_fetch_array($result)) 
+                {
+                    $total_records[$i] = $row1['id'];
+                    $first_name[$i] = $row1['first_name'];
+                    $last_name[$i] = $row1['last_name'];
+                    $city[$i] = $row1['city'];
+                    $address_street[$i] = $row1['address_street'];
+                    $phone[$i] = $row1['phone'];
+                    $disposition[$i] = isset($CallResult_despo[$row1['disposition']]) ? $CallResult_despo[$row1['disposition']] :'';
+                    $reference[$i] = $row1['reference'];
+                    $email[$i] = $row1['email'];
+                    $call_date[$i] = isset($row1['call_date']) ? $row1['call_date'] : '';
+                    $address_street_number[$i] = $row1['address_street_number'];
 
-					$i++;
-				}
-				if(count($total_records) != 0){
-					$j = 0;
-					for ($i=1; $i <= count($total_records); $i++) {
-						if($i == count($total_records)){
-							if($i == 1){
-								$whole_str[] = "First Name,Last Name,House number,Phone,City,Email,Address,Disposition,Last call made date";
-							}
-							$whole_str[] ="$first_name[$j],$last_name[$j],$address_street_number[$j],$phone[$j],$city[$j],$email[$j],$address_street[$j],$disposition[$j],$call_date[$j]";
-						}
-						else{
-							if($i == 1){
-								$whole_str[] = "First Name,Last Name,House number,Phone,City,Email,Address,Disposition,Last call made date";
-							}
-							$whole_str[] ="$first_name[$j],$last_name[$j],$address_street_number[$j],$phone[$j],$city[$j],$email[$j],$address_street[$j],$disposition[$j],$call_date[$j]";
-						}
-						$j++;
-					}
-				}
-			}
-			if($_REQUEST['export_data_val'] == 'export_data_val'){
-				$filename = md5(date('Y-m-d H:i:s:u'));
+                    $i++;
+                }
+                if(count($total_records) != 0){
+                    $j = 0;
+                    for ($i=1; $i <= count($total_records); $i++) {
+                        if($i == count($total_records)){
+                            if($i == 1){
+                                $whole_str[] = "First Name,Last Name,House number,Phone,City,Email,Address,Disposition,Last call made date";
+                            }
+                            $whole_str[] ="$first_name[$j],$last_name[$j],$address_street_number[$j],$phone[$j],$city[$j],$email[$j],$address_street[$j],$disposition[$j],$call_date[$j]";
+                        }
+                        else{
+                            if($i == 1){
+                                $whole_str[] = "First Name,Last Name,House number,Phone,City,Email,Address,Disposition,Last call made date";
+                            }
+                            $whole_str[] ="$first_name[$j],$last_name[$j],$address_street_number[$j],$phone[$j],$city[$j],$email[$j],$address_street[$j],$disposition[$j],$call_date[$j]";
+                        }
+                        $j++;
+                    }
+                }
+            }
+            if($_REQUEST['export_data_val'] == 'export_data_val'){
+                $filename = md5(date('Y-m-d H:i:s:u'));
 
-				$filepath = $_SERVER['DOCUMENT_ROOT']."/acesys/csv_folder/$filename.csv";
-				header('Content-Type: text/csv');
-				header('Content-Disposition: attachment; filename=$filename.csv');
-						
-				$fp = fopen($filepath, 'wb');
-				foreach ( $whole_str as $line ) {
-				    $val = explode(",", $line);
-				    fputcsv($fp, $val);
-				}
-				fclose($fp);
-				echo "$filename";
-				die;
-			}
-			else{
-				echo 'no';exit;
-			}
-	}
+                $filepath = $_SERVER['DOCUMENT_ROOT']."/acesys/csv_folder/$filename.csv";
+                header('Content-Type: text/csv');
+                header('Content-Disposition: attachment; filename=$filename.csv');               
+                $fp = fopen($filepath, 'wb');
+                foreach ( $whole_str as $line ) {
+                    $val = explode(",", $line);
+                    fputcsv($fp, $val);
+                }
+                fclose($fp);
+                echo "$filename";
+                die;
+            }
+            else{
+                echo 'no';exit;
+            }
+    }
 
 	function transferCallbacksrecords()
 	{
@@ -2023,16 +2033,34 @@ class ReportsController extends AppController
 		$condtion2 = "";	
 		$fdate = isset($_REQUEST['fromdate'])?$_REQUEST['fromdate']:'';
 		$tdate = isset($_REQUEST['ttodate'])?$_REQUEST['ttodate']:'';
+        $is_text = isset($_REQUEST['is_text'])?$_REQUEST['is_text']:'';
 		if(!empty($fdate) && !empty($tdate))
 		{
 			$fdate = date("Y-m-d", strtotime($fdate));
 			$tdate = date("Y-m-d", strtotime($tdate));
-			$condtion .= " AND c.callback_date BETWEEN '".$fdate."' AND '".$tdate."'";
+			// $condtion .= " AND c.callback_date BETWEEN '".$fdate."' AND '".$tdate."'";
+			$condtion .= " AND arc.booking_date BETWEEN '".$fdate."' AND '".$tdate."'";
 		}
 		if(isset($_REQUEST['city']) && !empty($_REQUEST['city']))
 		{
 			$condtion2 .= " AND c.city='".$_REQUEST['city']."'";	
 			$condtion .= " AND c.city='".$_REQUEST['city']."'";		
+		}
+
+		if(isset($_REQUEST['jobtype'])&& !empty($_REQUEST['jobtype'])){
+			/*$condtion .= "  AND arc.order_type_id = '".$_REQUEST['jobtype']."'";*/	
+			$ex_data = explode(',', $_REQUEST['jobtype']);
+			$job_type = "'".implode("','", $ex_data)."'";
+			$condtion .= " AND arc.order_type_id IN ($job_type)";	
+			//$condtion2 .= " AND arc.order_type_id IN ($job_type)";	
+		}
+
+		if(isset($_REQUEST['status'])&& !empty($_REQUEST['status'])){
+			/*$condtion .= "  AND arc.order_status_id = '".$_REQUEST['status']."'";*/
+			$ex_data = explode(',', $_REQUEST['status']);
+			$job_status = "'".implode("','", $ex_data)."'";
+			$condtion .= " AND arc.order_status_id IN ($job_status)";
+			//$condtion2 .= " AND arc.order_status_id IN ($job_status)";
 		}
 
 		$db =& ConnectionManager::getDataSource('default');
@@ -2070,8 +2098,14 @@ class ReportsController extends AppController
 		}
 		else
 		{
-			$query = "SELECT `c`.`id` FROM ace_rp_customers c where id IS NOT NULL".$condtion."";
-
+            if($is_text == 1) {
+                 $query = "SELECT  `c`.`id`,`c`.`first_name`,`c`.`last_name`,`c`.`phone` as phone_number FROM ace_rp_customers c INNER JOIN ace_rp_orders arc ON arc.customer_id = c.id where c.id IS NOT NULL AND arc.id = (select max(id) from ace_rp_orders where customer_id = c.id) ".$condtion." group by c.phone UNION SELECT `c`.`id`, `c`.`first_name`,`c`.`last_name`,`c`.`cell_phone` as phone_number FROM ace_rp_customers c INNER JOIN ace_rp_orders arc ON arc.customer_id = c.id where c.id IS NOT NULL AND arc.id = (select max(id) from ace_rp_orders where customer_id = c.id) ".$condtion." group by c.cell_phone ";
+            } else {
+                    // $query = "SELECT `c`.`id` FROM ace_rp_customers c where id IS NOT NULL".$condtion."";
+                $query = "SELECT `c`.`id`, arc.* FROM ace_rp_customers c left join ace_rp_orders arc on c.id = arc.customer_id where c.id IS NOT NULL AND arc.id = (select max(id) from ace_rp_orders where customer_id = c.id) ".$condtion."";
+            }
+		
+            // print_r($query); die;
 			$result = $db->_execute($query);
 			
 			$total_records = array();
