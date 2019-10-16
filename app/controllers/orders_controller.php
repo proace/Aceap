@@ -5353,6 +5353,7 @@ class OrdersController extends AppController
             $route_type = isset($_REQUEST['route_type'])?$_REQUEST['route_type']:"";
 
             header("Location: http://hvacproz.ca/acesys/index.php/orders/mapSchedule?p_code=".$_REQUEST['p_code']."&city=".$_REQUEST['city']."&route_type=".$route_type);
+            // header("Location: http://localhost/acesys/index.php/orders/mapSchedule?p_code=".$_REQUEST['p_code']."&city=".$_REQUEST['city']."&route_type=".$route_type);
         }
         $this->layout='edit';
         $p_code = strtoupper(substr($_REQUEST['p_code'],0,3));
@@ -8780,12 +8781,11 @@ class OrdersController extends AppController
 
         if ($this->params['url']['date_from'] != '')
             $date_from = date("Y-m-d", strtotime($this->params['url']['date_from']));
-    else
+        else
             $date_from = date("Y-m-d");
 
-        $date_to = date("Y-m-d", strtotime("$date_from +2 week"));
-
-    $db =& ConnectionManager::getDataSource('default');
+        $date_to = date("Y-m-d", strtotime("$date_from +1 week"));
+        $db =& ConnectionManager::getDataSource('default');
 
         // Get neighbouring areas
         $neighbours = array();

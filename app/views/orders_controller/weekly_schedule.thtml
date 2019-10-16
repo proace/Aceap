@@ -176,7 +176,7 @@ function getLocation(truck, beg_hour, end_hour, padding,jobday)
 	top_mod = 0;
 	left_mod = 0;
 	<?php if (($common->getLoggedUserRoleID()==3) || ($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13)) { ?>
-	top_mod = 95;
+	top_mod = 75;
 	left_mod = 10;
 	<? } ?>
 
@@ -219,7 +219,8 @@ function repositionOrder(order)
 
 	c = new Array();
 	c = getLocation(order['truck'], order['beg_hour'], order['end_hour'], 3,order['jobday']);
-
+	hourDiff = order['end_hour'] - order['beg_hour'];
+	
 	if ((c[0] != -1) && (c[1] != -1))
 	{
 		el.style.position = 'absolute';
@@ -227,9 +228,12 @@ function repositionOrder(order)
 		el.style.left = c[0] + 'px';
 		el.style.top = c[1] + 'px';
 		el.style.width = (c[2] - c[0]) + 'px';
-		eltable.style.width = (c[2] - c[0]) + 'px';
 		el.style.height = (c[3] - c[1]) + 'px';
-		eltable.style.height = (c[3] - c[1]) + 'px';
+		if (hourDiff > 1)
+        {
+            eltable.style.width = (c[2] - c[0]) + 'px';
+            eltable.style.height = (c[3] - c[1]) + 'px';
+        }  
 	}
 }
 function clearFilters(){
@@ -373,7 +377,7 @@ $(document).ready(function(){
 <?php
 function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $substatuses, $jobtypes, $method) {
 	$returnValue = '';
-
+	$hourDiff = $order['job_time_end'] - $order['job_time_beg'];
 	$icon_prn = ROOT_URL."/app/webroot/img/icon-vsm-printer.png";
 	$border2 = '';
 	$enable_access = '';
@@ -469,15 +473,17 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
 			</tr>
 			<tr $open $enable_access>
 				<td colspan=2 style='padding-left: 3px;'>";
+		if ( $hourDiff > 1)
+        {
+			if ($order['order_status_id']== "3")
+				$returnValue .=  "<a href=\"#\" onMouseover=\"showhint('".str_replace("'","`",$order['dCancelReason'])."', this, event, '150px')\">Canceled</a></td></tr>";
+			elseif ($order['order_status_id']== "2")
+				$returnValue .=  "<a href=\"#\" onMouseover=\"showhint('".str_replace("'","`",$order['sCancelReason'])."', this, event, '150px')\">Rescheduled</a></td></tr>";
+			else
+				$returnValue .=  '<span style="color: gray; font-style: italic;">'.$substatuses[$order['order_substatus_id']].'</span></td></tr>';
 
-		if ($order['order_status_id']== "3")
-			$returnValue .=  "<a href=\"#\" onMouseover=\"showhint('".str_replace("'","`",$order['dCancelReason'])."', this, event, '150px')\">Canceled</a></td></tr>";
-		elseif ($order['order_status_id']== "2")
-			$returnValue .=  "<a href=\"#\" onMouseover=\"showhint('".str_replace("'","`",$order['sCancelReason'])."', this, event, '150px')\">Rescheduled</a></td></tr>";
-		else
-			$returnValue .=  '<span style="color: gray; font-style: italic;">'.$substatuses[$order['order_substatus_id']].'</span></td></tr>';
-
-    	$returnValue .= $source.'<tr><td colspan=2 style="padding-left: 3px; '.$border2.'">'.$jobtypes[$order['order_type_id']].'</td></tr>';
+	    	$returnValue .= $source.'<tr><td colspan=2 style="padding-left: 3px; '.$border2.'">'.$jobtypes[$order['order_type_id']].'</td></tr>';
+    	}
 	}
 	else
 	{

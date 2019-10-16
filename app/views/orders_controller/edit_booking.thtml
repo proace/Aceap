@@ -3030,6 +3030,13 @@ function get_data($url)
 						<img src="<?=ROOT_URL?>/app/webroot/img/icon-sm-requested-bookings.png"/>
 					</td>
                     <td onclick="OpenQuestions(2)">Questions</td>
+                    <?php $ttt = '';
+                        if( ($common->getLoggedUserRoleID() == "13" ) || ($common->getLoggedUserRoleID() == "3" ) || ($common->getLoggedUserRoleID() == "9" )) $ttt = 'display:none';?>
+                    <td align=right onclick="OpenQuestions(1)" style="<?=$ttt?>">
+                        <img id="QuestionsWorking1" style="display:none" src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>
+                        <img src="<?=ROOT_URL?>/app/webroot/img/icon-sm-requested-bookings.png"/>
+                    </td>
+                    <td onclick="OpenQuestions(1)" style="<?=$ttt?>">Tech questions section</td>
                     <?php } else { ?>
 					<td align=right onclick="OpenQuestions(0)">
 						<img id="QuestionsWorking0" style="display:none" src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>
