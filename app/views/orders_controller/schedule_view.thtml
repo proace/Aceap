@@ -869,8 +869,7 @@ $(document).ready(function(){
 
 </form>
 <?php
-function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $substatuses, $jobtypes, $method) {
-    $hourDiff = $order['job_time_end'] - $order['job_time_beg'];
+function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $substatuses, $jobtypes, $method) {    $hourDiff = $order['job_time_end'] - $order['job_time_beg'];
     $returnValue = '';
     $icon_prn = ROOT_URL."/app/webroot/img/icon-vsm-printer.png";
     $border2 = '';
@@ -883,8 +882,7 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
         ||($common->getLoggedUserID()==$order['booking_source2_id'])
         ||($common->getLoggedUserID()==$order['job_technician1_id'])
         ||($common->getLoggedUserID()==$order['job_technician2_id'])
-        ||(($common->getLoggedUserRoleID() != "1")&&($common->getLoggedUserRoleID() != "9")
-     ))
+        ||(($common->getLoggedUserRoleID() != "1")&&($common->getLoggedUserRoleID() != "9") && ($common->getLoggedUserRoleID() != "3")))
      //&&($common->getLoggedUserRoleID() != "3")
     {
         $enable_access = "onclick='document.location.href=\"$method?order_id={$order['id']}&rurl=$rurl\"'";
@@ -895,10 +893,21 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
         $hint = "onMouseover=\"showhint('".$order['customer_name'].' phone:'.$order['customer_phone'].' addr.:'.str_replace("'","`",$order['address']).' job:'.str_replace("'","`",$order['job_type_name'])."', this, event, '150px')\"";
         //echo $order['emal_bounce_status'];
         if($order['emal_bounce_status']==1){
-           $print_this = "<div style='border: 1px solid black; padding: 2px;border-radius: 25px; width:5px; height:5px;background-color:red;'>&nbsp;</div>";
+            if($order['is_gmail'] == 1)
+            {
+                $print_this = "<div style='background-color:red;font-weight: bold;font-size: 13px;'>G</div>";
+            } else {
+                 $print_this = "<div style='border: 1px solid black; padding: 2px;border-radius: 25px; width:5px; height:5px;background-color:red;'>&nbsp;</div>";
+            }
+          
            
             }else{
+               if($order['is_gmail'] == 1)
+                {
+                    $print_this = "<div style='background-color:green;font-weight: bold;font-size: 13px;'>G</div>";
+                } else {
                    $print_this = "<div style='border: 1px solid black; padding: 2px;border-radius: 25px; width:5px; height:5px;background-color:green;'>&nbsp;</div>";
+                }
             }
         //$print_this = "<img style='cursor: hand; cursor: pointer; margin-right: 1px;' src='$icon_prn' onclick='window.open(\"printView?id=$id\");return false;'>";
     }
@@ -949,6 +958,7 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
                 <td style='width: 16px; background: #{$order['color']};'>
                     $print_this
                 </td>
+                
                 <td $enable_access $hint style='background: #{$order['color']};$style'>$edit_button</td>
             </tr>
             <tr>

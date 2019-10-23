@@ -1911,8 +1911,7 @@ class ReportsController extends AppController
             } else {
                 if($forText == 1)
                 {
-
-                    $query1 = "SELECT  `c`.`id`,`c`.`first_name`,`c`.`last_name`,`c`.`phone` as phone_number FROM ace_rp_customers c INNER JOIN ace_rp_orders arc ON arc.customer_id = c.id where c.id IS NOT NULL AND arc.id = (select max(id) from ace_rp_orders where customer_id = c.id) ".$condtion." group by c.phone UNION SELECT `c`.`id`, `c`.`first_name`,`c`.`last_name`,`c`.`cell_phone` as phone_number FROM ace_rp_customers c INNER JOIN ace_rp_orders arc ON arc.customer_id = c.id where c.id IS NOT NULL AND arc.id = (select max(id) from ace_rp_orders where customer_id = c.id) ".$condtion." group by c.cell_phone ";
+                    $query1 = "SELECT  `c`.`id`,`c`.`first_name`,`c`.`last_name`,`c`.`phone` as phone_number, c.city, c.postal_code FROM ace_rp_customers c INNER JOIN ace_rp_orders arc ON arc.customer_id = c.id where c.id IS NOT NULL AND arc.id = (select max(id) from ace_rp_orders where customer_id = c.id) ".$condtion." group by c.phone UNION SELECT `c`.`id`, `c`.`first_name`,`c`.`last_name`,`c`.`cell_phone` as phone_number,c.city,c.postal_code FROM ace_rp_customers c INNER JOIN ace_rp_orders arc ON arc.customer_id = c.id where c.id IS NOT NULL AND arc.id = (select max(id) from ace_rp_orders where customer_id = c.id) ".$condtion." group by c.cell_phone ";
                 } else {
                     $query1 = "SELECT `c`.`id`,  `c`.`first_name`,`c`.`last_name`,`c`.`phone`,`c`.`city`,`c`.`email`,`c`.`address_street`,
                     `c`.`address_street_number` FROM ace_rp_customers c INNER JOIN ace_rp_orders arc ON arc.customer_id = c.id where c.id IS NOT NULL  AND arc.id = (select max(id) from ace_rp_orders where customer_id = c.id) ".$condtion."";
@@ -1937,6 +1936,7 @@ class ReportsController extends AppController
             $email = null;
             $call_date = null;
             $address_street_number = null;
+            $postal_code = null;
 
             $CallResult_despo = $this->HtmlAssist->table2array($this->CallResult->findAll(), 'id', 'name');
 
@@ -1948,6 +1948,8 @@ class ReportsController extends AppController
                     $first_name[$i] = $row1['first_name'];
                     $last_name[$i] = $row1['last_name'];
                     $phone[$i] = $row1['phone_number'];
+                    $city[$i] = $row1['city'];
+                    $postal_code[$i] = $row1['postal_code'];
                     $i++;
                 }
                 if(count($total_records) != 0){
@@ -1955,15 +1957,15 @@ class ReportsController extends AppController
                     for ($i=1; $i <= count($total_records); $i++) {
                         if($i == count($total_records)){
                             if($i == 1){
-                                $whole_str[] = "First Name,Last Name,Phone Number";
+                                $whole_str[] = "First Name,Last Name,Phone Number,city,postal_code";
                             }
-                            $whole_str[] ="$first_name[$j],$last_name[$j],$phone[$j]";
+                            $whole_str[] ="$first_name[$j],$last_name[$j],$phone[$j], $city[$j], $postal_code[$j]";
                         }
                         else{
                             if($i == 1){
-                                $whole_str[] = "First Name,Last Name, Phone Number";
+                                $whole_str[] = "First Name,Last Name, Phone Number,city,postal_code";
                             }
-                            $whole_str[] ="$first_name[$j],$last_name[$j],$phone[$j]";
+                            $whole_str[] ="$first_name[$j],$last_name[$j],$phone[$j], $city[$j], $postal_code[$j]";
                         }
                         $j++;
                     }

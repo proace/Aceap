@@ -389,7 +389,7 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
 		||($common->getLoggedUserID()==$order['booking_source2_id'])
 		||($common->getLoggedUserID()==$order['job_technician1_id'])
 		||($common->getLoggedUserID()==$order['job_technician2_id'])
-		||(($common->getLoggedUserRoleID() != "1")&&($common->getLoggedUserRoleID() != "9")))
+		||(($common->getLoggedUserRoleID() != "1")&&($common->getLoggedUserRoleID() != "9")) && ($common->getLoggedUserRoleID() != "3"))
 	{
 		$enable_access = "onclick='document.location.href=\"$method?order_id={$order['id']}&rurl=$rurl\"'";
 		$open = "style='cursor:hand;cursor:pointer;'";

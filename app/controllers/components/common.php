@@ -2112,5 +2112,24 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 			file_put_contents("mail_error_log.txt", "mailgun=".$e->getMessage(), FILE_APPEND);
 		}
 	}
+
+	// Loki: Get distance between two postal code.
+	function getPostaCodeDistance($source, $destination)
+	{
+		$url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$source."&destinations=".$destination."&mode=driving&language=en-EN&sensor=false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,"");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $response = curl_exec($ch);
+        $result = json_decode($response, true);
+        $err = curl_error($ch);
+        curl_close($ch);
+
+        return $result;
+	}
 }
 ?>

@@ -151,104 +151,104 @@ class OrdersController extends AppController
     {
         if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
             $this->preViewEstimate($_POST);
-        }else{
-
-        //Prepare the date for entry into the DB
-        //Set nulls into the empty selects
-        $this->Common->SetNull($this->data['Order']['booking_source_id']);
-        $this->Common->SetNull($this->data['Order']['job_truck']);
-        $this->Common->SetNull($this->data['Order']['order_type_id']);
-        $this->Common->SetNull($this->data['Order']['customer_desired_payment_method_id']);
-        $this->Common->SetNull($this->data['Order']['job_technician1_id']);
-        $this->Common->SetNull($this->data['Order']['job_technician2_id']);
-        $this->Common->SetNull($this->data['Order']['job_technician2_id']);
-        $this->Common->SetNull($this->data['Order']['job_reference_id']);
-        $paidById = $this->data['Order']['payment_method_type'];
-
-        // Default booking date is today, telemarketer - current user
-        $SendToDisp = false;
-        if (!$this->data['Order']['id'])
+        }else
         {
-            $SendToDisp = true; //We'll be sending messages to the dispatcher for every new booking created
-            $this->data['Order']['booking_date'] = date('Y-m-d');
-            $this->data['Order']['booking_telemarketer_id'] = $this->Common->getLoggedUserID();
+            //Prepare the date for entry into the DB
+            //Set nulls into the empty selects
+            $this->Common->SetNull($this->data['Order']['booking_source_id']);
+            $this->Common->SetNull($this->data['Order']['job_truck']);
+            $this->Common->SetNull($this->data['Order']['order_type_id']);
+            $this->Common->SetNull($this->data['Order']['customer_desired_payment_method_id']);
+            $this->Common->SetNull($this->data['Order']['job_technician1_id']);
+            $this->Common->SetNull($this->data['Order']['job_technician2_id']);
+            $this->Common->SetNull($this->data['Order']['job_technician2_id']);
+            $this->Common->SetNull($this->data['Order']['job_reference_id']);
+            $paidById = $this->data['Order']['payment_method_type'];
 
-            // Also we need to set the 'created..' fields here
-            $this->data['Order']['created_by'] = $this->Common->getLoggedUserID();
-            $this->data['Order']['created_date'] = date('Y-m-d H:i:s');
-        }
-        else
-        {
-            // For the existing orders set the 'modyfied..' fields
-            $this->data['Order']['modified_by'] = $this->Common->getLoggedUserID();
-            $this->data['Order']['modified_date'] = date('Y-m-d H:i:s');
-        }
-
-        // Default Order Status: booked (1)
-        if (!$this->data['Order']['order_status_id']) $this->data['Order']['order_status_id'] = 1;
-
-        // Default sub-status: Not confirmed (1)
-        if ($this->data['Order']['order_substatus_id'] == '')
-            $this->data['Order']['order_substatus_id'] = 1;
-
-        // Default Customer: Customer ID == -1   ->  new customer
-        if ($this->data['Customer']['id'] == -1) $this->data['Customer']['id'] = '';
-
-        //Added by Maxim Kudryavtsev - for booking member cards
-        for ($i = 0; $i < count($this->data['Order']['BookingItem']); $i++)
-        {
-            $item_id=intval( $this->data['Order']['BookingItem'][$i]['item_id'] );
-            if ($item_id==$this->member_card1_item_id || $item_id==$this->member_card2_item_id)
+            // Default booking date is today, telemarketer - current user
+            $SendToDisp = false;
+            if (!$this->data['Order']['id'])
             {
-                if ( $this->data['Customer']['card_number'] != $this->data['Order']['BookingItem'][$i]['name'] ) {
-                    $this->data['Customer']['card_number']=$this->data['Order']['BookingItem'][$i]['name'];
-                    $this->data['Order']['BookingItem'][$i]['part_number']=$this->data['Order']['BookingItem'][$i]['next_service'];
-                    //$this->data['Customer']['card_exp']=(date('Y')+ ($item_id==$this->member_card1_item_id? 1:2) ).'-'.date('m-d');
-                    $this->data['Customer']['card_exp']=(date('Y')+ (1)).'-'.date('m-d');
-                    $this->data['Customer']['next_service']=$this->data['Order']['BookingItem'][$i]['next_service'];
+                $SendToDisp = true; //We'll be sending messages to the dispatcher for every new booking created
+                $this->data['Order']['booking_date'] = date('Y-m-d');
+                $this->data['Order']['booking_telemarketer_id'] = $this->Common->getLoggedUserID();
+
+                // Also we need to set the 'created..' fields here
+                $this->data['Order']['created_by'] = $this->Common->getLoggedUserID();
+                $this->data['Order']['created_date'] = date('Y-m-d H:i:s');
+            }
+            else
+            {
+                // For the existing orders set the 'modyfied..' fields
+                $this->data['Order']['modified_by'] = $this->Common->getLoggedUserID();
+                $this->data['Order']['modified_date'] = date('Y-m-d H:i:s');
+            }
+
+            // Default Order Status: booked (1)
+            if (!$this->data['Order']['order_status_id']) $this->data['Order']['order_status_id'] = 1;
+
+            // Default sub-status: Not confirmed (1)
+            if ($this->data['Order']['order_substatus_id'] == '')
+                $this->data['Order']['order_substatus_id'] = 1;
+
+            // Default Customer: Customer ID == -1   ->  new customer
+            if ($this->data['Customer']['id'] == -1) $this->data['Customer']['id'] = '';
+
+            //Added by Maxim Kudryavtsev - for booking member cards
+            for ($i = 0; $i < count($this->data['Order']['BookingItem']); $i++)
+            {
+                $item_id=intval( $this->data['Order']['BookingItem'][$i]['item_id'] );
+                if ($item_id==$this->member_card1_item_id || $item_id==$this->member_card2_item_id)
+                {
+                    if ( $this->data['Customer']['card_number'] != $this->data['Order']['BookingItem'][$i]['name'] ) {
+                        $this->data['Customer']['card_number']=$this->data['Order']['BookingItem'][$i]['name'];
+                        $this->data['Order']['BookingItem'][$i]['part_number']=$this->data['Order']['BookingItem'][$i]['next_service'];
+                        //$this->data['Customer']['card_exp']=(date('Y')+ ($item_id==$this->member_card1_item_id? 1:2) ).'-'.date('m-d');
+                        $this->data['Customer']['card_exp']=(date('Y')+ (1)).'-'.date('m-d');
+                        $this->data['Customer']['next_service']=$this->data['Order']['BookingItem'][$i]['next_service'];
+                    }
                 }
             }
-        }
-        // /Added by Maxim Kudryavtsev - for booking member cards
+            // /Added by Maxim Kudryavtsev - for booking member cards
 
-        // Save the customer
-        if ($saveCustomer==1)
-            if (!empty($this->data['Customer'])) $this->_SaveCustomer();
+            // Save the customer
+            if ($saveCustomer==1)
+                if (!empty($this->data['Customer'])) $this->_SaveCustomer();
 
-            // Cancelled jobs shouldn't have a time
-        if ($this->data['Order']['order_status_id'] == 3)
-        {
-            $this->data['Order']['job_time_beg_hour'] = '';
-            $this->data['Order']['job_time_beg'] = '';
-            $this->data['Order']['job_time_end_hour'] = '';
-            $this->data['Order']['job_time_end'] = '';
-        }
+                // Cancelled jobs shouldn't have a time
+            if ($this->data['Order']['order_status_id'] == 3)
+            {
+                $this->data['Order']['job_time_beg_hour'] = '';
+                $this->data['Order']['job_time_beg'] = '';
+                $this->data['Order']['job_time_end_hour'] = '';
+                $this->data['Order']['job_time_end'] = '';
+            }
 
-        // Get some customer's information into this order
-        $this->data['Order']['job_postal_code'] = $this->data['Customer']['postal_code'];
-        $this->data['Order']['customer_id'] = $this->data['Customer']['id'];
+            // Get some customer's information into this order
+            $this->data['Order']['job_postal_code'] = $this->data['Customer']['postal_code'];
+            $this->data['Order']['customer_id'] = $this->data['Customer']['id'];
 
-        // Convert the dates into the appropriate format
-        $this->data['Order']['job_date'] = date("Y-m-d", strtotime($this->data['Order']['job_date']));
-        $this->data['Order']['app_ordered_date'] = date("Y-m-d", strtotime($this->data['Order']['app_ordered_date']));
-        $this->data['Order']['app_ordered_pickup_date'] = date("Y-m-d", strtotime($this->data['Order']['app_ordered_pickup_date']));
-        $this->data['Order']['permit_applied_date'] = date("Y-m-d", strtotime($this->data['Order']['permit_applied_date']));
+            // Convert the dates into the appropriate format
+            $this->data['Order']['job_date'] = date("Y-m-d", strtotime($this->data['Order']['job_date']));
+            $this->data['Order']['app_ordered_date'] = date("Y-m-d", strtotime($this->data['Order']['app_ordered_date']));
+            $this->data['Order']['app_ordered_pickup_date'] = date("Y-m-d", strtotime($this->data['Order']['app_ordered_pickup_date']));
+            $this->data['Order']['permit_applied_date'] = date("Y-m-d", strtotime($this->data['Order']['permit_applied_date']));
 
-        //set beginning and ending time
-        if(isset($this->data['Order']['job_time_beg_hour'])){
-            $this->data['Order']['job_time_beg'] = $this->data['Order']['job_time_beg_hour'].':'.($this->data['Order']['job_time_beg_min'] ? $this->data['Order']['job_time_beg_min'] : '00');
-        }
-        if(isset($this->data['Order']['job_time_end_hour'])){
-            $this->data['Order']['job_time_end'] = $this->data['Order']['job_time_end_hour'].':'.($this->data['Order']['job_time_end_min'] ? $this->data['Order']['job_time_end_min'] : '00');
-        }
-        //set techs' time
-        if(isset($this->data['Order']['fact_job_beg_hour'])){
-            $this->data['Order']['fact_job_beg'] = $this->data['Order']['fact_job_beg_hour'].':'.($this->data['Order']['fact_job_beg_min'] ? $this->data['Order']['fact_job_beg_min'] : '00');
-        }
-        if(isset($this->data['Order']['fact_job_end_hour']
-            )){
-            $this->data['Order']['fact_job_end'] = $this->data['Order']['fact_job_end_hour'].':'.($this->data['Order']['fact_job_end_min'] ? $this->data['Order']['fact_job_end_min'] : '00');
-}
+            //set beginning and ending time
+            if(isset($this->data['Order']['job_time_beg_hour'])){
+                $this->data['Order']['job_time_beg'] = $this->data['Order']['job_time_beg_hour'].':'.($this->data['Order']['job_time_beg_min'] ? $this->data['Order']['job_time_beg_min'] : '00');
+            }
+            if(isset($this->data['Order']['job_time_end_hour'])){
+                $this->data['Order']['job_time_end'] = $this->data['Order']['job_time_end_hour'].':'.($this->data['Order']['job_time_end_min'] ? $this->data['Order']['job_time_end_min'] : '00');
+            }
+            //set techs' time
+            if(isset($this->data['Order']['fact_job_beg_hour'])){
+                $this->data['Order']['fact_job_beg'] = $this->data['Order']['fact_job_beg_hour'].':'.($this->data['Order']['fact_job_beg_min'] ? $this->data['Order']['fact_job_beg_min'] : '00');
+            }
+            if(isset($this->data['Order']['fact_job_end_hour']
+                )){
+                $this->data['Order']['fact_job_end'] = $this->data['Order']['fact_job_end_hour'].':'.($this->data['Order']['fact_job_end_min'] ? $this->data['Order']['fact_job_end_min'] : '00');
+            }
         //set approval to no if it is an approval
         if($this->data['Note']['urgency_id'] == 4) {
             $this->data['Order']['needs_approval'] = 0;
@@ -1252,7 +1252,7 @@ class OrdersController extends AppController
             $note = "<span class='cus_note'>".$note['message']."</span>";
             $officeQuery = $officeQueryHTML;
             $date = "<span class='cus_date'>".$orderData['Order']['booking_date']."</span>";
-            $reference = "<span class='cus_ref'>".$orderData['Order']['id']."</span>";
+            $reference = "<span class='cus_ref'>".$orderData['Order']['order_number']."</span>";
             $ref = $orderData['Order']['id'];
         
             $template['template'] = str_replace("{name}",$name ,$template['template']);
@@ -1426,7 +1426,7 @@ class OrdersController extends AppController
             $cellphone= "<span class='cus_cellphone'>".$orderData['Customer']['cell_phone']."</span>";
             $note = "<span class='cus_note'>".$note['message']."</span>";
             $date = "<span class='cus_date'>".$orderData['Order']['booking_date']."</span>";
-            $reference = "<span class='cus_ref'>".$orderData['Order']['id']."</span>";
+            $reference = "<span class='cus_ref'>".$orderData['Order']['order_number']."</span>";
             $ref = $orderData['Order']['id'];
 
             $template['estimate'] = preg_replace('/<span class=\"cus_name\">.*<\/span>/',$name,$template['estimate']);
@@ -1530,6 +1530,7 @@ class OrdersController extends AppController
             while ($row = mysql_fetch_array($result)){
                 $template = $row;
             }
+
 
             if($template){
 
@@ -5352,7 +5353,8 @@ class OrdersController extends AppController
 
             $route_type = isset($_REQUEST['route_type'])?$_REQUEST['route_type']:"";
 
-            header("Location: http://hvacproz.ca/acesys/index.php/orders/mapSchedule?p_code=".$_REQUEST['p_code']."&city=".$_REQUEST['city']."&route_type=".$route_type);
+           header("Location: http://hvacproz.ca/acesys/index.php/orders/mapSchedule?p_code=".$_REQUEST['p_code']."&city=".$_REQUEST['city']."&route_type=".$route_type);
+           
             // header("Location: http://localhost/acesys/index.php/orders/mapSchedule?p_code=".$_REQUEST['p_code']."&city=".$_REQUEST['city']."&route_type=".$route_type);
         }
         $this->layout='edit';
@@ -5465,11 +5467,11 @@ class OrdersController extends AppController
                          a.sale_amount, a.job_timeslot_id, a.job_time_beg, a.job_time_end,
                          a.job_date, a.job_technician1_id, a.job_technician2_id, a.order_type_id,
                          a.sCancelReason, c.city as zone_city, c.postal_code as postal_code1,
-                         c.color as color, a.booking_source_id as booking_source_id, s.first_name as booking_source_fn,
+                         c.color as color, a.booking_source_id as booking_source_id, s.first_name as booking_source_fn, booking_source2_id,
                          s.last_name as booking_source_ln, c.zone_name as zone_name, u.postal_code as postal_code,
                          CONCAT(u.address_unit,', ',u.address_street_number,', ',u.address_street) as address,
                          'BC' as state, u.phone as customer_phone,
-                         concat(u.first_name,' ',u.last_name) as customer_name, u.city as user_city,
+                         concat(u.first_name,' ',u.last_name) as customer_name, u.city as user_city, u.email, 
                          jt.name job_type_name, a.verified_by_id, rr.role_id, jt.category_id,
                          a.app_ordered_by, a.permit_result, a.order_number, CONCAT(ur.name, ' - ', cr.name) dCancelReason,
                          a.tech_visible,a.tech_visible_agent
@@ -5491,6 +5493,12 @@ class OrdersController extends AppController
         $result = $db->_execute($query);
         while($row = mysql_fetch_array($result))
         {
+            $orders[$row['id']]['is_gmail'] = 0 ;
+            $explodEmail = explode("@",$row['email']);
+            if($explodEmail[1] == "gmail.com")
+            {
+                $orders[$row['id']]['is_gmail'] = 1;
+            }
             foreach ($row as $k => $v)
               $orders[$row['id']][$k] = $v;
 
@@ -5686,7 +5694,7 @@ class OrdersController extends AppController
             $telemarketers[$row['id']]['id'] = $row['id'];
             $telemarketers[$row['id']]['name'] = $row['name'];
         }
-
+        
         $this->set('norm_date', date("Y-m-d", strtotime($fdate)));
         $this->set('fdate', date("d M Y", strtotime($fdate)));
         $this->set('ydate', date("d M Y", strtotime($fdate) - 24*60*60));
@@ -8776,7 +8784,8 @@ class OrdersController extends AppController
     function mapSchedule()
     {
         $this->layout='edit';
-        $p_code = strtoupper(substr($_REQUEST['p_code'],0,3));
+        // $p_code = strtoupper(substr($_REQUEST['p_code'],0,3));
+        $p_code = $_REQUEST['p_code'];
         $city = strtoupper($_REQUEST['city']);
 
         if ($this->params['url']['date_from'] != '')
@@ -8791,13 +8800,48 @@ class OrdersController extends AppController
         $neighbours = array();
         if ($p_code)
         {
-            $neighbours[] = $p_code;
-            $result = $db->_execute("select * from ace_rp_map where p_code='$p_code'");
-            while($row = mysql_fetch_array($result))
+            $query = "select o.job_date, o.order_number, u.postal_code,u.city
+                    from ace_rp_orders o, ace_rp_customers u
+                    where o.job_date between '$date_from' and '$date_to'
+                     and o.order_status_id in (1,5) and u.id=o.customer_id
+                ";
+            $res = $db->_execute($query);
+            $post_arr = array();
+            $newPostArr = array();
+            while ($row = mysql_fetch_array($res)) 
             {
-                $neighbours[] = $row['neighbour'];
-                $city = $row['city'];
+                $post_arr[] = strtoupper(substr($row['postal_code'],0,3)).' , '.$row['city'];
             }
+            
+            $finalpost = str_replace(" ", "%20",(implode("|", $post_arr))) ;
+            $sourcePostCode = str_replace(" ", "%20",$p_code) ;
+            $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$sourcePostCode."&destinations=".$finalpost."&mode=driving&language=en-EN&sensor=false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw";
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_POSTFIELDS,"");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $response = curl_exec($ch);
+            $result = json_decode($response, true);
+            $err = curl_error($ch);
+            curl_close($ch);
+            $combine = array_combine($post_arr, $result['rows'][0]['elements']);
+           
+            foreach ($combine as $key => $value) {
+                if( !empty($value['distance']['text']) && $value['distance']['text'] <= 15)
+                {
+                    $neighbours[] = strtoupper(substr($key,0,3));
+                }
+            }
+            // $neighbours[] = $p_code;
+            // $result = $db->_execute("select * from ace_rp_map where p_code='$p_code'");
+            // while($row = mysql_fetch_array($result))
+            // {
+            //     $neighbours[] = $row['neighbour'];
+            //     $city = $row['city'];
+            // }
         }
         elseif ($city)
         {
@@ -8805,6 +8849,7 @@ class OrdersController extends AppController
             $result = $db->_execute("select * from ace_rp_map where city='$city'");
             while($row = mysql_fetch_array($result))
                 $neighbours[] = $row['p_code'];
+            
         }
 
         //Prepare Truck Names
@@ -8844,7 +8889,6 @@ class OrdersController extends AppController
                     $map_reverse[$row['id']][$j][$i][] = 'ALL';
             }
         }
-
         $query = "select o.job_date, o.job_truck, DAYOFWEEK(o.job_date) job_day, o.order_number,
                                          hour(o.job_time_beg) hour_beg, hour(o.job_time_end) hour_end,
                                          upper(substr(u.postal_code,1,3)) p_code, upper(u.city) city
@@ -8887,6 +8931,7 @@ class OrdersController extends AppController
         if ($city||$p_code)
             foreach ($map_reverse as $truck_k => $time_v)
             {
+
                 foreach ($time_v as $day_k => $day_val)
                 {
                     foreach ($day_val as $time_k => $map_val)
@@ -8899,7 +8944,6 @@ class OrdersController extends AppController
                     }
                 }
             }
-
         $this->set('neighbours', $neighbours);
         $this->set('trucks', $trucks);
         $this->set('map', $map);
@@ -14520,7 +14564,7 @@ function weeklySchedule(){
                          a.sale_amount, a.job_timeslot_id, a.job_time_beg, a.job_time_end,
                          a.job_date, a.job_technician1_id, a.job_technician2_id, a.order_type_id,
                          a.sCancelReason, c.city as zone_city, c.postal_code as postal_code1,
-                         c.color as color, a.booking_source_id as booking_source_id, s.first_name as booking_source_fn,
+                         c.color as color, a.booking_source_id as booking_source_id, s.first_name as booking_source_fn,a.booking_source2_id,
                          s.last_name as booking_source_ln, c.zone_name as zone_name, u.postal_code as postal_code,
                          CONCAT(u.address_unit,', ',u.address_street_number,', ',u.address_street) as address,
                          'BC' as state, u.phone as customer_phone,
@@ -15946,6 +15990,41 @@ function deleteUserFromCampaign()
                 exit();
             }
         }
+    }
+
+    // Get distance between two postal code.
+    public function getPostalDistance()
+    {
+        $job_truck = $_GET['job_truck'];
+        $origin = $_GET['postal_code'];
+        $start_time = $_GET['start_time'].":00:00";
+        $today_date = date("Y-m-d");
+        $sourcePostCode = $this->Order->query("SELECT postal_code, id FROM ace_rp_customers WHERE id = ( 
+                    SELECT customer_id FROM ace_rp_orders WHERE job_truck =".$job_truck." AND job_date = '".$today_date."' AND job_time_beg < '".$start_time."' ORDER BY job_time_beg DESC LIMIT 1)");
+
+        if(!empty($sourcePostCode))
+        {
+            //Get distnce between two postal codes.
+            $origin = str_replace(" ", "%20", $origin);
+            $distance = $this->Common->getPostaCodeDistance($origin, $sourcePostCode[0]['ace_rp_customers']['postal_code'] );
+            $actualDistance = $distance['rows'][0]['elements'][0]['distance']['text'];
+            
+            if($actualDistance <= 15)
+            {
+                $response  = array("res" => "1");
+                echo json_encode($response);
+                exit();
+            } else {
+                $response  = array("res" => "0", "distance" => $actualDistance);
+                echo json_encode($response);
+                exit();
+            }
+        } else {
+            $response  = array("res" => "1");
+                echo json_encode($response);
+                exit();
+        }
+
     }
 }
 ?>

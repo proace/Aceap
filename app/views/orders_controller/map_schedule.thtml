@@ -2,157 +2,157 @@
 
 <style>
 .results1{
-	float: left;
-	background: #CCCCCC;
+    float: left;
+    background: #CCCCCC;
 }
 .results1 th{
-	background: #dadada;
-	font-weight: bold;
-	font-size:10px;
-	font-family:Verdana;
-	color: #000000;
+    background: #dadada;
+    font-weight: bold;
+    font-size:10px;
+    font-family:Verdana;
+    color: #000000;
 }
 .data_cell{
-	background: #ccffcc;
-	height: 30px;
+    background: #ccffcc;
+    height: 30px;
 }
 .empty_cell{
-	background: #ffffff;
-	height: 30px;
+    background: #ffffff;
+    height: 30px;
 }
 .busy_cell{
-	background: #e2e2e2;
-	height: 30px;
+    background: #e2e2e2;
+    height: 30px;
 }
 .last_cell{
-	border-right: 2px solid #4f4f4f;
+    border-right: 2px solid #4f4f4f;
 }
 .test{
-	margin-top: 70px;
+    margin-top: 70px;
 }
 </style>
 
 <form method="GET" name="viewform">
-	<input type="hidden" name="route_type" id="route_type" value="<?=$_REQUEST['route_type']?>"/>
+    <input type="hidden" name="route_type" id="route_type" value="<?=$_REQUEST['route_type']?>"/>
 <table width="82%" border="0" cellspacing="0" cellpadding="5" ><!-- align=left -->
-	<tr>
-		<td colspan=3>
-			<input type="button" value="Daily" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/scheduleView?p_code=<?=$p_code?>&city=<?=$city?>&fdate=<?=$date_from?>&daily=1'" style="font-size: 8pt;">
-			&nbsp;&nbsp;
-			<input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.date_from.value='<?=$ydate?>'; document.viewform.submit();" style="font-size: 8pt;">
-			&nbsp;&nbsp;
+    <tr>
+        <td colspan=3>
+            <input type="button" value="Daily" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/scheduleView?p_code=<?=$p_code?>&city=<?=$city?>&fdate=<?=$date_from?>&daily=1'" style="font-size: 8pt;">
+            &nbsp;&nbsp;
+            <input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.date_from.value='<?=$ydate?>'; document.viewform.submit();" style="font-size: 8pt;">
+            &nbsp;&nbsp;
       <input type="text" name="date_from" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$date_from?>">
-			&nbsp;&nbsp;
-			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.date_from.value='<?=$tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
-			&nbsp;&nbsp;
+            &nbsp;&nbsp;
+            <input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.date_from.value='<?=$tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+            &nbsp;&nbsp;
 <?php if ($common->getLoggedUserRoleID()==6) {?>
-				<!-- <input type="button" value="Print all" class="buttons" onclick="PrintAll()" style="font-size: 8pt;"> -->
+                <!-- <input type="button" value="Print all" class="buttons" onclick="PrintAll()" style="font-size: 8pt;"> -->
 <?}?>
-		</td>
-	</tr>
-	<tr>
+        </td>
+    </tr>
+    <tr>
       <td>Postal code: 
         <input type="text" name="p_code" class="emboss" value="<?=$p_code?>" style="width:50px;" onchange="document.viewform.submit();">
-				&nbsp;&nbsp;City: 
+                &nbsp;&nbsp;City: 
         <select name="city" class="emboss" style="width:150px;" onchange="document.viewform.submit();">
-					<option value=""></option>
-					<?php 
-					foreach($allCities as $k => $v) {
-					  echo '<option value="'.$k.'"'.( $k == $city ? ' selected' : '').'>'.$v.'</option>';
-					}
-					?>
-				</select>
+                    <option value=""></option>
+                    <?php 
+                    foreach($allCities as $k => $v) {
+                      echo '<option value="'.$k.'"'.( $k == $city ? ' selected' : '').'>'.$v.'</option>';
+                    }
+                    ?>
+                </select>
       <!--</td>
       <td>Address: 
         <input type="text" name="address" class="emboss" value="<?=$address?>" style="width:250px;" onchange="GetPostalCode(this);">
-				<input type="submit" value="GO"/>-->
+                <input type="submit" value="GO"/>-->
       &nbsp;&nbsp;
 <?php if ($common->getLoggedUserRoleID()==6) {?>
-			<input type="button" value="All trucks" class="buttons" onclick="document.viewform.route_type.value='0'; document.viewform.submit();" style="font-size: 8pt;">
+            <input type="button" value="All trucks" class="buttons" onclick="document.viewform.route_type.value='0'; document.viewform.submit();" style="font-size: 8pt;">
 <?php }
 foreach ($allTypes as $v => $k) {
 if (($common->getLoggedUserRoleID()!=6)&&($common->getLoggedUserRoleID()!=1)&&($v==4)) continue;
 if (($common->getLoggedUserRoleID()==1)&&($v==1)) continue;
 if (($common->getLoggedUserRoleID()!=6)&&($v==3)) continue;
 ?>
-			&nbsp;&nbsp;
-			<input type="button" value="<?=$k?>" class="buttons" onclick="document.viewform.route_type.value='<?=$v?>'; document.viewform.submit();" style="font-size: 8pt;">
+            &nbsp;&nbsp;
+            <input type="button" value="<?=$k?>" class="buttons" onclick="document.viewform.route_type.value='<?=$v?>'; document.viewform.submit();" style="font-size: 8pt;">
 <?}?>
-		</td>
+        </td>
   </tr>  
 </table>
 </form>
 
 <table id="restable" class="results1" cellpadding="3" cellspacing="1" width="99%">
 <tr>
-	<th rowspan=2 >&nbsp;</th>
-	<?php
-	foreach ($dates as $day)
-	{
-	?>	
-	<th class='last_cell' colspan=<?=count($trucks)?>><?=$day['weekday_name']?><br/><?=$day['name']?></th>
-	<?php }?>
+    <th rowspan=2 >&nbsp;</th>
+    <?php
+    foreach ($dates as $day)
+    {
+    ?>  
+    <th class='last_cell' colspan=<?=count($trucks)?>><?=$day['weekday_name']?><br/><?=$day['name']?></th>
+    <?php }?>
 </tr>
 <tr>
-	<?php
-	foreach ($dates as $day)
-	{
-		$j = $day['weekday'];
-		$nCnt = 0;
-		foreach ($trucks as $k => $Value)
-		{
-			$nCnt++;
-			$class = "";
-			if ($nCnt==count($trucks)) $class = "class='last_cell'";
-			echo "<th $class style='color:{$Value['color']};'>{$Value['route_number']}</th>\n";
-		}
-	}
+    <?php
+    foreach ($dates as $day)
+    {
+        $j = $day['weekday'];
+        $nCnt = 0;
+        foreach ($trucks as $k => $Value)
+        {
+            $nCnt++;
+            $class = "";
+            if ($nCnt==count($trucks)) $class = "class='last_cell'";
+            echo "<th $class style='color:{$Value['color']};'>{$Value['route_number']}</th>\n";
+        }
+    }
   ?>
 </tr>
-	<?php 
-	//pr($map_busy);
-	for ($i=8; $i<=18; $i++)
-	{
+    <?php 
+    //pr($map_busy);
+    for ($i=8; $i<=18; $i++)
+    {
 
-		echo "<tr><td width='5%'>$i:00</td>";
-		foreach ($dates as $day)
-		{
-			$j = $day['weekday'];
-			$nCnt = 0;
-			foreach ($trucks as $k => $Value)
-			{
-				$nCnt++;
-				$class = 'empty_cell';
-				
-				
-				if (isset($map_busy[$k][$j][$i])) $class = 'busy_cell';
-				$en = true;
-				if ($p_code||$city)
-				{
-					$en = false;
-					// if ((in_array($k,$map[date('G', strtotime($t))]))||(array_key_exists($k,$map_all))) {
-					// 		$en = true;
-					// 		$class = 'data_cell';
-					// 	}
-					if (isset($map[$j][$i])||isset($map_all[$j]))
-						if ((in_array($k,$map[$j][$i]))||(array_key_exists($k,$map_all[$j])))
-						{
-							$en = true;
-							$class = 'data_cell';
-						}
+        echo "<tr><td width='5%'>$i:00</td>";
+        foreach ($dates as $day)
+        {
+            $j = $day['weekday'];
+            $nCnt = 0;
+            foreach ($trucks as $k => $Value)
+            {
+                $nCnt++;
+                $class = 'empty_cell';
+                
+                
+                if (isset($map_busy[$k][$j][$i])) $class = 'busy_cell';
+                $en = true;
+                if ($p_code||$city)
+                {
+                    $en = false;
+                    // if ((in_array($k,$map[date('G', strtotime($t))]))||(array_key_exists($k,$map_all))) {
+                    //      $en = true;
+                    //      $class = 'data_cell';
+                    //  }
+                    if (isset($map[$j][$i])||isset($map_all[$j]))
+                        if ((in_array($k,$map[$j][$i]))||(array_key_exists($k,$map_all[$j])))
+                        {
+                            $en = true;
+                            $class = 'data_cell';
+                        }
 
-				}
-				if ($nCnt==count($trucks)) $class .= ' last_cell';
-				$width=100/(count($trucks)*count($dates));
-		    echo "<td width='".$width."%' class='$class' align=center>";
-			  if ($en && $class!='busy_cell') echo "<img onclick='BookTimeslot(\"{$day['date']}\", $k,\"".date('H', strtotime($t))."\")' src='".ROOT_URL."/app/webroot/img/icon-sm-plus.png' style='border: 0px; vertical-align: middle; cursor:pointer;' />";
-				else echo "&nbsp;\n";
-				echo "</td>\n";
+                }
+                if ($nCnt==count($trucks)) $class .= ' last_cell';
+                $width=100/(count($trucks)*count($dates));
+            echo "<td width='".$width."%' class='$class' align=center>";
+              if ($en && $class!='busy_cell') echo "<img onclick='BookTimeslot(\"{$day['date']}\", $k,\"".$i."\")' src='".ROOT_URL."/app/webroot/img/icon-sm-plus.png' style='border: 0px; vertical-align: middle; cursor:pointer;' />";
+                else echo "&nbsp;\n";
+                echo "</td>\n";
       }
     }
-		echo "</tr>\n";
-	}
-	?>
+        echo "</tr>\n";
+    }
+    ?>
 </table>
 <script language="JavaScript">
 //Metodi :: Drag & Drop functionality
@@ -168,7 +168,7 @@ function BookTimeslot(date, job_truck, job_time_beg)
   window.returnValue=new_item;
   window.close();
 <? }else{ ?>
-  document.location.href='<?=BASE_URL?>/orders/editBooking?job_truck='+job_truck
+    document.location.href='<?=BASE_URL?>/orders/editBooking?job_truck='+job_truck
     +'&job_time_beg='+job_time_beg+':00&job_date='+date;
 <? } ?>
 }
