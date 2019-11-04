@@ -3199,7 +3199,7 @@ function get_data($url)
 					<td align="right">Commission:</td>
 					<td>
 						<b>$<?=$tech2_comm?></b>
-						<a href="<?=$tech1_comm_link?>">Commission page</a>
+						<a href="<?=$tech2_comm_link?>">Commission page</a>
 					</td>
 					<?php }?>
                 </tr>

@@ -2278,6 +2278,7 @@ class OrdersController extends AppController
                 $comm = $this->requestAction('/commissions/getForOrder/'.$order_id);
                 $tech1_comm = $comm[0][1]['total_comm'];
                 $tech2_comm = $comm[0][2]['total_comm'];
+                
                 if ($this->data['Order']['booking_source_id']==$this->data['Order']['job_technician1_id'])
                     $tech1_comm += $comm[0][3]['total_comm'];
                 elseif ($this->data['Order']['booking_source_id']==$this->data['Order']['job_technician2_id'])
@@ -2288,8 +2289,8 @@ class OrdersController extends AppController
                     $tech2_comm += $comm[0][4]['total_comm'];
                 $this->set('tech1_comm', round($tech1_comm, 2));
                 $this->set('tech2_comm', round($tech2_comm, 2));
-                $this->set('tech1_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']);
-                $this->set('tech2_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']);  
+                $this->set('tech1_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']."&ftechid=".$this->data['Order']['job_technician1_id']);
+                $this->set('tech2_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']."&ftechid=".$this->data['Order']['job_technician2_id']);  
             }
             else
             {
@@ -5415,7 +5416,7 @@ class OrdersController extends AppController
             for ($i=8; $i<18; $i++)
                 $map_reverse[$row['id']][$i][] = 'ALL';
         }
-
+       
         //Prepare Technician Names
         if ($this->Common->getLoggedUserRoleID() != "1") $method = "editBooking"; else $method = "techBooking";
         $this->set('method',$method);
@@ -5909,7 +5910,6 @@ class OrdersController extends AppController
         
         $template_subject = $settings['Setting']['valuetxt'];
 
-
         //define the headers we want passed. Note that they are separated with \r\n
         //$headers = "From: webmaster@example.com\r\nReply-To: webmaster@example.com";
         $headers = "From: info@acecare.ca\n";
@@ -5955,7 +5955,7 @@ class OrdersController extends AppController
             FROM ace_rp_order_items oi
             WHERE oi.order_id = '$id'
         ";
-
+        $summary = '<table border="1" cellspacing="0" cellpadding="1px"><tbody><tr><th>Item</th><th>Quantity</th><th>Price</th><th>Discount</th><th>Total</th></tr>';
         $result = $db->_execute($query);
         while ($row = mysql_fetch_array($result)) {
             $summary .= "<tr>";
@@ -5966,7 +5966,6 @@ class OrdersController extends AppController
             $summary .= "<td>" . $row['total'] . "</td>";
             $summary .= "</tr>";
         }
-
         $query = "
             SELECT SUM(price - discount) grandtotal
             FROM ace_rp_order_items
@@ -5979,6 +5978,7 @@ class OrdersController extends AppController
             $summary .= "<td>" . $row['grandtotal'] . "</td>";
             $summary .= "</tr>";
         }
+        $summary .= "</tbody></table>";
         $template = $this->Common->removeSlash($template);
         $msg = $template;
         $msg = str_replace('{source}', $source, $msg);
@@ -5993,7 +5993,6 @@ class OrdersController extends AppController
         $msg = str_replace('{job_timeslot}', $jobtimeslot, $msg);
         $msg = str_replace('{booking_summary}', $summary, $msg);
         $email =$this->data['Customer']['email'];
-
         $res = $this->sendEmailUsingMailgun($email,$template_subject,$msg,$id);
         if (strpos($res, '@acecare') !== false) 
         {
@@ -16025,6 +16024,46 @@ function deleteUserFromCampaign()
                 exit();
         }
 
+    }
+    // Get multple postal code distance from origin point for schedule page.
+    public function getFinaldistance()
+    {
+        $postalArr = $_POST['postalArray'];
+        $firstKey = key($postalArr);
+        $originPostal = $postalArr[$firstKey];
+        unset($postalArr[$firstKey]);
+        $finalpost = str_replace(" ", "%20",(implode("|",  $postalArr))) ;
+        $sourcePostCode = str_replace(" ", "%20", $originPostal);
+        $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$sourcePostCode."&destinations=".$finalpost."&mode=driving&language=en-EN&sensor=false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,"");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $response = curl_exec($ch);
+        $result = json_decode($response, true);
+        $err = curl_error($ch);
+        curl_close($ch);
+        $resArrKeys = array_keys($postalArr);
+        $resArrValues = array_values($result['rows'][0]['elements']);
+        $combine = array_combine($resArrKeys, $resArrValues);
+        $resultTable = "<table>";
+        foreach ($combine as $key => $value) {
+            if(!empty($value['distance']['text']))
+            {
+               $resultTable .= "<tr>
+               <td>Ref: ".str_replace("\'", "", $key)."</td>
+               <td>KM: ".$value['distance']['text']."</td>
+               <td>Min: ".$value['duration']['text']."</td>
+               ";
+            }
+        }
+        $resultTable .= "</table>";
+        $response  = array("res" => $resultTable);
+        echo json_encode($response); 
+        exit();
     }
 }
 ?>
