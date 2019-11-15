@@ -1,3 +1,8 @@
+<style type="text/css">
+  .showJobs{
+    cursor: pointer;
+  }
+</style>
 <script>
 //*** SET PAGE TITLE ***
 document.title += " :: Calls Summary";
@@ -8,26 +13,40 @@ parent['main_view'].print();
 }
 var id;
 $(document).ready(function(){
-   $("tr.cell1").click(function(event){
-     id=$(this).attr("id");
+   // $("tr.cell1").click(function(event){
+   //   id=$(this).attr("id");
+   //   if (id==''){
+   //       $("tr.clDetails").hide();      
+   //       return;
+   //      }
+   //   $.get("<?=BASE_URL;?>/reports/JobsInTable", {person_id:id,from_date:$("#ffromdate").val(),to_date:$("#ftodate").val()}, function(data){
+   //    $("tr.clDetails").hide();      
+   //    $("#D_"+id).html(data);      
+   //    $("#D_"+id).toggle();      
+   //  });  
+   // });
+   // $("tr.cell0").click(function(event){
+   //   id=$(this).attr("id");
+   //   if (id==''){
+   //    $("tr.clDetails").hide();      
+   //    return;
+   //   }
+   //   $.get("<?=BASE_URL;?>/reports/JobsInTable", {person_id:id,from_date:$("#ffromdate").val(),to_date:$("#ftodate").val()}, function(data){
+   //     $("tr.clDetails").hide();      
+   //    $("#D_"+id).html(data);      
+   //    $("#D_"+id).toggle();      
+   //  });  
+   // });
+
+   $(".showJobs").click(function(event){
+     id=$(this).attr("userId");
+     booking_type = $(this).attr("booking_type");
      if (id==''){
          $("tr.clDetails").hide();      
          return;
         }
-     $.get("<?=BASE_URL;?>/reports/JobsInTable", {person_id:id,from_date:$("#ffromdate").val(),to_date:$("#ftodate").val()}, function(data){
+     $.get("<?=BASE_URL;?>/reports/JobsInTable", {person_id:id,from_date:$("#ffromdate").val(),to_date:$("#ftodate").val(), booking_type:booking_type}, function(data){
       $("tr.clDetails").hide();      
-      $("#D_"+id).html(data);      
-      $("#D_"+id).toggle();      
-    });  
-   });
-   $("tr.cell0").click(function(event){
-     id=$(this).attr("id");
-     if (id==''){
-      $("tr.clDetails").hide();      
-      return;
-     }
-     $.get("<?=BASE_URL;?>/reports/JobsInTable", {person_id:id,from_date:$("#ffromdate").val(),to_date:$("#ftodate").val()}, function(data){
-       $("tr.clDetails").hide();      
       $("#D_"+id).html(data);      
       $("#D_"+id).toggle();      
     });  
@@ -85,11 +104,11 @@ $(document).ready(function(){
     </tr>
     <tr>
 			<th>As user</th>
-			<th>As src</th>
+			<th>As source</th>
 			<th>As user</th>
-			<th>As src</th>
+			<th>As source</th>
 			<th>As user</th>
-			<th>As src</th>
+			<th>As source</th>
     </tr>
 <?php 
 	foreach ($records_order as $k => $cur_array) { ?>
@@ -115,12 +134,12 @@ $(document).ready(function(){
   <tr class="<?= $class ?>" id="<?php echo $obj['id'];?>">
       <td>&nbsp;&nbsp;&nbsp;<?php echo $obj['source_name']; ?></td>
       <td>&nbsp;<?php if (0+$obj['call_back']+$obj['not_interesting']+$obj['book_user']!=0+$obj['calls']) echo $obj['calls']; ?></td>
-      <td>&nbsp;<?php echo ($obj['book_user']==0)?'':$obj['book_user']; ?></td>
-      <td>&nbsp;<?php echo ($obj['book_source']==0)?'':$obj['book_source']; ?></td>
-      <td>&nbsp;<?php echo ($obj['cancel_user']==0)?'':$obj['cancel_user']; ?></td>
-      <td>&nbsp;<?php echo ($obj['cancel_source']==0)?'':$obj['cancel_source']; ?></td>
-      <td>&nbsp;<?php echo ($obj['done_user']==0)?'':$obj['done_user']; ?></td>
-      <td>&nbsp;<?php echo ($obj['done_source']==0)?'':$obj['done_source']; ?></td>
+      <td class="showJobs" booking_type="book_user" userId ="<?php echo $obj['id'];?>">&nbsp;<?php echo ($obj['book_user']==0)?'':$obj['book_user']; ?></td>
+      <td class="showJobs" booking_type="book_source" userId ="<?php echo $obj['id'];?>">&nbsp;<?php echo ($obj['book_source']==0)?'':$obj['book_source']; ?></td>
+      <td class="showJobs" booking_type="cancel_user" userId ="<?php echo $obj['id'];?>">&nbsp;<?php echo ($obj['cancel_user']==0)?'':$obj['cancel_user']; ?></td>
+      <td class="showJobs" booking_type="cancel_source" userId ="<?php echo $obj['id'];?>">&nbsp;<?php echo ($obj['cancel_source']==0)?'':$obj['cancel_source']; ?></td>
+      <td class="showJobs" booking_type="done_user" userId ="<?php echo $obj['id'];?>">&nbsp;<?php echo ($obj['done_user']==0)?'':$obj['done_user']; ?></td>
+      <td class="showJobs" booking_type="done_source" userId ="<?php echo $obj['id'];?>">&nbsp;<?php echo ($obj['done_source']==0)?'':$obj['done_source']; ?></td>
       <td>&nbsp;<?php echo ($obj['call_back']==0)?'':$obj['call_back']; ?></td>
       <td>&nbsp;<?php echo ($obj['not_interesting']==0)?'':$obj['not_interesting']; ?></td>
       <td>&nbsp;<?php echo ($obj['answering_machine']==0)?'':$obj['answering_machine']; ?></td>

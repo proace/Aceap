@@ -1154,7 +1154,10 @@ class CommissionsController extends AppController
 
 				$orders[$row['id']][$k] = $v;
 
-				
+				if(!empty($cur_ref) && $techid == -1)
+				{
+					$techid = $row['job_technician1_id'];
+				}
 
 				//Calculate/set special fields
 
@@ -2747,7 +2750,7 @@ class CommissionsController extends AppController
 
 		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
 
-		$query = "select month, day, weekday, state from ace_rp_tech_schedule
+		$query = "select month, day, weekday, state, start_time, end_time from ace_rp_tech_schedule
 
 							 where tech_id='".$CurTech."' and year='".$CurYear."'
 
@@ -2758,30 +2761,32 @@ class CommissionsController extends AppController
 		$result = $db->_execute($query);
 
 		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			$days[$row['month'].'_'.$row['day']]['state'] = $row['state'];
+			$days[$row['month'].'_'.$row['day']]['start'] = $row['start_time'];
+			$days[$row['month'].'_'.$row['day']]['end'] = $row['end_time'];
 
-			$days[$row['month'].'_'.$row['day']] = $row['state'];
 
-
-
+		}
+			
 		$DaysOfWeek = array(0 => 'Sun', 1 => 'Mon', 2 => 'Tue', 3 => 'Wed', 4 => 'Thu', 5 => 'Fri', 6 => 'Sat');
 
 		$strTime=mktime(1,1,1,$CurMonth,1,date("Y"));
 
 		
+		// function markDay(monnum,daynum,state){
+
+		// 	if (state==2) state=1; else state=2;
+
+		// 	$.get("'.BASE_URL.'/commissions/markDay",
+
+		// 		{cur_tech:"'.$CurTech.'",cur_year:'.$CurYear.',cur_month:monnum,cur_day:daynum,daytype:state},
+
+		// 		function(data){$("#tech_schedule").html(data);});
+
+		// }
 
 		$sRet = '<script language="JavaScript">
-
-		function markDay(monnum,daynum,state){
-
-			if (state==2) state=1; else state=2;
-
-			$.get("'.BASE_URL.'/commissions/markDay",
-
-				{cur_tech:"'.$CurTech.'",cur_year:'.$CurYear.',cur_month:monnum,cur_day:daynum,daytype:state},
-
-				function(data){$("#tech_schedule").html(data);});
-
-		}
 
 		function MoveMonth(newmonth){
 
@@ -2845,7 +2850,7 @@ class CommissionsController extends AppController
 
 			$CurDay = ($DaysInPrev-$x+1);
 
-			$state = $days[($CurMonth-1).'_'.$CurDay];
+			$state = $days[($CurMonth-1).'_'.$CurDay]['state'];
 
 			$text = ""; $color = "";
 
@@ -2865,15 +2870,21 @@ class CommissionsController extends AppController
 
 			$CurDay = (1+$x-$FirstDayInCur);
 
-			$state = $days[$CurMonth.'_'.$CurDay];
+			$state = $days[$CurMonth.'_'.$CurDay]['state'];
 
 			$text = ""; $color = "";
-
+			if(!empty($days[$CurMonth.'_'.$CurDay]['start']))
+			{
+				$text = 'OFF ('.date("g:i a", strtotime($days[$CurMonth.'_'.$CurDay]['start'].':00')).' to '.date("g:i a", strtotime($days[$CurMonth.'_'.$CurDay]['end'].':00')).')';
+			}
 			if ($state==2) {$text = 'OFF'; $color="background-color:#AAAAAA;";}
 
 			if ($x==0) {$text = 'OFF'; $color="background-color:#AAAAAA;";}
 
-			$sRet .= '<td class="calendar" style="'.$color.'" onclick="markDay('.$CurMonth.','.$CurDay.",'".$state."'".')">
+			// $sRet .= '<td class="calendar" style="'.$color.'" onclick="markDay('.$CurMonth.','.$CurDay.",'".$state."'".')">
+
+			// 					<div class="calendar_off"><b>'.$text.'</b></div><br/>'.$CurDay.'</td>';
+			$sRet .= '<td class="calendar openTimeBox" style="'.$color.'" current-day="'.$CurDay.'" current-month="'.$CurMonth.'" current-tech="'.$CurTech.'" current-year="'.$CurYear.'" start-time="'.$days[$CurMonth.'_'.$CurDay]['start'].'" end-time="'.$days[$CurMonth.'_'.$CurDay]['end'].'">
 
 								<div class="calendar_off"><b>'.$text.'</b></div><br/>'.$CurDay.'</td>';
 
@@ -2899,17 +2910,24 @@ class CommissionsController extends AppController
 
 				{
 
-					$state = $days[$CurMonth.'_'.$CurDay];
+					$state = $days[$CurMonth.'_'.$CurDay]['state'];
 
 					$text = ""; $color = "";
 
+					if(!empty($days[$CurMonth.'_'.$CurDay]['start']))
+					{
+						$text = 'OFF ('.date("g:i a", strtotime($days[$CurMonth.'_'.$CurDay]['start'].':00')).' to '.date("g:i a", strtotime($days[$CurMonth.'_'.$CurDay]['end'].':00')).')';
+					}
 					if ($state==2) {$text = 'OFF'; $color="background-color:#AAAAAA;";}
 
 					if ($x==0) {$text = 'OFF'; $color="background-color:#AAAAAA;";}
 
-					$sRet .= '<td class="calendar" style="'.$color.'" onclick="markDay('.$CurMonth.','.$CurDay.",'".$state."'".')">
+					// $sRet .= '<td class="calendar" style="'.$color.'" onclick="markDay('.$CurMonth.','.$CurDay.",'".$state."'".')">
 
-										<div class="calendar_off"><b>'.$text.'</b></div>'.$CurDay.'</td>';
+					// 					<div class="calendar_off"><b>'.$text.'</b></div>'.$CurDay.'</td>';
+					$sRet .= '<td class="calendar openTimeBox" style="'.$color.'" current-day="'.$CurDay.'" current-month="'.$CurMonth.'" current-tech="'.$CurTech.'" current-year="'.$CurYear.'" start-time="'.$days[$CurMonth.'_'.$CurDay]['start'].'" end-time="'.$days[$CurMonth.'_'.$CurDay]['end'].'">
+
+										<div class="calendar_off">'.$text.'</div>'.$CurDay.'</td>';
 
 				}
 
@@ -2965,13 +2983,15 @@ class CommissionsController extends AppController
 
 		$DayType = $_GET['daytype'];
 
-		
+		$StartTime = $_GET['start_time'];
+
+		$EndTime = $_GET['end_time'];
 
 		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
 
-		$db->_execute("replace into ace_rp_tech_schedule (tech_id, year, month, day, state)
+		$db->_execute("replace into ace_rp_tech_schedule (tech_id, year, month, day, state,start_time, end_time)
 
-									 values ('".$CurTech."','".$CurYear."','".$CurMonth."','".$CurDay."','".$DayType."')");
+									 values ('".$CurTech."','".$CurYear."','".$CurMonth."','".$CurDay."','".$DayType."','".$StartTime."', '".$EndTime."')");
 
 
 

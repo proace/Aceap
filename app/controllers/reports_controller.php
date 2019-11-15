@@ -1271,22 +1271,36 @@ class ReportsController extends AppController
 	}
 	
 	// Method returns a list of jobs, registered to this person
-	function JobsRerPerson($PersonID, $BookingFromDate, $BookingToDate, $CheckField)
+	function JobsRerPerson($PersonID, $BookingFromDate, $BookingToDate, $CheckField, $sqlConditions)
 	{
 		if ($BookingFromDate != '') $BookingFromDate = date("Y-m-d", strtotime($BookingFromDate));
 		if ($BookingToDate != '') $BookingToDate = date("Y-m-d", strtotime($BookingToDate));
-		
-		$sqlConditions = 'and (o.created_by='.$PersonID.' or o.booking_source_id='.$PersonID.')';
+
+		// $sqlConditions = 'and (o.created_by='.$PersonID.' or o.booking_source_id='.$PersonID.')';
 		if($BookingFromDate != '')
 		{
-			$sqlConditions .= " AND o.booking_date >= '".$this->Common->getMysqlDate($BookingFromDate)."'";
+			// $sqlConditions .= " AND o.booking_date >= '".$this->Common->getMysqlDate($BookingFromDate)."'";
+			$sqlConditions .= " AND o.job_date >= '".$this->Common->getMysqlDate($BookingFromDate)."'";
 		} 
 		if($BookingToDate != '')
 		{
-			$sqlConditions .= " AND o.booking_date <= '".$this->Common->getMysqlDate($BookingToDate)."'"; 
+			// $sqlConditions .= " AND o.booking_date <= '".$this->Common->getMysqlDate($BookingToDate)."'"; 
+			$sqlConditions .= " AND o.job_date <= '".$this->Common->getMysqlDate($BookingToDate)."'"; 
 		}
 		
 		$db =& ConnectionManager::getDataSource('default');
+		// $query = "select o.job_date, o.created, t.name job_type, s.name job_status,
+  //               o.id, c.address, concat(c.first_name,' ',c.last_name) cust_name,
+  //               c.address, c.phone, c.city, 
+  //               concat(vu.first_name,' ',vu.last_name) verified_by,
+  //               o.verified_date
+		// 	    from ace_rp_orders o
+		// 	    left join ace_rp_users c on o.customer_id=c.id
+		// 	    left join ace_rp_order_types t on o.order_type_id=t.id
+		// 	    left join ace_rp_order_statuses s on o.order_status_id=s.id
+		// 	    left join ace_rp_users vu on o.verified_by_id=vu.id
+		// 	    where o.order_status_id in (1,3,4,5) ".$sqlConditions;
+
 		$query = "select o.job_date, o.created, t.name job_type, s.name job_status,
                 o.id, c.address, concat(c.first_name,' ',c.last_name) cust_name,
                 c.address, c.phone, c.city, 
@@ -1297,7 +1311,8 @@ class ReportsController extends AppController
 			    left join ace_rp_order_types t on o.order_type_id=t.id
 			    left join ace_rp_order_statuses s on o.order_status_id=s.id
 			    left join ace_rp_users vu on o.verified_by_id=vu.id
-			    where o.order_status_id in (1,3,4,5) ".$sqlConditions;
+			    where ".$sqlConditions;
+
 
 		$nIdx = 1;
 		$aRes = array();
@@ -1328,12 +1343,43 @@ class ReportsController extends AppController
 		$PersonID=$_GET['person_id'];
 		$BookingFromDate=$_GET['from_date'];
 		$BookingToDate=$_GET['to_date'];
-		
+		$bookingType =  $_GET['booking_type'];
+		$sqlConditions = '';
+		switch ($bookingType) {
+			case 'book_user':
+				$sqlConditions .= '(o.created_by='.$PersonID.' and o.order_status_id =1)';
+				$createdBy = "User";
+				break;
+			case 'book_source':
+				$createdBy = "Source";
+				$sqlConditions .= ' (o.booking_source_id='.$PersonID.' and o.order_status_id =1)';
+				break;
+			case 'cancel_user':
+				$createdBy = "User";
+				$sqlConditions .= ' (o.created_by='.$PersonID.' and o.order_status_id =3)';
+				break;
+			case 'cancel_source':
+				$createdBy = "Source";
+				$sqlConditions .= ' (o.booking_source_id='.$PersonID.' and o.order_status_id =3)';
+				break;
+			case 'done_user':
+				$createdBy = "User";
+				$sqlConditions .= ' (o.created_by='.$PersonID.' and o.order_status_id =5)';
+				break;
+			case 'done_source':
+				$createdBy = "Source";
+				$sqlConditions .= ' (o.booking_source_id='.$PersonID.' and o.order_status_id =5)';
+				break;
+			
+			default:
+				# code...
+				break;
+		}
 		$sRes = '<table>';
 		
-		$sRes .= '<tr><th rowspan=2>Job ID</th><th rowspan=2>Booking made</th><th rowspan=2>Job date</th><th rowspan=2>Job type</th><th rowspan=2>Job status</th><th rowspan=2>Customer</th><th rowspan=2>Address</th><th rowspan=2>City</th><th rowspan=2>Phone</th><th colspan=3>Verifyed</th></tr>';
+		$sRes .= '<tr><th rowspan=2>Job ID</th><th rowspan=2>Booking made</th><th rowspan=2>Job date</th><th rowspan=2>Job type</th><th rowspan=2>Job status</th><th rowspan=2>Created By</th><th colspan=3>Verifyed</th></tr>';
 		$sRes .= '<tr><th>User</th><th>Date/Time</th></tr>';
-		$aArray = $this->JobsRerPerson($PersonID, $BookingFromDate, $BookingToDate, 'created_by');
+		$aArray = $this->JobsRerPerson($PersonID, $BookingFromDate, $BookingToDate, 'created_by', $sqlConditions);
 		for ($x=1; $x<=count($aArray); $x++)
 		{
 			$sRes .= '<tr>';
@@ -1342,10 +1388,7 @@ class ReportsController extends AppController
 			$sRes .= '<td>'.$aArray[$x]['job_date'].'</td>';
 			$sRes .= '<td>'.$aArray[$x]['job_type'].'</td>';
 			$sRes .= '<td>'.$aArray[$x]['job_status'].'</td>';
-			$sRes .= '<td>'.$aArray[$x]['cust_name'].'</td>';
-			$sRes .= '<td>'.$aArray[$x]['address'].'</td>';
-			$sRes .= '<td>'.$aArray[$x]['city'].'</td>';
-			$sRes .= '<td>'.$aArray[$x]['phone'].'</td>';
+			$sRes .= '<td>'.$createdBy.'</td>';
 			$sRes .= '<td>'.$aArray[$x]['verified_by'].'</td>';
 			if (($aArray[$x]['verified_by']!='0')&&($aArray[$x]['verified_by']!=''))
 			{
@@ -1393,12 +1436,12 @@ class ReportsController extends AppController
 		if($fdate != '')
 		{
 			$sqlConditions .= " AND c.call_date >= '".$this->Common->getMysqlDate($fdate)."'";
-			$sqlConditions1 .= " AND o.booking_date >= '".$this->Common->getMysqlDate($fdate)."'";
+			$sqlConditions1 .= " AND o.job_date >= '".$this->Common->getMysqlDate($fdate)."'";
 		} 
 		if($tdate != '')
 		{
 			$sqlConditions .= " AND c.call_date <= '".$this->Common->getMysqlDate($tdate)."'"; 
-			$sqlConditions1.= " AND o.booking_date <= '".$this->Common->getMysqlDate($tdate)."'";
+			$sqlConditions1.= " AND o.job_date <= '".$this->Common->getMysqlDate($tdate)."'";
 		}
 			
 		$records = array();

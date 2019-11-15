@@ -1,3 +1,6 @@
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+<script language="JavaScript" type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
 <script language="JavaScript">
 	var nopen = <?=($_GET['view']==1)?1:(($_GET['view']==2)?3:2)?>;
 	function openTab(n){
@@ -16,10 +19,71 @@
 			$(".Commission").show();
 		}
 	}
+	function hideTimeBox()
+	{
+		$( "#saveBlockTime" ).dialog("close");
+	}
+	function selectAllDay(el) {
+		if($(el).is(":checked")){
+			$("#OrderJobTimeBegHour option:nth(1)").attr('selected','selected');
+			$("#OrderJobTimeEndHour option:last").attr('selected','selected');
+		} else {
+			$("#OrderJobTimeBegHour option:nth(1)").attr('selected','');
+			$("#OrderJobTimeEndHour option:last").attr('selected','');
+		}
+
+	}
 	$(document).ready(function(){
 		$.get("<?=BASE_URL;?>/commissions/getCalendar",
 			{cur_tech:"<?=$user_id?>",cur_year:<?=date('Y');?>,cur_month:<?=date('m');?>},
 			function(data){$("#tech_schedule").html(data);});
+
+		//Loki: open box for setting not available technician time.
+		 $("#saveBlockTime").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Time",
+            autoOpen: false,
+            width: 300,
+            height:300,
+        });
+		
+		$(".openTimeBox").live("click",function() {
+			var curMonth = $(this).attr("current-month");
+			var curDay = $(this).attr("current-day");
+			var curTech = $(this).attr("current-tech");
+			var curYear = $(this).attr("current-year");
+			var startTime = $(this).attr("start-time");
+			var endTime = $(this).attr("end-time");
+			$("#curDay").val(curDay);
+			$("#curMonth").val(curMonth);
+			$("#curYear").val(curYear);
+			$("#curTech").val(curTech);
+			$("#OrderJobTimeBegHour option").attr('selected','');
+			$("#OrderJobTimeEndHour option").attr('selected','');
+			if(startTime != '' && endTime !='')
+			{
+				$("#OrderJobTimeBegHour option[value='" + startTime + "']").attr("selected","selected");
+				$("#OrderJobTimeEndHour option[value='" + endTime + "']").attr("selected","selected");
+			}
+			$( "#saveBlockTime" ).dialog("open");
+		});
+
+		$("#saveTechTiming").live("click", function(){
+			var curMonth 	= $("#curMonth").val();
+			var curDay 		= 	$("#curDay").val();
+			var curTech 	= $("#curTech").val();
+			var curYear 	= $("#curYear").val();
+			var startTime = $('#OrderJobTimeBegHour option:selected').val();
+			var endTime = $('#OrderJobTimeEndHour option:selected').val();
+
+			$.get("<?=BASE_URL;?>/commissions/markDay",
+				{cur_tech:curTech,cur_year:curYear,cur_month:curMonth,cur_day:curDay, start_time: startTime, end_time: endTime},
+				function(data){
+					$( "#saveBlockTime" ).dialog("close");
+					$("#tech_schedule").html(data);
+			});
+		});
 	});
 </script>
 
@@ -249,4 +313,59 @@
 		?>
 	</div>
 </table>
+<div id="saveBlockTime" style="display: none">
+	<input type="hidden" name="curMonth" id="curMonth">
+	<input type="hidden" name="curDay" id="curDay">
+	<input type="hidden" name="curTech" id="curTech">
+	<input type="hidden" name="curYear" id="curYear">
+        <table>
+            <tr>
+                  <td>From</td>
+	              <td>
+	                  <select id="OrderJobTimeBegHour" name="startHour">
+	                    <option value="">&nbsp;</option>
+	                    <option value="08"> 8 AM</option>
+	                    <option value="09"> 9 AM</option>
+	                    <option value="10">10 AM</option>
+	                    <option value="11">11 AM</option>
+	                    <option value="12">12 PM</option>
+	                    <option value="13"> 1 PM</option>
+	                    <option value="14"> 2 PM</option>
+	                    <option value="15"> 3 PM</option>
+	                    <option value="16"> 4 PM</option>
+	                    <option value="17"> 5 PM</option>
+	                    <option value="18"> 6 PM</option>
+	                  </select>
+                </td>
+            </tr>
+            <tr>
+            	<td>
+            		To
+            	</td>
+                <td>
+                  	<select id="OrderJobTimeEndHour" name="endHour">
+	                    <option value="">&nbsp;</option>
+	                    <option value="08"> 8 AM</option>
+	                    <option value="09"> 9 AM</option>
+	                    <option value="10">10 AM</option>
+	                    <option value="11">11 AM</option>
+	                    <option value="12">12 PM</option>
+	                    <option value="13"> 1 PM</option>
+	                    <option value="14"> 2 PM</option>
+	                    <option value="15"> 3 PM</option>
+	                    <option value="16"> 4 PM</option>
+	                    <option value="17"> 5 PM</option>
+	                    <option value="18"> 6 PM</option>
+	                    <option value="19"> 7 PM</option>
+                   	</select>
+                </td>   
+            </tr>
+            <tr>
+                <td> All Day </td>
+                <td><input type="checkbox" name="allDayBlock" onclick="selectAllDay(this)"></td>
+            </tr>
+        </table>
+        <input type="button" name="OK" value="Save" id="saveTechTiming" style="padding: 5px;margin-top: 5px;">
+        <input type="button"  name="cancel" value="Cancel" onclick="hideTimeBox();" style="padding: 5px;margin-top: 5px;">
+</div>
 </form>

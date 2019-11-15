@@ -962,6 +962,16 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-mail.png'
 
+						),
+
+						array(
+
+							'name' => 'Time Confirmation',
+
+							'url' => BASE_URL.'/settings/edit?title=email_template_booking_time_cofirmation',
+
+							'img' => 'icon-lg-mail.png'
+
 						)
 					),
 					array(

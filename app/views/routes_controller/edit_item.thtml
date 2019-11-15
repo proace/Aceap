@@ -64,11 +64,12 @@ document.title += " :: Edit Route";
 								</td>
 						</tr>
 						<tr>
-								<td align="right">&nbsp</td>
-								<td align="left"><b>Tech 1</b></td>
-								<td align="left"><b>Tech 2</b></td>
+								<!-- <td align="right">&nbsp</td> -->
+								<td align="right"><b>Technician</b></td>
+								<td colspan=2><?php echo $html->selectTag('InventoryLocation/tech1_day1', $allTechnicians, $this->data['InventoryLocation']['tech1_day1']);?></td>
+								<!-- <td align="left"><b>Tech 2</b></td> -->
 						</tr>
-						<tr>
+						<!-- <tr>
 								<td align="right"><b>Monday</b></td>
 								<td><?php echo $html->selectTag('InventoryLocation/tech1_day1', $allTechnicians, $this->data['InventoryLocation']['tech1_day1']);?></td>
 								<td><?php echo $html->selectTag('InventoryLocation/tech2_day1', $allTechnicians, $this->data['InventoryLocation']['tech2_day1']);?></td>
@@ -97,7 +98,7 @@ document.title += " :: Edit Route";
 								<td align="right"><b>Saturday</b></td>
 								<td><?php echo $html->selectTag('InventoryLocation/tech1_day6', $allTechnicians, $this->data['InventoryLocation']['tech1_day6']);?></td>
 								<td><?php echo $html->selectTag('InventoryLocation/tech2_day6', $allTechnicians, $this->data['InventoryLocation']['tech2_day6']);?></td>
-						</tr>
+						</tr> -->
 						<tr>
 								<td align="right">Color for the Schedule:</td>
 								<td colspan=2>

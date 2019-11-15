@@ -3429,15 +3429,16 @@ class OrdersController extends AppController
         }
     }
 
-        $sql =  "select * from ace_rp_orders_log
-                  where id='" .$order_id ."'
+        $sql =  "select *, os.name as order_status_id, ot.name as order_type_id, CONCAT(bs1.first_name , ' ', bs1.last_name)  as booking_source_id, CONCAT(bs2.first_name , ' ', bs2.last_name)  as booking_source2_id, CONCAT(ct1.first_name , ' ', ct1.last_name)  as job_technician1_id, CONCAT(ct2.first_name , ' ', ct2.last_name)  as job_technician2_id , osub.name as order_substatus_id from ace_rp_orders_log ol LEFT JOIN ace_rp_order_statuses os on os.id = ol.order_status_id LEFT JOIN ace_rp_order_types ot on ot.id = ol.order_type_id
+                LEFT JOIN ace_rp_users bs1 on bs1.id = ol.booking_source_id  LEFT JOIN ace_rp_users bs2 on bs2.id = ol.booking_source2_id LEFT JOIN ace_rp_users ct1 on ct1.id = ol.job_technician1_id LEFT JOIN ace_rp_users ct2 on ct2.id = ol.job_technician2_id  LEFT JOIN ace_rp_order_substatuses osub on osub.id = ol.order_substatus_id where ol.id='" .$order_id ."'
                     and change_user_id='".$change_user_id."'
                     and change_date='".$change_date."'
                     and change_time='".$change_time."'";
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         $result = $db->_execute($sql);
         $prev_row = mysql_fetch_array($result, MYSQL_ASSOC);
-
+        // echo "<pre>";
+        // print_r($prev_row); die;
     if (!empty($prev_row))
     {
         $sql =  "select * from ace_rp_orders_log
@@ -3452,12 +3453,11 @@ class OrdersController extends AppController
         $result = $db->_execute($sql);
         if (!$row = mysql_fetch_array($result, MYSQL_ASSOC))
         {
-            $sql =  "select * from ace_rp_orders where id='" .$order_id ."'";
+            $sql =  "select *,  os.name as order_status_id, ot.name as order_type_id, CONCAT(bs1.first_name , ' ', bs1.last_name)  as booking_source_id, CONCAT(bs2.first_name , ' ', bs2.last_name)  as booking_source2_id, CONCAT(ct1.first_name , ' ', ct1.last_name)  as job_technician1_id, CONCAT(ct2.first_name , ' ', ct2.last_name)  as job_technician2_id, osub.name as order_substatus_id  from ace_rp_orders ol LEFT JOIN ace_rp_order_statuses os on os.id = ol.order_status_id LEFT JOIN ace_rp_order_types ot on ot.id = ol.order_type_id  LEFT JOIN ace_rp_users bs1 on bs1.id = ol.booking_source_id LEFT JOIN ace_rp_users bs2 on bs2.id = ol.booking_source2_id LEFT JOIN ace_rp_users ct1 on ct1.id = ol.job_technician1_id LEFT JOIN ace_rp_users ct2 on ct2.id = ol.job_technician2_id LEFT JOIN ace_rp_order_substatuses osub on osub.id = ol.order_substatus_id where ol.id='" .$order_id ."'";
             $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
             $result = $db->_execute($sql);
             $row = mysql_fetch_array($result, MYSQL_ASSOC);
         }
-
         foreach ($row as $f_nam => $f_val)
         {
             if (($f_nam!='created')&&($f_nam!='modified')&&($f_nam!='created_by')
@@ -5434,26 +5434,37 @@ class OrdersController extends AppController
 
         //Pick today's date if no date
         $fdate = ($this->params['url']['ffromdate'] != '' ? $this->params['url']['ffromdate']: date("Y-m-d") ) ;
-        $weekday = date('w',strtotime($fdate));
+       
+        //$weekday = date('w',strtotime($fdate));
 
         //Prepare default techs' names
         $default_techs = array();
-        $query = "select i.id, i.tech1_day{$weekday}, t1.state t1_state, i.tech2_day{$weekday}, t2.state t2_state
+        // $query = "select i.id, i.tech1_day{$weekday}, t1.state t1_state, i.tech2_day{$weekday}, t2.state t2_state
+        //         from ace_rp_inventory_locations i
+        //         left outer join ace_rp_tech_schedule t1 on i.tech1_day{$weekday}=t1.tech_id
+        //             and CAST(concat(t1.year,'-',t1.month,'-',t1.day) AS DATE)='".$fdate."'
+        //         left outer join ace_rp_tech_schedule t2 on i.tech2_day{$weekday}=t2.tech_id
+        //             and CAST(concat(t2.year,'-',t2.month,'-',t2.day) AS DATE)='".$fdate."'
+        //        where i.flagactive = 0 and i.type=2 order by i.order_id asc";
+
+         $query = "select i.id, i.tech1_day1, t1.state t1_state, i.tech2_day1, t2.state t2_state, t1.start_time t1_start_time,
+                    t1.end_time t1_end_time
                 from ace_rp_inventory_locations i
-                left outer join ace_rp_tech_schedule t1 on i.tech1_day{$weekday}=t1.tech_id
+                left outer join ace_rp_tech_schedule t1 on i.tech1_day1=t1.tech_id
                     and CAST(concat(t1.year,'-',t1.month,'-',t1.day) AS DATE)='".$fdate."'
-                left outer join ace_rp_tech_schedule t2 on i.tech2_day{$weekday}=t2.tech_id
+                left outer join ace_rp_tech_schedule t2 on i.tech2_day1=t2.tech_id
                     and CAST(concat(t2.year,'-',t2.month,'-',t2.day) AS DATE)='".$fdate."'
                where i.flagactive = 0 and i.type=2 order by i.order_id asc";
         $result = $db->_execute($query);
         while($row = mysql_fetch_array($result)) {
             $default_techs[$row['id']] = array();
-            $default_techs[$row['id']]['tech1_id'] = $row['tech1_day'.$weekday];
-            $default_techs[$row['id']]['tech2_id'] = $row['tech2_day'.$weekday];
+            $default_techs[$row['id']]['tech1_id'] = $row['tech1_day1'];
+            $default_techs[$row['id']]['tech2_id'] = $row['tech2_day2'];
             $default_techs[$row['id']]['tech1_state'] = $row['t1_state'];
             $default_techs[$row['id']]['tech2_state'] = $row['t2_state'];
+            $default_techs[$row['id']]['tech1_start_time'] = $row['t1_start_time'];
+            $default_techs[$row['id']]['tech1_end_time'] = $row['t1_end_time'];
         }
-
         $sqlConditions = " AND a.job_date = '".$this->Common->getMysqlDate($fdate)."'"; //$this->params['url']['ffromdate']
         if ($route_type)
             $sqlConditions .= ' and a.job_truck in (select id from ace_rp_inventory_locations where route_type='.$route_type.') ';
@@ -5695,7 +5706,7 @@ class OrdersController extends AppController
             $telemarketers[$row['id']]['id'] = $row['id'];
             $telemarketers[$row['id']]['name'] = $row['name'];
         }
-        
+
         $this->set('norm_date', date("Y-m-d", strtotime($fdate)));
         $this->set('fdate', date("d M Y", strtotime($fdate)));
         $this->set('ydate', date("d M Y", strtotime($fdate) - 24*60*60));
@@ -5884,7 +5895,7 @@ class OrdersController extends AppController
     }
 
 
-    function emailCustomerBooking($id, $send_cancalled_email = 0)
+    function emailCustomerBooking($id, $send_cancalled_email = 0, $forTimeConfirm = 0)
     {
         $currentDate = date('Y-m-d');
         //Get E-mail Settings
@@ -5899,17 +5910,19 @@ class OrdersController extends AppController
             $settings = $this->Setting->find(array('title'=>'email_template_cancelbookingnotification'));
             $template = $settings['Setting']['valuetxt'];
 
-
-            $settings = $this->Setting->find(array('title'=>'email_template_canceljobnotification_subject'));   
+            $settings = $this->Setting->find(array('title'=>'email_template_canceljobnotification_subject'));  
+            $template_subject = $settings['Setting']['valuetxt']; 
+        } else if($forTimeConfirm) {
+            $settings = $this->Setting->find(array('title'=>'email_template_booking_time_cofirmation'));
+            $template = $settings['Setting']['valuetxt'];
+            $template_subject = $settings['Setting']['subject'];
         } else {
             $settings = $this->Setting->find(array('title'=>'email_template_bookingnotification'));
             $template = $settings['Setting']['valuetxt'];
 
             $settings = $this->Setting->find(array('title'=>'email_template_jobnotification_subject'));
+            $template_subject = $settings['Setting']['valuetxt'];
         }
-        
-        $template_subject = $settings['Setting']['valuetxt'];
-
         //define the headers we want passed. Note that they are separated with \r\n
         //$headers = "From: webmaster@example.com\r\nReply-To: webmaster@example.com";
         $headers = "From: info@acecare.ca\n";
@@ -5992,7 +6005,8 @@ class OrdersController extends AppController
         $msg = str_replace('{job_date}', $jobdate, $msg);
         $msg = str_replace('{job_timeslot}', $jobtimeslot, $msg);
         $msg = str_replace('{booking_summary}', $summary, $msg);
-        $email =$this->data['Customer']['email'];
+        //$email = $this->data['Customer']['email'];
+
         $res = $this->sendEmailUsingMailgun($email,$template_subject,$msg,$id);
         if (strpos($res, '@acecare') !== false) 
         {
@@ -6007,8 +6021,6 @@ class OrdersController extends AppController
         //$res = mail($email, $template_subject, $msg, $headers);
     }
     function sendEmailUsingMailgun($to,$subject,$body,$order_id = null, $imagePath =null){
-        try
-        {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
             curl_setopt($ch, CURLOPT_POST, 1);
@@ -6019,11 +6031,6 @@ class OrdersController extends AppController
             curl_close ($ch);
             $this->manageMailgunEmailLogs($msgid, $subject, $order_id);
             return $msgid;
-        }
-         catch(Exception $e)
-        {
-            file_put_contents("mail_error_log.txt", "mailgun=".$e->getMessage(), FILE_APPEND);
-        }
         //var_export($response);
         //$this->verifyEmailUsingMailgun($to,$subject,$order_id,$msgid);
     }
@@ -16063,6 +16070,59 @@ function deleteUserFromCampaign()
         $resultTable .= "</table>";
         $response  = array("res" => $resultTable);
         echo json_encode($response); 
+        exit();
+    }
+
+    public function sendTimeConfirmationMail()
+    {
+        $tomorrowDate   =  date("Y-m-d", strtotime("+ 1 day"));
+        $emal_send_date =  date("Y-m-d");
+        $orders         =  $this->Order->query("SELECT o.id, o.job_time_beg, o.job_time_end, o.job_date , cs.cell_phone, cs.id as cusId FROM ace_rp_orders o INNER JOIN ace_rp_customers cs  on cs.id = o.customer_id where o.job_date = '".$tomorrowDate."';");
+        $today = gmdate("Y-m-d\TH:i:s\Z");
+        // echo "<pre>";
+        // print_r($orders); die;
+        if(!empty($orders))
+        {
+            foreach ($orders as $key => $value)
+            {
+                $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+                // print_r($value['o']['id']);
+                // echo "<br/>";
+                // print_r($value['cs']['cell_phone']);
+                // echo "<br/>";
+                $cellPhone = $value['cs']['cell_phone'];
+                $cusId     = $value['cs']['cusId'];
+                $subject = $this->emailCustomerBooking($value['o']['id'],'',1);  
+                $queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$emal_send_date."' WHERE id = '".$value['o']['id']."'";
+                $db->_execute($queryEmailDateUpdate);
+                if(!empty($cellPhone))
+                {
+                    $settings = $this->Setting->find(array('title'=>'booking_sms'));
+                    $message = $settings['Setting']['valuetxt'];
+                    $message = $this->Common->removeSlash($message);
+                    $jobTime = $value['o']['job_time_beg'].' to '.$value['o']['job_time_end'];
+                    $jobDate = date_format(date_create($value['o']['job_date']),"l F d,Y");
+                    $sender_id = $this->Common->getLoggedUserID();
+                    $message = str_replace('{time}', $jobTime, $message);
+                    $message = str_replace('{date}', $jobDate, $message);
+
+                    $response = $this->Common->sendTextMessage($cellPhone, $message); 
+                    if(!empty($response))
+                    {
+                        $message = mysql_real_escape_string($message);
+                        $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type,sender_id) VALUES (
+                            '',".$cusId.", ".$response->id.",'".$message."','".$today."', '".$cellPhone."', 1, ".$sender_id.")";
+                        $result = $db->_execute($query);
+                    }
+                }
+                
+            }
+            $response  = array("res" => "1");
+            echo json_encode($response);
+        } else {
+            $response  = array("res" => "0");
+            echo json_encode($response);
+        }   
         exit();
     }
 }

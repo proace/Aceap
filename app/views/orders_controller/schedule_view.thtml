@@ -15,6 +15,13 @@
    /* .ui-widget-content{
         background: white !important;
     }*/
+    .hide-checkbox{
+        display: none;
+    }
+    .new-buttons {
+        font-size: 10px,
+        width : 70px;
+    }
     .buttons{
         padding: 3px;
     }
@@ -502,6 +509,25 @@ function clearSelectjob() {
 function reloadPage()
 {
     window.location.reload();
+}
+ // Send mail for time confirmation 
+function emailAll()
+{
+    var currentDate = $("#ffromdate").val();
+     $.ajax({
+                url:"<?=BASE_URL;?>/orders/sendTimeConfirmationMail?currentDate="+currentDate,
+                dataType:"JSON",
+                type:"GET",
+                success:function(result){ 
+                    res = JSON.parse(result);
+                    console.log(res);
+                    if(res.res == 1){
+                        alert("Email sent succesfully");
+                    } else {
+                        alert("There is no job for Tomorrow");
+                    }
+                 }
+            });
 }
 $(document).ready(function(){
 
@@ -1112,9 +1138,11 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
 <?php if (($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13)) { ?>
 <tr>
 <td></td>
-<td><input type="button" class="buttons" value="Calculate" onclick="getFinalDistance();" style="font-size: 10px;" /> </td>
-<td><input type="button" value="Clear" class="buttons" onclick="clearSelectjob();" style="font-size: 10px;"></td>
-<td><input type="button" value="Reload" class="buttons" onclick="reloadPage();" style="font-size: 10px;"></td>
+<td><input type="button" class="buttons" value="Calculate" onclick="getFinalDistance();" style="font-size: 10px;width: 70px;" /> </td>
+<td><input type="button" value="Clear" class="buttons" onclick="clearSelectjob();" style="font-size: 10px;
+        width: 70px;"></td>
+<td><input type="button" value="Reload" class="buttons" onclick="reloadPage();" style="font-size: 10px;width: 70px;"></td>
+<td><input type="button" value="Time Confirmation" class="buttons" onclick="emailAll();" style="font-size: 10px;"></td>
 <!-- <td></td> -->
 <td colspan="2">
     <input type="button" class="buttons" value="Set Job Approval" id="set_job_approval" style="font-size: 10px;" />
@@ -1128,22 +1156,22 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
     if ($common->getLoggedUserRoleID()!='1') $en = true;
     if ($en)
     {
-        echo '<tr style="height: 8px;"><td align="right">Truck<input type="checkbox" value="1" class="toggle_truck_number" checked="checked" /></td>';
+        echo '<tr style="height: 8px;"><td></td><td class="hide-checkbox" align="right">Truck<input type="checkbox" value="1" class="toggle_truck_number hide-checkbox" checked="checked" /></td>';
         foreach( $trucks as $k => $v )
         {
             if ($k > 1)
             {
                 echo '<td style="width: 75px;" class="truck_number">';
-                echo '<b style="color:#444444">'.$truck_numbers[$k].'</b><br/>   ';
+               // echo '<b style="color:#444444">'.$truck_numbers[$k].'</b><br/>   ';
                 $link = "#";
                 if ($common->getLoggedUserRoleID() == "6") $link = BASE_URL.'/commissions/editTech/'.$default_techs[$k]["tech1_id"].'?view=2&date='.$norm_date;
-                echo '<a href="'.$link.'" style="color:#666666">'.$allTechnician[$default_techs[$k]["tech1_id"]].'</a>';
+                echo '<b><a href="'.$link.'" style="color:#444444; text-decoration: none; text-transform:capitalize">'.$allTechnician[$default_techs[$k]["tech1_id"]].'</a></b>';
                 if ($default_techs[$k]["tech1_state"]==2) echo '&nbsp;<b style="color:#444444">OFF';
                 echo '</td>';
             }
         }
         echo '</tr>';
-        echo '<tr><td align="right"><input type="checkbox" value="1" class="toggle_truck_name1" checked="checked" /></td>';
+        echo '<tr><td align="right"><input type="checkbox" value="1" class="toggle_truck_name1 hide-checkbox" checked="checked" /></td>';
         foreach( $trucks as $k => $v )
         {
             if( $k > 1 )
@@ -1157,7 +1185,7 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
             }
         }
         echo '</tr>';
-        echo '<tr><td align="right"><input type="checkbox" value="1" class="toggle_tech_name1" checked="checked" /></td>';
+        echo '<tr><td align="right"><input type="checkbox" value="1" class="toggle_tech_name1 hide-checkbox" checked="checked" /></td>';
         foreach( $trucks as $k => $v )
         {
             if( $k > 1 )
@@ -1171,7 +1199,7 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
             }
         }
         echo '</tr>';
-        echo '<tr><td align="right"><input type="checkbox" value="1" class="toggle_truck_name2" checked="checked" /></td>';
+        echo '<tr><td align="right"><input type="checkbox" value="1" class="toggle_truck_name2 hide-checkbox" checked="checked" /></td>';
         foreach( $trucks as $k => $v )
         {
             if( $k > 1 )
@@ -1339,8 +1367,12 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
             $i++;
             if ($k > 1)
             {
-                if ((($default_techs[$k]["tech1_state"]==2)&&(!$trucktech[$k][0]||$trucktech[$k][0]==$default_techs[$k]["tech1_id"]))
-                  &&(($default_techs[$k]["tech2_state"]==2)&&(!$trucktech[$k][1]||$trucktech[$k][1]==$default_techs[$k]["tech2_id"]))) {
+                // if ((($default_techs[$k]["tech1_state"]==2)&&(!$trucktech[$k][0]||$trucktech[$k][0]==$default_techs[$k]["tech1_id"]))
+                //   &&(($default_techs[$k]["tech2_state"]==2)&&(!$trucktech[$k][1]||$trucktech[$k][1]==$default_techs[$k]["tech2_id"]))) {
+                //     echo '<td id="c_'.$k.'_'.date('G', strtotime($t)).'" class="aaa" valign="top" style="background-color:#AAAAAA; width:75px;height:50px; text-align: center; vertical-align: middle;">';
+                //     echo '</td>';
+                // }
+                 if (($t >= $default_techs[$k]["tech1_start_time"]) && ($t <= $default_techs[$k]["tech1_end_time"])) {
                     echo '<td id="c_'.$k.'_'.date('G', strtotime($t)).'" class="aaa" valign="top" style="background-color:#AAAAAA; width:75px;height:50px; text-align: center; vertical-align: middle;">';
                     echo '</td>';
                 }
@@ -1362,7 +1394,7 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
 
                     //# Droppable object by Anthony Chernikov, 05/17/2010.
                     echo ' ';
-                    $DroppableString .= "$('#c_".$k.'_'.date('G', strtotime($t))."').droppable({drop: function( event, ui ) {var droppedObj = [$k,".date('G', strtotime($t))."];var offset = ui.draggable.offset();var here = $('#c_".$k.'_'.date('G', strtotime($t))."').offset();if(confirm('Are you sure ?')){if (offset.top<here.top) start_time=droppedObj[1]-1;else start_time=droppedObj[1];if (start_time<8) start_time=8;setLocation(ui.draggable.attr('id'), droppedObj[0], start_time+':00:00');}else{ nothingChangeJobTruckAndHour(); }}}); ";
+                    $DroppableString .= "$('#c_".$k.'_'.date('G', strtotime($t))."').droppable({drop: function( event, ui ) {var droppedObj = [$k,".date('G', strtotime($t))."];var offset = ui.draggable.offset();var here = $('#c_".$k.'_'.date('G', strtotime($t))."').offset();if (offset.top<here.top) start_time=droppedObj[1]-1;else start_time=droppedObj[1];if (start_time<8) start_time=8;setLocation(ui.draggable.attr('id'), droppedObj[0], start_time+':00:00');}}); ";
                 }
             }
         }

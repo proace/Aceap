@@ -338,11 +338,22 @@ function calculateTotalRows() {
 	$('#data_items_total_value').html('$'+grant_total);
 }
 function ShowSelectSupply(){
-	var supply_id = window.showModalDialog("<?=BASE_URL?>/suppliers/index?mode=id",'', 
-  	"dialogWidth:800px; dialogHeight:600px; dialogLeft:100px; dialogTop:50px;");
-	$("#supplier").val(supply_id);
-	$("#supplier_text").html($("#supplier :selected").text());
-	toggle_supplier_readonly();
+	// var supply_id = window.showModalDialog("<?=BASE_URL?>/suppliers/index?mode=id",'', 
+ //  	"dialogWidth:800px; dialogHeight:600px; dialogLeft:100px; dialogTop:50px;");
+
+ 	var supply_id = window.open("<?=BASE_URL?>/suppliers/index?mode=id",'', "dialogWidth:800px; dialogHeight:600px; dialogLeft:100px; dialogTop:50px;");
+ 	
+ 	var timer = setInterval(function ()
+    {
+        if (supply_id.closed)
+        {
+            clearInterval(timer);
+            var returnValue = supply_id.returnValue;
+            $("#supplier").val(returnValue);
+			$("#supplier_text").html($("#supplier :selected").text());
+			toggle_supplier_readonly();
+        }
+    }, 500);
 }
 purchase_first_submit = false; // for making user verify fields before saving
 function ValidateFields()
