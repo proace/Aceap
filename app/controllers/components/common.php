@@ -264,6 +264,15 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-all-bookings.png'
 
+						),
+						array(
+
+							'name' => 'Payment Methods',
+
+							'url' => BASE_URL.'/payments/ShowPaymentMethod',
+
+							'img' => 'icon-lg-all-bookings.png'
+
 						)
 					),
 
@@ -2012,6 +2021,19 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 		$db->_execute($query);
 	}
 
+	function itemAssetTransaction ($itemId, $purchasePrice, $regularPrice)
+	{
+		$db =& ConnectionManager::getDataSource("default");
+
+		$query = "
+			INSERT INTO ace_iv_assets SET
+				item_id = '$itemId',
+				regular_price = '$regularPrice',
+				purchase_price = '$purchasePrice'
+		";
+		$db->_execute($query);
+		return $id = $db->lastInsertId();
+	}
 	function itemMove($doc_id, $item_id, $item_name, $item_qty,
 			$item_selling_price, $item_purchase_price,
 			$item_model_number, $item_location_from, $item_location_to, $move_date) {

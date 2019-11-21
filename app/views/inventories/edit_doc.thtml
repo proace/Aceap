@@ -6,12 +6,22 @@
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/inventory.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<style type="text/css">
+	.inResultsBooking th{
+		background: #666666 !important;
+		color:#000000 !important;
+	}
+	.inResultsBooking td{
+		background: #FFFF99 !important;
+		color:#000000 !important;
+	}
+</style>
 <script>
 var accessData;
 var item_added_flag = false;
 function ajax(event) {
 	var val = $('#ajax_item_name').val();
-	console.log("Ajaxing",val);
+	// console.log("Ajaxing",val);
 	var supp = $('#supplier').val();
 	// Return all items if:
 	// 1) allItems is not passed as an argument.
@@ -19,7 +29,6 @@ function ajax(event) {
 	var src = event.currentTarget.id;
 	
 	if (src == "ajax_item_name") {
-
 		// Return only active items.
 		$.get(
 			"../inventories/ajaxItems",
@@ -39,12 +48,12 @@ function ajax(event) {
 function showItem(id, criteria) {
 	if(criteria == null) {
 		var option = "dialogWidth:450px;dialogHeight:450px;dialogLeft:300px;dialogTop:200px;status:no;scroll:no;resizable:no;";
-		var answer = window.showModalDialog("../iv_items/edit/" + id, '', option);
-		console.log(answer);
+		// var answer = window.showModalDialog("../iv_items/edit/" + id, '', option);
+		var answer = window.open("../iv_items/edit/" + id, '', option);
 		return answer;
 	}
 	else {
-		var url = "../iv_items/add?seed=" + Math.random();
+		var url = "../iv_items/edit?seed=" + Math.random();
 		if(criteria.name) url += "&name=" + criteria.name;
 		if(criteria.supplier_id) url += "&supplier_id=" + criteria.supplier_id;
 		if(criteria.brand_id) url += "&brand_id=" + criteria.brand_id;
@@ -57,8 +66,8 @@ function showItem(id, criteria) {
 		if(criteria.supplier) url += "&supplier=" + criteria.supplier;	
 		if(criteria.supplier_sku) url += "&supplier_sku=" + criteria.supplier_sku;	
 		if(criteria.id) url += '&id=' +criteria.id;
-		var option = "dialogWidth:450px;dialogHeight:450px;dialogLeft:300px;dialogTop:200px;status:no;scroll:no;resizable:no;";
-		var answer = window.showModalDialog(url,'', option);
+		var option = "width=400px,height=500px,left=300px,top=200px,status=no,scroll=no,resizable=no";
+		var answer = window.open(url,'', option);
 		console.log("a",answer);
 		return answer;
 	}
@@ -145,7 +154,7 @@ function ajax_failed( why ) {
 	table.show(); }
 function ajax_finished( data ) {
 	accessData = data;
-	console.log("Ajax Got: '",data,"'");
+	//console.log("Ajax Got: '",data,"'");
 	if (data.length===0) {
 		ajax_failed("no results");
 		return false;
@@ -159,6 +168,7 @@ function ajax_finished( data ) {
 		result.children(".name").html(data[i]["name"]);
 		result.children(".sku").html(data[i]["sku"]);
 		result.children(".price").html(data[i]["price"]);
+		result.children(".purchase_price").html(data[i]["purchase_price"]);
 		result.show();
 		result.bind("click",function(){result_clicked(this);});
 		result.appendTo(table);
@@ -171,8 +181,8 @@ function result_clicked(clicked_item) {
 	table = $('#ajax_item_results');
 	table.hide();
 	$('#ajax_item_name').val('');
-	addItem(dat.children(".item_id").text(), dat.children(".name").text(), dat.children(".price").text(), dat.children(".sku").text(), "", "", "", "")
-	console.log("Added:", dat);
+	addItem(dat.children(".item_id").text(), dat.children(".name").text(), dat.children(".price").text(), dat.children(".sku").text(), "", "", "", "", dat.children(".purchase_price").text())
+	//console.log("Added:", dat);
 }
 $(function(){
 	$("#ajax_item_results").hide();
@@ -234,7 +244,7 @@ var first_item_add = false;
 }
 ?>
 var row_index = 1;
-function addItem(item_id, item_name, item_prc, item_sku, new_type, new_category, new_pp, part_number){
+function addItem(item_id, item_name, item_prc, item_sku, new_type, new_category, new_pp, part_number,purchase_price){
 	tbl = document.getElementById("ItemsTable");
 	
 	if (first_item_add == true) {
@@ -248,6 +258,7 @@ function addItem(item_id, item_name, item_prc, item_sku, new_type, new_category,
 	row.setAttribute("id", "item_"+row_index);
 	txt = '<td>'+
 		'<input type="hidden" id="data_items_name_hidden_'+row_index+'" name="data[items]['+row_index+'][name]" value="'+item_name+'" class="item_name_class" />'+
+		'<input type="hidden" id="data_items_purchase_price_hidden_'+row_index+'" name="data[items]['+row_index+'][purchase_price]" value="'+purchase_price+'" class="item_name_class" />'+
 		'<input type="hidden" name="data[items]['+row_index+'][item_id]" value="'+item_id+'" class="item_id_class" /><span id="data_items_name_'+row_index+'">'+
 		item_name+'</span></td>'+
 		'<td><input type="text" id="data_items_supplier_sku_'+row_index+'" name="data[items]['+row_index+'][sku]" value="'+(item_sku ? item_sku : "")+'"/></td>'+
@@ -297,7 +308,7 @@ function addItem(item_id, item_name, item_prc, item_sku, new_type, new_category,
 	}
 	
 	item_added_flag = true;
-	toggle_supplier_readonly();
+	//toggle_supplier_readonly();
 	row_index++;
 }
 function updateItem(row_index, item_id, item_name, item_prc, item_sku, new_type, new_category, new_pp, part_number){
@@ -307,7 +318,7 @@ function updateItem(row_index, item_id, item_name, item_prc, item_sku, new_type,
 	$('#data_items_name_hidden_'+row_index).html(item_name);
 	calculateItem(row_index,'price');
 	item_added_flag = true;
-	toggle_supplier_readonly();
+	//toggle_supplier_readonly();
 }
 // don't allow user to change supplier after an item has been added
 function toggle_supplier_readonly() {
@@ -351,7 +362,7 @@ function ShowSelectSupply(){
             var returnValue = supply_id.returnValue;
             $("#supplier").val(returnValue);
 			$("#supplier_text").html($("#supplier :selected").text());
-			toggle_supplier_readonly();
+			//toggle_supplier_readonly();
         }
     }, 500);
 }
@@ -363,7 +374,8 @@ function ValidateFields()
 	
 	// supplier
 	var supplier = $("#supplier").val();
-	if (supplier==''){submitForm = false; errorMsg += "Please select a supplier.\n";}
+	
+	if (supplier=='' || supplier==0){submitForm = false; errorMsg += "Please select a supplier.\n";}
 	
 	// invoice #
 	<?php if ($doc_type == 1 || $doc_type == 5){ // purchasing or refunding
@@ -649,6 +661,7 @@ function calculateItem(index,field) {
 								<td class='sku'></td>
 								<td class='price'></td>
 								<td class='item_id'></td>
+								<td class='purchase_price'></td>
 							</tr>            
                         <?php } ?>
 						<?php

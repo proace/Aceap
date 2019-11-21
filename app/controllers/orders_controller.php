@@ -290,14 +290,14 @@ class OrdersController extends AppController
             if ($this->Order->id)
             {
                 $order_id = $this->Order->id;
-                if(empty($this->data['Order']['id']))
-                {
-                  $itemTotal = $this->data['Order']['current_item_total'];
-                  $creator = $this->Common->getLoggedUserID();
-                  $date = date("Y-m-d");
-                  $savePayment = "INSERT INTO ace_rp_payments (idorder, creator, payment_method, payment_date, paid_amount, payment_type) VALUES (".$order_id.", ".$creator.", ".$paidById.", '$date', '$itemTotal', 1)";
-                  $db->_execute($savePayment);
-                }
+                // if(empty($this->data['Order']['id']))
+                // {
+                //   $itemTotal = $this->data['Order']['current_item_total'];
+                //   $creator = $this->Common->getLoggedUserID();
+                //   $date = date("Y-m-d");
+                //   $savePayment = "INSERT INTO ace_rp_payments (idorder, creator, payment_method, payment_date, paid_amount, payment_type) VALUES (".$order_id.", ".$creator.", ".$paidById.", '$date', '$itemTotal', 1)";
+                //   $db->_execute($savePayment);
+                // }
             }   
             else {
 
@@ -2291,10 +2291,12 @@ class OrdersController extends AppController
                 $this->set('tech2_comm', round($tech2_comm, 2));
                 $this->set('tech1_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']."&ftechid=".$this->data['Order']['job_technician1_id']);
                 $this->set('tech2_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']."&ftechid=".$this->data['Order']['job_technician2_id']);  
+                $this->set("isSourceVal",'1');
             }
             else
             {
             // The 'new order' situation
+            $this->set("isSourceVal",'0');
             $created_by = $this->Common->getLoggedUserID();
             $created_date = date('Y-m-d H:i');
             $modified_by = $this->Common->getLoggedUserID();
@@ -3441,13 +3443,13 @@ class OrdersController extends AppController
         // print_r($prev_row); die;
     if (!empty($prev_row))
     {
-        $sql =  "select * from ace_rp_orders_log
-                      where id='" .$order_id ."'
-                        and change_user_id='".$change_user_id."'
-                        and (change_date>'".$change_date."'
-                             or (change_date='".$change_date."'
-                               and change_time>'".$change_time."'))
-                order by change_date asc, change_time asc limit 1";
+        $sql =  "select *,os.name as order_status_id, ot.name as order_type_id, CONCAT(bs1.first_name , ' ', bs1.last_name)  as booking_source_id, CONCAT(bs2.first_name , ' ', bs2.last_name)  as booking_source2_id, CONCAT(ct1.first_name , ' ', ct1.last_name)  as job_technician1_id, CONCAT(ct2.first_name , ' ', ct2.last_name)  as job_technician2_id, osub.name as order_substatus_id  from ace_rp_orders_log ol LEFT JOIN ace_rp_order_statuses os on os.id = ol.order_status_id LEFT JOIN ace_rp_order_types ot on ot.id = ol.order_type_id  LEFT JOIN ace_rp_users bs1 on bs1.id = ol.booking_source_id LEFT JOIN ace_rp_users bs2 on bs2.id = ol.booking_source2_id LEFT JOIN ace_rp_users ct1 on ct1.id = ol.job_technician1_id LEFT JOIN ace_rp_users ct2 on ct2.id = ol.job_technician2_id LEFT JOIN ace_rp_order_substatuses osub on osub.id = ol.order_substatus_id
+                      where ol.id='" .$order_id ."'
+                        and ol.change_user_id='".$change_user_id."'
+                        and (ol.change_date>'".$change_date."'
+                             or (ol.change_date='".$change_date."'
+                               and ol.change_time>'".$change_time."'))
+                order by ol.change_date asc, ol.change_time asc limit 1";
 
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         $result = $db->_execute($sql);
@@ -5356,7 +5358,7 @@ class OrdersController extends AppController
 
            header("Location: http://hvacproz.ca/acesys/index.php/orders/mapSchedule?p_code=".$_REQUEST['p_code']."&city=".$_REQUEST['city']."&route_type=".$route_type);
            
-            // header("Location: http://localhost/acesys/index.php/orders/mapSchedule?p_code=".$_REQUEST['p_code']."&city=".$_REQUEST['city']."&route_type=".$route_type);
+           //header("Location: http://localhost/acesys/index.php/orders/mapSchedule?p_code=".$_REQUEST['p_code']."&city=".$_REQUEST['city']."&route_type=".$route_type);
         }
         $this->layout='edit';
         $p_code = strtoupper(substr($_REQUEST['p_code'],0,3));
@@ -6008,15 +6010,19 @@ class OrdersController extends AppController
         //$email = $this->data['Customer']['email'];
 
         $res = $this->sendEmailUsingMailgun($email,$template_subject,$msg,$id);
-        if (strpos($res, '@acecare') !== false) 
-        {
-            $is_sent = 1;
-        } else {
-            $is_sent = 0;
-        }
+       
         $message = mysql_real_escape_string($msg);
-        $query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$id.",".$cusId.",".$orderTypeId.",'".$currentDate."',".$is_sent.", '".$message."', '".$res."')";
-        $result1 = $db->_execute($query1);
+        if(!empty($res))
+        {   
+            if (strpos($res, '@acecare') !== false) 
+            {
+                $is_sent = 1;
+            } else {
+                $is_sent = 0;
+            }       
+            $query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$id.",".$cusId.",".$orderTypeId.",'".$currentDate."',".$is_sent.", '".$message."', '".$res."')";
+            $result1 = $db->_execute($query1);
+        }
         return $template_subject;
         //$res = mail($email, $template_subject, $msg, $headers);
     }
@@ -6327,6 +6333,7 @@ class OrdersController extends AppController
         $customer_city = $_GET['customer_city'];
         $job_status = $_GET['jobstatus'];
         $user_role_id = $_GET['user_role_id'];
+        $workDate = date("Y-m-d", strtotime($job_date));
         //13,3,9
 
         //if the job is cancelled or done, we don't have to check for anything
@@ -6430,11 +6437,12 @@ class OrdersController extends AppController
                 or (job_time_end > '".(1+$job_from).":00' and job_time_end <= '".$job_to.":00'))
             AND order_status_id in (1,5) and id != '".$order_id."'";
 
+            // print_r($query); die;
         //$query = "select count(*) cnt from ace_rp_orders
-//          where job_date = '".date("Y-m-d", strtotime($job_date))."'
-//          and job_truck  = '".$job_truck."'
-//          and job_time_beg BETWEEN '".$job_from.":00' AND '".$job_to.":00'
-//          AND order_status_id in (1,5) and id != '".$order_id."'";
+        //          where job_date = '".date("Y-m-d", strtotime($job_date))."'
+        //          and job_truck  = '".$job_truck."'
+        //          and job_time_beg BETWEEN '".$job_from.":00' AND '".$job_to.":00'
+        //          AND order_status_id in (1,5) and id != '".$order_id."'";
 
         $result = $db->_execute($query);
         $row = mysql_fetch_array($result);
@@ -6444,11 +6452,81 @@ class OrdersController extends AppController
             echo "There is another job for this truck for this time.";
             exit;
         }
+       $query = "SELECT i.id, i.tech1_day1, t1.state t1_state, t1.start_time t1_start_time, t1.end_time t1_end_time, CONCAT( t1.year,  '-', t1.month,  '-', t1.day ) AS DATE FROM ace_rp_inventory_locations i
+            LEFT OUTER JOIN ace_rp_tech_schedule t1 ON i.tech1_day1 = t1.tech_id
+            AND CAST( CONCAT( t1.year,  '-', t1.month,  '-', t1.day ) AS DATE ) =  '".$workDate."'
+            WHERE i.flagactive =0
+            AND i.type =2
+            AND i.id =".$job_truck." ORDER BY i.order_id ASC ";
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result)) {
+            if (($job_from >= $row['t1_start_time']) && ( $job_to <= $row['t1_end_time'])) {
+                echo "Technicin is not available for this time.";
+                exit;
+            }
+        }
         //echo "prevJobTruck:$prevJobTruck jobsOnArea:$jobsOnArea customerCity:$customer_city";
         echo 'OK';
         exit;
     }
 
+    //Method for checking technician not available time.
+    function conflictCheckExistingJob()
+    {
+
+        $job_date = $_GET['job_date'];
+        $job_truck = $_GET['job_truck'];
+        $job_from = $_GET['job_from'];
+        $job_to = $_GET['job_to'];
+        $order_id = $_GET['order_id'];
+        $customer_city = $_GET['customer_city'];
+        $job_status = $_GET['jobstatus'];
+        $user_role_id = $_GET['user_role_id'];
+        $workDate = date("Y-m-d", strtotime($job_date));
+        //13,3,9
+
+        //if the job is cancelled or done, we don't have to check for anything
+        if($job_status == 3 || $job_status == 5) {
+            echo "OK";
+            exit;
+        }
+
+        $db =& ConnectionManager::getDataSource('default');
+
+        //count the number of schedules on the current date and timeslot; if it is 0, then it is valid
+
+        $query = "select count(*) cnt from ace_rp_orders
+            where job_date = '".date("Y-m-d", strtotime($job_date))."'
+            and job_truck  = '".$job_truck."'
+            and ((job_time_beg >= '".$job_from.":00' and job_time_beg < '".$job_to.":00')
+                or (job_time_end > '".(1+$job_from).":00' and job_time_end <= '".$job_to.":00'))
+            AND order_status_id in (1,5) and id != '".$order_id."'";
+        
+        $result = $db->_execute($query);
+        $row = mysql_fetch_array($result);
+        $bookedTrucks = $row['cnt'];
+
+        if ($bookedTrucks > 0) {
+            echo "There is another job for this truck for this time.";
+            exit;
+        }
+       $query = "SELECT i.id, i.tech1_day1, t1.state t1_state, t1.start_time t1_start_time, t1.end_time t1_end_time, CONCAT( t1.year,  '-', t1.month,  '-', t1.day ) AS DATE FROM ace_rp_inventory_locations i
+            LEFT OUTER JOIN ace_rp_tech_schedule t1 ON i.tech1_day1 = t1.tech_id
+            AND CAST( CONCAT( t1.year,  '-', t1.month,  '-', t1.day ) AS DATE ) =  '".$workDate."'
+            WHERE i.flagactive =0
+            AND i.type =2
+            AND i.id =".$job_truck." ORDER BY i.order_id ASC ";
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result)) {
+            if (($job_from >= $row['t1_start_time']) && ( $job_to <= $row['t1_end_time'])) {
+                echo "Technicin is not available for this time.";
+                exit;
+            }
+        }
+        //echo "prevJobTruck:$prevJobTruck jobsOnArea:$jobsOnArea customerCity:$customer_city";
+        echo 'OK';
+        exit;
+    }
     function nothingChangeJobTruckAndHour()
     {
         exit;
@@ -7427,8 +7505,9 @@ class OrdersController extends AppController
 
     // Method draws the table for this booking detalizaion
     // Created: Anthony Chernikov, 06/2010
-    function _showQuestions($order_id,$question_type,$job_type,$strStyle)
-    {
+function _showQuestions($order_id,$question_type,$job_type,$strStyle)
+{
+
         if (!$strStyle) $strStyle='class="inResultsBooking"';
     $h .= '
     <table id="DetailsTable" cellspacing=0 colspacing=0 ' .$strStyle .'>
@@ -7440,7 +7519,6 @@ class OrdersController extends AppController
         </tr>';
 
     $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-
     if ($question_type==0) $condition = "for_office=1 and";
     else $condition = "for_office=0 and";
 
@@ -7467,7 +7545,6 @@ class OrdersController extends AppController
     elseif ($job_type)
         $query="select * from ace_rp_order_types_questions where $condition order_type_id=$job_type order by question_number";
     else return '';
-
     $index = 0;
     $result = $db->_execute($query);
     while ($row = mysql_fetch_array($result,MYSQL_ASSOC))
@@ -8877,6 +8954,7 @@ class OrdersController extends AppController
         if($this->Common->getLoggedUserRoleID()==3){
             $query = "select ace_rp_inventory_locations.* from ace_rp_inventory_locations inner join ace_rp_truck_maps as artm on ace_rp_inventory_locations.id=artm.truck_id where flagactive = 0 and type=2 and artm.user_id=".$userId." $cond order by order_id asc";    
         }else{
+
             $query = "select * from ace_rp_inventory_locations where flagactive = 0 and type=2 $cond order by order_id asc";
         }
 
@@ -8931,7 +9009,19 @@ class OrdersController extends AppController
                 }
             }
         }
-
+        $query = "select i.id, i.tech1_day1, t1.state t1_state, i.tech2_day1, t1.start_time t1_start_time,
+                    t1.end_time t1_end_time,concat(t1.year,'-',t1.month,'-',t1.day) AS date
+                from ace_rp_inventory_locations i
+                left outer join ace_rp_tech_schedule t1 on i.tech1_day1=t1.tech_id
+               where i.flagactive = 0 and i.type=2 and CAST(concat(t1.year,'-',t1.month,'-',t1.day) AS DATE)  between '$date_from' and '$date_to' order by i.order_id asc";
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result)) {
+            $default_techs[$row['id']][$row['date']] = array();
+            $default_techs[$row['id']][$row['date']]['tech1_id'] = $row['tech1_day1'];
+            $default_techs[$row['id']][$row['date']]['tech1_state'] = $row['t1_state'];
+            $default_techs[$row['id']][$row['date']]['tech1_start_time'] = $row['t1_start_time'];
+            $default_techs[$row['id']][$row['date']]['tech1_end_time'] = $row['t1_end_time'];
+        } 
         // Reverce the map
         $map = array();
         if ($city||$p_code)
@@ -8950,6 +9040,7 @@ class OrdersController extends AppController
                     }
                 }
             }
+        $this->set("default_techs",$default_techs);
         $this->set('neighbours', $neighbours);
         $this->set('trucks', $trucks);
         $this->set('map', $map);
@@ -16075,21 +16166,15 @@ function deleteUserFromCampaign()
 
     public function sendTimeConfirmationMail()
     {
-        $tomorrowDate   =  date("Y-m-d", strtotime("+ 1 day"));
+        $tomorrowDate   =  date("Y-m-d", strtotime($_GET['currentDate']."+ 1 day"));
         $emal_send_date =  date("Y-m-d");
         $orders         =  $this->Order->query("SELECT o.id, o.job_time_beg, o.job_time_end, o.job_date , cs.cell_phone, cs.id as cusId FROM ace_rp_orders o INNER JOIN ace_rp_customers cs  on cs.id = o.customer_id where o.job_date = '".$tomorrowDate."';");
         $today = gmdate("Y-m-d\TH:i:s\Z");
-        // echo "<pre>";
-        // print_r($orders); die;
         if(!empty($orders))
         {
             foreach ($orders as $key => $value)
             {
                 $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-                // print_r($value['o']['id']);
-                // echo "<br/>";
-                // print_r($value['cs']['cell_phone']);
-                // echo "<br/>";
                 $cellPhone = $value['cs']['cell_phone'];
                 $cusId     = $value['cs']['cusId'];
                 $subject = $this->emailCustomerBooking($value['o']['id'],'',1);  
@@ -16107,7 +16192,7 @@ function deleteUserFromCampaign()
                     $message = str_replace('{date}', $jobDate, $message);
 
                     $response = $this->Common->sendTextMessage($cellPhone, $message); 
-                    if(!empty($response))
+                    if(!empty($response->id))
                     {
                         $message = mysql_real_escape_string($message);
                         $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type,sender_id) VALUES (
@@ -16118,11 +16203,31 @@ function deleteUserFromCampaign()
                 
             }
             $response  = array("res" => "1");
-            echo json_encode($response);
+            echo json_encode($response);exit();
         } else {
             $response  = array("res" => "0");
-            echo json_encode($response);
+            echo json_encode($response);exit();
         }   
+        exit();
+    }
+
+    public function checkSourcePassword()
+    {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $passsword = md5($_GET['password']);
+        if(!empty($passsword))
+        {
+            $query = "SELECT * from ace_rp_source_password where password = '".$passsword."'";
+            $result = $db->_execute($query);
+            $row = mysql_fetch_array($result);
+            if(!empty($row)){
+                $response  = array("res" => "1");
+                echo json_encode($response);exit();
+            } else {
+                $response  = array("res" => "0");
+                echo json_encode($response);exit();
+            }
+        }
         exit();
     }
 }

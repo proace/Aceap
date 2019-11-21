@@ -61,15 +61,23 @@ class Queries {
 	// Function same as SearchParts, with modification to only return active items.
 	function SearchActiveParts($needle) {
 		$limit = 15;
-		$query = "SELECT i.id id, i.name name, i.selling_price price
-			FROM ace_iv_items i
-			LEFT JOIN ace_iv_suppliers s 
-			ON i.iv_supplier_id = s.id
-			WHERE 
-				((i.name LIKE \"%$needle%\"
-				OR i.model LIKE \"%$needle%\")
-				AND i.active='1')
-			LIMIT $limit";
+		// $query = "SELECT i.id id, i.name name, i.selling_price price
+		// 	FROM ace_iv_items i
+		// 	LEFT JOIN ace_iv_suppliers s 
+		// 	ON i.iv_supplier_id = s.id
+		// 	WHERE 
+		// 		((i.name LIKE \"%$needle%\"
+		// 		OR i.model LIKE \"%$needle%\")
+		// 		AND i.active='1')
+		// 	LIMIT $limit";
+
+		// $query = "SELECT i.id id, i.name name, i.selling_price price, i.supplier_price purchase_price
+		// 	FROM iv_items_labeled2 i
+		// 	WHERE i.sub_category_id  IN (SELECT id FROM  `ace_iv_sub_categories` WHERE name ='".$needle."')";
+
+		$query = "SELECT i.id id, i.name name, i.selling_price price, i.supplier_price purchase_price
+			FROM iv_items_labeled2 i
+			WHERE i.name LIKE \"%$needle%\"";
 		$results = $this->connection->_execute($query);
 		$response = array();
 		while ($row = mysql_fetch_assoc($results)) {
@@ -681,7 +689,6 @@ class InventoriesController extends AppController
 				GROUP BY movements.id, move_to.id, assets.item_id
 				ORDER BY movements.date
 		";
-		
 		/*
 		* BUILD ITEMS
 		*/
@@ -1116,7 +1123,7 @@ class InventoriesController extends AppController
 		$location = $this->data['location'];
 		$note = $this->data['note'];
 		$doc_date = date("Y-m-d", strtotime($this->data['doc_date']));
-		
+		$moveDate = date("Y-m-d");
 		if ($do_save == 1){
 			//echo 'Perform Update';
 			$items = $_POST['data']['items'];
@@ -1187,7 +1194,9 @@ class InventoriesController extends AppController
 						// store $assets array for insertion into movements table
 						$asset = array();
 						// store into assets table
-						$asset['id'] = $this->Common->itemTransaction($cur['item_id'], $cur['purchase_price'], $cur['price'], $to_location_id);
+						// $this->Common->itemTransaction($cur['item_id'], $cur['purchase_price'], $cur['price'], $to_location_id);
+						$this->Common->itemTransaction($doc_id, $cur['item_id'],$cur['name'],$cur['quantity'],$cur['price'],$cur['purchase_price'],'',$location_data["id"],$moveDate);
+						$asset['id'] = $this->Common->itemAssetTransaction($cur['item_id'],$cur['purchase_price'], $cur['price']);
 						$asset['location_name'] = $location_data["number"];
 						$asset['location_type'] = $location_data["type"];
 						$asset['location_id'] = $location_data["id"];
@@ -1196,7 +1205,9 @@ class InventoriesController extends AppController
 						//echo "<pre>";print_r($cur);echo "</pre>";
 						
 						// store or update SKU for this item / supplier
-						$this->_store_sku($cur['item_id'], $from_location_id, $cur['sku']);
+
+						// $this->_store_sku($cur['item_id'], $from_location_id, $cur['sku']);
+						$this->_store_sku($cur['item_id'], $supplier_id, $cur['sku']);
 					}
 				}
 			}
@@ -1218,6 +1229,7 @@ class InventoriesController extends AppController
 			}
 
 			// Forward user where they need to be - if this is a single action per view
+			
 			$this->redirect('inventories/'.$_REQUEST['rurl']);
 			
 				

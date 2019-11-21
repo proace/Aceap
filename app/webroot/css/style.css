@@ -137,8 +137,10 @@ body {
 	border-bottom-width: 1px;
 	border-bottom-style: solid;
 	border-bottom-color:#555555;
-	background:#DDFFDD;
-	color:#004400;
+	/*background:#DDFFDD;*/
+	background: #FFFF99;
+	/*color:#004400;*/
+	color: #000000;
 	height:23px;
 }
 
@@ -163,7 +165,9 @@ body {
 	border-right-width: 1px;
 	border-right-style: solid;
 	border-right-color:#BBBBBB;
-	color:#004000;
+	/*color:#004000;*/
+	color: #000000;
+	background: #FFFF99;
 }
 
 .inResultsBooking .extra td {

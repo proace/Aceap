@@ -124,7 +124,6 @@ if (($common->getLoggedUserRoleID()!=6)&&($v==3)) continue;
                 $nCnt++;
                 $class = 'empty_cell';
                 
-                
                 if (isset($map_busy[$k][$j][$i])) $class = 'busy_cell';
                 $en = true;
                 if ($p_code||$city)
@@ -141,6 +140,10 @@ if (($common->getLoggedUserRoleID()!=6)&&($v==3)) continue;
                             $class = 'data_cell';
                         }
 
+                }
+                if (($i >= $default_techs[$k][$day['date']]['tech1_start_time']) && ($i <= $default_techs[$k][$day['date']]['tech1_end_time'])) {
+                    $class = 'busy_cell';
+                    $en = false;
                 }
                 if ($nCnt==count($trucks)) $class .= ' last_cell';
                 $width=100/(count($trucks)*count($dates));

@@ -61,6 +61,7 @@ tinyMCE.init({
             gecko_spellcheck : true, browser_spellcheck : true
         });
 	}
+
 /* Loki: show/ hide email history data.
    type: 1 = show
    		 2 = hide
@@ -103,8 +104,31 @@ function sendSeparateEmail()
 		}
 	});	
 }
-//Loki: Send review email
+//Loki check password for source chage
+function checkSourcePassword() {
+    var password = $("#sourcePassword").val();
+    if(password == '' || password == null || password == 'undefined'){
+        alert("Please insert password")
+    }
+    $.ajax({
+        url: '<?=BASE_URL?>/orders/checkSourcePassword',
+        dataType: 'JSON',
+        type: 'GET',
+        cache: false,
+        data:{password:password},
+        success: function(data) {
+            res = JSON.parse(data);
+            if(res.res == "1")
+            {
+                $( "#open_source_password" ).dialog("close");
+            } else{
+                alert("Please Insert correct password");
+            }
+        }
+    }); 
+}
 
+//Loki: Send review email
 function sendReviewEmail()
 {
     var email = $('#editEmail').val();
@@ -288,7 +312,9 @@ function hideReviewEmailBox() {
 function hideEmailBox() {
 	$( "#sendSeparateEmail" ).dialog("close");
 }
-
+function hidePasswordBox(){
+    $( "#open_source_password" ).dialog("close");
+}
 // function emailInvoice(order_id, i=0){
 // 	var email = $('#emailinput').val();
 // 	 if(0 == i)
@@ -803,13 +829,30 @@ function ValidateFields(jobstatus, show_box=0)
 	//alert(OrderID);
 		if(submitForm){
 		    if((submitForm==true) && (OrderID!='')){
-				//alert('ImIn');
-				if(document.getElementById('sendMailOnEstimate').value==1){	
-					CheckMailSent(OrderID);
-					return false;
-				}
+				// alert('ImIn');
+					$.get("<?=BASE_URL;?>/orders/conflictCheckExistingJob",
+                    {jobstatus:jobstatus,
+                     customer_city:customerCity,
+                     job_date:date,
+                     job_truck:truck,
+                     job_from:valb,
+                     job_to:vale,
+                     user_role_id:'<?php echo $common->getLoggedUserRoleID() ?>',
+                     order_id:'<?=$html->tagValue("Order/id")?>'},
+                    function(data){
+                        var res = data.trim();
+                        if (data.indexOf('OK') > 0) {
+                           if(document.getElementById('sendMailOnEstimate').value==1){  
+                                CheckMailSent(OrderID);
+                                return false;
+                            }
+                        } else{
+                            alert(res);
+                            return false;
+                        }
+                    });
 			}
-			if(jobstatus != 8) {
+			else if(jobstatus != 8) {
 			$.get("<?=BASE_URL;?>/orders/conflictCheck",
 				{jobstatus:jobstatus,
 				 customer_city:customerCity,
@@ -856,7 +899,7 @@ function ValidateFields(jobstatus, show_box=0)
 						
 				});
 			} else {
-				//alert('submitForm');
+            	//alert('submitForm');
 				document.forms['editBookingform'].submit();
 			}
 		}
@@ -1448,6 +1491,46 @@ $(document).ready(function(){
 	      }
 	    });
 	  }
+      //Loki Ask password for changing source1.
+      $(function () {
+            $("#open_source_password").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "Message",
+                autoOpen: false,
+                width: 500,
+                height: 400,
+                closeOnEscape: false,
+                open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); }
+            });
+            $("#OrderBookingSourceId").live("change",function () {
+                var source1Val = $("#is_source1_val").val(); 
+                if(source1Val == 1)
+                {
+                    $('#open_source_password').dialog('open');
+                }
+            });
+        });
+       //Loki Ask password for changing source2.
+      $(function () {
+            $("#open_source_password").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "Message",
+                autoOpen: false,
+                width: 500,
+                height: 400,
+                closeOnEscape: false,
+                open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); }
+            });
+            $("#OrderBookingSource2Id").live("change",function () {
+                var source1Val = $("#is_source1_val").val(); 
+                if(source1Val == 1)
+                {
+                    $('#open_source_password').dialog('open');
+                }
+            });
+        });
 	//Loki- Show email log content
 		$(function () {
 			$(".show_email_content").dialog({
@@ -2186,6 +2269,7 @@ $(document).ready(function(){
 /*#sendSeparateEmail #emailVal_ifr body {
 	display: block !important;
 }*/
+
 .receipt_btn{
     position: absolute;
     padding: 5px;
@@ -2522,7 +2606,11 @@ function get_data($url)
 		<input type="button" name="OK" value="Send" style="padding: 5px;margin-top: 5px;" onclick="sendSeparateEmail()">
 		<input type="button"  name="cancel" value="Cancel" onclick="hideEmailBox();" style="padding: 5px;margin-top: 5px;">
 </div>
-
+<div id="open_source_password" style="display: none;">
+        <input type="password" name="sourcePassword" id="sourcePassword">
+        <input type="button" name="OK" value="Submit" style="padding: 5px;margin-top: 5px;" onclick="checkSourcePassword()">
+<!--         <input type="button"  name="cancel" value="Cancel" onclick="hidePasswordBox();" style="padding: 5px;margin-top: 5px;">
+ --></div>
 
 <!-- The Modal -->
 <div id="myModalNew" class="modal">
@@ -2566,6 +2654,7 @@ function get_data($url)
 <form name="editBookingform" action="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
 <!-- This tag creates our form tag -->
  <!-- Set booking from campaing value -->
+<input type="hidden" id="is_source1_val" name="is_source1_val" value="<?=$isSourceVal?>"> 
 <input type="hidden" id="is_max_distance" name="is_max_distance" value="0">
 <input type="hidden" id="resendEmailVal" name="data[Order][resendEmailVal]" value="1">
 <input type="hidden" id="resendTextVal" name="data[Order][resendTextVal]" value="1">

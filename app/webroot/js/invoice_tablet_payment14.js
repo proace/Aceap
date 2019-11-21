@@ -577,8 +577,8 @@ function SavePayment(){
 	var option = element.attr("show-picture"); 
 	var paymentOption = element.attr("show-payment"); 
 	var MessageOption = element.attr("show-message"); 
-	// var amount = $("#paid_by_amount").val();	
-	var amount = $("#current_balance").val();	
+	var amount = $("#paid_by_amount").val();	
+	// var amount = $("#current_balance").val();	
 	var orderId = $("#remOrderId").val();
 	
 	if (!method) {alert('A payment method should be selected!'); return;}

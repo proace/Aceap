@@ -497,7 +497,7 @@ function upload_photo(cur,i) {
             </select>
             </div>
 
-          <!--   <div>Amount: <input type="text" class="right" id="paid_by_amount" name="data[Payment][amount]" value="<?=$job['Payment']['paid_amount']?>" /></div> -->
+            <div>Amount: <input type="text" class="right" id="paid_by_amount" name="data[Payment][amount]" value="<?=$job['Payment']['paid_amount']?>" /></div>
         	
             <!-- <div>Auth#: <input type="text" class="right" id="auth_number" name="data[Payment][auth_number]" value="" /></div> -->
             <img id="pre-image_photo1" style="float: right;" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
