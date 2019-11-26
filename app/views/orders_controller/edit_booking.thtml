@@ -828,7 +828,7 @@ function ValidateFields(jobstatus, show_box=0)
 	var OrderID = '<?=$html->tagValue("Order/id")?>';
 	//alert(OrderID);
 		if(submitForm){
-		    if((submitForm==true) && (OrderID!='')){
+		    if(((submitForm==true) && (OrderID!='')) && jobstatus !=1){
 				// alert('ImIn');
 					$.get("<?=BASE_URL;?>/orders/conflictCheckExistingJob",
                     {jobstatus:jobstatus,
@@ -3216,6 +3216,12 @@ function get_data($url)
 						<?php echo $html->selectTag('Order/t1_method', $comm_roles, $this->data['Order']['t1_method']); ?>
 					</td>
 					<?php }?>
+                </tr>
+                <tr>
+                     <td align="right">Camp Source:</td>
+                    <td><?php echo '<b>'.$booking_sources[$this->data['Order']['camp_source']].'</b>'?></td>
+                    <td></td>
+                    <td></td>
                 </tr>
                 <tr>
                     <td align="right">Verified by:</td>

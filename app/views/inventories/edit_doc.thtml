@@ -45,12 +45,22 @@ function ajax(event) {
 	}
 }
 
-function showItem(id, criteria) {
-	if(criteria == null) {
-		var option = "dialogWidth:450px;dialogHeight:450px;dialogLeft:300px;dialogTop:200px;status:no;scroll:no;resizable:no;";
-		// var answer = window.showModalDialog("../iv_items/edit/" + id, '', option);
-		var answer = window.open("../iv_items/edit/" + id, '', option);
-		return answer;
+function showItem(id, criteria,from_address, row_index=0) {
+	if(from_address == 1) {
+		var option = "width=400px,height=500px,left=300px,top=200px,status=no,scroll=no,resizable=no";
+		var win = window.open("../iv_items/edit/" + criteria.id+"/"+criteria.category_id, "MyDialog", option);
+	    var timer = setInterval(function ()
+	    {
+	        if (win.closed)
+	        {
+	            clearInterval(timer);
+	            var returnId = win.returnValueId;
+	            var itemArr = returnId.split(',');
+	            updateItem(row_index, itemArr[0], itemArr[1], itemArr[2], itemArr[3], "", "", "", "");
+				table = $('#ajax_item_results');
+				table.hide();
+	        }
+	    }, 500);
 	}
 	else {
 		var url = "../iv_items/edit?seed=" + Math.random();
@@ -67,9 +77,18 @@ function showItem(id, criteria) {
 		if(criteria.supplier_sku) url += "&supplier_sku=" + criteria.supplier_sku;	
 		if(criteria.id) url += '&id=' +criteria.id;
 		var option = "width=400px,height=500px,left=300px,top=200px,status=no,scroll=no,resizable=no";
-		var answer = window.open(url,'', option);
-		console.log("a",answer);
-		return answer;
+		//var answer = window.open(url,'', option);
+		var win = window.open(url, "MyDialog", option);
+	    var timer = setInterval(function ()
+	    {
+	        if (win.closed)
+	        {
+	            clearInterval(timer);
+	            var returnId = win.returnValueId;
+	            var itemArr = returnId.split(',');
+	            addItem(itemArr[0], itemArr[1], itemArr[2], itemArr[3], "", "", "", "",itemArr[2],itemArr[4]);
+	        }
+	    }, 500);
 	}
 }
 
@@ -78,7 +97,7 @@ function add_unknown_item() {
 	var supp_id = $('#supplier').val();
 	var supp = $('#supplier_text').text();
 	var criteria = {"name":val,"supplier":supp,"supplier_id":supp_id};
-	var results = showItem('', criteria);
+	var results = showItem('', criteria,2);
 	if (!results) { return; }
 	var result = results[1];
 	var price = results[2];
@@ -95,7 +114,7 @@ function add_unknown_item() {
 				{query:result,supplier:supp_id},
 				function(data) {
 					console.log(data);
-					addItem(data[0]["id"], result, price, results[4], "", "", "", "");
+					addItem(data[0]["id"], result, price, results[4], "", "", "", "",'');
 					table = $('#ajax_item_results');
 					table.hide();
 				},
@@ -105,15 +124,15 @@ function add_unknown_item() {
 	$('#ajax_item_name').val('');
 	$('#ajax_item_results').hide();
 }
-function edit_known_item(item, row_index) {
+function edit_known_item(item, row_index,category_id) {
 	var val = $('#ajax_item_name').val();
 	var supp_id = $('#supplier').val();
 	var supp = $('#supplier_text').text();
 	var selling_price = $('#data_items_price_'+row_index).val();
 	var supplier_sku = $('#data_items_supplier_sku_'+row_index).val();
-	var criteria = {"name":val,"supplier":supp,"supplier_id":supp_id, "id":item, "selling_price":selling_price, "supplier_sku":supplier_sku};
+	var criteria = {"name":val,"supplier":supp,"supplier_id":supp_id, "id":item, "selling_price":selling_price, "supplier_sku":supplier_sku,category_id:category_id};
 	var url = "../iv_items/items";
-	var results = showItem('', criteria);
+	var results = showItem('', criteria,1, row_index);
 	if (!results) { return; }
 	var result = results[1];
 	var price = results[2];
@@ -167,8 +186,10 @@ function ajax_finished( data ) {
 		result.children(".item_id").html(data[i]["id"]);
 		result.children(".name").html(data[i]["name"]);
 		result.children(".sku").html(data[i]["sku"]);
-		result.children(".price").html(data[i]["price"]);
+		// result.children(".price").html(data[i]["price"]);
+		result.children(".price").html(data[i]["purchase_price"]);
 		result.children(".purchase_price").html(data[i]["purchase_price"]);
+		result.children(".category_id").html(data[i]["category_id"]);
 		result.show();
 		result.bind("click",function(){result_clicked(this);});
 		result.appendTo(table);
@@ -181,7 +202,7 @@ function result_clicked(clicked_item) {
 	table = $('#ajax_item_results');
 	table.hide();
 	$('#ajax_item_name').val('');
-	addItem(dat.children(".item_id").text(), dat.children(".name").text(), dat.children(".price").text(), dat.children(".sku").text(), "", "", "", "", dat.children(".purchase_price").text())
+	addItem(dat.children(".item_id").text(), dat.children(".name").text(), dat.children(".price").text(), dat.children(".sku").text(), "", "", "", "", dat.children(".purchase_price").text(),dat.children(".category_id").text())
 	//console.log("Added:", dat);
 }
 $(function(){
@@ -206,7 +227,7 @@ $(function(){
 		$(this).children(".item_mode").val();
 		
 		addItem($(this).children(".item_id").val(), $(this).children(".item_name").val(), $(this).children(".item_selling_price").val(), $(this).children(".item_sku").val(),
-		$(this).children(".item_mode").val(), $(this).children(".item_category_id").val(), $(this).children(".item_supplier_price").val(), $(this).children(".item_model").val());
+		$(this).children(".item_mode").val(), $(this).children(".item_category_id").val(), $(this).children(".item_supplier_price").val(), $(this).children(".item_model").val(),'');
 		
 		
 	});
@@ -244,7 +265,7 @@ var first_item_add = false;
 }
 ?>
 var row_index = 1;
-function addItem(item_id, item_name, item_prc, item_sku, new_type, new_category, new_pp, part_number,purchase_price){
+function addItem(item_id, item_name, item_prc, item_sku, new_type, new_category, new_pp, part_number,purchase_price,category_id){
 	tbl = document.getElementById("ItemsTable");
 	
 	if (first_item_add == true) {
@@ -266,7 +287,7 @@ function addItem(item_id, item_name, item_prc, item_sku, new_type, new_category,
 		'<td><input type="text" id="data_items_price_'+row_index+'" name="data[items]['+row_index+'][price]" value="'+item_prc+'" onkeyup="calculateItem('+row_index+',\'price\');" /></td>'+
 		'<td><input type="text" id="data_items_subtotal_'+row_index+'" value="'+item_prc+'" onkeyup="calculateItem('+row_index+',\'subtotal\');" /></td>'+
 		'<td><select name="data[items]['+row_index+'][location]"><option value="warehouse:0">Warehouse</option><option value="transit:1">Ordered</option><?php foreach($trucks as $tid => $truck) { ?><option value="tech:<?php echo $tid ?>"><?php echo $truck ?></option><?php } ?></select></td>'+
-		'<td><img onclick="edit_known_item('+item_id+', '+row_index+')" src="<?=ROOT_URL?>/app/webroot/img/edit18.png" style="position:relative; top:-2px;"/>' +
+		'<td><img onclick="edit_known_item('+item_id+', '+row_index+','+category_id+')" src="<?=ROOT_URL?>/app/webroot/img/edit_18.png" style="position:relative; top:-2px;height:20px;width:20px"/>' +
 		'<img onclick="removeItem('+row_index+')" src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png"/></td>';
 	row.innerHTML=txt;
 	
@@ -662,7 +683,8 @@ function calculateItem(index,field) {
 								<td class='price'></td>
 								<td class='item_id'></td>
 								<td class='purchase_price'></td>
-							</tr>            
+								<td class='category_id'></td>
+							</tr>
                         <?php } ?>
 						<?php
 						$cur=0;

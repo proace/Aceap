@@ -6461,7 +6461,7 @@ class OrdersController extends AppController
         $result = $db->_execute($query);
         while($row = mysql_fetch_array($result)) {
             if (($job_from >= $row['t1_start_time']) && ( $job_to <= $row['t1_end_time'])) {
-                echo "Technicin is not available for this time.";
+                echo "Technician is not available for this time.";
                 exit;
             }
         }
@@ -9348,7 +9348,8 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         $str1 = "'".implode("','", $cust_id)."'";
 
         if($flag == 1){
-            $query = "UPDATE `ace_rp_orders` as `arc` set `arc`.`booking_source_id` = $toUser WHERE o_campaign_id = $campaign_id";
+            // $query = "UPDATE `ace_rp_orders` as `arc` set `arc`.`booking_source_id` = $toUser WHERE o_campaign_id = $campaign_id";
+            $query = "UPDATE `ace_rp_orders` as `arc` set `arc`.`camp_source` = $toUser WHERE o_campaign_id = $campaign_id";
             $result = $db->_execute($query);
             $trans = 'job';
         }
@@ -15884,7 +15885,7 @@ function deleteUserFromCampaign()
         $today = $data->message->created_at;
         $sender = $data->message->sender_phone;
         $message = mysql_real_escape_string($data->message->content);
-        if($sender != '+16042933770')
+        if($sender != '+18338132221')
         {
             $searchStr = str_replace("+1","",$sender);
             $query = "SELECT id from ace_rp_customers where cell_phone = '".$searchStr."'";

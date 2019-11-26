@@ -432,7 +432,7 @@ class IvItemsController extends AppController
 		}
 		$this->layout = 'blank';	
 		
-		if (empty($this->data['IvItem'])) {    
+		if (empty($this->data['IvItem'])) {  
 			$this->IvItem->id = $id;    
 	
 			$this->data = $this->IvItem->read();
@@ -505,9 +505,12 @@ class IvItemsController extends AppController
 			} else {
 				$this->Session->write("message", $this->data['IvItem']['name']." was saved.".mysql_error());
 				// echo "<script>opener.location.reload();
-				// window.close();</script>";
-		 	// 		exit;
-				$this->redirect("pages/close");			
+				echo "<script>
+				window.returnValueId= '".$lastinsertID.",".$this->data['IvItem']['name'].",".$this->data['IvItem']['supplier_price'].",".$this->data['IvItem']['sku'].",".$this->data['IvItem']['iv_category_id']."';
+				window.close();
+				</script>";
+		 			exit;
+				//$this->redirect("pages/close");			
 			}
 
 		} else {

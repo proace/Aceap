@@ -1,8 +1,34 @@
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+
 <form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="methodId" id="methodId" value="">
+<input type="hidden" name="invoice_ids" id="invoice_ids" value="">
 <input type="hidden" name="action" value="view" >
 <input type="hidden" name="order" value="<?=$_GET['order']?>">
 <input type="hidden" name="sort" value="<?=$_GET['sort']?>">
 <input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+<style type="text/css">
+	.status_refund{
+		color: red !important;
+	}
+	.btn-cls{
+		padding: 5px;
+		width: 65px;
+	}
+	.ui-dialog .ui-dialog-content { background: #ffffff; }
+	
+	.pay_table td {
+	    padding-top: 2.5em;
+	    padding-bottom: .5em;
+	}
+	table.scw{
+		z-index: 9999 !important;
+	}
+	
+</style>
 <table width="90%" border="0px" cellspacing="10" cellpadding="0">
 	<tr>
 		<td class="sectionTitle" >Purchased Items</td>
@@ -29,7 +55,7 @@
 	<tr>
 		<td></td>
 		<td>
-			<?php
+			<!-- <?php
 				$checked_invoice_html = '';
 				$checked_refunds_html = '';
 				
@@ -59,25 +85,39 @@
 				}elseif(!$_GET['search']){
 					$checked_paid_html = 'checked="true"';
 				}
-			?>
-			<input type ="checkbox" id="search_invoice" name="search_invoice" <?php echo $checked_invoice_html; ?> value="Invoices"/><label for="search_invoice">Invoices</label>
+			?> -->
+			<!-- <input type ="checkbox" id="search_invoice" name="search_invoice" <?php echo $checked_invoice_html; ?> value="Invoices"/><label for="search_invoice">Invoices</label>
 			<input type ="checkbox" id="search_refunds" name="search_refunds" <?php echo $checked_refunds_html; ?> value="Refunds" style="margin-left:20px;"/><label for="search_refunds">Refunds</label>
-			<br /><input type ="checkbox" id="search_paid" name="search_paid" <?php echo $checked_paid_html; ?> value="Paid" /><label for="search_paid">Paid</label>
+			<br /><input type ="checkbox" id="search_paid" name="search_paid" <?php echo $checked_paid_html; ?> value="Paid" /><label for="search_paid">Paid</label> -->
+			<input type ="checkbox" class="search_invoice" name="search_invoice" <?php echo $search_invoice=="Invoices" ? 'checked': ''?> value="Invoices"/><label for="search_invoice">Invoices</label>
+			<input type ="checkbox" class="search_invoice" name="search_invoice" <?php echo $search_invoice=="Refunds" ? 'checked': ''?> value="Refunds" style="margin-left:20px;"/><label for="search_refunds">Refunds</label>
+			<br /><input type ="checkbox" class="search_invoice" name="search_invoice" <?php echo $search_invoice =="Paid" ? 'checked': ''?> value="Paid" /><label for="search_paid">Paid</label>
 			<input type ="submit" name="search" value="Search" style="margin-left:140px;"/>
 		</td>
 	</tr>
 </table> 	
 </form>
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
-    <tr>
-        <th width="200">Type</th>
-        <th width="200"><a href="javascript:setOrder('supplier_id');">Supplier</a></th>
-        <th width="200"><a href="javascript:setOrder('name');">Invoice #</a></th>
-        <th width="100"><a href="javascript:setOrder('docdate');">Date</a></th>
+    <tr style="text-align: left;">
+        <th width="80">Type</th>
+        <th width="100"><a href="javascript:setOrder('supplier_id');">Supplier</a></th>
+        <th width="80"><a href="javascript:setOrder('name');">Invoice #</a></th>
+        <th width="80"><a href="javascript:setOrder('docdate');">Date</a></th>
         <th width="80"><a href="javascript:setOrder('qty');">Subtotal</a></th>
         <th width="80"><a href="javascript:setOrder('qty');">Tax</a></th>
         <th width="80"><a href="javascript:setOrder('qty');">Total</a></th>
-        <th width="100">Actions</th>
+        <?php
+        	if($search_invoice == "Paid")	{?>
+        		<th width="80"><a href="javascript:setOrder('qty');">Paid On</a></th>
+        		<th width="80"><a href="javascript:setOrder('qty');">Amount</a></th>
+        		<th width="80"><a href="javascript:setOrder('qty');">Paid By</a></th>
+        		<th width="80"><a href="javascript:setOrder('qty');">Ref#</a></th>
+        		<th width="80"><a href="javascript:setOrder('qty');">Agent Name</a></th>
+
+        <?php }?>
+        
+        <th width="80">Status</th>
+        <th width="100">Pay</th>
     </tr>
     <?php
 	$r=1;
@@ -85,6 +125,10 @@
 	$refund_subtotal = 0;
 	foreach ($documents as $obj) {
 		$class = 'cell0';
+		$status_cls = "";
+		if($obj['status_id'] == 1 || $obj['status_id'] == 2 || $obj['status_id'] == 3 || $obj['status_id'] == 4){
+			$status_cls = "status_refund";
+		}
 		if (strpos($obj['invoice_type'], 'Refund') !== false) {
 			$refund_subtotal += $obj['total_price'];
 			$class = $class." refund";
@@ -97,13 +141,21 @@
 			$html_url = 'style="cursor:pointer;" onclick="document.location.href=\'' . BASE_URL .'/inventories/editDoc?invoice_id='.$obj['invoice_id'] .'&doc_id='. $obj['invoice_id'] .'&rurl=' .urlencode('supplies?'.$_SERVER['QUERY_STRING']) .'\'"';
 		?>
 		<tr id="r<?=$r?>" class="<?=$class?>">
-			<td><?php echo $obj['invoice_type']; ?></td>
-			<td <?php echo $html_url; ?> <?php echo $obj['original_invoice_id'] ? 'align="right"' : ''; ?>>&nbsp;<?php echo $obj['original_invoice_id'] ? 'Refund' : $obj['supplier_name']; ?></td>
-			<td <?php echo $html_url; ?>>&nbsp;<?php echo $obj['invoice_number']; ?></td>
-			<td <?php echo $html_url; ?>>&nbsp;<?php echo $obj['date']; ?></td>
-			<td <?php echo $html_url; ?>>&nbsp;<?php echo $obj['original_invoice_id'] ? '- ' : ''; ?>$<?php echo number_format($obj['total_price'], 2, '.', ','); ?></td>
-			<td >$<?php echo number_format($obj['total_price']*.12, 2, '.', ','); ?></td>
-			<td <?php echo $html_url; ?>>&nbsp;<?php echo $obj['original_invoice_id'] ? '- ' : ''; ?>$<?php echo number_format($obj['total_price']*1.12, 2, '.', ','); ?></td>
+			<td class="<?=$status_cls?>"><?php echo $obj['invoice_type']; ?></td>
+			<td class="<?=$status_cls?>" <?php echo $html_url; ?> <?php echo $obj['original_invoice_id'] ? 'align="right"' : ''; ?>>&nbsp;<?php echo $obj['original_invoice_id'] ? 'Refund' : $obj['supplier_name']; ?></td>
+			<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['invoice_number']; ?></td>
+			<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['date']; ?></td>
+			<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['original_invoice_id'] ? '- ' : ''; ?>$<?php echo number_format($obj['total_price'], 2, '.', ','); ?></td>
+			<td class="<?=$status_cls?>"> $<?php echo number_format($obj['total_price']*.12, 2, '.', ','); ?></td>
+			<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['original_invoice_id'] ? '- ' : ''; ?>$<?php echo number_format($obj['total_price']*1.12, 2, '.', ','); ?></td>
+			<?php if($search_invoice == "Paid")	{?>
+				<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['pay_date']; ?></td>
+				<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['paid_amount']; ?></td>
+				<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['payment_type']; ?></td>
+				<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['reference_no']; ?></td>
+				<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['tech_name']; ?></td>
+			<?php } ?>
+			<td class="<?=$status_cls?>">&nbsp;<?php echo $obj['invoice_status']; ?></td>
 			<td>
 				<?php
 				if (strpos($obj['invoice_type'], 'Refund') !== false) {
@@ -113,15 +165,20 @@
 				}
 				else {
 					?>
-					<input type="button" name="addnew" value="Refund" onclick="document.location.href='<?=BASE_URL?>/inventories/editDoc?invoice_id=<?php echo $obj['invoice_id']; ?>&type=5&rurl=<?php echo urlencode('supplies?'.$_SERVER['QUERY_STRING']); ?>'" />
+					<!-- <img src="<?=ROOT_URL?>/app/webroot/img/refund_image.png" style="height: 30px"> -->
+					<input type="checkbox" class="check_invoices" name="check_invoices" invoice_id="<?php echo $obj['invoice_id']; ?>">
 					<?php
 				}
-					if ($obj['status_id'] != 5 && $obj['invoice_type'] == 'Invoice'){?>
-						<input type="button" name="paid" value="Paid" onclick="document.location.href='<?=BASE_URL?>/inventories/supplies?id=<?php echo $obj['invoice_id']; ?>&status_id=5'"/>
-					<?php }
-				?>
+				if ($obj['status_id'] != 5 && $obj['invoice_type'] == 'Invoice'){?>
+						<!-- <input type="button" name="paid" value="Paid" onclick="document.location.href='<?=BASE_URL?>/inventories/supplies?id=<?php echo $obj['invoice_id']; ?>&status_id=5'"/> -->
+					<?php }?>
 			</td>
+			<!-- <td><input type="checkbox" class="check_invoices" name="check_invoices" invoice_id="<?php echo $obj['invoice_id']; ?>"></td> -->
+			<?php if($search_invoice !="Refunds"){?>
+			<td> <input type="button" name="addnew" value="Refund" onclick="document.location.href='<?=BASE_URL?>/inventories/editDoc?invoice_id=<?php echo $obj['invoice_id']; ?>&type=5&rurl=<?php echo urlencode('supplies?'.$_SERVER['QUERY_STRING']); ?>'"  style="padding: 3px;border-radius: 3px;"/></td>
+			<?php } ?>
 	    </tr>
+
     <?
 	}
     $combined = $subtotal - $refund_subtotal; ?>
@@ -155,12 +212,56 @@
 			<td colspan=2>$<?php echo number_format($combined*1.12, 2, '.', ','); ?></td>
 		</tr>
 	</table>
+<div style="float: right;">
+	<table>
+		<tr>
+			<td><b>Paid By:</b></td>
+			<td>
+				<select class="method-id" name="allCatId[]">
+			      <option>Choose here</option>
+			       <?php foreach($methods as $method) {?>
+			          <option value="<?=$method['id']?>" name="multipleMethodId[]"><?php echo $method['name']?></option>
+			      <?}?>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><input class="btn-cls" type="button" name="payInvoice" value="Pay" id="pay_invoice"></td>
+		</tr>
+	</table>
+</div>
+<div id="pay_box" style="display: none;">
+	<table class="pay_table">
+		<tr>
+			<td>Date:<input type="text" name="paidDate" id="paid_date" class="" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="" onkeydown="return false;" value="<?=$paidDate?>"></td>
+			<td>Amount Paid:<input type="text" name="amountPaid" id="amount_paid"></td>
+		</tr>
+		<tr>
+			<td>Ref:<input type="text" name="reference" id="reference_no"></td>
+			<td>Agent:<select id="agent_id">
+				<option>Choose here</option>
+			       <?php foreach($booking_sources as $k => $v) {?>
+			          <option value="<?=$k?>" name="multipleMethodId[]"><?php echo $v?></option>
+			      <?}?>
+			</select></td>
+		</tr>
+		<tr>
+			<td><input type="button" value="Save" id="save_invoice_payment" name="" style="padding: 6px;"></td>
+		</tr>
+	</table>
+</div>
 	<?php //do+1 something to trigger an error for testing ?>
 <!-- <pre><?php print_r($documents) ?></pre> -->
-	<script>
+<script>
 
 	$(function() {
 
+		
 		$("#search_invoice").change(function() {
 	        if($(this).attr("checked"))
 	        {
@@ -186,6 +287,65 @@
 	            });
 	        }
 	    });
-    });
 
+    });
+$(document).ready(function() {
+		$(".search_invoice").live("change", function(){
+			 $(".search_invoice").attr("checked", false);
+	  		 $(this).attr("checked", true);
+		});
+	    $('.method-id').live('change', function(){
+		    var methodId = $( ".method-id option:selected" ).val();
+		     $('#methodId').val(methodId);
+		});
+	     $(function () {
+	        $("#pay_box").dialog({
+	            modal: true,
+	            autoOpen: false,
+	            title: "",
+	            autoOpen: false,
+	            width: 400,
+	            height: 250
+	        });
+	        $("#pay_invoice").live("click",function () {
+	           var selected = [];
+	           var methodId = $("#methodId").val();
+		         	$("input:checkbox[class=check_invoices]:checked").each(function () {
+		             selected.push($(this).attr('invoice_id'));
+	        	});
+		        if(selected == '' || selected == null)
+		        {
+		        	alert("Please select atleast one invoice.");
+		        } else if(methodId == '' || methodId == null)
+		        {
+		        	alert("Please select payment method.");
+		        } else {
+		        	$("#invoice_ids").val(selected);
+	         		$("#pay_box").dialog('open');
+		        }
+	         	
+	    });
+    });   
+	$("#save_invoice_payment").live("click", function(){
+     	var invoiceIds = $("#invoice_ids").val();
+     	var methodId = $("#methodId").val();
+     	var payDate = $("#paid_date").val();
+     	var referenceNo = $("#reference_no").val();
+     	var agentId = $("#agent_id").val();
+     	var paidAmount = $("#amount_paid").val();
+     	 $.ajax({
+          url: "<?=BASE_URL;?>/payments/addInvoicePayment",
+          type: "POST",
+          dataType: 'json',
+          data: {invoiceIds:invoiceIds,methodId:methodId,payDate:payDate, referenceNo:referenceNo, agentId:agentId, paidAmount:paidAmount},
+          success: function(data){
+				if(data.res == "1")
+				{	
+					$("#pay_box").dialog('close');
+					window.location.reload();
+				}             
+			}
+        });
+	});
+});
 </script>

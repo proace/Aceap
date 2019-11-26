@@ -526,6 +526,89 @@ class PaymentsController extends AppController
 		$result = $db->_execute($query);
 		exit();
 	}
+
+	//Loki: Get payment methods for purchase items invoice.
+	function ShowPaymentMethod()
+	{
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "SELECT * from ace_rp_purchase_payment_method";
+
+		$methods = array();
+		$result = $db->_execute($query);
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			foreach ($row as $k => $v)
+			  $methods[$row['id']][$k] = $v;
+		}
+		$this->set('paymentMethods', $methods);
+	}
+
+	function editPaymentMethod($id)
+	{	
+		$db =& ConnectionManager::getDataSource('default');	
+		$category = array();
+		if($id) {
+			$query = "SELECT * from ace_rp_purchase_payment_method where id=".$id;
+			$result = $db->_execute($query);
+			$row = mysql_fetch_array($result, MYSQL_ASSOC);
+		} else {
+			$row = array("id"=>"", "name"=>"");
+		}
+		$this->set('methods', $row);
+	}
 	
+
+	function updatePaymentMethod()
+	{
+		$id = $_POST['methodId'];
+		$name = $_POST['methodName'];
+		$db =& ConnectionManager::getDataSource('default');
+		if(!empty($id))
+		{
+			$query = "UPDATE ace_rp_purchase_payment_method set name ='".$name."' WHERE id=".$id;
+			$result = $db->_execute($query);			
+		} else {
+			$query = "INSERT INTO ace_rp_purchase_payment_method (name) VALUES ('".$name."')";
+			$result = $db->_execute($query);		
+		}
+		exit();
+	}
+
+	function deletePaymentMethod()
+	{
+			$data = $_POST['typeIds'];
+			$ids = implode(',', $data);
+			$db =& ConnectionManager::getDataSource('default');
+			$query = "DELETE from  ace_rp_purchase_payment_method WHERE id IN (".$ids.")";
+			$result = $db->_execute($query);
+			exit();
+	}
+
+	function addInvoicePayment()
+	{
+		$invoiceIds = $_POST['invoiceIds'];
+		$methodId = $_POST['methodId'];
+		$payDate = $_POST['payDate'];
+		$referenceNo = $_POST['referenceNo'];
+		$agentId = $_POST['agentId'];
+		$paidAmount = $_POST['paidAmount'];
+
+		if ($payDate != '' || !empty($payDate))
+		{
+			$payDate = date("Y-m-d", strtotime($payDate));
+		}
+		else{
+			$payDate = date("Y-m-d");
+		}
+
+		$db =& ConnectionManager::getDataSource('default');
+		$query = "UPDATE ace_iv_invoice set payment_method ='".$methodId."', pay_date='".$payDate."', reference_no='".$referenceNo."', agent_id = ".$agentId.", paid_amount = ".$paidAmount.", status_id=5 WHERE invoice_id IN (".$invoiceIds.")";
+		$result = $db->_execute($query);
+		if($result){
+			 $response  = array("res" => "1");
+             echo json_encode($response);
+		}
+		exit();
+	}
 }
 ?>
