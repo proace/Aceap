@@ -7,13 +7,13 @@
  }
 function respond(to_user_id)
 {
-  var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id=<?=$_GET['job_id']?>&to_user_id="+to_user_id,'', 
+  var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id=<?=$_GET['job_id']?>&to_user_id="+to_user_id+"&is_reply=1",'', 
   "width=450, height=350, left=300, top=200");
 }
 function forward(text)
 {
   var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id=<?=$_GET['job_id']?>&text="+text,'', 
-  "width=450, height=350, left=300, top=200");
+  "width=600, height=350, left=300, top=200");
 }
 function DeleteMsg(id){
 	$.get("<?=BASE_URL;?>/messages/DeleteMessage",
@@ -27,6 +27,28 @@ function createMessage()
   var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id=<?=$_GET['job_id']?>&to_user_id=<?=$_GET['to_user_id']?>",'', 
   "width=450, height=350, left=300, top=200");
 	document.forms['viewform'].submit();
+}
+function getsources(role)
+{
+	$('#MessageToUser').html('');
+ 	$.ajax({
+              url: "<?=BASE_URL;?>/messages/getMessageSourceList?role="+role,
+              type: "Get",
+              cache: false,
+              dataType: 'json',
+              data:{role:role },
+              success: function(data){
+					// sources = JSON.parse(data);
+					sources = JSON.parse(JSON.stringify(data));
+					$.each(sources, function (i,source) {
+
+					    $('#MessageToUser').append($('<option>', { 
+					        value:i ,
+					        text :source
+					    }));
+					});
+              }
+        });
 }
 </script>
 <style type="text/css">
@@ -49,72 +71,56 @@ function createMessage()
 	<input type="hidden" name="job_id" value="<?=$_GET['job_id']?>">
 	<input type="hidden" name="to_user_id" value="<?=$_GET['to_user_id']?>">
 </form>
-</script>
-<table>
-	<tr>
-		<td onclick="createMessage()">
-			<img src="<?=ROOT_URL?>/app/webroot/img/icon-sm-plus.png">
-		</td>
-		<td style="text-align:left;" onclick="createMessage()">
-			<b>Send message</b>
-		</td>
-		<td onclick="eraseAll()">
-			<img src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png">
-		</td>
-		<td style="text-align:left;" onclick="eraseAll()">
-			<b>Erase All</b>
-		</td>
-	</tr>
-</table>
-<table class="results" cellpadding="3" cellspacing="0">
-		<?php
-			$r=0;
-			foreach ($items as $obj) {
-				$r++;
-				if ($common->getLoggedUserID()==$obj['from_user'])
-				{
-					$class = 'incoming';
-					$corr_title = 'To: ';
-					$corr_name = $obj['to_name'];
-					$corr = $obj['to_user'];
-				}
-				else
-				{
-					$class = 'sent';
-					$corr_title = 'From: ';
-					$corr_name = $obj['from_name'];
-					$corr = $obj['from_user'];
-				}
-				$open_file = '';
-				if ($obj['customer_link'])
-					$open_file = "<a target='main_view' href='".BASE_URL."/orders/editBooking?customer_id=".$obj['customer_link']."'>Open file</a>";
-				elseif ($obj['file_link'])
-					$open_file = "<a target='main_view' href='".BASE_URL."/orders/editBooking?order_id=".$obj['file_link']."'>Open file</a>";
-		?>
-    <tr id="r<?=$r?>">
-			<table class="<?=$class?>">
-				<tr>
-					<td><?=$obj['from_date']?></td>
-					<td rowspan=4 style="border-left:1px solid #CCCCCC;text-align:left;width:400px">
-						<div style="width:400px"><?=$obj['txt']?></div>
-					</td>
-					<td rowspan="3" style="text-align:center;vertical-align:middle;">Read:</td><td rowspan=4 style="border-left:1px solid #CCCCCC;width:16px">
-						<input type="checkbox" <?php if($obj['state']){echo 'checked';}?> name="MarkRead" onclick="markAsRead(<?=$obj['id']?>)">
-					</td>
-					<td rowspan=4 style="border-left:1px solid #CCCCCC;width:16px" onclick="DeleteMsg(<?=$obj['id']?>)">
-						<img src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png" />
-					</td>
-				</tr>
-				<tr>
-					<td><?=$corr_title?><b><?=$corr_name?></b><a href='#' onclick='respond("<?=$corr?>")'>(Reply)</a></td>
-				</tr>
-				<tr>
-					<td><a href='#' onclick='forward("<?=$obj['txt']?>")'>(Forward)</a></td>
-				</tr>
-				<tr>
-					<td><?=$open_file?></td>
-				</tr>
-			</table>
-    </tr>
-    <? } ?>
-</table>
+
+<div class="frame-wrap" style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
+		<div class="frame-header-left"></div>
+		<div class="frame-header-title">Message</div>
+		<div class="frame-header-right"></div>
+		<div class="frame-body" style="clear: both;">
+				<table>
+						<tr>
+								<td align="right">From:</td>
+								<td><b><?php echo $newMessage['from_name'];?></b>
+								</td>
+						</tr>
+						<tr>
+								<td align="right">Created:</td>
+								<td><b><?php echo $newMessage['from_date'];?></b></td>
+						</tr>
+						<tr>
+								<td align="right">To:</td>
+								<td><input type="button" name="admin" id="role_admin" value="Admin" onclick="getsources(6);">
+									<input type="button" name="agents" id="role_agents" value="Agents" onclick="getsources(3);">
+									<input type="button" name="techs" id="role_techs" value="Techs" onclick="getsources(1);">
+								</td>
+								<td colspan=3>
+							    <?php echo $html->selectTag('Message/to_user', $allSources, $this->data['Message']['to_user']);?>
+								</td>
+						</tr>
+						<!-- <tr>
+								<td align="right">Reminder date:</td>
+								<td>
+							    <?php echo $html->input('Message/to_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;'));?>
+								</td>
+								<td align="right">Time:</td>
+								<td>
+						      <?php echo $html->hourOptionTag('Message/to_time') . " : " . $html->minuteOptionTag('Message/to_time'); ?>
+								</td>
+						</tr> -->
+						<tr>
+								<td align="right">Message:</td>
+								<td colspan=3>
+									<textarea id="MessageTxt" name="data[Message][txt]" style = "width: 303px;height: 161px;"><?php echo $newMessage['txt'];?></textarea>
+								</td>
+						</tr>
+						<tr>
+								<td style="text-align:right" colspan=2>
+									<!-- <input type="button" name="share" value="Share" onclick=''> -->
+									<input type="button" name="forward" value="Forward" onclick='forward("<?=$newMessage['txt']?>")'>
+									<input type="button" name="reply" value="Reply" onclick='respond("<?=$newMessage['from_user']?>")'>
+									<input type="button" value="Exit" onclick="window.close();">
+								</td>
+						</tr>
+				</table>
+		</div>
+</div>

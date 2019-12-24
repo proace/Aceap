@@ -583,16 +583,70 @@ class PaymentsController extends AppController
 			$result = $db->_execute($query);
 			exit();
 	}
-
+	//Loki: Save invoice paid details.
 	function addInvoicePayment()
+	{
+		$invoiceIds = $_POST['invoiceIds'];
+		$methodId 	= $_POST['methodId'];
+		$payDate 	= $_POST['payDate'];
+		$notes 		= $_POST['notes'];
+		$agentId 	= $_POST['agentId'];
+		$paidAmount = $_POST['paidAmount'];
+		$statusId 	= $_POST['statusId'];
+		$remainingAmount = $_POST['remainingAmount'];
+		$totalRemainingAmount = ($remainingAmount - $paidAmount);
+		$photoImage = isset($_FILES['fileval'])? $_FILES['fileval'] : null;
+		$imageName = '';
+		if ($payDate != '' || !empty($payDate))
+		{
+			$payDate = date("Y-m-d", strtotime($payDate));
+		}
+		else{
+			$payDate = date("Y-m-d");
+		}
+		if(!empty($photoImage['name']))
+        {       
+            $path = $photoImage['name'];
+			$ext = pathinfo($path, PATHINFO_EXTENSION);
+			$imageName = date('Ymdhis', time()).'_'.$path.'.'.$ext;
+			if ( 0 < $file['error'] ) {
+        		echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
+		    } else {
+		        move_uploaded_file($photoImage['tmp_name'], ROOT."/app/webroot/purchase-invoice-images/".$imageName);
+		    }
+        }
+		$db =& ConnectionManager::getDataSource('default');
+
+		$query = "INSERT INTO ace_iv_invoice_history (invoice_id, status_id, pay_date, payment_method, paid_amount,paid_by,notes, invoice_image) VALUES (".$invoiceIds.",".$statusId.",'".$payDate."',".$methodId.", ".$paidAmount.",".$agentId.",'".$notes."', '".$imageName."')";
+		$result = $db->_execute($query);
+		if($result){
+			$db->_execute("UPDATE ace_iv_invoice set remaining_amount = ".$totalRemainingAmount.", status_id=".$statusId." where invoice_id =".$invoiceIds);
+			$response  = array("res" => "1");
+            echo json_encode($response);
+		}
+		exit();
+	}
+
+	//Loki: Save invoice refund details.
+	function addRefundInvoiceDetails()
 	{
 		$invoiceIds = $_POST['invoiceIds'];
 		$methodId = $_POST['methodId'];
 		$payDate = $_POST['payDate'];
-		$referenceNo = $_POST['referenceNo'];
+		$notes = $_POST['notes'];
 		$agentId = $_POST['agentId'];
-		$paidAmount = $_POST['paidAmount'];
-
+		$refundInvoiceNo = $_POST['refundInvoiceNo'];
+		$refundTime = $_POST['refundTime'];
+		$supplierRep = $_POST['supplierRep'];
+		$statusId 	= $_POST['statusId'];
+		$RefundAmount = $_POST['RefundAmount'];
+		$items 		= json_decode(stripslashes($_POST['items']),true);
+		$remainingAmount = $_POST['remainingAmount'];
+		$refundTaxAmount = $RefundAmount * .12;
+		$totalRemainingAmount = $remainingAmount - ($RefundAmount + $refundTaxAmount);
+		$photoImage = isset($_FILES['fileval'])? $_FILES['fileval'] : null;
+		$imageName = '';
+		
 		if ($payDate != '' || !empty($payDate))
 		{
 			$payDate = date("Y-m-d", strtotime($payDate));
@@ -601,14 +655,143 @@ class PaymentsController extends AppController
 			$payDate = date("Y-m-d");
 		}
 
+		if(!empty($photoImage['name']))
+        {       
+            $path = $photoImage['name'];
+			$ext = pathinfo($path, PATHINFO_EXTENSION);
+			$imageName = date('Ymdhis', time()).'_'.$path.'.'.$ext;
+			if ( 0 < $file['error'] ) {
+        		echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
+		    } else {
+		        move_uploaded_file($photoImage['tmp_name'], ROOT."/app/webroot/purchase-invoice-images/".$imageName);
+		    }
+        }
+
 		$db =& ConnectionManager::getDataSource('default');
-		$query = "UPDATE ace_iv_invoice set payment_method ='".$methodId."', pay_date='".$payDate."', reference_no='".$referenceNo."', agent_id = ".$agentId.", paid_amount = ".$paidAmount.", status_id=5 WHERE invoice_id IN (".$invoiceIds.")";
+		$query = "INSERT INTO ace_iv_invoice_history (invoice_id, status_id, pay_date, payment_method,returned_by,notes, refund_time, supplier_rep, refund_invoice_id, refund_amount , invoice_image) VALUES (".$invoiceIds.",".$statusId.",'".$payDate."',".$methodId.",".$agentId.",'".$notes."', '".$refundTime."', '".$supplierRep."', '".$refundInvoiceNo."',".$RefundAmount." , '".$imageName."')";
 		$result = $db->_execute($query);
+		
+		$invoiceHistoryId = $db->lastInsertId();
+	
+		if(!empty($items))
+		{ 
+			foreach ($items as $key => $value) {
+				$db->_execute("INSERT INTO ace_iv_invoice_refund_items (Invoice_id, invoice_history_id,item_id,quantity) VALUES (".$invoiceIds.",".$invoiceHistoryId.", ".$key.",".$value.")");
+			}
+		}
 		if($result){
+			$db->_execute("UPDATE ace_iv_invoice set remaining_amount = ".$totalRemainingAmount." where invoice_id =".$invoiceIds);
 			 $response  = array("res" => "1");
              echo json_encode($response);
 		}
 		exit();
 	}
+
+	//Loki: Save invoice refund and pay details.
+	function addRefundPayInvoiceDetails()
+	{
+		$invoiceIds = $_POST['invoiceIds'];
+		$methodId = $_POST['methodId'];
+		$payDate = $_POST['payDate'];
+		$notes = $_POST['notes'];
+		$refPayRefundBy = $_POST['refPayRefundBy'];
+		$refundInvoiceNo = $_POST['refundInvoiceNo'];
+		$refundTime = $_POST['refundTime'];
+		$supplierRep = $_POST['supplierRep'];
+		$refPayAmount = $_POST['refPayAmount'];
+		$refPayAgent = $_POST['refPayAgent'];
+		$statusId 	= $_POST['statusId'];
+		$items 		= json_decode(stripslashes($_POST['items']),true);
+		$RefundAmount = $_POST['RefundAmount'];
+		$remainingAmount = $_POST['remainingAmount'];
+		$refundTaxAmount = $RefundAmount * .12;
+		$totalRemainingAmount = ($remainingAmount - (($RefundAmount +$refundTaxAmount) + $refPayAmount));
+		$photoImage = isset($_FILES['fileval'])? $_FILES['fileval'] : null;
+		$imageName = '';
+
+		if ($payDate != '' || !empty($payDate))
+		{
+			$payDate = date("Y-m-d", strtotime($payDate));
+		}
+		else{
+			$payDate = date("Y-m-d");
+		}
+		if(!empty($photoImage['name']))
+        {       
+            $path = $photoImage['name'];
+			$ext = pathinfo($path, PATHINFO_EXTENSION);
+			$imageName = date('Ymdhis', time()).'_'.$path.'.'.$ext;
+			if ( 0 < $file['error'] ) {
+        		echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
+		    } else {
+		        move_uploaded_file($photoImage['tmp_name'], ROOT."/app/webroot/purchase-invoice-images/".$imageName);
+		    }
+        }
+
+		$db =& ConnectionManager::getDataSource('default');
+		
+		$query = "INSERT INTO ace_iv_invoice_history (invoice_id, status_id, pay_date, payment_method, paid_amount,returned_by,notes, refund_time, supplier_rep, refund_invoice_id, paid_by,refund_amount , invoice_image) VALUES (".$invoiceIds.",".$statusId.",'".$payDate."',".$methodId.", ".$refPayAmount.",".$refPayRefundBy.",'".$notes."', '".$refundTime."', '".$supplierRep."', ".$refundInvoiceNo.",".$refPayAgent.", ".$RefundAmount." , '".$imageName."')";
+		$result = $db->_execute($query);
+
+		$invoiceHistoryId = $db->lastInsertId();
+	
+		if(!empty($items))
+		{
+			foreach ($items as $key => $value) {
+				$db->_execute("INSERT INTO ace_iv_invoice_refund_items (Invoice_id, invoice_history_id,item_id,quantity) VALUES (".$invoiceIds.",".$invoiceHistoryId.", ".$key.",".$value.")");
+			}
+		}
+		if($result){
+			$db->_execute("UPDATE ace_iv_invoice set remaining_amount = ".$totalRemainingAmount." where invoice_id =".$invoiceIds);
+			 $response  = array("res" => "1");
+             echo json_encode($response);
+		}
+		exit();
+	}
+	//Loki: Save invoice credit amount details.
+	function addCreditPayment()
+	{
+		$invoiceIds = $_POST['invoiceIds'];
+		$creditMethod = $_POST['creditMethod'];
+		$creditDate = $_POST['creditDate'];
+		$note = $_POST['note'];
+		$creditAmount = $_POST['creditAmount'];
+		$statusId 	= $_POST['statusId'];
+		$remainingAmount = $_POST['remainingAmount'];
+		$totalRemainingAmount = ($remainingAmount + $creditAmount);
+		$photoImage = isset($_FILES['fileval'])? $_FILES['fileval'] : null;
+		$imageName = '';
+
+		if ($payDate != '' || !empty($payDate))
+		{
+			$payDate = date("Y-m-d", strtotime($payDate));
+		}
+		else{
+			$payDate = date("Y-m-d");
+		}
+		if(!empty($photoImage['name']))
+        {       
+            $path = $photoImage['name'];
+			$ext = pathinfo($path, PATHINFO_EXTENSION);
+			$imageName = date('Ymdhis', time()).'_'.$path.'.'.$ext;
+			if ( 0 < $file['error'] ) {
+        		echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
+		    } else {
+		        move_uploaded_file($photoImage['tmp_name'], ROOT."/app/webroot/purchase-invoice-images/".$imageName);
+		    }
+        }
+
+		$db =& ConnectionManager::getDataSource('default');
+		$query = "INSERT INTO ace_iv_invoice_history (invoice_id, status_id, pay_date, credit_method, paid_amount,notes , invoice_image) VALUES (".$invoiceIds.",".$statusId.",'".$creditDate."','".$creditMethod."', ".$creditAmount.",'".$note."' , '".$imageName."' )";
+		$result = $db->_execute($query);
+	
+		if($result){
+			$db->_execute("UPDATE ace_iv_invoice set remaining_amount = ".$totalRemainingAmount." where invoice_id =".$invoiceIds);
+			 $response  = array("res" => "1");
+             echo json_encode($response);
+		}
+		exit();
+	}
+
 }
 ?>

@@ -267,7 +267,7 @@ class CommonComponent extends Object
 						),
 						array(
 
-							'name' => 'Payment Methods',
+							'name' => 'Edit Inventory Payment',
 
 							'url' => BASE_URL.'/payments/ShowPaymentMethod',
 
@@ -1476,6 +1476,12 @@ class CommonComponent extends Object
 							'name' => 'Tablet Invoice',
 							'url' => BASE_URL.'/orders/invoiceTablet',
 							'img' => 'invoice48x48.png',
+							'target' => '_top'
+						),
+						array(
+							'name' => 'Send Message',
+							'url' => BASE_URL.'/messages/EditMessage',
+							'img' => 'icon-lg-enter-work-done.png',
 							'target' => '_top'
 						),
 						array(

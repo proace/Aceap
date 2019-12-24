@@ -15,7 +15,7 @@ function showMessages()
 function createMessage()
 {
   var answer = window.open("<?=BASE_URL?>/messages/EditMessage",'', 
-  "width=450, height=350, left=300, top=200");
+  "width=600, height=350, left=300, top=200");
 }
 
 function showPlayer(order_id, agent_id, date, phone)

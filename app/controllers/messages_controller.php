@@ -165,6 +165,15 @@ class MessagesController extends AppController
 		if($fromMessage)
 		{
 			
+			// $messages = "select m.id, m.from_date,m.state,
+			// 							 m.from_user, concat(fu.first_name, ' ', fu.last_name) from_name,
+			// 							 m.to_user, concat(tu.first_name, ' ', tu.last_name) to_name,
+			// 							 m.txt, m.file_link, m.customer_link, m.state
+			// 					from ace_rp_messages m
+			// 					left outer join ace_rp_users tu on tu.id=m.to_user
+			// 					left outer join ace_rp_users fu on fu.id=m.from_user
+			// 				 where m.state = 0 and m.to_user='".$this->Common->getLoggedUserID()."' and m.to_date='".$currentDate."'
+			// 				 order by to_date desc";		
 			$messages = "select m.id, m.from_date,m.state,
 										 m.from_user, concat(fu.first_name, ' ', fu.last_name) from_name,
 										 m.to_user, concat(tu.first_name, ' ', tu.last_name) to_name,
@@ -173,7 +182,7 @@ class MessagesController extends AppController
 								left outer join ace_rp_users tu on tu.id=m.to_user
 								left outer join ace_rp_users fu on fu.id=m.from_user
 							 where m.state = 0 and m.to_user='".$this->Common->getLoggedUserID()."' and m.to_date='".$currentDate."'
-							 order by to_date desc";		
+							 order by m.id desc limit 1";	
 		} else {
 			$messages = "select m.id, m.from_date,m.state,
 										 m.from_user, concat(fu.first_name, ' ', fu.last_name) from_name,
@@ -189,17 +198,20 @@ class MessagesController extends AppController
 							 order by ".$order.' '.$sort;
 		}
 		
-		$items = array();
+		$newMessage = array();
 		$messageIds = array();
 		$result = $db->_execute($messages);
+		$allSources = array("0" => "---");
+
 		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
 		{
-			foreach ($row as $k => $v)
-			  $items[$row['id']][$k] = $v;
-			  $messageIds[] = $row['id'] ;
+			$newMessage = $row;
+			$messageIds[] = $row['id'] ;
 
 		}
-		$this->set('items', $items);
+
+		$this->set('newMessage', $newMessage);
+		$this->set('allSources', $allSources); 
 		if($fromMessage) 
 		{
 			$ids = implode(', ', $messageIds);
@@ -216,25 +228,78 @@ class MessagesController extends AppController
 
 	function saveMessage()
 	{
-		$this->data['Message']['from_date']=date("Y-m-d H:i:s");
-		$this->data['Message']['from_user']=$this->Common->getLoggedUserID();
-		$this->data['Message']['to_date']=date("Y-m-d", strtotime($this->data['Message']['to_date']));
 
-		if($this->data['Message']['to_time_hour'] != '')
-			$this->data['Message']['to_time'] = $this->data['Message']['to_time_hour'].':'.($this->data['Message']['to_time_min'] ? $this->data['Message']['to_time_min'] : '00');
-		
-		if($this->data['Message']['to_time_hour'] != '')
-			$this->data['Message']['to_time'] = $this->data['Message']['to_time_hour'].':'.($this->data['Message']['to_time_min'] ? $this->data['Message']['to_time_min'] : '00');
-		
-		$this->Message->id = $this->data['Message']['id'];
-		$this->Message->save($this->data);
-		
-		if ($this->Message->id)
-			$cur_id = $this->Message->id;
-		else
-			$cur_id = $this->Message->getLastInsertId();
-		
-		echo "<script>window.close();</script>";
+		$is_reply = $_POST['is_reply'];
+		$this->data['Message']['from_date']= date("Y-m-d H:i:s");
+		$this->data['Message']['from_user']= $this->Common->getLoggedUserID();
+		$this->data['Message']['to_date']= date("Y-m-d", strtotime($this->data['Message']['to_date']));
+		$db =& ConnectionManager::getDataSource('default');
+		$toUserList = implode(', ', $this->data['Message']['to_user']); 
+		// Send reply to user
+		if($is_reply == 1){
+			
+			$this->data['Message']['to_user'] = $_POST['to_user'];
+			$db->_execute("INSERT INTO `ace_rp_messages` (`to_date`,`to_user`,`txt`,`from_date`,`from_user`) VALUES ('".$this->data['Message']['to_date']."',".$this->data['Message']['to_user'].", '".$this->data['Message']['txt']."','".$this->data['Message']['from_date']."',".$this->data['Message']['from_user'].")");
+			echo "<script>
+				 window.opener.close();
+				window.close();
+			</script>";
+		} 
+		else {
+			if($this->data['Message']['to_user'][0] != 0){
+				if($this->data['Message']['to_time_hour'] != '')
+					$this->data['Message']['to_time'] = $this->data['Message']['to_time_hour'].':'.($this->data['Message']['to_time_min'] ? $this->data['Message']['to_time_min'] : '00');
+				
+				if($this->data['Message']['to_time_hour'] != '')
+					$this->data['Message']['to_time'] = $this->data['Message']['to_time_hour'].':'.($this->data['Message']['to_time_min'] ? $this->data['Message']['to_time_min'] : '00');
+				$this->Message->id = $this->data['Message']['id'];
+				
+				foreach ($this->data['Message']['to_user'] as $key => $value) {						
+						$this->data['Message']['to_user'] = $value;
+						$result = $db->_execute("INSERT INTO `ace_rp_messages` (`to_date`,`to_user`,`txt`,`from_date`,`from_user`) VALUES ('".$this->data['Message']['to_date']."',".$value.", '".$this->data['Message']['txt']."','".$this->data['Message']['from_date']."',".$this->data['Message']['from_user'].")");
+					}
+
+				if ($this->Message->id)
+					$cur_id = $this->Message->id;
+				else
+					$cur_id = $this->Message->getLastInsertId();
+				
+				echo "<script>
+				window.opener.close();
+				window.close();
+				</script>";
+				exit();
+			} 
+		else if($this->data['Message']['to_user'][0] == 0 && $this->data['Message']['search_user'][0] != 0) {
+				
+				if($this->data['Message']['to_time_hour'] != '')
+				{
+					$this->data['Message']['to_time'] = $this->data['Message']['to_time_hour'].':'.($this->data['Message']['to_time_min'] ? $this->data['Message']['to_time_min'] : '00');
+				}
+
+				$this->Message->id = $this->data['Message']['id'];
+				foreach ($this->data['Message']['search_user'] as $key => $value) {
+						$db->_execute("INSERT INTO `ace_rp_messages` (`to_date`,`to_user`,`txt`,`from_date`,`from_user`) VALUES ('".$this->data['Message']['to_date']."',".$value.", '".$this->data['Message']['txt']."','".$this->data['Message']['from_date']."',".$this->data['Message']['from_user'].")");
+				}
+				if ($this->Message->id)
+					$cur_id = $this->Message->id;
+				else
+					$cur_id = $this->Message->getLastInsertId();
+				
+				echo "<script>
+				window.opener.close();
+				window.close();
+				</script>";
+				exit();
+			}
+			else {
+					echo "<script>
+					alert('Please select atleast one receiver.');
+					window.history.back();
+					</script>";
+					exit();
+			}
+		}
 		exit;
 	}
 
@@ -246,6 +311,8 @@ class MessagesController extends AppController
 		$customer_id=$_GET['customer_id'];
 		$to_user_id=$_GET['to_user_id'];
 		$text=$_GET['text'];
+		// If we are sending reply
+		$is_reply = isset($_GET['is_reply']) ? $_GET['is_reply'] : 0;
 		
 		if (!$file_id) $file_id=$customer_id;
 		
@@ -263,7 +330,8 @@ class MessagesController extends AppController
 		$this->data['Message']['file_link']=$file_id;
 		$this->data['Message']['to_user']=$to_user_id;
 		
-		$allSources = $this->Lists->BookingSources();
+		// $allSources = $this->Lists->BookingSources();
+		$allSources = array("0" => "---");
 		if (!$this->data['Message']['from_user']) $this->data['Message']['from_user']=$this->Common->getLoggedUserID();
 		$from_user = $allSources[$this->data['Message']['from_user']];
 
@@ -272,6 +340,19 @@ class MessagesController extends AppController
 		
 		if (!$this->data['Message']['to_date']) $this->data['Message']['to_date']=date('d M Y');
 
+		$db =& ConnectionManager::getDataSource('default');
+		$result = $db->_execute("select b.role_id, a.id, CONCAT(a.first_name,' ',a.last_name) as name 
+				  from ace_rp_users a, ace_rp_users_roles b
+				 where a.is_active=1 and a.id=b.user_id
+				   and b.role_id in (1,6,3) order by b.role_id DESC, name");
+		$searchUsers = array();
+		while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+				$searchUsers[$row['id']] = $row['name'];
+		}
+		// print_r($searchUsers);
+		$this->set('searchUsers', $searchUsers);
+		$this->set('to_user', $to_user_id);
+		$this->set('is_reply', $is_reply);
 		$this->set('from_user', $from_user);
 		$this->set('created_date', $created_date);
 		$this->set('allSources', $allSources);
@@ -792,5 +873,25 @@ class MessagesController extends AppController
 
 		exit();
 	}
+
+	//Loki: Get the sources for messaging according to role id.
+		function getMessageSourceList()
+		{
+				error_reporting(E_ALL);
+				$roleId = $_GET['role'];
+				$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+				
+				$result = $db->_execute("
+				select b.role_id, a.id, CONCAT(a.first_name,' ',a.last_name) as name 
+				  from ace_rp_users a, ace_rp_users_roles b
+				 where a.is_active=1 and a.id=b.user_id
+				   and b.role_id =".$roleId." order by b.role_id DESC, name");
+				$Ret = array();
+				while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+						$Ret[$row['id']] = $row['name'];
+				}
+				echo(json_encode($Ret));
+				exit();
+		}
 }
 ?>

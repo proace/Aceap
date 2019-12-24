@@ -701,32 +701,13 @@ $(document).ready(function()
     				<?php } ?>	
 				</td>
                 <td rowspan="4" colspan="2" width="100"><b><?php echo $obj['payment_type'] ?><b></td>
-				<td rowspan="4" colspan="2" width="100">
-					<?php 
-						if(!empty($obj['order_purchase_image1']))
-						{
-							$imgPath = ROOT_URL.'/upload_photos/'.$obj['order_purchase_image1'];
-							echo '<img class="openImg1" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">'	;	
-						} else { ?>
-							<img id="pre-image_photo1" class="pre-image_<?php echo $obj['id'] ?>_photo1 invoice-openImg" src="#" alt="your image" />
-							<div class="acecare-td-adjust">
-								<label for="sortpicture1_<?php echo $obj['id'] ?>" >Upload</label>
-								<input type="file" name="techCommArr[<?php echo $obj['id'] ?>][sortpic1]" id="sortpicture1_<?php echo $obj['id'] ?>" class="disply_preview" data-ct="_<?php echo $obj['id'] ?>_photo1">
-							</div>
-					<?php }	?>
-				<br>
-				<?php
-					if(!empty($obj['order_purchase_image2']))
-					{
-						$imgPath =  ROOT_URL.'/upload_photos/'.$obj['order_purchase_image2'];
-						echo '<img class="openImg1" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">'	;	
-					} else { ?>
-							<img id="pre-image_photo2" class="pre-image_<?php echo $obj['id'] ?>_photo2 invoice-openImg" src="#" alt="your image" />
-							<div class="acecare-td-adjust">
-								<label for="sortpicture2_<?php echo $obj['id'] ?>" >Upload</label>
-								<input type="file" name="techCommArr[<?php echo $obj['id'] ?>][sortpic2]" id="sortpicture2_<?php echo $obj['id'] ?>" class="disply_preview" data-ct="_<?php echo $obj['id'] ?>_photo2">
-							</div>
-					<?php } ?>
+				
+
+                <td rowspan="4" colspan="2" width="100">
+					<?php foreach ($obj['invoices'] as $key => $val) {
+                        $imgPath = ROOT_URL.'/app/webroot/purchase-invoice-images/'.$val;
+                            echo '<img class="openImg1" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height:50px; width: 50px;">';
+                    } ?>
 			     </td>
                 <td><textarea type="text" name="techCommArr[<?php echo $obj['id'] ?>][tech-notes]" placeholder="Notes" value="<?php echo $obj['tech_notes']?>"><?php echo $obj['tech_notes']?></textarea></td>
  				<?php if(!empty($rows_persons[1]['total_comm']) || $rows_persons[1]['total_comm'] != '') {?>

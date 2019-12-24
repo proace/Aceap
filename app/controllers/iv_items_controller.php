@@ -506,7 +506,7 @@ class IvItemsController extends AppController
 				$this->Session->write("message", $this->data['IvItem']['name']." was saved.".mysql_error());
 				// echo "<script>opener.location.reload();
 				echo "<script>
-				window.returnValueId= '".$lastinsertID.",".$this->data['IvItem']['name'].",".$this->data['IvItem']['supplier_price'].",".$this->data['IvItem']['sku'].",".$this->data['IvItem']['iv_category_id']."';
+				window.returnValueId= '".$lastinsertID.",".$this->data['IvItem']['name'].",".$this->data['IvItem']['supplier_price'].",".$this->data['IvItem']['sku'].",".$this->data['IvItem']['iv_category_id'].", ".$this->data['IvItem']['selling_price']."';
 				window.close();
 				</script>";
 		 			exit;

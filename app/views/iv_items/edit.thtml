@@ -62,7 +62,7 @@ $("#IvItemIvSubCategoryId").live("change", function(){
             <td><?php echo $html->input('IvItem/selling_price')?></td>
         </tr>
         <tr>
-        	<td><label>Supplier Price</label></td>
+        	<td><label>Purchase Price</label></td>
             <td><?php echo $html->input('IvItem/supplier_price')?></td>
         </tr>
         <tr>

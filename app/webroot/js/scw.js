@@ -1646,9 +1646,11 @@
 
     function showCal(scwEle,scwSource) {scwShow(scwEle,scwSource);};
 
-    function scwShow(scwEle,scwSource)
-
-        {if (!scwSource) {scwSource = window.event;}
+    function scwShow(scwEle,scwSource, notClose=0)
+        {
+            setNotClose = notClose;
+            
+            if (!scwSource) {scwSource = window.event;}
 
 
 
@@ -2952,9 +2954,9 @@
 
 
 
-             function scwSetOutput(scwOutputDate)
-
-                {if (typeof scwTargetEle.value == 'undefined')
+             function scwSetOutput(scwOutputDate) 
+             {
+                    if (typeof scwTargetEle.value == 'undefined')
 
                       {scwTriggerEle.scwTextNode.replaceData(0,scwTriggerEle.scwLength,scwOutputDate.scwFormat(scwDateOutputFormat));}
 
@@ -2962,10 +2964,10 @@
 
                  scwHide();
 
-                 if (document.viewform)
+                 if (document.viewform && setNotClose == 0)
                      document.viewform.submit();
 
-                };
+            };
 
 
 

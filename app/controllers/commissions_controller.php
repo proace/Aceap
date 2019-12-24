@@ -1201,8 +1201,9 @@ class CommissionsController extends AppController
 				$all_data = $this->_calculate(&$orders[$row['id']], &$comm_settings);
 				$rows_persons = $all_data[0];
 				$tech_comm_conf[$row['id']] = $all_data[1];
-
+				$getInvoices = $this->getOrderInvoices($row['id']);
 				$orders[$row['id']]['comm'] = $rows_persons;
+				$orders[$row['id']]['invoices'] = $getInvoices;
 
 			}	
 			$adminCommonNotes = '';
@@ -3716,6 +3717,25 @@ class CommissionsController extends AppController
 		$query = "UPDATE ace_rp_commission_email set email = '".$email."' where id=1";
 		$result = $db->_execute($query);
 		$this->redirect('/commissions/showDefaultCommissionEmail');
+		exit();
+	}
+	 //Loki: get the purchase item invoices
+	function getOrderInvoices($orderId)
+	{
+		if(!empty($orderId))
+		{
+			$db =& ConnectionManager::getDataSource('default');
+			$query = "SELECT invoice_image FROM ace_rp_order_items where order_id=".$orderId." AND invoice_image IS NOT NULL";
+			$result = $db->_execute($query);
+			$invoiceArray = array();
+			while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+				if(!empty($row['invoice_image']) || ($row['invoice_image'] != '')) {
+					$invoiceArray[] = $row['invoice_image'];
+				}
+			}
+			return $invoiceArray;
+			exit();
+		}
 		exit();
 	}
 }

@@ -552,7 +552,6 @@ function CloseQuestions(){
   $('#CloseQuestionsText').hide();
 }
 function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, part_number, show_purchase='', model_number, item_brand=''){
-	
 	$("#item_selector0").html("").hide();
 	$("#item_selector1").html("").hide();
 	var index=1*document.getElementById("NumberOfItems").value;
@@ -853,6 +852,19 @@ function ValidateFields(jobstatus, show_box=0)
                     });
 			}
 			else if(jobstatus != 8) {
+            var is_zero = 0;
+            $('.check_item_prize').each(function (index, value){
+                
+                var purchasePrize = $(this).val();
+                if(purchasePrize == 0 || purchasePrize == '0'){
+                    $(this).css("border", "1px solid red");
+                    is_zero++;
+                }
+            });
+            if(is_zero > 0){
+                alert("Please add purchase price for custom part.");
+                return false;
+            }
 			$.get("<?=BASE_URL;?>/orders/conflictCheck",
 				{jobstatus:jobstatus,
 				 customer_city:customerCity,
@@ -945,7 +957,7 @@ function TotalCalculation()
 			var purchase = (purch * qty);
 			var orgPrc = (prc * qty);
 			$(el).children('.amount').html('$'+amount);
-			$(el).children('.price').find("span").text(orgPrc);
+			//$(el).children('.price').find("span").text(orgPrc);
 			$(el).children('.purchase').find("span").text(purchase);
 		}
     });
@@ -971,7 +983,7 @@ if (($common->getLoggedUserRoleID() != "3")
 				amount = parseFloat(prc) * qty - (1*disc) + (1*add);
 				subtotal += amount;
 				$(el).children('.amount').html('$'+amount);
-				$(el).children('.price').find("span").text(orgPrc);
+				//$(el).children('.price').find("span").text(orgPrc);
 				$(el).children('.purchase').find("span").text(purchase);
 			}
     });
@@ -1425,8 +1437,89 @@ function upload_photo(cur,i) {
     reader.readAsDataURL(cur.files[0]);
   }
 }
+function ajax(event) {
+    var val = $(event).val();
+    var data_class = $(event).attr("data-class");
+    // Return all items if:
+    // 1) allItems is not passed as an argument.
+    // 2) allItems is not false
+    // Return only active items.
+     $.ajax({
+          url: "<?=BASE_URL;?>/inventories/ajaxItems",
+          type: "GET",
+          dataType: 'json',
+          data: {query:val,active:true},
+          success: function(data){
+            ajax_finished(data,data_class)
+          }
+        });
+}
+function add_unknown_item(classId)
+{
+    var url = "../iv_items/edit?seed=" + Math.random();
+    var option = "width=400px,height=500px,left=300px,top=200px,status=no,scroll=no,resizable=no";
+        var win = window.open(url, "MyDialog", option);
+        var timer = setInterval(function ()
+        {
+            if (win.closed)
+            {
+                clearInterval(timer);
+                var returnId = win.returnValueId;
+                var itemArr = returnId.split(',');
+                addItem(itemArr[0], itemArr[1], itemArr[5],classId,itemArr[4],itemArr[2], "", "1","","");
+            }
+        }, 500);
+}
+function ajax_failed(why, data_class) {
+    template = $('#ajax_item_result_template_'+data_class);
+    table = $('#ajax_item_results_'+data_class);
+    table.empty();
+    result = template.clone();
+    if (why=="no supplier") {
+        result.children(".name_"+data_class).html("Please choose a supplier."); }
+    if (why=="no results") {
+        result.children(".name_"+data_class).html("No items match your search. <a href='javascript:add_unknown_item("+data_class+");'>Add it?</a>"); }
+    result.show();
+    result.appendTo(table);
+    table.show(); }
+function ajax_finished(data, data_class) {
+    accessData = data;
+    if (data.length===0) {
+        ajax_failed("no results", data_class);
+        return false;
+    }
+    template = $('#ajax_item_result_template_'+data_class);
+    table = $('#ajax_item_results_'+data_class);
+    table.empty();
+    for(i in data) {
+        result = template.clone();
+        result.children(".item_id_"+data_class).html(data[i]["id"]);
+        result.children(".name_"+data_class).html(data[i]["name"]);
+        result.children(".sku_"+data_class).html(data[i]["sku"]);
+        // result.children(".price").html(data[i]["price"]);
+        result.children(".price_"+data_class).html(data[i]["price"]);
+        result.children(".purchase_price_"+data_class).html(data[i]["purchase_price"]);
+        result.children(".category_id_"+data_class).html(data[i]["category_id"]);
+        result.children(".model_"+data_class).html(data[i]["model"]);
+        result.children(".brand_"+data_class).html(data[i]["brand"]);
+        result.show();
+        result.bind("click",function(){result_clicked(this, data_class);});
+        result.appendTo(table);
+    }
+    table.show();
+}
+function result_clicked(clicked_item, data_class){
+    dat = $(clicked_item);
+    table = $('#ajax_item_results_'+data_class);
+    table.hide();
+    $('.ajax_item_name_'+data_class).val('');
+    addItem(dat.children(".item_id_"+data_class).text(), dat.children(".name_"+data_class).text(), dat.children(".price_"+data_class).text(),data_class, dat.children(".category_id_"+data_class).text(), dat.children(".purchase_price_"+data_class).text(),"" ,"1",dat.children(".model_"+data_class).text(), dat.children(".brand_"+data_class).text());
+}
 $(document).ready(function(){
-   
+    // Get items and show
+    $(".ajax_item_name").live("keyup",function(){
+        ajax(this);
+    });
     $("#payment_receipt").live("click", function(){
         var orderId = $('#OrderId').val();
         var email = $('#emailinput').val();
@@ -2269,7 +2362,24 @@ $(document).ready(function(){
 /*#sendSeparateEmail #emailVal_ifr body {
 	display: block !important;
 }*/
+#ajax_item_results_0 {
+    border-collapse: collapse;
+    background: #FFFF99;
+    color: #000000;
+}
 
+#ajax_item_results_1 {
+    border-collapse: collapse;
+    background: #FFFF99;
+    color: #000000;
+}
+#ajax_item_results_0 td, #ajax_item_results_0 th {
+  border: 1px solid #ddd;
+}
+
+#ajax_item_results_1 td, #ajax_item_results_1 th {
+  border: 1px solid #ddd;
+}
 .receipt_btn{
     position: absolute;
     padding: 5px;
@@ -3217,7 +3327,7 @@ function get_data($url)
 					</td>
 					<?php }?>
                 </tr>
-                <tr>
+                <tr class="hide-data">
                      <td align="right">Camp Source:</td>
                     <td><?php echo '<b>'.$booking_sources[$this->data['Order']['camp_source']].'</b>'?></td>
                     <td></td>
@@ -3277,8 +3387,8 @@ function get_data($url)
                 </tr>
                 	<!-- add campaing drop down -->
                 <tr>
-					<td align="right"><?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13 || $_SESSION['user']['role_id'] == 1) echo 'Campaing:';?></td>
-                    <td>
+					<td align="right" class="hide-data"><?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13 || $_SESSION['user']['role_id'] == 1) echo 'Campaing:';?></td>
+                    <td class="hide-data">
                     <?php
 						if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13 || $_SESSION['user']['role_id'] == 1 || $_SESSION['user']['role_id'] == 3 )
 						{?>
@@ -3497,8 +3607,11 @@ function get_data($url)
                                 <?php if (($common->getLoggedUserRoleID() != "3") &&($common->getLoggedUserRoleID() != "9")) { ?>
                                 <!--<input type="button" value="Purchase" onclick="addItem(1218, '', '0', 0, 1, '', '')" />-->
                                 <input type="button" value="Labor Description" onclick="addItem(0, '-custom item-', '0', 0, 0, '', '')" />
-								<input type="button" value="From Supplier" onclick="addItem(1227, '', '0', 0, 1, '', '')" />
+								<input type="button" value="Tech Purchase" onclick="addItem(1227, '', '0', 0, 1, '', '')" />
 								<?php } ?>
+                               <input autocomplete="off" class='ajax_item_name' data-class="0" />
+                                    <table id='ajax_item_results_0'>
+                                    </table>
                                 <div class="clear_this"></div>
 								<div id="item_selector0" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
 								<table id="CurrentItemsTable" cellspacing=0 colspacing=0 class="inResultsBooking">
@@ -3517,6 +3630,16 @@ function get_data($url)
 									<tr><td id="NewItems" class="newitem" colspan=7 style="display:none"></td></tr>
 								</table>
 							</td></tr>
+                            <tr id='ajax_item_result_template_0' style='display:none'>
+                                <td class='name_0'>Result</td>
+                                <td class='sku_0'></td>
+                                <td class='price_0' ></td>
+                                <td class='item_id_0' ></td>
+                                <td class='purchase_price_0'></td>
+                                <td class='category_id_0'></td>
+                                <td class='model_0' style='display:none'></td>
+                                <td class='brand_0' style='display:none'></td>
+                            </tr>
 							<tr height=10px><td></td></tr>
 						<?php
 						//Telemarketers can not see technicians part
@@ -3534,8 +3657,11 @@ function get_data($url)
                                 <?php if (($common->getLoggedUserRoleID() != "3") &&($common->getLoggedUserRoleID() != "9")) { ?>
                                 <!--<input type="button" value="Purchase" onclick="addItem(1218, '', '0', 1, 1, '', '')" />-->
 								<input type="button" value="Labor Description" onclick="addItem(0, '-custom item-', '0', 1, 0, '', '')" />
-								<input type="button" value="From Supplier" onclick="addItem(1227, '', '0', 1, 1, '', '')" />
+								<input type="button" value="Tech Purchase" onclick="addItem(1227, '', '0', 1, 1, '', '')" />
 								<?php } ?>
+                                <input autocomplete="off" class='ajax_item_name' data-class="1"/>
+                                <table id='ajax_item_results_1'>
+                                </table>
                                 <div class="clear_this"></div>
 								<div id="item_selector1" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
 								<table id="CurrentItemsTableTech" cellspacing=0 colspacing=0 class="inResultsBooking">
@@ -3555,6 +3681,16 @@ function get_data($url)
 										<th style="width:20px;background:#ffdddd">Print</th> -->
 										<th style="width:20px;background:#ffdddd">&nbsp;</th>
 									</tr>
+                                <tr id='ajax_item_result_template_1' style='display:none'>
+                                    <td class='name_1'>Result</td>
+                                    <td class='sku_1'></td>
+                                    <td class='price_1' ></td>
+                                    <td class='item_id_1' ></td>
+                                    <td class='purchase_price_1'></td>
+                                    <td class='category_id_1'></td>
+                                    <td class='model_1' style='display:none'></td>
+                                    <td class='brand_1' style='display:none'></td>
+                                </tr>
 									<?php echo $tech_items; ?>
 									<tr><td id="NewItemsTech" class="newitem" colspan=7 style="display:none"></td></tr>
 								</table>
@@ -3664,6 +3800,7 @@ function get_data($url)
 																		<tr>
 																				<td>
 																				<select id="method" onchange='ShowAN(this)'>
+                                                                                    <option value="0">--</option>
 																				<?php
 																				foreach ($payment_methods as $id => $name)
 																						echo "<option value='$id'>$name</option>";
@@ -4650,6 +4787,9 @@ $(document).ready(function(){
 		
 	</script>
 <style>
+.hide-data{
+    display: none;
+}
 .edit_info{
 	padding: 6px;
     background: #000040;

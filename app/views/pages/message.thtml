@@ -67,9 +67,14 @@ table th {
     padding-right: 5px;
     border: 1px solid #d4dce4;
     cursor: pointer;
-    color: white;
-    background: #29abe2;
+    color: #787d82;
+   /* color: white;*/
+    /*background: #29abe2;*/
 }
+.textus-ConversationListItem-link:hover {
+     color: white;
+    background: #29abe2;
+ }
 .wrapper
 {
     padding: 10px 10px 10px 0px;

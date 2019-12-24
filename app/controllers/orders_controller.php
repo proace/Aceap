@@ -5973,19 +5973,17 @@ class OrdersController extends AppController
         $summary = '<table border="1" cellspacing="0" cellpadding="1px"><tbody><tr><th>Item</th><th>Quantity</th><th>Price</th><th>Discount</th><th>Total</th></tr>';
         $result = $db->_execute($query);
         while ($row = mysql_fetch_array($result)) {
+            $price = (($row['quantity'] * $row['price']) - $row['discount']);
             $summary .= "<tr>";
             $summary .= "<td>" . $row['name'] . "</td>";
             $summary .= "<td>" . $row['quantity'] . "</td>";
-            $summary .= "<td>" . $row['price'] . "</td>";
+            $summary .= "<td>" .$row['price']. "</td>";
             $summary .= "<td>" . $row['discount'] . "</td>";
-            $summary .= "<td>" . $row['total'] . "</td>";
+            $summary .= "<td>" . $price . "</td>";
             $summary .= "</tr>";
         }
-        $query = "
-            SELECT SUM(price - discount) grandtotal
-            FROM ace_rp_order_items
-            WHERE order_id = '$id'
-        ";
+        $query = "SELECT SUM( (quantity * price) - discount ) grandtotal
+                    FROM ace_rp_order_items WHERE order_id = '$id'";
         $result = $db->_execute($query);
         while ($row = mysql_fetch_array($result)) {
             $summary .= "<tr>";
@@ -6397,12 +6395,12 @@ class OrdersController extends AppController
             $row = mysql_fetch_array($result);
             $areaCount = $row['cnt'];
 
-            if($areaCount == 0 && $user_role_id != 4 && $user_role_id != 6) {
-            //if($areaCount == 0) {
-                //echo "areaCount:$areaCount job_date:$job_date customerCity:$customer_city job_truck:$job_truck";
-                echo "The customer city $customer_city is not allowed on this route. Please check with admin. [$user_role_id]";
-                exit;
-            }
+            // if($areaCount == 0 && $user_role_id != 4 && $user_role_id != 6) {
+            // //if($areaCount == 0) {
+            //     //echo "areaCount:$areaCount job_date:$job_date customerCity:$customer_city job_truck:$job_truck";
+            //     echo "The customer city $customer_city is not allowed on this route. Please check with admin. [$user_role_id]";
+            //     exit;
+            // }
         } else {
             //if there is no city/zone assigned to the route, assign one to it depending on the $customer_city
             if($customer_city != 'BURNABY') {
@@ -7271,7 +7269,6 @@ class OrdersController extends AppController
     $h .='<input type="hidden" id="data[Order][BookingItem]['.$index.'][brand]" name="data[Order][BookingItem]['.$index.'][brand]" value="'.$item['brand'].'"/>';
     $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][item_category_id]" name="data[Order][BookingItem]['.$index.'][item_category_id]" value="'.$item['item_category_id'].'"/>';
 
-
     if ($item['name']=='-custom part-')
         $h .= '<input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value=""/>';
     elseif ($item['name']=='-custom item-') {
@@ -7366,17 +7363,17 @@ class OrdersController extends AppController
         $h .= '<td class="addition"><input style="width:50px" type="hidden" id="data[Order][BookingItem]['.$index.'][addition]" name="data[Order][BookingItem]['.$index.'][addition]" value="'.$item['addition'].'"/>'.$item['addition'].'&nbsp;</td>';
 
     //For the parts we have to open the purchase price box
-    if (($item['item_id']=='1024' || $item['item_id']=='1227')&&$actions) {
+    if (($item['item_id']=='1024' || $item['item_id']=='1227')&&$actions && $item['name'] != "-custom part-") {
         if($item['show_purchase'] == 1 || $item['show_purchase'] == '' || $item['show_purchase'] == NULL)
         {
             $h .= '<td class="purchase"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'"/></td>';
         } else {
             $h .='<td></td>';
         }
-    } else if($item['name']=='-custom part-'){
+    } else if($item['name'] == '-custom part-'){
             if($item['show_purchase'] == 1 || $item['show_purchase'] == '' || $item['show_purchase'] == NULL)
             {
-                $h .= '<td class="purchase"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'" onkeyup="TotalCalculation()"/></td>';
+                $h .= '<td class="purchase"><input class="check_item_prize" style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'" onkeyup="TotalCalculation()"/></td>';
             } else {
                 $h .='<td></td>';
             }
@@ -15938,8 +15935,9 @@ function deleteUserFromCampaign()
 
     function saveUserReviewResponse()
     {   
-        $email                  = "review@acecare.ca";
-        $phone_number           = "604-293-3770";
+        // $email                  = "review@acecare.ca";
+        $email                  = "acecare88@gmail.com";
+        $phone_number           = "833-813-2221";
         $customerEmail          = $_POST['email'];
         $customerPhoneNumber    = $_POST['phone_num'];
         $message                = $this->Common->removeSlash($_POST['Notes']);
@@ -16231,5 +16229,26 @@ function deleteUserFromCampaign()
         }
         exit();
     }
+
+    // function webcamUpload(){
+
+    // }
+
+    // function saveUploadImage(){
+    //     $img = $_POST['image'];
+    //     $folderPath = "upload_photos/";
+      
+    //     $image_parts = explode(";base64,", $img);
+    //     $image_type_aux = explode("image/", $image_parts[0]);
+    //     $image_type = $image_type_aux[1];
+      
+    //     $image_base64 = base64_decode($image_parts[1]);
+    //     $fileName = uniqid() . '.png';
+      
+    //     $file = $folderPath . $fileName;
+    //     file_put_contents($file, $image_base64);
+      
+    //     print_r($fileName);
+    // }
 }
 ?>

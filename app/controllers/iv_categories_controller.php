@@ -119,7 +119,7 @@ class IvCategoriesController extends AppController
 	{
 			$data = $_POST['typeIds'];
 			$ids = implode(',', $data);
-			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+			$db =& ConnectionManager::getDataSource('default');
 			$query = "DELETE from  ace_iv_categories WHERE id IN (".$ids.")";
 			$result = $db->_execute($query);
 			exit();

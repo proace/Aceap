@@ -75,7 +75,7 @@ class Queries {
 		// 	FROM iv_items_labeled2 i
 		// 	WHERE i.sub_category_id  IN (SELECT id FROM  `ace_iv_sub_categories` WHERE name ='".$needle."')";
 
-		$query = "SELECT i.id id, i.name name, i.selling_price price, i.supplier_price purchase_price, i.category_id
+		$query = "SELECT i.id id,i.brand,i.model, i.name name, i.selling_price price, i.supplier_price purchase_price, i.category_id
 			FROM iv_items_labeled2 i
 			WHERE i.name LIKE \"%$needle%\"";
 		$results = $this->connection->_execute($query);
@@ -426,7 +426,7 @@ class InventoriesController extends AppController
 		$search_invoice_number = $this->params['url']['search_invoice_number'];
 		// $search_refunds = $this->params['url']['search_refunds'];
 		// $search_paid = $this->params['url']['search_paid'];
-		$search_invoice = $this->params['url']['search_invoice'];
+		$search_invoice = !empty($this->params['url']['search_invoice']) ? $this->params['url']['search_invoice']:0;
 		$search_active = $this->params['url']['search'];
 		
 		$price_id = $this->params['url']['id'];
@@ -474,89 +474,29 @@ class InventoriesController extends AppController
 		if($tdate != '')
 			$dateConditions .= " AND movements.date <= '".$this->Common->getMysqlDate($tdate)." 23:59:59'";
 		
-		
-		
-		if(empty($search_invoice) || $search_invoice == 'Invoices')
-		{
+		if($search_invoice == 0){
+			$searchCondition = '';
+		} else {
+			$searchCondition = 'AND invoice.status_id ='.$search_invoice;
+		}
+		// if(empty($search_invoice) || $search_invoice == 'Invoices')
+		// {
+
 			// FIND INVOICES
 			// query assumes an asset can only come from a supplier once
 			// select info for each invoice, as well as SUM for all items in that invoice.
 			// we use GROUP BY which selects all items in an invoice then groups them together in a single row, which allows us to add
 			// the price for all those items into total_price for that invoice
-			$query = "SELECT invoice.invoice AS invoice_number, movements.id AS invoice_id, invoice.status_id AS status_id,
-			  suppliers.name AS supplier_name, movements.date, SUM(assets.regular_price) as total_price
-			  FROM ace_iv_movements movements
-			  LEFT JOIN ace_iv_assets assets ON movements.asset_id = assets.asset_id
-			  LEFT JOIN ace_iv_locations locations ON movements.from_location_id = locations.id
-			  LEFT JOIN ace_rp_suppliers suppliers ON locations.number = suppliers.id
-			  LEFT JOIN ace_iv_invoice invoice ON movements.id = invoice.invoice_id
-			  WHERE locations.type = 'Supplier' and invoice.status_id = 6
-			  {$dateConditions} 
-			  {$sqlConditions}
-			  GROUP BY movements.id
-			";
-		
-			$items = array();
-			$result = $db->_execute($query);
-			$num=0;
-			while($row = mysql_fetch_array($result, MYSQL_ASSOC))
-			{
-				foreach ($row as $k => $v){
-				  $data[$k] = $v;
-				}
-				$data['invoice_type'] = 'Invoice';
-				$items[] = $data;
-			}
-		} else if($search_invoice == 'Refunds'){
-
-			// FIND REFUNDS
-			// query assumes an asset can only come from a supplier once
-			// select info for each invoice, as well as SUM for all items in that invoice.
-			// we use GROUP BY which selects all items in an invoice then groups them together in a single row, which allows us to add
-			// the price for all those items into total_price for that invoice
-			$query = "SELECT invoice.invoice AS invoice_number, movements.id AS invoice_id,
-				  suppliers.name AS supplier_name, movements.date, SUM(refunds.refund_regular_price) as total_price,
-				  invoice.status_id
-				  FROM ace_iv_movements movements
-				  LEFT JOIN ace_iv_assets assets ON movements.asset_id = assets.asset_id
-				  LEFT JOIN ace_iv_locations locations ON movements.to_location_id = locations.id
-				  LEFT JOIN ace_rp_suppliers suppliers ON locations.number = suppliers.id
-				  LEFT JOIN ace_iv_invoice invoice ON movements.id = invoice.invoice_id
-				  LEFT JOIN ace_iv_refund_price refunds ON assets.asset_id = refunds.asset_id
-				  WHERE locations.type = 'Supplier'
-				  {$dateConditions} 
-				  {$sqlConditions}
-				  GROUP BY movements.id
-			";
-			
-			$result = $db->_execute($query);
-			$num=0;
-			while($row = mysql_fetch_array($result, MYSQL_ASSOC))
-			{
-				foreach ($row as $k => $v){
-				  $data[$k] = $v;
-				}
-				$data['invoice_type'] = "Refund - Type Unknown";
-				if ($data['status_id'] == 1) {
-					$data['invoice_type'] = 'Refund - Returned';
-					$data['invoice_status'] = 'Pending';
-				}
-				else if ($data['status_id'] == 2) {
-					$data['invoice_type'] = 'Refund - Refused';
-					$data['invoice_status'] = 'Not Payable';
-				}
-				else if ($data['status_id'] == 3 || $data['status_id'] == 4) {
-					$data['invoice_type'] = 'Refund - Credited';
-					$data['invoice_status'] = 'Credited';
-				}
-				
-				$items[] = $data;
-			}
-		} else if($search_invoice == 'Paid')
-		{
-			$query = "SELECT invoice.invoice AS invoice_number, movements.id AS invoice_id, invoice.status_id AS status_id,
-			  suppliers.name AS supplier_name, movements.date, SUM(assets.regular_price) as total_price, invoice.pay_date,
-			  invoice.reference_no, invoice.paid_amount, payment_method.name as payment_type, CONCAT(users.first_name, ' ',users.last_name ) as tech_name
+			$query = "SELECT invoice.remaining_amount, invoice.doc_type, invoice.invoice AS invoice_number, movements.id AS invoice_id, invoice.status_id AS status_id,
+			  suppliers.name AS supplier_name, movements.date, (SUM(assets.regular_price) - (SELECT  SUM( s1.price )
+                                    FROM (
+                                            SELECT (
+                                            regular_price * refund_quantity
+                                            ) AS price,movement_id
+                                            FROM  `ace_iv_assets` 
+                                            GROUP BY movement_id,item_id
+                                        ) AS s1 WHERE s1.movement_id = invoice_id)) as total_price, invoice.pay_date,
+		 	  invoice.reference_no, invoice.paid_amount, payment_method.name as payment_type, CONCAT(users.first_name, ' ',users.last_name ) as tech_name, ins.status as invoice_status
 			  FROM ace_iv_movements movements
 			  LEFT JOIN ace_iv_assets assets ON movements.asset_id = assets.asset_id
 			  LEFT JOIN ace_iv_locations locations ON movements.from_location_id = locations.id
@@ -564,12 +504,13 @@ class InventoriesController extends AppController
 			  LEFT JOIN ace_iv_invoice invoice ON movements.id = invoice.invoice_id
 			  LEFT JOIN ace_rp_purchase_payment_method payment_method ON invoice.payment_method = payment_method.id
 			  LEFT JOIN ace_rp_users users ON invoice.agent_id = users.id
-			  WHERE locations.type = 'Supplier' and invoice.status_id = 5
+			  LEFT JOIN ace_iv_invoice_status  ins ON invoice.status_id = ins.id
+			  WHERE locations.type = 'Supplier' {$searchCondition}
 			  {$dateConditions} 
 			  {$sqlConditions}
 			  GROUP BY movements.id
 			";
-		
+			// print_r($query); die;
 			$items = array();
 			$result = $db->_execute($query);
 			$num=0;
@@ -578,10 +519,96 @@ class InventoriesController extends AppController
 				foreach ($row as $k => $v){
 				  $data[$k] = $v;
 				}
-				$data['invoice_type'] = 'Paid';
+				if($row['doc_type'] == 7){
+					$data['invoice_type'] = 'Refund';	
+				} else {
+					$data['invoice_type'] = 'Invoice';	
+				}
 				$items[] = $data;
 			}
-		}
+		//} 
+		// else if($search_invoice == 'Refunds'){
+
+		// 	// FIND REFUNDS
+		// 	// query assumes an asset can only come from a supplier once
+		// 	// select info for each invoice, as well as SUM for all items in that invoice.
+		// 	// we use GROUP BY which selects all items in an invoice then groups them together in a single row, which allows us to add
+		// 	// the price for all those items into total_price for that invoice
+		// 	$query = "SELECT invoice.invoice AS invoice_number, movements.id AS invoice_id,
+		// 		  suppliers.name AS supplier_name, movements.date, SUM(refunds.refund_regular_price) as total_price,
+		// 		  invoice.status_id
+		// 		  FROM ace_iv_movements movements
+		// 		  LEFT JOIN ace_iv_assets assets ON movements.asset_id = assets.asset_id
+		// 		  LEFT JOIN ace_iv_locations locations ON movements.to_location_id = locations.id
+		// 		  LEFT JOIN ace_rp_suppliers suppliers ON locations.number = suppliers.id
+		// 		  LEFT JOIN ace_iv_invoice invoice ON movements.id = invoice.invoice_id
+		// 		  LEFT JOIN ace_iv_refund_price refunds ON assets.asset_id = refunds.asset_id
+		// 		  WHERE locations.type = 'Supplier'
+		// 		  {$dateConditions} 
+		// 		  {$sqlConditions}
+		// 		  GROUP BY movements.id
+		// 	";
+			
+		// 	$result = $db->_execute($query);
+		// 	$num=0;
+		// 	while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		// 	{
+		// 		foreach ($row as $k => $v){
+		// 		  $data[$k] = $v;
+		// 		}
+		// 		$data['invoice_type'] = "Refund - Type Unknown";
+		// 		if ($data['status_id'] == 1) {
+		// 			$data['invoice_type'] = 'Refund - Returned';
+		// 			$data['invoice_status'] = 'Pending';
+		// 		}
+		// 		else if ($data['status_id'] == 2) {
+		// 			$data['invoice_type'] = 'Refund - Refused';
+		// 			$data['invoice_status'] = 'Not Payable';
+		// 		}
+		// 		else if ($data['status_id'] == 3 || $data['status_id'] == 4) {
+		// 			$data['invoice_type'] = 'Refund - Credited';
+		// 			$data['invoice_status'] = 'Credited';
+		// 		}
+				
+		// 		$items[] = $data;
+		// 	}
+		// } else if($search_invoice == 'Paid')
+		// {
+		// 	$query = "SELECT invoice.invoice AS invoice_number, movements.id AS invoice_id, invoice.status_id AS status_id,
+		// 	  suppliers.name AS supplier_name, movements.date, (SUM(assets.regular_price) - (SELECT  SUM( s1.price )
+	  //                                   FROM (
+	  //                                           SELECT (
+	  //                                           regular_price * refund_quantity
+		  //                                           ) AS price,movement_id
+	  //                                           FROM  `ace_iv_assets` 
+	  //                                           GROUP BY movement_id,item_id
+	  //                                       ) AS s1 WHERE s1.movement_id = invoice_id)) as total_price, invoice.pay_date,
+		// 	  invoice.reference_no, invoice.paid_amount, payment_method.name as payment_type, CONCAT(users.first_name, ' ',users.last_name ) as tech_name
+		// 	  FROM ace_iv_movements movements
+		// 	  LEFT JOIN ace_iv_assets assets ON movements.asset_id = assets.asset_id
+		// 	  LEFT JOIN ace_iv_locations locations ON movements.from_location_id = locations.id
+		// 	  LEFT JOIN ace_rp_suppliers suppliers ON locations.number = suppliers.id
+		// 	  LEFT JOIN ace_iv_invoice invoice ON movements.id = invoice.invoice_id
+		// 	  LEFT JOIN ace_rp_purchase_payment_method payment_method ON invoice.payment_method = payment_method.id
+		// 	  LEFT JOIN ace_rp_users users ON invoice.agent_id = users.id
+		// 	  WHERE locations.type = 'Supplier' and invoice.status_id = 5
+		// 	  {$dateConditions} 
+		// 	  {$sqlConditions}
+		// 	  GROUP BY movements.id
+		// 	";
+		
+		// 	$items = array();
+		// 	$result = $db->_execute($query);
+		// 	$num=0;
+		// 	while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		// 	{
+		// 		foreach ($row as $k => $v){
+		// 		  $data[$k] = $v;
+		// 		}
+		// 		$data['invoice_type'] = 'Paid';
+		// 		$items[] = $data;
+		// 	}
+		// }
 		
 		
 		
@@ -633,6 +660,7 @@ class InventoriesController extends AppController
 				  $methods[$row1['id']][$k] = $v;
 				}	
 			}
+		$this->set("status", $search_invoice);
 		$this->set('booking_sources', $this->Lists->BookingSources());
 		$this->set("paidDate", date("d M Y", strtotime($paidDate)));
 		$this->set('methods', $methods);
@@ -800,6 +828,7 @@ class InventoriesController extends AppController
 		$supplier_id = '';
 		$tech_id = '';
 		$items = array();
+		$paidDate = date("Y-m-d");
 		
 		$allDocTypes = $this->GetDocTypes();
 		$allSuppliers = $this->Lists->ListTable('ace_rp_suppliers');
@@ -818,7 +847,8 @@ class InventoriesController extends AppController
 			{
 				$invoice_number = $row['invoice'];
 				$original_invoice_id = $row['original_invoice_id'];
-				$status = $row['status'];
+				// $status = $row['status'];
+				$status = $row['status_id'];
 			}
 			
 			if ($original_invoice_id) {
@@ -838,7 +868,7 @@ class InventoriesController extends AppController
 			else {
 				// invoices
 				$query = "
-					SELECT movements.*, assets.*, items.model, items.name, locations.number, locations.type, sku.sku
+					SELECT  movements.*, assets.*, items.model, items.name, locations.number, locations.type, sku.sku
 					FROM ace_iv_movements movements
 					LEFT JOIN ace_iv_assets assets ON movements.asset_id = assets.asset_id
 					LEFT JOIN ace_iv_items items ON assets.item_id = items.id
@@ -848,16 +878,28 @@ class InventoriesController extends AppController
 				";
 				if (!isset($_GET['view_transaction'])){
 					$this->set('can_save_purchase', 1);
-					
-					$query2 = "SELECT invoice FROM ace_iv_invoice WHERE invoice_id = '{$doc_id}'";
-			
+					$query2 = "SELECT inv.*,suppliers.name as supplier_name, CONCAT(users.first_name, ' ',users.last_name ) as agent_name, CONCAT(return_user.first_name, ' ',return_user.last_name ) as return_by , payment_method.name as payment_type FROM ace_iv_invoice inv 
+					LEFT JOIN ace_iv_movements mv ON mv.id = inv.invoice_id
+					LEFT JOIN ace_iv_locations locations ON mv.from_location_id = locations.id
+			  		LEFT JOIN ace_rp_suppliers suppliers ON locations.number = suppliers.id
+			  		LEFT JOIN ace_rp_users users ON inv.agent_id = users.id
+					LEFT JOIN ace_rp_users return_user ON inv.returned_by = return_user.id
+					LEFT JOIN ace_rp_purchase_payment_method payment_method ON inv.payment_method = payment_method.id
+					WHERE invoice_id = '{$doc_id}'";
+					$invoiceDetails = array();
+					$invoiceImageArr = array();
+
 					$result = $db->_execute($query2);
 					if($row = mysql_fetch_array($result, MYSQL_ASSOC)){
 						$invoice_number = $row['invoice'];
+						$supplierName = $row['supplier_name'];
+						$invoiceDetails = $row;
+						if(!empty($row['invoice_image'])){
+							$invoiceImageArr[] = $row['invoice_image'];				
+						}
 					}
 				}
 			}
-			
 			$result = $db->_execute($query);
 			$num=0;
 			while($row = mysql_fetch_array($result, MYSQL_ASSOC)){
@@ -876,7 +918,16 @@ class InventoriesController extends AppController
 			
 			$new_items = array();
 			$temp_items = $items;
-			
+
+			// Get All Invoices
+			//Loki: Get the refund items quantity:
+			$invoiceQuery = "SELECT invoice_image FROM  `ace_iv_invoice_history` WHERE  `invoice_id` =".$doc_id;
+			$invoiceResult = $db->_execute($invoiceQuery);
+			while($row = mysql_fetch_array($invoiceResult, MYSQL_ASSOC)){
+				if(!empty($row['invoice_image'])){
+					$invoiceImageArr[] = $row['invoice_image'];
+				}
+			}
 			//Merge existing results
 			
 			foreach($items as $key => $item){
@@ -913,6 +964,13 @@ class InventoriesController extends AppController
 			}
 			
 			$items = $new_items;
+			//Loki: Get the refund items quantity:
+			$query = "SELECT SUM(quantity) as refunded_quantity , item_id FROM  `ace_iv_invoice_refund_items` WHERE  `Invoice_id` =".$doc_id." GROUP BY item_id";
+			$quantityData = array();
+			$result = $db->_execute($query);
+			while($row = mysql_fetch_array($result, MYSQL_ASSOC)){
+				$quantityData[$row['item_id']] = $row['refunded_quantity'];
+			}
 			
 			if ($is_view_refund) {
 				// get refund invoice details
@@ -1025,7 +1083,6 @@ class InventoriesController extends AppController
 			
 			$items = $new_items;
 		}
-		
 		/* MOVEMENT */
 		if ($doc_type == 2){
 		
@@ -1124,10 +1181,24 @@ class InventoriesController extends AppController
 			$this->set('original_invoice', 	$original_invoice);
 		}
 		
-
-		//echo "<pre>";print_r($items);echo "</pre>";
-		
+		$query1 = "SELECT * from ace_rp_purchase_payment_method";
+			$result1 = $db->_execute($query1);
+			$category = array();		
+			while($row1 = mysql_fetch_array($result1, MYSQL_ASSOC))
+			{
+				foreach($row1 as $k => $v)
+				{
+				  $methods[$row1['id']][$k] = $v;
+				}	
+			}
+		$this->set('invoiceImageArr', $invoiceImageArr);
+		$this->set('invoiceDetails', $invoiceDetails);
+		$this->set('quantityData', $quantityData);
+		$this->set('booking_sources', $this->Lists->BookingSources());		
 		$this->set('trucks', $trucks);
+		$this->set('methods', $methods);
+		$this->set('paidDate', date("d M Y", strtotime($paidDate)));
+		$this->set('supplierName', $supplierName);
 		$this->set('items', $items);		
 		$this->set('docdate', date('d M Y', strtotime($docdate)));
 		$this->set('invoice_number', $invoice_number);
@@ -1138,7 +1209,7 @@ class InventoriesController extends AppController
 		$this->set('order_number', $order_number);
 		$this->set('doctype', $allDocTypes[$doc_type]);
 		$this->set('doctypes', $this->Common->getSelector($allDocTypes,'doctype',$doc_type));
-		if (($doc_type==1)||($doc_type==5))
+		if (($doc_type==1)||($doc_type==5) || ($doc_type==7))
 			$this->set('suppliers', $this->Common->getSelector($allSuppliers,'supplier',$supplier_id));
 		else
 			$this->set('suppliers', $this->Common->getSelector($allLocations,'supplier',$supplier_id));
@@ -1152,7 +1223,12 @@ class InventoriesController extends AppController
 		$queries = new Queries($this);
 		$active = isset($_GET['active']) ? $_GET['active'] : null;
 		if ($active) {
-			print json_encode($queries->SearchActiveParts($_GET['query']));
+			if(!empty($_GET['query'])){
+				print json_encode($queries->SearchActiveParts($_GET['query']));
+			} else {
+				$response = array();
+				print json_encode($response);
+			}
 		}
 		else if ($_GET['supplier']) {
 			//print json_encode($queries->SearchPartsFromSuppliers($_GET['query'],$_GET['supplier']));
@@ -1164,7 +1240,6 @@ class InventoriesController extends AppController
 	}
 	function saveDoc(){
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-		
 		$assets = array();
 		$doc_id = $this->data['doc_id'];
 		$original_invoice_id = $this->data['doc_id']; // for refund
@@ -1177,13 +1252,20 @@ class InventoriesController extends AppController
 		$note = $this->data['note'];
 		$doc_date = date("Y-m-d", strtotime($this->data['doc_date']));
 		$moveDate = date("Y-m-d");
+		$status_id = $this->data['status_id'];
+		$refundDate = date("Y-m-d", strtotime($this->data['refund_date']));
+		$total_purchase_amount = (isset($_POST['totalPurchaseAmount']))? $_POST['totalPurchaseAmount'] : null;
+		$photoImage = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
+		$imageName = '';
 		if ($do_save == 1){
 			//echo 'Perform Update';
 			$items = $_POST['data']['items'];
 			if (isset($_POST['invoice'])){
 				$invoice = $_POST['invoice'];
 			}
-			
+			if($status_id == 9){
+				$status_id = 5;
+			}
 			foreach($items as $item){			
 				//Update Item Info
 				
@@ -1199,7 +1281,7 @@ class InventoriesController extends AppController
 				//Update price
 				if (isset($item['price'])){
 					$query = "
-						UPDATE ace_iv_assets SET regular_price = '{$item['price']}'
+						UPDATE ace_iv_assets SET regular_price = '{$item['price']}', refund_quantity = '{$item['refund_quantity']}'
 						WHERE item_id = '{$item['item_id']}' AND movement_id = '{$item['movement_id']}'
 					";
 					$db->_execute($query);
@@ -1208,10 +1290,9 @@ class InventoriesController extends AppController
 				//Update Invoice
 				if (isset($invoice)){
 					$query = "
-						UPDATE ace_iv_invoice SET invoice = '{$invoice}'
+						UPDATE ace_iv_invoice SET invoice = '{$invoice}', status_id = '{$status_id}'
 						WHERE invoice_id = '{$doc_id}'
 					";
-					
 					$db->_execute($query);
 				}
 			}
@@ -1239,7 +1320,7 @@ class InventoriesController extends AppController
 			$from_location_id = $results['id'];
 			
 			foreach ($this->data['items'] as $cur){
-				if($doc_type == 1) {
+				if($doc_type == 1 || $doc_type == 7) {
 					// $doc_type 1 = purchase
 					//Add the items to the inventory
 					for($i = 0; $i < $cur['quantity']; $i++){
@@ -1283,12 +1364,31 @@ class InventoriesController extends AppController
 
 			// Forward user where they need to be - if this is a single action per view
 			
-			$this->redirect('inventories/'.$_REQUEST['rurl']);
+				// die("here");
 			
-				
-			//Insert Invoice
-			$query = "INSERT INTO ace_iv_invoice (invoice_id, invoice, status_id) VALUES ('{$doc_id}', '{$this->data['invoice_number']}', '6')";
-			$db->_execute($query);
+			//Loki: For new refund Invoice.
+			if(!empty($photoImage['name']))
+	        {       
+	            $path = $photoImage['name'];
+				$ext = pathinfo($path, PATHINFO_EXTENSION);
+				$imageName = date('Ymdhis', time()).'_'.$path.'.'.$ext;
+				if ( 0 < $file['error'] ) {
+	        		// echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
+			    } else {
+			        move_uploaded_file($photoImage['tmp_name'], ROOT."/app/webroot/purchase-invoice-images/".$imageName);
+			    }
+	        }
+			if($doc_type == 7)	
+			{
+				$query = "INSERT INTO ace_iv_invoice (invoice_id, invoice, status_id, pay_date, reference_no, refund_invoice_id, returned_by, supplier_rep, refund_time	, payment_method,doc_type, total_purchase_amount,remaining_amount,invoice_image ) VALUES ('{$doc_id}', '{$this->data['invoice_number']}','{$status_id}', '{$refundDate}','{$this->data['ref_no']}', '{$this->data['returned_invoice']}', '{$this->data['Returned_by']}', '{$this->data['supplier_rep']}', '{$this->data['refund_time']}', '{$this->data['payment_method']}', '{$doc_type}', '{$total_purchase_amount}','{$total_purchase_amount}', '{$imageName}')";
+				$res = $db->_execute($query);
+			} else {
+				$query = "INSERT INTO ace_iv_invoice (invoice_id, invoice, status_id, doc_type, total_purchase_amount,remaining_amount,invoice_image) VALUES ('{$doc_id}', '{$this->data['invoice_number']}','6', '{$doc_type}', '{$total_purchase_amount}','{$total_purchase_amount}', '{$imageName}')";
+				$db->_execute($query);
+
+			}
+
+			$this->redirect('inventories/'.$_REQUEST['rurl']);
 		} 
 		//-----------
 		
@@ -1934,7 +2034,66 @@ class InventoriesController extends AppController
 		$row = mysql_fetch_array($result, MYSQL_ASSOC);
 		if (!$row) {
 			return False; }
-		return array("type"=>$type,"number"=>$number,"id"=>$row['id']); }
-		
+		return array("type"=>$type,"number"=>$number,"id"=>$row['id']); 
+	}
+
+	function searchSuppliers()
+	{
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$needle = $_GET['query'];
+		if(!empty($needle)){
+			$query = "SELECT * FROM ace_rp_suppliers WHERE name LIKE \"%$needle%\"";
+			$results = $db->_execute($query);
+			$response = array();
+			while ($row = mysql_fetch_assoc($results)) {
+				$response[] = $row; 
+			}	
+			print json_encode($response);
+			exit();
+		}
+	}
+	//This function get all the invoice history and show.
+	function ShowInvoiceHistory()
+	{
+		$invoiceId = $_GET['invoiceId'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "SELECT ih.*, invs.status as status_name from ace_iv_invoice_history ih LEFT JOIN ace_iv_invoice_status invs ON invs.id = ih.status_id where ih.invoice_id=".$invoiceId." order by ih.id desc";
+
+		$result = $db->_execute($query);
+		$response = array();
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			$response[] = $row; 
+		}
+		print json_encode($response);
+		exit();
+	}
+
+	// Loki: Show the full history details 
+	function ShowInvoiceHistoryById()
+	{
+		$this->layout="list";
+		$historyId = $this->params['url']['historyId'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "SELECT ih. * , inri.item_id, inri.quantity, ias.purchase_price, ins.status AS status_name, inl.name AS item_name, ppm.name as payment_method_name, CONCAT(return_user.first_name, ' ',return_user.last_name) as return_user,
+			CONCAT(paid_by.first_name, ' ',paid_by.last_name) as paid_user
+			FROM ace_iv_invoice_history ih
+			LEFT JOIN ace_iv_invoice_refund_items inri ON inri.invoice_history_id = ih.id
+			LEFT JOIN ace_iv_assets ias ON ( ias.movement_id = inri.Invoice_id
+			AND ias.item_id = inri.item_id ) 
+			INNER JOIN ace_iv_invoice_status ins ON ins.id = ih.status_id
+			LEFT JOIN iv_items_labeled2 inl ON inl.id = inri.item_id
+			LEFT JOIN ace_rp_purchase_payment_method ppm ON ppm.id = ih.payment_method
+			LEFT JOIN ace_rp_users return_user ON return_user.id =ih.returned_by
+			LEFT JOIN ace_rp_users paid_by ON paid_by.id = ih.paid_by 
+			WHERE ih.id = ".$historyId." GROUP BY ias.item_id";
+			$response = array();
+			$result = $db->_execute($query);
+			while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+			{
+				$response[] = $row; 
+			}
+		$this->set("response",$response);
+	}
 }
 ?>

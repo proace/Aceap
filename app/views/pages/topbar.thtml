@@ -35,8 +35,8 @@ var nopen = 1;
 
 $(document).ready(function(e){
 	   setInterval( function(){     
-        //get_chat_count();
-       // get_mail_count();
+            get_chat_count();
+            get_mail_count();
 	    }, 30000 );
 
 	   // var blink_speed = 500; 
@@ -54,7 +54,8 @@ function get_chat_count(){
             if(count >= 1 && count > 0)
             {
             	$('#showMessage').text(count);
-            	window.open("<?=BASE_URL?>/messages/ShowMessages?fromMessage=1", "", "width=50,height=50,top=100, left=1300");
+                // window.open("<?=BASE_URL?>/messages/ShowMessages?fromMessage=1", "", "width=50,height=50,top=100, left=1300");
+            	window.open("<?=BASE_URL?>/messages/ShowMessages?fromMessage=1", "", "width=450, height=350, left=300, top=200");
 
             } if( count == 0)
             {
@@ -160,7 +161,7 @@ function showMessages()
 function createMessage()
 {
   var answer = window.open("<?=BASE_URL?>/messages/EditMessage",'', 
-  "width=450, height=350, left=300, top=200");
+  "width=650, height=350, left=300, top=200");
 }
 function openMap()
 {
@@ -200,7 +201,7 @@ if( $_SESSION['user']['id'] > 0 ) {
 		$idx++;
 	}
 	$u = BASE_URL;
-	echo "<div style='float:right;padding-right:10px;'><a href='$u/messages/ShowMessages?fromMessage=1' target='main_view'><b>Message</b> &nbsp<span id='showMessage' style='font-size:15px;'></span></a>&nbsp;&nbsp;User: <a href='$u/users/editself' target='main_view'><b>{$_SESSION['user']['name']}</b></a>&nbsp;&nbsp;<a href='$u/login/logout' target='_top'>Logout</a></div>";
+	echo "<div style='float:right;padding-right:10px;'><a href='javascript:createMessage()'><b>Message</b> &nbsp<span id='showMessage' style='font-size:15px;'></span></a>&nbsp;&nbsp;User: <a href='$u/users/editself' target='main_view'><b>{$_SESSION['user']['name']}</b></a>&nbsp;&nbsp;<a href='$u/login/logout' target='_top'>Logout</a></div>";
 	echo "</div>";
 	$idx = 1;
 	$on_off = "";
@@ -238,7 +239,11 @@ if( $_SESSION['user']['id'] > 0 ) {
     		// 		echo "<a href='$url' target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']." <span id='showMessage' style='font-size:15px;'></span></a>";
     		// 		echo "</div>";
     		// }
-
+            else if( $tbi['name'] == 'Send Message')
+            {
+                $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+                echo "<div class='icon'><img src=".$img." onclick='createMessage();' style=\"width:27px;height:27px\">Send Message</div>";
+            }
     		 else {
     				echo "<div class='icon'>";
     				$img = ROOT_URL."/app/webroot/img/".$tbi['img'];

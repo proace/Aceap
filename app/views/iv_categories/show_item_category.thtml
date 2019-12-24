@@ -19,14 +19,13 @@ jQuery( document ).ready(function($) {
               type: "POST",
               data: {typeIds:selected},
               success: function(data){
-                // location.href = "<?=BASE_URL;?>/iv_categories/showPaymentTypes";
                      document.forms['viewform'].submit();
                  }
             });
         });
  $('.category-name').on('click', function(){
             var id = $(this).attr('cat-id');
-            window.open("<?=BASE_URL;?>/iv_categories/editCategory/"+id, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=400,height=400");
+            window.open("<?=BASE_URL;?>/iv_categories/editCategory/"+id, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=900,width=400,height=200");
     });
     $('.showActive').on('change', function(elem_chk){
         var jobtype_id = $(this).attr('type_id');
@@ -145,8 +144,8 @@ th, td {
             foreach ($itemCategories as $obj) {
                 $class = 'cell'.(++$r%2);
         ?>
-        <td class="firstcol">&nbsp;<?php echo $obj['id']; ?></td>
-        <td class="category-name" cat-id="<?=$obj['id']?>" style="cursor: all-scroll;">&nbsp;<?php echo $obj['name']; ?></td>
+        <td class="firstcol category-name" cat-id="<?=$obj['id']?>" style="cursor: pointer;">&nbsp;<?php echo $obj['id']; ?></td>
+        <td class="category-name" cat-id="<?=$obj['id']?>" style="cursor: pointer;">&nbsp;<?php echo $obj['name']; ?></td>
         <td><input type="checkbox" <?php if($obj['active']) {echo 'checked';}?> name="showActive" class="showActive" type_id = "<?=$obj['id']?>"></td>
          
         <td><input type="checkbox" class="checkboxes" name="remove_<?=$obj['id']?>" id="remove_<?=$obj['id']?>" type_id = "<?=$obj['id']?>"></td>

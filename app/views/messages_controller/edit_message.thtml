@@ -1,37 +1,88 @@
-<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script> <!-- Simple Calendar -->
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/multiselect.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.full.js"></script>
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.css" rel="stylesheet" />
+
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/multiselect.css" />
+ <!-- Simple Calendar -->
+<!-- <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+ -->
+ <!-- <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script> -->
+ <!-- <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script> -->
+
+
 <script>
 //*** SET PAGE TITLE ***
 document.title += " :: Edit Message";
 //**********************
 function PressSave(){
-  document.forms['editMessageForm'].submit();
+	document.forms['editMessageForm'].submit();
 }
+
+function search(term, text) {
+  if (text.toUpperCase().indexOf(term.toUpperCase()) == 0) {
+    return true;
+  }
+  return false;
+}
+$(document).ready(function(){
+
+ 
+	$.fn.select2.amd.require(['select2/compat/matcher'], function (f) {
+	  $("#SearchToUser").select2({
+	    matcher: f(search)
+	  })
+	});
+		var indexN = 1;
+		$(document).on('click', ".getsources", function(){
+	 		var roleId = $(this).data('role');
+	 		$("#MessageToUser").remove();
+	 		$.ajax({
+	              url: "<?=BASE_URL;?>/messages/getMessageSourceList?role="+roleId,
+	              type: "Get",
+	              cache: false,
+	              dataType: 'json',
+	              data:{role:roleId },
+	              success: function(data){
+						sources = JSON.parse(JSON.stringify(data));			
+						optionHtml = '<select id="MessageToUser" name="data[Message][to_user][]">';
+						$.each(sources, function (i,source) {
+							optionHtml+='<option value="'+i+'">'+source+'</option>';
+						});
+						optionHtml+='</select>';
+						$('#append-select').append(optionHtml);
+					 	$("#MessageToUser").prop("multiple", "multiple");
+				      	$('#MessageToUser').multiselect().deselectAll();
+				      	$('#MessageToUser').multiselect();
+
+				      	$('#MessageToUser option').each(function() {
+						    $(this).prop('selected',false);
+						});
+				  }
+		        });
+	 	});
+});
+
+
 </script>
 
 <form name="editMessageForm" action="<?=BASE_URL;?>/messages/saveMessage"  method="post">
 <?php echo $html->hidden('Message/id')?>
+<input type="hidden" name="is_reply" value="<?=$is_reply?>">
+<input type="hidden" name="to_user" value="<?=$to_user?>">
 <div class="frame-wrap" style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
 		<div class="frame-header-left"></div>
 		<div class="frame-header-title">Message</div>
 		<div class="frame-header-right"></div>
 		<div class="frame-body" style="clear: both;">
 				<table>
+					<?php if($is_reply == 0){?>
 						<tr>
 								<td align="right">From:</td>
 								<td><b><?php echo $from_user;?></b>
 								</td>
-						</tr>
-						<tr>
-								<td align="right">Created:</td>
-								<td><b><?php echo $created_date;?>&nbsp;<?php echo $created_time;?></b></td>
-						</tr>
-						<tr>
-								<td align="right">To:</td>
-								<td colspan=3>
-							    <?php echo $html->selectTag('Message/to_user', $allSources, $this->data['Message']['to_user']);?>
-								</td>
-						</tr>
-						<tr>
+
 								<td align="right">Reminder date:</td>
 								<td>
 							    <?php echo $html->input('Message/to_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;'));?>
@@ -41,6 +92,39 @@ function PressSave(){
 						      <?php echo $html->hourOptionTag('Message/to_time') . " : " . $html->minuteOptionTag('Message/to_time'); ?>
 								</td>
 						</tr>
+					<?php } ?>
+						<tr>
+								<td align="right">Created:</td>
+								<td><b><?php echo $created_date;?>&nbsp;<?php echo $created_time;?></b></td>
+						</tr>
+						<?php if($is_reply == 1){?>
+							<td>To Date:</td>
+							<td>
+							    <?php echo $html->input('Message/to_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;'));?>
+								</td>
+						<?php } ?>
+						<?php if($is_reply == 0){?>
+						<tr>
+								<td align="right">To:</td>
+								<td style="width: 20%;">
+									<input type="button" name="admin" id="role_admin" value="Admin" class="getsources" data-role="6">
+									<input type="button" name="agents" id="role_agents" value="Agents" class="getsources" data-role="3">
+									<input type="button" name="techs" id="role_techs" value="Techs" class="getsources" data-role="1">
+								</td>
+								<td style="width: 10%;" id="append-select" colspan=3>
+									<select id='MessageToUser' name="data[Message][to_user][]">
+										<option value='0'>--</option>
+									</select>
+							    <!-- <?php //echo $html->selectTag('Message/to_user', $allSources, $this->data['Message']['to_user'], array('multiple'));?> -->
+								</td>
+							<td><select id='SearchToUser' multiple name="data[Message][search_user][]">
+										<?php foreach($searchUsers as $key => $val){?>								
+											<option value="<?=$key ?>"><?php echo $val?></option>
+										<?php } ?>
+								</select>
+							</td>
+						</tr>
+						<?php } ?>
 						<tr>
 							<?php if ($this->data['Message']['file_link']) { ?>
 								<td colspan=4>
@@ -56,8 +140,8 @@ function PressSave(){
 						</tr>
 						<tr>
 								<td style="text-align:right" colspan=2>
-												<?php echo $html->submit("Save", array("onclick" => "PressSave()"));?>
-												<input type="button" value="Exit" onclick="window.close();">
+										<?php echo $html->submit("Send");?>
+										<input type="button" value="Exit" onclick="window.close();">
 								</td>
 						</tr>
 				</table>

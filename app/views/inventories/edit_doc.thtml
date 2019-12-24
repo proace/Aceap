@@ -3,9 +3,11 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/inventory.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.quicksearch.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/store_tree.js"></script>
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/inventory.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
 <style type="text/css">
 	.inResultsBooking th{
 		background: #666666 !important;
@@ -15,6 +17,66 @@
 		background: #FFFF99 !important;
 		color:#000000 !important;
 	}
+	.fa{
+		font-size: 18px;
+	}
+	.supplier_result  th{
+		background: #666666 !important;
+		color:#000000 !important;
+	}
+	.supplier_result td{
+		background: #FFFF99 !important;
+		color:#000000 !important;
+	}
+
+	.supplier_result table{
+	  border: 1px solid black;
+	  border-collapse: collapse;
+	}
+	table.scw{
+		z-index: 9999 !important;
+	}
+
+	.pay_table th, .pay_table td {
+		padding: 15px;
+	}
+
+/*	.supplier_result table{
+		 border: 1px solid black !important;
+	  	border-collapse: collapse !important;
+	}*/
+	.cls-acecare-td-adjust {
+    position: relative;
+    height: 16;
+    width: 99px;
+    /* padding: 1; */
+    margin: 2px 0px 4px 0px;
+}
+ .cls-acecare-td-adjust > input[type="file"]{
+  position: absoulte;
+  opacity: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0
+}
+
+.cls-acecare-td-adjust > label {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: lightgrey;
+  color: #000;
+  border-radius: 5px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer
+}
+[class^="pre-image_"] {
+    display: none;
+}
 </style>
 <script>
 var accessData;
@@ -113,7 +175,6 @@ function add_unknown_item() {
 				"../inventories/ajaxItems",
 				{query:result,supplier:supp_id},
 				function(data) {
-					console.log(data);
 					addItem(data[0]["id"], result, price, results[4], "", "", "", "",'');
 					table = $('#ajax_item_results');
 					table.hide();
@@ -148,7 +209,6 @@ function edit_known_item(item, row_index,category_id) {
 				"../inventories/ajaxItems",
 				{query:result,supplier:supp_id},
 				function(data) {
-					console.log(data);
 					updateItem(row_index, data[0]["id"], result, price, results[4], "", "", "", "");
 					table = $('#ajax_item_results');
 					table.hide();
@@ -173,7 +233,6 @@ function ajax_failed( why ) {
 	table.show(); }
 function ajax_finished( data ) {
 	accessData = data;
-	//console.log("Ajax Got: '",data,"'");
 	if (data.length===0) {
 		ajax_failed("no results");
 		return false;
@@ -186,7 +245,6 @@ function ajax_finished( data ) {
 		result.children(".item_id").html(data[i]["id"]);
 		result.children(".name").html(data[i]["name"]);
 		result.children(".sku").html(data[i]["sku"]);
-		// result.children(".price").html(data[i]["price"]);
 		result.children(".price").html(data[i]["purchase_price"]);
 		result.children(".purchase_price").html(data[i]["purchase_price"]);
 		result.children(".category_id").html(data[i]["category_id"]);
@@ -197,15 +255,55 @@ function ajax_finished( data ) {
 	table.show();
 }
 function result_clicked(clicked_item) {
-	//dat = $('#ajax_item_results .hovered');
 	dat = $(clicked_item);
 	table = $('#ajax_item_results');
 	table.hide();
 	$('#ajax_item_name').val('');
 	addItem(dat.children(".item_id").text(), dat.children(".name").text(), dat.children(".price").text(), dat.children(".sku").text(), "", "", "", "", dat.children(".purchase_price").text(),dat.children(".category_id").text())
-	//console.log("Added:", dat);
+}
+function searchSupplier(){
+	var supplierName = $("#search_supplier").val().trim();
+	if(supplierName != ''){
+		$.ajax({
+			url: '<?=BASE_URL?>/inventories/searchSuppliers',
+			dataType: 'json',
+			type: 'GET',
+			cache: false,
+			data:{query:supplierName},
+			success: function(data) {
+				template = $('#ajax_supplier_result_template');
+				table = $('#ajax_supplier_results');
+				$('tbody',table).html('');
+				for(i in data) {
+					result = template.clone();
+					result.children(".id").html(data[i]["id"]);
+					result.children(".name").html(data[i]["name"]);
+					result.children(".phone").html(data[i]["phone"]);
+					result.children(".city").html(data[i]["city"]);
+					result.show();
+					result.bind("click",function(){result_supplier_clicked(this);});
+					result.appendTo(table);
+				}
+				table.show();	
+				}	
+			});	
+		} else {
+			$('#ajax_supplier_results').hide();
+		}
+}
+
+function result_supplier_clicked(clicked_item)
+{
+	dat = $(clicked_item);
+	table = $('#ajax_supplier_results');
+	table.hide();
+	supId = dat.children(".id").text();
+	$("#supplier").val(supId);
+	$("#supplier_text").html($("#supplier :selected").text());
+	$("#search_supplier").val('');
 }
 $(function(){
+	$('#ajax_supplier_results').hide();
 	$("#ajax_item_results").hide();
 	$("#ajax_item_name").live("keyup",ajax);
 	$( "#ajax_item_name" ).focus(function() {
@@ -231,7 +329,228 @@ $(function(){
 		
 		
 	});
+
+	$("#search_supplier").live("keyup",searchSupplier);
+
+	$(function () {
+	        $("#pay_box").dialog({
+	            modal: true,
+	            autoOpen: false,
+	            title: "",
+	            autoOpen: false,
+	            width: 500,
+	            height: 250
+	        });
+	         $("#pay_refund_box").dialog({
+	            modal: true,
+	            autoOpen: false,
+	            title: "",
+	            autoOpen: false,
+	            width: 500,
+	            height: 300
+	        });
+	        $("#pay_refund_and_pay_box").dialog({
+	            modal: true,
+	            autoOpen: false,
+	            title: "",
+	            autoOpen: false,
+	            width: 500,
+	            height: 300
+	        });
+	        $("#credit_box").dialog({
+	            modal: true,
+	            autoOpen: false,
+	            title: "",
+	            autoOpen: false,
+	            width: 500,
+	            height: 300
+	        });
+	        $("#invoice_status").live("change",function () {
+	        	var status_id = 	$("#invoice_status").val();
+	        	var doc_type = $("#doc_type_id").val();
+
+	        	if(doc_type != 7){
+		           if(status_id == 9){
+		         		$("#pay_box").dialog('open');
+		           } else if(status_id == 7) {
+		           		$("#pay_refund_box").dialog('open');
+		           } else if(status_id == 8){
+		           		$("#pay_refund_and_pay_box").dialog('open');
+		           } else if(status_id == 4){
+		           		$("#credit_box").dialog('open');
+		           }
+	        	}
+	    });
+    });  
+
+    $("#save_invoice_payment").live("click", function(){
+        var form = new FormData();
+     	form.append('invoiceIds',$("#invoice_id").val());
+     	form.append('methodId',$("#method-id").val());
+     	form.append('payDate',$("#paid_date").val());
+     	form.append('notes',$("#reference_no").val());
+     	form.append('agentId',$("#agent_id").val());
+     	form.append('paidAmount',$("#amount_paid").val());
+     	form.append('remainingAmount',$("#total_remaining_amount").val());
+     	form.append('fileval',$('#sortpicture1')[0].files[0]);
+     	form.append('statusId',5);
+     
+     	var statusId = 5;
+     	 $.ajax({
+          url: "<?=BASE_URL;?>/payments/addInvoicePayment",
+          type: "POST",
+	      data : form,
+	      dataType: 'json',
+	      processData: false,
+	      cache: false,
+	      contentType: false,
+          success: function(data){
+				if(data.res == "1")
+				{	
+					$("#pay_box").dialog('close');
+				}             
+			}
+        });
+	}); 
+
+	 $("#save_invoice_refund_payment").live("click", function(){
+     	var row_index = $("#totalRefundRows").val();
+     	var items = {};
+     	for (var i=1; i<=row_index; i++) 
+     	{
+			var refund_quantity = $('#refund_item_quantity_'+i).val();
+			var itemId = $('#refund_item_quantity_'+i).attr('item-id');
+			if (refund_quantity > 0){
+				items[itemId] = refund_quantity;
+			}
+		}
+		var itemsArr = JSON.stringify(items);
+     	var form = new FormData();
+     	form.append('invoiceIds',$("#invoice_id").val());
+     	form.append('methodId',$("#ref_method_id").val());
+     	form.append('payDate',$("#ref_paid_date").val());
+     	form.append('notes',$("#ref_reference_no").val());
+     	form.append('agentId',$("#return_by").val());
+     	form.append('refundInvoiceNo',$("#refund_invoice_no").val());
+     	form.append('refundTime',$("#refund_time").val());
+     	form.append('supplierRep',$("#supplier_rep").val());
+     	form.append('items', itemsArr);
+     	form.append('RefundAmount',$("#total_refund_amount").val());
+     	form.append('remainingAmount',$("#total_remaining_amount").val());
+     	form.append('statusId',$("#invoice_status").val());
+     	form.append('fileval',$('#sortpicture2')[0].files[0]);
+		
+     	 $.ajax({
+          url: "<?=BASE_URL;?>/payments/addRefundInvoiceDetails",
+          type: "POST",
+	      data : form,
+	      dataType: 'json',
+	      processData: false,
+	      cache: false,
+	      contentType: false,    
+          success: function(data){
+				if(data.res == "1")
+				{	
+					$("#pay_refund_box").dialog('close');
+				}             
+			}
+        });
+	}); 
+
+	$("#save_invoice_refund_pay_payment").live("click", function(){
+     	var form = new FormData();
+     	var items = {};
+		for (var i=1; i<=row_index; i++) {
+					var refund_quantity = $('#refund_item_quantity_'+i).val();
+					var itemId = $('#refund_item_quantity_'+i).attr('item-id');
+				if (refund_quantity > 0){
+					items[itemId] = refund_quantity;
+				}
+		}
+		var itemsArr = JSON.stringify(items);
+     	
+     	form.append('invoiceIds',$("#invoice_id").val());
+     	form.append('methodId',$("#ref_pay_method_id").val());
+     	form.append('payDate',$("#ref_pay_paid_date").val());
+     	form.append('notes',$("#ref_pay_reference_no").val());
+     	form.append('refPayRefundBy',$("#ref_pay_return_by").val());
+     	form.append('refPayAgent',$("#ref_pay_agent").val());
+     	form.append('refundInvoiceNo',$("#ref_pay_invoice_no").val());
+     	form.append('refundTime',$("#refund_pay_time").val());
+     	form.append('supplierRep',$("#ref_pay_supplier_rep").val());
+     	form.append('refPayAmount',$("#ref_pay_amount").val());
+     	form.append('items',itemsArr);
+     	form.append('RefundAmount',$("#total_refund_amount").val());
+     	form.append('remainingAmount',$("#total_remaining_amount").val());
+     	form.append('statusId',$("#invoice_status").val());
+     	form.append('fileval',$('#sortpicture3')[0].files[0]);
+     	
+     	 $.ajax({
+          url: "<?=BASE_URL;?>/payments/addRefundPayInvoiceDetails",
+          type: "POST",
+	      data : form,
+	      dataType: 'json',
+	      processData: false,
+	      cache: false,
+	      contentType: false,    
+          success: function(data){
+				if(data.res == "1")
+				{	
+					$("#pay_refund_and_pay_box").dialog('close');
+				}             
+			}
+        });
+	});
+
+	$("#save_credit_payment").live("click", function(){     	
+     	var form = new FormData();
+     	form.append('invoiceIds',$("#invoice_id").val());
+     	form.append('creditMethod',$("#credit_method").val());
+     	form.append('creditDate',$("#credit_date").val());
+     	form.append('note',$("#credit_note").val());
+     	form.append('creditAmount',$("#amount_credit").val());
+     	form.append('statusId',$("#invoice_status").val());
+     	form.append('fileval',$('#sortpicture4')[0].files[0]);
+     	form.append('remainingAmount',$("#total_remaining_amount").val());
+     	 $.ajax({
+          url: "<?=BASE_URL;?>/payments/addCreditPayment",
+          type: "POST",
+	      data : form,
+	      dataType: 'json',
+	      processData: false,
+	      cache: false,
+	      contentType: false,    
+          // data: {invoiceIds:invoiceIds,creditMethod:creditMethod,creditDate:creditDate, note:note, creditAmount:creditAmount,statusId:statusId},
+          success: function(data){
+				if(data.res == "1")
+				{	
+					$("#credit_box").dialog('close');
+				}             
+			}
+        });
+	}); 
+
+	$(".disply_preview").live("change",function(e){
+	    var img_ct = $(this).attr("data-ct").trim();
+	    var cur = $(this);
+	   upload_photo(cur[0],img_ct);
+	});
 });
+
+function upload_photo(cur,i) {	
+	//var file = $('input[id="sortpicture'+i+'"]')[0];
+	if (cur.files && cur.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      $('.pre-image_'+i+'')
+        .attr('src', e.target.result)
+        .width(86)
+        .height(50);
+        $('.pre-image_'+i+'').css("display","block");
+    };
+    reader.readAsDataURL(cur.files[0]);
+  }
+}
 function removeItem(item_id){
 	$("#item_"+item_id).remove();
 	calculateTotalRows();
@@ -239,9 +558,6 @@ function removeItem(item_id){
 function showAddItems()
 {
 	$("#item_selector").html('<img src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>').show();
-	/*$.get("<?=BASE_URL?>/items/showPrices?appl=2", {}, function(data){
-		$("#item_selector").html("<button type='button' style='cursor:pointer;' onclick='$(\"#item_selector\").html(\"\").hide();'>Close Section</button>"+data);
-	});*/
 	var url = "../iv_items/storeList?mode=0";
 	  $.get(url,
 		  {},
@@ -308,10 +624,14 @@ function addItem(item_id, item_name, item_prc, item_sku, new_type, new_category,
 		index = tbl.rows.length-1;
 		row = tbl.insertRow(index);
 		row.setAttribute("id", "item_tax");
+		var gst = (item_prc * 0.05).toFixed(2);
+		var pst = (item_prc * 0.07).toFixed(2);
 		var tax = item_prc * 0.12;
 		tax = tax.toFixed(2);
-		txt = '<td colspan="4" align="right">Tax</td>'+
-		      '<td colspan="4" id="data_items_tax"><span id="data_items_tax_value">$'+tax+'</span></td>';
+		txt = '<td colspan="1"></td><td align="right">5% Gst <span id="data_items_gst_value"> $'+gst+'</span></td>';     
+		txt += '<td colspan="" align="right">7% Pst <span id="data_items_pst_value">$'+pst+'</span></td>';
+		txt += '<td colspan="" align="right">Tax</td>'+
+		      '<td colspan="3" id="data_items_tax"><span id="data_items_tax_value">$'+tax+'</span></td>';
 		row.innerHTML=txt;
 		
 		// tax
@@ -319,9 +639,10 @@ function addItem(item_id, item_name, item_prc, item_sku, new_type, new_category,
 		row = tbl.insertRow(index);
 		row.setAttribute("id", "item_total");
 		var total = parseFloat(item_prc) + parseFloat(tax);
+		$('#total_purchase_amount').val(total);
 		total = total.toFixed(2);
 		txt = '<td colspan="4" align="right" style="font-weight:bold;">Total</td>'+
-		      '<td colspan="4" id="data_items_total" style="font-weight:bold;"><span id="data_items_total_value">$'+total+'</span></td>';
+		      '<td colspan="4" id="data_items_total" style="font-weight:bold;"><span name="total_purchase_amount" id="data_items_total_value">$'+total+'</span></td>';
 		row.innerHTML=txt;
 	}
 	else { // not the first item being added, add all rows to calculate subtotal/tax/total
@@ -364,10 +685,58 @@ function calculateTotalRows() {
 	grand_tax = grand_tax.toFixed(2);
 	$('#data_items_tax_value').html('$'+grand_tax);
 	
+	//GSt
+	var gst_tax = grand_subtotal * 0.05;
+	gst_tax = gst_tax.toFixed(2);
+	$('#data_items_gst_value').html('$'+gst_tax);
+ 
+	//PST
+	var pst_tax = grand_subtotal * 0.07;
+	pst_tax = pst_tax.toFixed(2);
+	$('#data_items_pst_value').html('$'+pst_tax);
+ 
 	// total
 	var grant_total = parseFloat(grand_subtotal) + parseFloat(grand_tax);
 	grant_total = grant_total.toFixed(2);
 	$('#data_items_total_value').html('$'+grant_total);
+	$('#total_purchase_amount').val(grant_total);
+}
+// Loki : Re-calculate the total and tax when change the refund quantity.
+
+function calculateTotalRefundRows() {
+	// subtotal
+	row_index = $("#totalRefundRows").val();
+	var grand_subtotal = 0;
+	var totalRefundAmount = 0;
+	for (var i=1; i<=row_index; i++) {
+			var refund_quantity = $('#refund_item_quantity_'+i).val();
+			var price = $('#refund_item_prize_'+i).val();
+			totalRefundAmount = parseFloat(totalRefundAmount)+parseFloat(refund_quantity * price);
+		if ($('#data_refund_items_subtotal_'+i).length > 0){
+			grand_subtotal = parseFloat(grand_subtotal) + parseFloat($('#data_refund_items_subtotal_'+i).val());
+		}
+	}
+	$('#total_refund_amount').val(totalRefundAmount);			
+	grand_subtotal = parseFloat(grand_subtotal);
+	grand_subtotal = grand_subtotal.toFixed(2);
+	$('#refund_item_subtotal').html('$'+grand_subtotal);
+	
+	// tax
+	var grand_tax = grand_subtotal * 0.12;
+	grand_tax = grand_tax.toFixed(2);
+	$('#refund_item_tax').html('$'+grand_tax);
+	//GSt
+	var gst_tax = grand_subtotal * 0.05;
+	gst_tax = gst_tax.toFixed(2);
+	$('#refund_item_gst').html('$'+gst_tax);
+	//PST
+	var pst_tax = grand_subtotal * 0.07;
+	pst_tax = pst_tax.toFixed(2);
+	$('#refund_item_pst').html('$'+pst_tax);
+	// total
+	var grant_total = parseFloat(grand_subtotal) + parseFloat(grand_tax);
+	grant_total = grant_total.toFixed(2);
+	$('#refund_item_total').html('$'+grant_total);
 }
 function ShowSelectSupply(){
 	// var supply_id = window.showModalDialog("<?=BASE_URL?>/suppliers/index?mode=id",'', 
@@ -399,7 +768,7 @@ function ValidateFields()
 	if (supplier=='' || supplier==0){submitForm = false; errorMsg += "Please select a supplier.\n";}
 	
 	// invoice #
-	<?php if ($doc_type == 1 || $doc_type == 5){ // purchasing or refunding
+	<?php if ($doc_type == 1 || $doc_type == 5 || $doc_type == 7){ // purchasing or refunding
 	?>
 	var invoice_number = $("#invoice_number").val();
 	if (invoice_number==''){
@@ -494,13 +863,67 @@ function calculateItem(index,field) {
 	
 	calculateTotalRows();
 }
+// Loki : Re-calculate the subtotal when change the refund quantity.
+function calculateRefundItem (index,field){
+	// if (field == 'quantity') 
+	// {
+		//last_price_or_subtotal = 'price';
+		if(index !='')
+		{
+			var price = $('#refund_item_prize_'+index).val();
+			var existing_quantity = $('#existing_item_quantity_'+index).val();
+			var refund_quantity = parseInt($('#refund_item_quantity_'+index).val());
+			var refunded_quantity = $('#refunded_item_quantity_'+index).val();
+			if (refunded_quantity == null || refunded_quantity == '') {
+				refunded_quantity = 0;
+			} else {
+				refunded_quantity = parseInt(refunded_quantity);
+			}
+			var total_refund_quantity = (refund_quantity) + (refunded_quantity);
+			if(parseInt(total_refund_quantity) > parseInt(existing_quantity)){
+				alert("Cannot move more items than currently owned.");
+			} else {
+
+				var subtotal = price*(existing_quantity-total_refund_quantity);
+				if (isNaN(subtotal)) {
+					subtotal = 0;
+				}
+				else {
+					subtotal = subtotal.toFixed(2);
+				}
+				$('#data_refund_items_subtotal_'+index).val(subtotal);
+				
+			}
+			calculateTotalRefundRows();
+		}
+	//}
+}
+
+$(function () {
+	    $(".invoice-img-enlarge").dialog({
+	        modal: true,
+	        autoOpen: false,
+	        title: "Photo",
+	        autoOpen: false,
+	        width: 1024,
+	        height: 786,
+	    });
+	    $(".invoice-openImg").live("click",function () {
+	    	var imgPath = $(this).attr('src');
+	    	$('.invoice-img-enlarge img').attr('src', imgPath);
+	        $('.invoice-img-enlarge').dialog('open');
+	    });
+    });	
 </script>
 <div id="confirm_overlay" style="display:none; background-color:white; position:absolute; width:100%; height:100%; z-index:999;"></div>
-<form name="editDocForm" action="<?=BASE_URL;?>/inventories/saveDoc"  method="post" id="editForm">
-	<input type="hidden" name="data[doc_id]" value="<?=$doc_id?>" />
-	<input type="hidden" name="data[doc_type]" value="<?=$doc_type?>" />
+<form name="editDocForm" action="<?=BASE_URL;?>/inventories/saveDoc"  method="post" id="editForm" enctype="multipart/form-data">
+	<input type="hidden" id="invoice_id" name="data[doc_id]" value="<?=$doc_id?>" />
+	<input type="hidden" id="doc_type_id" name="data[doc_type]" value="<?=$doc_type?>" />
 	<input type="hidden" name="rurl" value="<?=$_REQUEST['rurl']?>"/>
-	
+	<input type="hidden" id="total_refund_amount" name="totalRefundAmount" value="0" />
+	<input type="hidden" id="total_purchase_amount" name="totalPurchaseAmount" value="0" />
+	<input type="hidden" id="total_remaining_amount" name="totalRemainingAmount" value="<?=$invoiceDetails['remaining_amount']?>" />
+
 	<div class="frame-wrap" style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
 		<div class="frame-header-left"></div>
 		<div class="frame-header-title">Inventory Transaction</div>
@@ -517,27 +940,24 @@ function calculateItem(index,field) {
 						echo $doctype;
 					}
 					?></b></td>
+					<?php if($doc_type !=1) {?>
 					<td align="right">
-						<?php if (($doc_type==5)) { ?>
-							Status:
-						<?php } ?>
-						<?php if (!$doc_type) { ?>
-							Status:
-						<?php } ?>
+						Status:
 					</td>
 					<td>
-						<?php if (($doc_type==5)) { ?>
-							<select name="data[status_id]">
-								<option value="1">Pending</option>
-								<option value="2">Not Payable</option>
-								<option value="3">Warrany</option>
-								<option value="4">Credited</option>
-							</select>
-						<?php } ?>
-						<?php if (!$doc_type) { ?>
-							<?php echo $status; ?>
-						<?php } ?>
+						<select id="invoice_status" name="data[status_id]">
+							<option <?php echo $status == '1' ? 'selected':''?> value="1">Pending</option>
+							<option <?php echo $status == '2' ? 'selected':''?> value="2">Not Payable</option>
+							<option <?php echo $status == '3' ? 'selected':''?> value="3">Warrany</option>
+							<option <?php echo $status == '4' ? 'selected':''?> value="4">Credited</option>
+							<option <?php echo $status == '5' ? 'selected':''?> value="5">Paid</option>
+							<option <?php echo $status == '6' ? 'selected':''?> value="6">Not Paid</option>
+							<option <?php echo $status == '9' ? 'selected':''?> value="9">Pay</option>
+							<option <?php echo $status =='7' ? 'selected':''?> value="7">Refund</option>
+							<option <?php echo $status == '8' ? 'selected':''?> value="8">Refund and pay</option>
+						</select>
 					</td>
+					<?php } ?>
 				</tr>
 				<tr>
 					<td align="right" width=15%>Date:</td>
@@ -555,20 +975,73 @@ function calculateItem(index,field) {
 						<?php } ?>
 					</td>
 				</tr>
+				<?php  if($doc_type !=1 && $doc_type !=7 ){?>
+				<tr>
+					<td align="right">Supplier Name:</td>
+					<td><?php echo $supplierName ?></td>
+				</tr>
+				<?php } ?>
 				<tr>
 					<td align="right" width=15%>
-						<?php if (($doc_type!=1)) { ?>
+						<?php if (($doc_type!=1 && $doc_type!=7)) { ?>
 							Invoice:
 						<?php } ?>
 					</td>
 					<td>
-						<?php if (($doc_type!=1)) { ?>
+						<?php if (($doc_type!=1 && $doc_type!=7)) { ?>
 							<input type="text" name="invoice" value="<?php echo $invoice_number; ?>"/>
 						<?php } ?>
 					</td>
 				</tr>
+			
+				<?php if(!empty($invoiceImageArr) && $invoiceDetails['doc_type'] != 7 ){ ?>
+				<tr>
+					<td align="right">Invoice Images:</td>
+					<td>
+						<?php foreach ($invoiceImageArr as $key => $value) { ?>
+							 <img style="height: 36px;width: 26px; padding: 5px" class="invoice-openImg" src="<?php echo ROOT_URL.'/app/webroot/purchase-invoice-images/'.$value?>" alt="your image" /> 
+						<?php }?>
+					</td>
+				</tr>
+				<?php } ?>
 				
-				
+				<?php if($invoiceDetails['doc_type'] == 7) {?>
+					<tr>
+						<td align="right">Refund Date:</td>
+						<td><?php echo date("d M Y", strtotime($invoiceDetails['pay_date'])) ?></td>
+						<td align="right">Payment Method:</td>
+						<td><?php echo  $invoiceDetails['payment_type']; ?></td>
+					</tr>
+					<tr>
+						<td align="right">Reference No: </td>
+						<td><?php echo $invoiceDetails['reference_no'] ?></td>
+						<td align="right">Refund Invoice #: </td>
+						<td><?php echo $invoiceDetails['refund_invoice_id'] ?></td>
+						
+					</tr>
+					<tr>
+						<td align="right">Returned By:</td>
+						<td><?php echo $invoiceDetails['return_by'] ?></td>
+						<td align="right">Supplier Rep:</td>
+						<td><?php echo $invoiceDetails['supplier_rep'] ?></td>
+					</tr>
+					<tr>
+						<td align="right">
+							Refund Time: 
+						</td>
+						<td><?php echo $invoiceDetails['refund_time'] ?></td>
+					</tr>
+				<?php } ?>
+			<?php if(!empty($invoiceImageArr) && $invoiceDetails['doc_type'] == 7 ){ ?>
+				<tr>
+					<td align="right">Invoice Images:</td>
+					<td>
+						<?php foreach ($invoiceImageArr as $key => $value) { ?>
+							 <img style="height: 36px;width: 26px; padding: 5px" class="invoice-openImg" src="<?php echo ROOT_URL.'/app/webroot/purchase-invoice-images/'.$value?>" alt="your image" /> 
+						<?php }?>
+					</td>
+				</tr>
+				<?php } ?>
 				<?php if ($is_view_refund) { ?>
 				
 				<tr>
@@ -590,7 +1063,7 @@ function calculateItem(index,field) {
 				
 				<?php } ?>
 				
-				<?php if (($doc_type==1)) { ?>
+				<?php if (($doc_type==1 || $doc_type==7)) { ?>
 				<tr>
 					<td align="right">Supplier:</td>
 					<td>
@@ -604,9 +1077,36 @@ function calculateItem(index,field) {
                     	
 		                <?=$suppliers?>
                         <?php if(!$doc_id) { ?>
-						<button id='select_supplier' onclick="ShowSelectSupply();return false;">Choose</button>
+                        <input type="text" name="search_supplier" id="search_supplier">
+                        <i class="fa fa-users"  id='select_supplier' onclick="ShowSelectSupply();return false;"></i>
+						<!-- <button id='select_supplier' onclick="ShowSelectSupply();return false;">Choose</button> -->
+						<table id='ajax_supplier_results' class="supplier_result">
+							<thead>
+								<tr>
+									<th>id</th>
+									<th>name</th>
+									<th>phone</th>
+									<th>city</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr id='ajax_supplier_result_template'>
+									<td class='id'></td>
+									<td class='name'></td>
+									<td class='phone'></td>
+									<td class='city'></td>
+								</tr>			
+							</tbody>
+						</table>
                         <?php } ?>
                         <script>$("#supplier_text").html($("#supplier :selected").text());</script>
+					</td>
+					<td>
+						<img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
+							<div class="cls-acecare-td-adjust">
+								<label for="sortpicture1" >Upload</label>
+								<input type="file" name="sortpic1" id="sortpicture1" class="disply_preview" data-ct="photo1">
+							</div>
 					</td>
 				</tr>
 				<tr>
@@ -653,6 +1153,50 @@ function calculateItem(index,field) {
 					</td>
 				</tr>
 				<?php } ?>
+				
+				<?php if($doc_type == 7) {?>
+					<tr>
+						<td align="right">Returned Invoice #:</td>
+						<td><input type="text" name="data[returned_invoice]"></td>
+						<td align="right">Payment Method:</td>
+						<td><select  name="data[payment_method]">
+								<option>Choose here</option>
+								<?php foreach($methods as $method) {?>
+								  <option value="<?=$method['id']?>" name="multipleMethodId[]"><?php echo $method['name']?></option>
+								<?}?>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td align="right">Refund Date:</td>
+						<td>
+							<input type="text" name="data[refund_date]" id="new_refund_date" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$newRefundDate ;?>">
+						</td>
+						<td align="right">Time:</td>	
+						<td>
+							<input type="text" name="data[refund_time]" id="new_ref_time" value="">
+						</td>
+						<td align="right">Returned By:</td>	
+						<td>
+							<select name="data[Returned_by]">
+								<option>Choose here</option>
+						       	<?php foreach($booking_sources as $k => $v) {?>
+						          <option value="<?=$k?>" name="multipleMethodId[]"><?php echo $v?></option>
+						      	<?}?>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td align="right">Supplier Rep:</td>	
+						<td>
+							<input type="text" name="data[supplier_rep]" value="">
+						</td>
+						<td align="right">Notes:</td>	
+						<td>
+							<input type="text" name="data[ref_no]" value="">
+						</td>
+					</tr>
+				<?php } ?>
 				<tr>
 					<td colspan=4>
                         <div id="item_selector" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
@@ -661,6 +1205,10 @@ function calculateItem(index,field) {
 							<th align=left width=300px>Description</th>
 							<th width=80px>SKU</th>
 							<th width=80px>Quantity</th>
+							<?php if($doc_type !=1){?>
+								<th>Refunded Quantity</th>
+								<th width=80px>Refund Quantity</th>
+								<?php } ?>
 							<th width=80px>Price Per Item</th>
 							<th>Sub Total</th>
 							<th><?php if (!$is_view_refund) { ?>Location<?php } ?> </th>
@@ -700,7 +1248,7 @@ function calculateItem(index,field) {
 						
 						foreach ($items as $oi)
 						
-						{
+					{
 							$cur++;
 							echo '<tr id="item_'.$cur.'">';
 							echo '<td>';
@@ -717,12 +1265,16 @@ function calculateItem(index,field) {
 							}
 							echo '<td><input style="width:80px" type="text" name="data[items][' .$cur .'][part_number]" value="'.$oi['sku'].'" '. $disabled .'/></td>';
 							if (isset($can_save_purchase)){ $disabled = 'disabled="true"'; }
-							echo '<td><input style="width:80px;" type="text" class="existing_quantity '.$cur.'" name="data[items][' .$cur .'][quantity]" value="'.$oi['qty'].'" '. $disabled .'/></td>';
+							echo '<td><input style="width:80px;" type="text" id="existing_item_quantity_'.$cur.'" class="existing_quantity '.$cur.'" name="data[items][' .$cur .'][quantity]" value="'.$oi['qty'].'" '. $disabled .'/></td>';
+							if (isset($can_save_purchase)){ $disabled = 'disabled="true"'; }
+							echo '<td><input style="width:80px;" type="text" id="refunded_item_quantity_'.$cur.'" item-id="'.$oi['item_id'].'" class="refund_quantity '.$cur.'" name="data[items][' .$cur .'][refunded_quantity]" value="'.$quantityData[$oi['item_id']].'" '. $disabled .'/></td>';
 							if (isset($can_save_purchase)){ $disabled = ''; }
-							echo '<td><input style="width:80px" type="text" name="data[items][' .$cur .'][price]" value="'.$oi['regular_price'].'" '. $disabled .'/></td>';
+							echo '<td><input style="width:80px;" type="text" id="refund_item_quantity_'.$cur.'" item-id="'.$oi['item_id'].'" onkeyup="calculateRefundItem('.$cur.',\'quantity\');" class="refund_quantity '.$cur.'" name="data[items][' .$cur .'][refund_quantity]" value="'.$oi['refund_quantity'].'" '. $disabled .'/></td>';
+							if (isset($can_save_purchase)){ $disabled = 'disabled="true"'; }
+							echo '<td><input style="width:80px" id="refund_item_prize_'.$cur.'" type="text" name="data[items][' .$cur .'][price]" value="'.$oi['regular_price'].'" '. $disabled .'/></td>';
 							
 							if (isset($can_save_purchase)){ $disabled = 'disabled="true"'; }
-							echo '<td><input style="width:80px" type="text" value="'.$oi['qty'] * $oi['regular_price'].'" '. $disabled .'/></td>';
+							echo '<td><input id="data_refund_items_subtotal_'.$cur.'" style="width:80px" type="text" value="'.($oi['qty'] - $quantityData[$oi['item_id']]) * $oi['regular_price'].'" '. $disabled .'/></td>';
 							if (isset($can_save_purchase)){ $disabled = ''; }
 						?>
                         <td>
@@ -818,30 +1370,34 @@ function calculateItem(index,field) {
 							}
 						}
 						?>
-						
+						<input type="hidden" name="totalRefundRows" id="totalRefundRows" value=<?php echo $cur ?>>
 						<?php if ($_GET['invoice_id']){ ?>
 							<?php
 								$subtotal = 0;
-								foreach($items as $item){									
-									$subtotal+=$item['regular_price'];
+								foreach($items as $item){		
+									$subtotal+=($item['regular_price'] * ($item['qty']- $quantityData[$item['item_id']]));
 								}
-								
 								$taxRate = $subtotal/100*12;
+								$gst = $subtotal/100*5;
+								$pst = $subtotal/100*7;
 								$total = $subtotal + ($subtotal/100*12);
 							?>
 							<tr>
 								<td colspan="5" style="text-align:right">
 									Subtotal:
 								</td>
-								<td colspan="2" style="text-align:left">
+								<td id="refund_item_subtotal" colspan="2" style="text-align:left">
 									$<?php echo number_format($subtotal, 2); ?>
 								</td>
 							</tr>
 							<tr>
-								<td colspan="5" style="text-align:right">
+								<td></td>
+								<td id="refund_item_gst">5% Gst $<?php echo number_format($gst, 2); ?></td>
+								<td id="refund_item_pst">7% Pst $<?php echo number_format($pst, 2); ?></td>
+								<td colspan="2" style="text-align:right">
 									Tax:
 								</td>
-								<td colspan="2" style="text-align:left">
+								<td id="refund_item_tax" colspan="2" style="text-align:left">
 									$<?php echo number_format($taxRate, 2); ?>
 								</td>
 							</tr>
@@ -849,7 +1405,7 @@ function calculateItem(index,field) {
 								<td colspan="5" style="text-align:right">
 									Total:
 								</td>
-								<td colspan="2" style="text-align:left">
+								<td name="data['refund_total']" id="refund_item_total" colspan="2" style="text-align:left">
 									$<?php echo number_format($total, 2); ?>
 								</td>
 							</tr>
@@ -881,4 +1437,176 @@ function calculateItem(index,field) {
 			</table>
 		</div>
 	</div>
+<div id="pay_box" style="display: none;">
+	<table class="pay_table">
+		<tr>
+			<td>Date:
+				 <input type="text" name="paidDate" id="paid_date" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$paidDate?>">
+				
+				<!-- <input type="text" name="paidDate" id="paid_date" class="" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="" onkeydown="return false;" value="<?=$paidDate?>"></td> -->
+			<td>Amount Paid:<input type="text" name="amountPaid" id="amount_paid" value="0"></td>
+		</tr>
+		<tr>
+			<td>Agent:<select id="agent_id">
+				<option value="0">Choose here</option>
+			       <?php foreach($booking_sources as $k => $v) {?>
+			          <option value="<?=$k?>" name="multipleMethodId[]"><?php echo $v?></option>
+			      <?}?>
+			</select></td>
+			<td>Notes:<textarea type="text" name="reference" id="reference_no"></textarea></td>
+		</tr>
+		<tr>
+			<td>
+				Payment Method:<select id="method-id" name="allCatId[]">
+				<option value="0">Choose here</option>
+				<?php foreach($methods as $method) {?>
+				  <option value="<?=$method['id']?>" name="multipleMethodId[]"><?php echo $method['name']?></option>
+				<?}?>
+				</select>
+			</td>
+			<td>
+				<img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
+				<div class="cls-acecare-td-adjust" style="width: 70px; padding: 3px;">
+					<label for="sortpicture1" style="background: aliceblue;" >Upload</label>
+					<input type="file" name="sortpic1" id="sortpicture1" class="disply_preview" data-ct="photo1">
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td><input type="button" value="Save" id="save_invoice_payment" name="" style="padding: 6px;"></td>
+		</tr>
+	</table>
+</div>
+<div id="pay_refund_box" style="display: none;">
+	<table class="pay_table">
+		<tr>
+			<td>Date:
+				 <input type="text" name="paidDate" id="ref_paid_date" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$paidDate?>">
+				
+				<!-- <input type="text" name="paidDate" id="paid_date" class="" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="" onkeydown="return false;" value="<?=$paidDate?>"></td> -->
+			<td>Returned Time:<input type="text" name="Refund Time" id="refund_time"></td>
+		</tr>
+		<tr>
+			<td>Supplier Rep:<input type="text" name="SupplierRep" id="supplier_rep"></td>
+			<td>
+				Received Method:<select id="ref_method_id" name="allCatId[]">
+				<option value="0">Choose here</option>
+				<?php foreach($methods as $method) {?>
+				  <option value="<?=$method['id']?>" name="multipleMethodId[]"><?php echo $method['name']?></option>
+				<?}?>
+				</select>
+			</td>
+			<td>Refund Invoice #:<input type="text" name="reference" id="refund_invoice_no"></td>
+			
+		</tr>
+		<tr>
+			<td>returned By:<select id="return_by">
+				<option value="0" >Choose here</option>
+			       <?php foreach($booking_sources as $k => $v) {?>
+			          <option value="<?=$k?>" name="multipleMethodId[]"><?php echo $v?></option>
+			      <?}?>
+			</select></td>
+			<!-- <td>Note:<input type="text" name="reference" id="ref_reference_no"></td> -->
+			<td>Note:<textarea  name="reference" id="ref_reference_no"></textarea></td>
+			<td>
+				<img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
+				<div class="cls-acecare-td-adjust" style="width: 70px; padding: 3px;">
+					<label for="sortpicture2" style="background: aliceblue;" >Upload</label>
+					<input type="file" name="sortpic2" id="sortpicture2" class="disply_preview" data-ct="photo1">
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td><input type="button" value="Save" id="save_invoice_refund_payment" name="" style="padding: 6px;"></td>
+		</tr>
+	</table>
+</div>
+<div id="pay_refund_and_pay_box" style="display: none;">
+	<table class="pay_table">
+		<tr>
+			<td>Date:
+				 <input type="text" name="paidDate" id="ref_pay_paid_date" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$paidDate?>">
+			</td>
+			<td>Returned Time:<input type="text" name="Refund Time" id="refund_pay_time"></td>
+				<!-- <input type="text" name="paidDate" id="paid_date" class="" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="" onkeydown="return false;" value="<?=$paidDate?>"></td> -->
+			
+			<td>Payable Amount:<input type="text" name="refPayAmount" id="ref_pay_amount" value="0"></td>
+		</tr>
+		<tr>
+			<td>Refund Invoice #:<input type="text" name="reference" id="ref_pay_invoice_no"></td>
+			<td>Returned By:<select id="ref_pay_return_by">
+				<option value="0">Choose here</option>
+			       <?php foreach($booking_sources as $k => $v) {?>
+			          <option value="<?=$k?>" name="multipleMethodId[]"><?php echo $v?></option>
+			      <?}?>
+			</select></td>
+			<td>Supplier Rep:<input type="text" name="SupplierRep" id="ref_pay_supplier_rep"></td>
+		</tr>
+		<tr>
+			<td>
+				Payment Method:<select id="ref_pay_method_id" name="allCatId[]">
+				<option value="0">Choose here</option>
+				<?php foreach($methods as $method) {?>
+				  <option value="<?=$method['id']?>" name="multipleMethodId[]"><?php echo $method['name']?></option>
+				<?}?>
+				</select>
+			</td>
+			
+			<td>Agent:<select id="ref_pay_agent">
+				<option value="0">Choose here</option>
+			       <?php foreach($booking_sources as $k => $v) {?>
+			          <option value="<?=$k?>" name="multipleMethodId[]"><?php echo $v?></option>
+			      <?}?>
+			</select></td>
+			
+			<!-- <td>Note:<input type="text" name="reference" id="ref_pay_reference_no"></td> -->
+			<td>Note:<textarea name="reference" id="ref_pay_reference_no"></textarea></td>
+		</tr>
+		<tr>
+			<td>
+				<img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
+				<div class="cls-acecare-td-adjust" style="width: 70px; padding: 3px;">
+					<label for="sortpicture3" style="background: aliceblue;" >Upload</label>
+					<input type="file" name="sortpic3" id="sortpicture3" class="disply_preview" data-ct="photo1">
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td><input type="button" value="Save" id="save_invoice_refund_pay_payment" name="" style="padding: 6px;"></td>
+		</tr>
+		
+	</table>
+</div>
+
+<!-- Loki: For credit -->
+<div id="credit_box" style="display: none;">
+	<table class="pay_table">
+		<tr>
+			<td>Credited Date:
+				 <input type="text" name="creditDate" id="credit_date" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$paidDate?>">
+				
+				<!-- <input type="text" name="paidDate" id="paid_date" class="" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="" onkeydown="return false;" value="<?=$paidDate?>"></td> -->
+			<td>Credited Amount:<input type="text" name="amountCredit" id="amount_credit" value="0"></td>
+		</tr>
+		<tr>
+			<td>How was credited:<input type="text" name="credit_method" id="credit_method"></td>
+			<td>Note:<textarea name="reference" id="credit_note"></textarea></td>
+		</tr>
+		<tr>
+			<td>
+				<img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
+				<div class="cls-acecare-td-adjust" style="width: 70px; padding: 3px;">
+					<label for="sortpicture4" style="background: aliceblue;" >Upload</label>
+					<input type="file" name="sortpic4" id="sortpicture4" class="disply_preview" data-ct="photo1">
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td><input type="button" value="Save" id="save_credit_payment" name="" style="padding: 6px;"></td>
+		</tr>
+	</table>
+</div>
+<div class="invoice-img-enlarge" title="Photo" style="display: none">
+	<img src="<?=$imgPath?>" style="width:100%;">
+</div>
 </form>

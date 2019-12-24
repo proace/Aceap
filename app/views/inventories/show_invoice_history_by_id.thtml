@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+    <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+    <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+<style type="text/css">
+  .supplier_result  table {
+      border: 1px solid black;
+      border-collapse: collapse;
+
+}
+.supplier_result th {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid black;
+    border-collapse: collapse;
+    background: #FFFF99;
+}  
+.supplier_result td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid black;
+    border-collapse: collapse;
+    background: #FFFF99;
+    font-size: 11px
+} 
+.frame-body{
+    background: #EBE9ED;
+    padding: 0;
+    width: 100%;
+}
+.td_even{
+
+    padding-right: 10px;
+    font-weight: bold;
+}
+.history_data tr{
+    font-size: 11px
+}
+.history_data td{
+    width: 30%;
+    height: 35px;
+    font-size: 11px
+}
+.history_data{
+    width: 50%;
+}
+
+ </style>
+ <script type="text/javascript">
+ $(document).ready(function(){
+        $(".invoice-img-enlarge").dialog({
+            modal: true,
+            title: "Photo",
+            autoOpen: false,
+            width: 1024,
+            height: 786,
+        });
+        $(".invoice-openImg").live("click",function () {
+            var imgPath = $(this).attr('src');
+            $('.invoice-img-enlarge img').attr('src', imgPath);
+            $('.invoice-img-enlarge').dialog('open');
+            return false;
+        });  
+});
+ </script>
+</head>
+
+<body>
+    <div class="frame-body" style="clear: both;">
+    <table class="history_data">
+            <tr >
+                <td class="td_even">Original Invoice Id :</td> 
+                <td><?php echo $response[0]['invoice_id']; ?></td>
+                <td class="td_even">Status :</td>
+                <td><?php echo $response[0]['status_name']; ?></td>
+            </tr> 
+            <!-- for credited   -->
+            <?php if($response[0]['status_id'] == 4) { ?>
+                 <tr>
+                    <td class="td_even">Creadited Date : </td>
+                    <td><?php echo $response[0]['pay_date']; ?></td>
+                    <td class="td_even">Credited Amount : </td>
+                    <td><?php echo '$'.$response[0]['paid_amount']; ?></td>
+                 </tr>
+                 <tr>
+                    <td class="td_even">Credited Method : </td>
+                    <td><?php echo $response[0]['credit_method']; ?> </td>
+                    <td class="td_even">Notes : </td>
+                    <td><?php echo $response[0]['notes']; ?> </td>
+                 </tr>
+            <?php if(!empty($response[0]['invoice_image'])){ ?>
+                <tr>
+                    <td class="td_even">Invoice Image:</td>
+                    <td>
+                         <img style="height: 36px;width: 26px; padding: 5px" class="invoice-openImg" src="<?php echo ROOT_URL.'/app/webroot/purchase-invoice-images/'.$response[0]['invoice_image']?>" alt="your image" /> 
+                    </td>
+                </tr>
+                <?php } ?>
+            <?php } else if($response[0]['status_id'] == 5){ ?>
+                 <!-- for paid   -->
+                 <tr>
+                    <td class="td_even">Paid Date : </td>
+                    <td><?php echo $response[0]['pay_date']; ?></td>
+                    <td class="td_even">Paid Amount : </td>
+                    <td><?php echo '$'.$response[0]['paid_amount']; ?></td>
+                 </tr>
+                 <tr>
+                     <td class="td_even">Paid By : </td>
+                    <td><?php echo $response[0]['paid_user']; ?> </td>
+                    <td class="td_even">Payment Method : </td>
+                    <td><?php echo $response[0]['payment_method_name']; ?> </td>
+                 </tr>
+                 <tr>
+                     <td class="td_even">Notes: </td>
+                    <td><?php echo $response[0]['notes']; ?> </td>
+                 </tr>
+                 <?php if(!empty($response[0]['invoice_image'])){ ?>
+                <tr>
+                    <td class="td_even">Invoice Image:</td>
+                    <td>
+                         <img style="height: 36px;width: 26px; padding: 5px" class="invoice-openImg" src="<?php echo ROOT_URL.'/app/webroot/purchase-invoice-images/'.$response[0]['invoice_image']?>" alt="your image" /> 
+                    </td>
+                </tr>
+                <?php } ?>
+            <?php } else if($response[0]['status_id'] == 7 || $response[0]['status_id'] == 8 ){?>
+                <!-- for refund   -->
+                 <tr>
+                    <td class="td_even">Refund Invoice# : </td>
+                    <td><?php echo $response[0]['refund_invoice_id']; ?></td>
+                    <td class="td_even">Refund/Pay Date: </td>
+                    <td><?php echo $response[0]['pay_date']; ?></td>
+                 </tr>
+                  <?php if ($response[0]['status_id'] == 8){?>
+                        <tr>
+                            <td class="td_even">Paid By: </td>
+                            <td><?php echo $response[0]['paid_user']; ?></td>
+                            <td class="td_even">Paid Amount: </td>
+                            <td><?php echo $response[0]['paid_amount']; ?></td>
+                        </tr>
+                    <?php } ?> 
+                 <tr>
+                    <td class="td_even">Refund Time : </td>
+                    <td><?php echo $response[0]['refund_time']; ?></td>
+                 </tr>
+                 <tr>
+                     <td class="td_even">Refund By: </td>
+                    <td><?php echo $response[0]['return_user']; ?> </td>
+                    <td class="td_even">Payment Method : </td>
+                    <td><?php echo $response[0]['payment_method_name']; ?> </td>
+                 </tr>
+                 <tr>
+                    <td class="td_even">Supplier Rep.: </td>
+                    <td><?php echo $response[0]['supplier_rep']; ?> </td>
+                    <td class="td_even">Notes: </td>
+                    <td><?php echo $response[0]['notes']; ?> </td>
+                 </tr>
+                <?php if(!empty($response[0]['invoice_image'])){ ?>
+                <tr>
+                    <td class="td_even">Invoice Image:</td>
+                    <td>
+                         <img style="height: 36px;width: 26px; padding: 5px" class="invoice-openImg" src="<?php echo ROOT_URL.'/app/webroot/purchase-invoice-images/'.$response[0]['invoice_image']?>" alt="your image" /> 
+                    </td>
+                </tr>
+                <?php } ?>
+            <table class="supplier_result" style="width: 50%; text-align: center;   border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th>Item Name:</th>
+                        <th>Qantity</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $subTotal = 0; ?>
+                    <?php foreach ($response as $key => $value) {
+                        $subTotal = $subTotal + ($value['quantity'] * $value['purchase_price'])
+                        ?>
+                        <tr>
+                        <td><?php echo $value['item_name']; ?></td>
+                        <td><?php echo $value['quantity']; ?></td>
+                        <td><?php echo $value['purchase_price']; ?></td>
+                    </tr>     
+                    <?php } ?>
+                    <tr>
+                        
+                        <td colspan="2">Sub Total:</td>
+                        <td><?php echo '$'.$subTotal ?></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">Tax</td>
+                        <td><?php echo '$'.( $tax = $subTotal * .12 )?></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">Total</td>
+                        <td><?php echo '$'.($subTotal+ $tax)?></td>
+                    </tr>
+                </tbody>
+        </table>
+    <?php } ?>
+</div>
+<div class="invoice-img-enlarge" title="Photo" style="display: none">
+    <img src="<?=$imgPath?>" style="width:100%;">
+</div>
+</body>
+</html>
+
+
