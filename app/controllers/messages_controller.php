@@ -235,11 +235,12 @@ class MessagesController extends AppController
 		$this->data['Message']['to_date']= date("Y-m-d", strtotime($this->data['Message']['to_date']));
 		$db =& ConnectionManager::getDataSource('default');
 		$toUserList = implode(', ', $this->data['Message']['to_user']); 
+		$txt = addslashes($this->data['Message']['txt']);
 		// Send reply to user
 		if($is_reply == 1){
 			
 			$this->data['Message']['to_user'] = $_POST['to_user'];
-			$db->_execute("INSERT INTO `ace_rp_messages` (`to_date`,`to_user`,`txt`,`from_date`,`from_user`) VALUES ('".$this->data['Message']['to_date']."',".$this->data['Message']['to_user'].", '".$this->data['Message']['txt']."','".$this->data['Message']['from_date']."',".$this->data['Message']['from_user'].")");
+			$db->_execute("INSERT INTO `ace_rp_messages` (`to_date`,`to_user`,`txt`,`from_date`,`from_user`) VALUES ('".$this->data['Message']['to_date']."',".$this->data['Message']['to_user'].", '".$txt."','".$this->data['Message']['from_date']."',".$this->data['Message']['from_user'].")");
 			echo "<script>
 				 window.opener.close();
 				window.close();
@@ -256,7 +257,7 @@ class MessagesController extends AppController
 				
 				foreach ($this->data['Message']['to_user'] as $key => $value) {						
 						$this->data['Message']['to_user'] = $value;
-						$result = $db->_execute("INSERT INTO `ace_rp_messages` (`to_date`,`to_user`,`txt`,`from_date`,`from_user`) VALUES ('".$this->data['Message']['to_date']."',".$value.", '".$this->data['Message']['txt']."','".$this->data['Message']['from_date']."',".$this->data['Message']['from_user'].")");
+						$result = $db->_execute("INSERT INTO `ace_rp_messages` (`to_date`,`to_user`,`txt`,`from_date`,`from_user`) VALUES ('".$this->data['Message']['to_date']."',".$value.", '".$txt."','".$this->data['Message']['from_date']."',".$this->data['Message']['from_user'].")");
 					}
 
 				if ($this->Message->id)
@@ -279,7 +280,7 @@ class MessagesController extends AppController
 
 				$this->Message->id = $this->data['Message']['id'];
 				foreach ($this->data['Message']['search_user'] as $key => $value) {
-						$db->_execute("INSERT INTO `ace_rp_messages` (`to_date`,`to_user`,`txt`,`from_date`,`from_user`) VALUES ('".$this->data['Message']['to_date']."',".$value.", '".$this->data['Message']['txt']."','".$this->data['Message']['from_date']."',".$this->data['Message']['from_user'].")");
+						$db->_execute("INSERT INTO `ace_rp_messages` (`to_date`,`to_user`,`txt`,`from_date`,`from_user`) VALUES ('".$this->data['Message']['to_date']."',".$value.", '".$txt."','".$this->data['Message']['from_date']."',".$this->data['Message']['from_user'].")");
 				}
 				if ($this->Message->id)
 					$cur_id = $this->Message->id;

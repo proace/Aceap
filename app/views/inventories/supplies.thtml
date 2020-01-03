@@ -118,6 +118,8 @@
 </form>
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
     <tr style="text-align: left;">
+        <th width="80">PO#</th>
+        <th width="80">Name</th>
         <th width="80">Type</th>
         <th width="100"><a href="javascript:setOrder('supplier_id');">Supplier</a></th>
         <th width="80"><a href="javascript:setOrder('name');">Invoice #</a></th>
@@ -152,7 +154,9 @@
 			$html_url = 'style="cursor:pointer;" onclick="document.location.href=\'' . BASE_URL .'/inventories/editDoc?invoice_id='.$obj['invoice_id'] .'&doc_id='. $obj['invoice_id'] .'&rurl=' .urlencode('supplies?'.$_SERVER['QUERY_STRING']) .'\'"';
 		?>
 		<tr id="r<?=$r?>" class="<?=$class?>">
-			<td class="<?=$status_cls?>"><?php echo $obj['invoice_type']; ?></td>
+			<td class="<?=$status_cls?>"  <?php echo $html_url; ?>><?php echo $obj['po_number']; ?></td>
+			<td class="<?=$status_cls?>"  <?php echo $html_url; ?>><?php echo $obj['location_name']; ?></td>
+			<td class="<?=$status_cls?>"  <?php echo $html_url; ?>><?php echo $obj['invoice_type']; ?></td>
 			<td class="<?=$status_cls?>" <?php echo $html_url; ?> <?php echo $obj['original_invoice_id'] ? 'align="right"' : ''; ?>>&nbsp;<?php echo $obj['original_invoice_id'] ? 'Refund' : $obj['supplier_name']; ?></td>
 			<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['invoice_number']; ?></td>
 			<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['date']; ?></td>

@@ -14,7 +14,6 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_constants.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_js_sample.js"></script>
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tinymce/tinymce.min.js"></script>
-
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
 <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
@@ -309,6 +308,9 @@ function hideReviewEmailBox() {
 	
 // 	$( "#sendSeparateEmail" ).dialog("open");
 // }
+function hideItemBox() {
+    $("#item_box").dialog("close");
+}
 function hideEmailBox() {
 	$( "#sendSeparateEmail" ).dialog("close");
 }
@@ -551,8 +553,8 @@ function CloseQuestions(){
   $('#OpenQuestionsText').show();
   $('#CloseQuestionsText').hide();
 }
-function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, part_number, show_purchase='', model_number, item_brand=''){
-	$("#item_selector0").html("").hide();
+function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, part_number, show_purchase='', model_number, item_brand='', sku='', quantity=0, purchase_invoice='', supplier_invoice='', supplier_name=''){
+    $("#item_selector0").html("").hide();
 	$("#item_selector1").html("").hide();
 	var index=1*document.getElementById("NumberOfItems").value;
 	if (new_type==0) tbl = document.getElementById("CurrentItemsTable");
@@ -562,6 +564,11 @@ function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, p
 		if (new_type==0) row.setAttribute("class", "booked");
 		else row.setAttribute("class", "extra");
 		row.setAttribute("id", "order_"+index);
+        if(quantity > 0){
+            quantity = quantity;
+        } else {
+            quantity = 1;
+        }
 		bodyContent = $.ajax({
 					url: "<?=BASE_URL?>/orders/newItemHTML",
 					type: "GET",
@@ -570,14 +577,18 @@ function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, p
 							item_id:item_id,
 							name:item_name,
 							price:item_prc,
-							quantity:1,
+							quantity:quantity,
 							category:new_category,
 							price_purchase:new_pp,
 							part_number:part_number,
 							item_class:new_type,
 							show_purchase:show_purchase, 
 							model_number:model_number,
-							brand:item_brand
+							brand:item_brand,
+                            invoice_image:purchase_invoice,
+                            supplier_name:supplier_name,
+                            supplier_invoice:supplier_invoice,
+                            sku:sku
 							}),
 					dataType: "html",
 					async:false}).responseText;
@@ -859,6 +870,8 @@ function ValidateFields(jobstatus, show_box=0)
                 if(purchasePrize == 0 || purchasePrize == '0'){
                     $(this).css("border", "1px solid red");
                     is_zero++;
+                } else {
+                    $(this).css("border", "1px solid black");
                 }
             });
             if(is_zero > 0){
@@ -958,7 +971,7 @@ function TotalCalculation()
 			var orgPrc = (prc * qty);
 			$(el).children('.amount').html('$'+amount);
 			//$(el).children('.price').find("span").text(orgPrc);
-			$(el).children('.purchase').find("span").text(purchase);
+			//$(el).children('.purchase').find("span").text(purchase);
 		}
     });
 <?php
@@ -984,7 +997,7 @@ if (($common->getLoggedUserRoleID() != "3")
 				subtotal += amount;
 				$(el).children('.amount').html('$'+amount);
 				//$(el).children('.price').find("span").text(orgPrc);
-				$(el).children('.purchase').find("span").text(purchase);
+				//$(el).children('.purchase').find("span").text(purchase);
 			}
     });
 <?php
@@ -1438,21 +1451,25 @@ function upload_photo(cur,i) {
   }
 }
 function ajax(event) {
-    var val = $(event).val();
+    var val = $(event).val().trim();
     var data_class = $(event).attr("data-class");
     // Return all items if:
     // 1) allItems is not passed as an argument.
     // 2) allItems is not false
     // Return only active items.
-     $.ajax({
-          url: "<?=BASE_URL;?>/inventories/ajaxItems",
-          type: "GET",
-          dataType: 'json',
-          data: {query:val,active:true},
-          success: function(data){
-            ajax_finished(data,data_class)
-          }
-        });
+     if(val != '' && val != null ){
+         $.ajax({
+              url: "<?=BASE_URL;?>/inventories/ajaxItems",
+              type: "GET",
+              dataType: 'json',
+              data: {query:val,active:true},
+              success: function(data){
+                ajax_finished(data,data_class)
+              }
+            });
+     } else {
+        $("#ajax_item_results_"+data_class).hide();
+     }
 }
 function add_unknown_item(classId)
 {
@@ -1467,6 +1484,7 @@ function add_unknown_item(classId)
                 var returnId = win.returnValueId;
                 var itemArr = returnId.split(',');
                 addItem(itemArr[0], itemArr[1], itemArr[5],classId,itemArr[4],itemArr[2], "", "1","","");
+                $("#add_item_"+classId).hide();
             }
         }, 500);
 }
@@ -1478,10 +1496,13 @@ function ajax_failed(why, data_class) {
     if (why=="no supplier") {
         result.children(".name_"+data_class).html("Please choose a supplier."); }
     if (why=="no results") {
-        result.children(".name_"+data_class).html("No items match your search. <a href='javascript:add_unknown_item("+data_class+");'>Add it?</a>"); }
-    result.show();
-    result.appendTo(table);
-    table.show(); }
+        $("#add_item_"+data_class).show();
+    }
+    //     result.children(".name_"+data_class).html("<a href='javascript:add_unknown_item("+data_class+");'>Add it?</a>"); }
+    // result.show();
+    // result.appendTo(table);
+    // table.show(); 
+}
 function ajax_finished(data, data_class) {
     accessData = data;
     if (data.length===0) {
@@ -1507,6 +1528,7 @@ function ajax_finished(data, data_class) {
         result.appendTo(table);
     }
     table.show();
+    $("#add_item_"+data_class).hide();
 }
 function result_clicked(clicked_item, data_class){
     dat = $(clicked_item);
@@ -1515,8 +1537,144 @@ function result_clicked(clicked_item, data_class){
     $('.ajax_item_name_'+data_class).val('');
     addItem(dat.children(".item_id_"+data_class).text(), dat.children(".name_"+data_class).text(), dat.children(".price_"+data_class).text(),data_class, dat.children(".category_id_"+data_class).text(), dat.children(".purchase_price_"+data_class).text(),"" ,"1",dat.children(".model_"+data_class).text(), dat.children(".brand_"+data_class).text());
 }
+
+function searchSupplier(eve){
+    var supplierName = $(eve).val().trim();
+    // var index = $(eve).attr("data-item-index");
+    if(supplierName != ''){
+        $.ajax({
+            url: '<?=BASE_URL?>/inventories/searchSuppliers',
+            dataType: 'json',
+            type: 'GET',
+            cache: false,
+            data:{query:supplierName},
+            success: function(data) {
+                    ajaxFinishedSupplier(data);
+                }   
+            }); 
+        } else {
+            $('#ajax_supplier_results').hide();
+        }
+}
+function ajaxFinishedSupplier(data){
+    
+    if (data.length===0) {
+        $('#ajax_supplier_results').hide();
+        return false;
+    }
+    template = $('#ajax_supplier_result_template');
+    table = $('#ajax_supplier_results');
+    // $('tbody',table).html('');
+    table.empty();
+    for(i in data) {
+        result = template.clone();
+        result.children(".id").html(data[i]["id"]);
+        result.children(".name").html(data[i]["name"]);
+        result.children(".phone").html(data[i]["phone"]);
+        result.children(".city").html(data[i]["city"]);
+        result.show();
+        result.bind("click",function(){result_supplier_clicked(this);});
+        result.appendTo(table);
+    }
+    table.show();   
+}
+function result_supplier_clicked(clicked_item)
+{
+    dat = $(clicked_item);
+    table = $('#ajax_supplier_results');
+    table.hide();
+    supId = dat.children(".id").text();
+    supName = dat.children(".name").text();
+     $("#supplierName").val(supName);
+     $("#supplierId").val(supId);
+}
+
+$(function () {
+    // $("#one_time_item_form_data").live("submit", function(e){
+    $("#save_one_time_item").live("click", function(e){
+        e.preventDefault();
+        var payload = $('#one_time_item_form_data').serializeArray();
+        var supplierId = $("#supplierId").val();
+        if(supplierId == '' || supplierId == undefined)
+        {
+            alert("Please select supplier.");
+            return false;
+        }
+        var image   = $('#invoice_image')[0].files[0];
+        var boxId   = $("#onetime_box_id").val();
+        var techId  = $("#OrderJobTechnician1Id ").val();
+        var orderId  = $('#po_number').val();
+        if(image == '' || image == null || image == 'undefined')
+        {
+            payload.push({name: 'image', value: ''});
+            payload.push({name: 'techId', value: techId});
+            payload.push({name: 'orderId', value: orderId});
+             $.ajax({
+              url: "<?=BASE_URL;?>/inventories/createPurchaseInvoice",
+              type: "POST",
+              data: payload,
+              dataType: 'json',
+              success: function(data){
+                   var invoiceName = data['imageName'];
+                   var supplierName = data['supplier_name'];
+                   var invoiceId = data['invoice_id'];
+                    $.each(data, function (index, value) {
+                       if(value['name'] != '' && value['name'] != undefined)
+                        addItem(1227, value['name'], value['selling_price'], boxId, 1, value['purchase_price'], '','','','',value['sku'],value['quantity'],invoiceName,invoiceId, supplierName);
+                    });     
+                    hideItemBox();      
+                }
+            });
+        } else {
+            var reader = new FileReader();
+            var baseString;
+            reader.onloadend = function () {
+                baseString = reader.result;
+                payload.push({name: 'image', value: baseString});
+                payload.push({name: 'techId', value: techId});
+                payload.push({name: 'orderId', value: orderId});
+                 $.ajax({
+                  url: "<?=BASE_URL;?>/inventories/createPurchaseInvoice",
+                  type: "POST",
+                  data: payload,
+                  dataType: 'json',
+                  success: function(data){
+                    console.log("inn2");
+                        var invoiceName = data['imageName'];
+                        var supplierName = data['supplier_name'];
+                        var invoiceId = data['invoice_id'];
+                        $.each(data, function (index, value) {
+                           if(value['name'] != '' && value['name'] != undefined)
+                            addItem(1227, value['name'], value['selling_price'], boxId, 1, value['purchase_price'], '','','','',value['sku'],value['quantity'],invoiceName,invoiceId, supplierName);
+
+                        });     
+                        hideItemBox();     
+                    }
+                });
+            };
+           reader.readAsDataURL(image);           
+        }
+    });        
+});
+
 $(document).ready(function(){
-    // Get items and show
+    
+    // Loki: Remove onr time purchase item from item_box
+    $(".removeOnetimeItem").live("click", function(){
+        $(this).closest('tr').remove();
+    });
+
+    // Loki add one time purchase items in the table .
+    $("#add_one_time_item").live("click", function(){
+        template = $("#one_time_row"); 
+        tableTemp = $('#new_item_table');
+        result = template.clone();
+        $(result).removeAttr("id").addClass("remove_tr").show().appendTo(tableTemp);;
+    });
+    // $(".search_supplier").live("keyup",searchSupplier);   
+    $(".search_supplier").live("keyup",function(){
+        searchSupplier(this);
+    }); // Get items and show
     $(".ajax_item_name").live("keyup",function(){
         ajax(this);
     });
@@ -1584,6 +1742,29 @@ $(document).ready(function(){
 	      }
 	    });
 	  }
+      //Loki open box to add multiple one time purchase items.
+      $(function () {
+            $("#item_box").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "items",
+                autoOpen: false,
+                width: 900,
+                height: 400,
+                cache: false,
+                close : function(){
+                  $("#one_time_item_form_data")[0].reset();
+                  $("#pre-image_photo3").attr("src","").hide();
+                  $(".remove_tr").remove(); 
+              }  
+            });
+            $(".one_time_items").live("click",function () {
+                var boxId = $(this).attr('data-onetime-id');
+                $("#onetime_box_id").val(boxId);
+
+                $('#item_box').dialog('open');
+            });
+        });
       //Loki Ask password for changing source1.
       $(function () {
             $("#open_source_password").dialog({
@@ -2367,6 +2548,14 @@ $(document).ready(function(){
     background: #FFFF99;
     color: #000000;
 }
+#ajax_supplier_results {
+    border-collapse: collapse;
+    background: #FFFF99;
+    color: #000000;
+}
+#ajax_supplier_results td, #ajax_supplier_results th {
+  border: 1px solid #ddd;
+}
 
 #ajax_item_results_1 {
     border-collapse: collapse;
@@ -2710,17 +2899,90 @@ function get_data($url)
         <input type="button"  name="cancel" value="Cancel" onclick="hideReviewEmailBox();" style="padding: 5px;margin-top: 5px;">
 </div>
 <div id="sendSeparateEmail" style="display: none;">
-		
-					<!-- <input type="text" name="sms"> -->
-		<textarea class="emailVal" id="emailVal2" style="width: 500px;height: 300px;display: block;"></textarea>
-		<input type="button" name="OK" value="Send" style="padding: 5px;margin-top: 5px;" onclick="sendSeparateEmail()">
-		<input type="button"  name="cancel" value="Cancel" onclick="hideEmailBox();" style="padding: 5px;margin-top: 5px;">
+	<textarea class="emailVal" id="emailVal2" style="width: 500px;height: 300px;display: block;"></textarea>
+	<input type="button" name="OK" value="Send" style="padding: 5px;margin-top: 5px;" onclick="sendSeparateEmail()">
+	<input type="button"  name="cancel" value="Cancel" onclick="hideEmailBox();" style="padding: 5px;margin-top: 5px;">
 </div>
 <div id="open_source_password" style="display: none;">
-        <input type="password" name="sourcePassword" id="sourcePassword">
-        <input type="button" name="OK" value="Submit" style="padding: 5px;margin-top: 5px;" onclick="checkSourcePassword()">
+    <input type="password" name="sourcePassword" id="sourcePassword">
+    <input type="button" name="OK" value="Submit" style="padding: 5px;margin-top: 5px;" onclick="checkSourcePassword()">
 <!--         <input type="button"  name="cancel" value="Cancel" onclick="hidePasswordBox();" style="padding: 5px;margin-top: 5px;">
  --></div>
+
+<div id="item_box" style="display: none;">
+    <form id="one_time_item_form_data" method="post" enctype="multipart/form-data">
+        <table id="one_time_item_table">
+            <tbody>
+                <tr>
+                    <td>Invoice:</td>
+                    <td>
+                        <img id="pre-image_photo3" class="pre-image_photo3 invoice-openImg" src="#" alt="your image" />
+                        <div class="cls-acecare-td-adjust" style="width: 70px; padding: 3px;">
+                            <label for="invoice_image" style="background: lightgrey;" >Upload</label>
+                            <input type="file" name="invoice_image" id="invoice_image" class="disply_preview" data-ct="photo3">
+                        </div> 
+                    </td>
+                    <td>Invoice No#:</td>
+                    <td><input type="text" name="invoiceId" id="invoiceId"></td>
+                </tr>
+                <tr>
+                    <td>Supplier Name:</td>
+                    <td><input type="text" class="search_supplier" name="supplierName" id="supplierName"></td>
+                    <input type="hidden" name="supplierId" id="supplierId">
+                </tr>
+                <tr>
+                    <td>
+                        <table id="ajax_supplier_results" class="supplier_result" style="display:none">
+                            <thead>
+                                <tr>
+                                    <th>id</th>
+                                    <th>name</th>
+                                    <th>phone</th>
+                                    <th>city</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="ajax_supplier_result_template">
+                                    <td class="id"></td>
+                                    <td class="name"></td>
+                                    <td class="phone"></td>
+                                    <td class="city"></td>
+                                </tr>           
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="button" id="add_one_time_item" value="Add Item" name="addItem" style="padding: 5px;"></td>
+                </tr>
+                <tr>
+                    <td>
+                        <table id="new_item_table" cellspacing=0 colspacing=0 class="inResultsBooking">
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Sku</th>
+                                <th>Qty</th>
+                                <th>Selling Price</th>
+                                <th>Purchase Price</th>
+                                <th>Remove</th>
+                            </tr>
+                            <tr id="one_time_row" style="display: none;" >
+                                <td><input class="item-class" type="text" name="itemName[]"></td>
+                                <td><input type="text" class="sku-class" name="itemSku[]"></td>
+                                <td><input type="text" class="qlt-class" name="itemQuantity[]"></td>
+                                <td><input type="text" class="selling-class" name="itemSellingPrice[]"></td>
+                                <td><input type="text" class="purc-class" name="itemPurchasePrice[]"></td>
+                                <td><img class="removeOnetimeItem" src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png"></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <input type="submit" id="save_one_time_item" name="OK" value="Save" style="margin-top: 5px;" />
+        <input type="button"  name="cancel" value="Cancel" onclick="hideItemBox();" style="margin-top: 5px;" />
+    </form>
+</div>
 
 <!-- The Modal -->
 <div id="myModalNew" class="modal">
@@ -2781,6 +3043,7 @@ function get_data($url)
 <input type="hidden" name="sendestimate" id="sendestimate" value="0"/>
 <input type="hidden" name="preViewEstimate" id="preViewEstimate" value="0"/>
 <input type="hidden" name="sendMailOnEstimate" id="sendMailOnEstimate" value="1"/>
+<input type="hidden" name="onetime_box_id" id="onetime_box_id"/>
 
 <?php if(!isset($this->data["Order"]["id"]) && $this->data["Order"]["id"]==""){?>
 	<input type="hidden" id="SendMailAgain" name="SendMailAgain" value="1">
@@ -3160,6 +3423,7 @@ function get_data($url)
     <div class="frame-wrap">
         <div class="frame-header-left"></div>
         <div class="frame-header-title"><table width=100%><tr><td width=400px style="font: 12px Verdana">Scheduling</td><td style="text-align:right;font: 12px Verdana;color:#000088">Order # <?php echo $this->data['Order']['order_number'];?></td></tr></table></div>
+        <input type="hidden" id="po_number" name="poNumber" value="<?php echo $this->data['Order']['order_number'];?>">
         <div class="frame-header-right"></div>
         <div class="frame-body" style="clear: both;">
             <?php echo $html->hidden('Order/id')?>
@@ -3606,10 +3870,11 @@ function get_data($url)
                                 <a style="display:none;" id="addBookedItemsTree" title="View Items in a Tree"></a>
                                 <?php if (($common->getLoggedUserRoleID() != "3") &&($common->getLoggedUserRoleID() != "9")) { ?>
                                 <!--<input type="button" value="Purchase" onclick="addItem(1218, '', '0', 0, 1, '', '')" />-->
-                                <input type="button" value="Labor Description" onclick="addItem(0, '-custom item-', '0', 0, 0, '', '')" />
-								<input type="button" value="Tech Purchase" onclick="addItem(1227, '', '0', 0, 1, '', '')" />
+                               <!--  <input type="button" value="Labor Description" onclick="addItem(0, '-custom item-', '0', 0, 0, '', '')" /> -->
+								<input type="button" value="One Time Purchase" id="one_time_item_0" class="one_time_items" data-onetime-id="0"/>
 								<?php } ?>
                                <input autocomplete="off" class='ajax_item_name' data-class="0" />
+                               <a id="add_item_0" class="add_item_button" style ="display: none;" href='javascript:add_unknown_item(0);'>Add to Inventory</a>
                                     <table id='ajax_item_results_0'>
                                     </table>
                                 <div class="clear_this"></div>
@@ -3656,10 +3921,11 @@ function get_data($url)
                                 <a style="display:none" id="addTechnicianSalesTree" title="View Items in a Tree"></a>
                                 <?php if (($common->getLoggedUserRoleID() != "3") &&($common->getLoggedUserRoleID() != "9")) { ?>
                                 <!--<input type="button" value="Purchase" onclick="addItem(1218, '', '0', 1, 1, '', '')" />-->
-								<input type="button" value="Labor Description" onclick="addItem(0, '-custom item-', '0', 1, 0, '', '')" />
-								<input type="button" value="Tech Purchase" onclick="addItem(1227, '', '0', 1, 1, '', '')" />
+							<!-- 	<input type="button" value="Labor Description" onclick="addItem(0, '-custom item-', '0', 1, 0, '', '')" /> -->
+								<input type="button" value="One Time Purchase" id="one_time_item_1" class="one_time_items" data-onetime-id="1"/>
 								<?php } ?>
                                 <input autocomplete="off" class='ajax_item_name' data-class="1"/>
+                                 <a id="add_item_1" class="add_item_button" style= "display: none;" href='javascript:add_unknown_item(1);'>Add to Inventory</a>
                                 <table id='ajax_item_results_1'>
                                 </table>
                                 <div class="clear_this"></div>
@@ -4787,6 +5053,20 @@ $(document).ready(function(){
 		
 	</script>
 <style>
+#one_time_item_table td{
+    padding: 3px;
+}
+.add_item_button {
+    font: bold 11px Arial;
+  text-decoration: none;
+  background-color: #EEEEEE;
+  color: #333333;
+  padding: 2px 6px 2px 6px;
+  border-top: 1px solid #CCCCCC;
+  border-right: 1px solid #333333;
+  border-bottom: 1px solid #333333;
+  border-left: 1px solid #CCCCCC;
+}
 .hide-data{
     display: none;
 }

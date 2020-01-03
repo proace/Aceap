@@ -374,14 +374,14 @@ class CommonComponent extends Object
 							'name' => 'Item Sub Category',
 							'url' => BASE_URL.'/iv_categories/showItemSubCategory',
 							'img' => 'icon-lg-price.png',
-						),
-
-						array(
-							'name' => 'Dialer',
-							'url' => BASE_URL.'/calls',
-							'img' => 'icon-lg-callback.png',
-							'target' => '_top'
 						)
+						//,
+						// array(
+						// 	'name' => 'Dialer',
+						// 	'url' => BASE_URL.'/calls',
+						// 	'img' => 'icon-lg-callback.png',
+						// 	'target' => '_top'
+						// )
 
 					),
 

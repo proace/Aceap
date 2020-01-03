@@ -1,6 +1,6 @@
 <? ob_start();
-error_reporting(E_ALL );
-//error_reporting(2047);
+// error_reporting(E_ALL));
+//App::import('Controller', 'Inventories');
 
 class OrdersController extends AppController
 {
@@ -12,7 +12,7 @@ class OrdersController extends AppController
     var $uses = array('OrderEstimate','Order', 'CallRecord', 'User', 'Customer', 'OrderItem',
                     'Timeslot', 'OrderStatus', 'OrderType', 'Item',
                     'Zone','PaymentMethod','ItemCategory','InventoryLocation',
-                    'OrderSubstatus','Coupon','Setting','CallResult','Invoice', 'Question', 'Payment', 'Invoice');
+                    'OrderSubstatus','Coupon','Setting','CallResult','Invoice', 'Question', 'Payment', 'Invoice','IvItem');
 
     var $helpers = array('Common');
     var $components = array('HtmlAssist', 'Common', 'Lists');
@@ -355,18 +355,19 @@ class OrdersController extends AppController
             //$this->data['Order']['BookingItem'][$i]['class'] = 0;
             if (0+$this->data['Order']['BookingItem'][$i]['quantity']!=0)
             {
-                if(!empty($invoiceImages['name'][$i])) 
-                {
-                    $fileName = time()."_".$invoiceImages['name'][$i];
-                    $fileTmpName = $invoiceImages['tmp_name'][$i];
+                // if(!empty($invoiceImages['name'][$i])) 
+                // {
+                //     $fileName = time()."_".$invoiceImages['name'][$i];
+                //     $fileTmpName = $invoiceImages['tmp_name'][$i];
                 
-                    if($invoiceImages['error'][$i] == 0)
-                    {
-                        $move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/purchase-invoice-images/".$fileName);
-                        $this->data['Order']['BookingItem'][$i]['invoice_image'] =  $fileName;
-                    }
+                //     if($invoiceImages['error'][$i] == 0)
+                //     {
+                //         $move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/purchase-invoice-images/".$fileName);
+                //         $this->data['Order']['BookingItem'][$i]['invoice_image'] =  $fileName;
+                //     }
                     
-                }   
+                // }   
+
                 $this->Order->BookingItem->create();
                 $this->Order->BookingItem->save($this->data['Order']['BookingItem'][$i]);
 
@@ -376,7 +377,6 @@ class OrdersController extends AppController
                           $this->data['Order']['BookingItem'][$i]['addition'];
             }
         }
-
         // 2. Questions
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
@@ -7316,7 +7316,27 @@ class OrdersController extends AppController
         }
         $h .= '<div>Description</div><input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value="'.$item['name'].'"/>';
         $h .= '<div>SKU</div><input type="text" id="data[Order][BookingItem]['.$index.'][serial_number]" name="data[Order][BookingItem]['.$index.'][serial_number]" value="'.$item['serial_number'].'"/>';
-        $h .= '<div>Supplier</div><input type="text" id="data[Order][BookingItem]['.$index.'][supplier]" name="data[Order][BookingItem]['.$index.'][supplier]" value="'.$item['supplier'].'"/>';
+        $h .= '<div>Supplier</div><input type="text" class="search_supplier" id="data_Order_BookingItem_'.$index.'_supplier" name="data[Order][BookingItem]['.$index.'][supplier]" value="'.$item['supplier'].'" data-item-index="'.$index.'"/>';
+        $h .= '<input type="hidden" id="data_Order_BookingItem_'.$index.'_supplier_id" name="data[Order][BookingItem]['.$index.'][supplier_id]" value="" data-item-index="'.$index.'"/>';
+       
+       // $h .= '<table id="ajax_supplier_results_'.$index.'" class="supplier_result" style="display:none">
+       //                      <thead>
+       //                          <tr>
+       //                              <th>id</th>
+       //                              <th>name</th>
+       //                              <th>phone</th>
+       //                              <th>city</th>
+       //                          </tr>
+       //                      </thead>
+       //                      <tbody>
+       //                          <tr id="ajax_supplier_result_template_'.$index.'">
+       //                              <td class="id"></td>
+       //                              <td class="name"></td>
+       //                              <td class="phone"></td>
+       //                              <td class="city"></td>
+       //                          </tr>           
+       //                      </tbody>
+       //                  </table>';
         $h .= '<div>Supplier Invoice#</div><input type="text" id="data[Order][BookingItem]['.$index.'][invoice]" name="data[Order][BookingItem]['.$index.'][invoice]" value="'.$item['invoice'].'"/>';
 
     }
@@ -7435,6 +7455,10 @@ class OrdersController extends AppController
     $item['show_purchase']= $_GET['show_purchase'];
     $item['model_number']= $_GET['model_number'];
     $item['brand']= $_GET['brand'];
+    $item['supplier']= $_GET['supplier_name'];
+    $item['invoice']= $_GET['supplier_invoice'];
+    $item['invoice_image']= $_GET['invoice_image'];
+    $item['serial_number']= $_GET['sku'];
     echo $this->_itemHTML($index, $item, $actions);
     exit;
   }
@@ -16250,5 +16274,17 @@ function deleteUserFromCampaign()
       
     //     print_r($fileName);
     // }
+
+    function testUser2()
+    {
+        // die("hu");
+            // $this->data['loki']= 'hi';
+            // $this->requestAction('/inventories/saveDoc', array('loki' => array('dog','cat')));
+        // $this->requestAction('/inventories/GetLocationIDFromString', array('pass' => array('123')));
+        // $this->requestAction('/inventories/_store_sku', array('pass' => array('123'), 'pass' => array('11'), 'pass' => array('13')));
+        $this->requestAction('/inventories/_store_sku', array('pass' => array('123')));
+         exit();
+    }
+   
 }
 ?>

@@ -992,6 +992,10 @@ $(function () {
 							<input type="text" name="invoice" value="<?php echo $invoice_number; ?>"/>
 						<?php } ?>
 					</td>
+					<?php if (($doc_type!=1 && $doc_type!=7)) { ?>
+						<td align="right">PO#: </td>
+						<td><?php echo ' '.$new_po_number; ?></td>
+					<?php } ?>
 				</tr>
 			
 				<?php if(!empty($invoiceImageArr) && $invoiceDetails['doc_type'] != 7 ){ ?>
@@ -1066,7 +1070,7 @@ $(function () {
 				<?php if (($doc_type==1 || $doc_type==7)) { ?>
 				<tr>
 					<td align="right">Supplier:</td>
-					<td>
+					<td style="width: 20%">
                     <span id="supplier_text"></span>
                     <style>
                     #supplier {
@@ -1101,18 +1105,24 @@ $(function () {
                         <?php } ?>
                         <script>$("#supplier_text").html($("#supplier :selected").text());</script>
 					</td>
-					<td>
+					<!-- <td><input type="text" name="lastPo" value="<?php echo $last_po_number  ?>"></td> -->
+					<td >
 						<img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
 							<div class="cls-acecare-td-adjust">
 								<label for="sortpicture1" >Upload</label>
-								<input type="file" name="sortpic1" id="sortpicture1" class="disply_preview" data-ct="photo1">
+								<input type="file" name="sortpic1" id="sortpicture1" class="disply_preview" data-ct="photo1" style="width: 30px">
 							</div>
 					</td>
+					<td>Last PO: <?php echo ' '.$last_po_number ?></td>
 				</tr>
 				<tr>
 					<td align="right">Invoice #:</td>
 					<td>
 		                <input type="text" name="data[invoice_number]" id="invoice_number" value="<?=$invoice_number?>">
+					</td>
+					<td align="right" >PO #:</td>
+					<td>
+		                <input type="text" name="data[po_number]" id="po_number" value="<?=$new_po_number?>">
 					</td>
 				</tr>
 				<?php } elseif ($doc_type==2) { ?>

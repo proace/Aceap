@@ -4,29 +4,29 @@
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
 <script>
 jQuery( document ).ready(function($) {
- $("#add-sub-cat").on("click", function(){
-            window.open("<?=BASE_URL;?>/iv_categories/editSubCategory/", "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=400,height=400");
-        });
- $('#removeSubCategory').on('click', function(e){
-        var selected = [];
-         $("input:checkbox[class=checkboxes]:checked").each(function () {
-             selected.push($(this).attr('type_id'));
-        });
-        jQuery.ajax({
-          url: "<?=BASE_URL;?>/iv_categories/deleteSubCategory",
-          type: "POST",
-          data: {typeIds:selected},
-          success: function(data){
-            location.href = "<?=BASE_URL;?>/iv_categories/";
-                 document.forms['viewform'].submit();
-        });
-    });   
- $('.sub-category-name').on('click', function(){
-            var id = $(this).attr('cat-id');
-            window.open("<?=BASE_URL;?>/iv_categories/editSubCategory/"+id, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=900,width=500,height=150");
-        });
+   $("#add-sub-cat").on("click", function(){
+              window.open("<?=BASE_URL;?>/iv_categories/editSubCategory/", "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=400,height=400");
+          });
+   $('#removeSubCategory').on('click', function(e){
+          var selected = [];
+           $("input:checkbox[class=checkboxes]:checked").each(function () {
+               selected.push($(this).attr('type_id'));
+          });
+          jQuery.ajax({
+            url: "<?=BASE_URL;?>/iv_categories/deleteSubCategory",
+            type: "POST",
+            data: {typeIds:selected},
+            success: function(data){
+              location.href = "<?=BASE_URL;?>/iv_categories/";
+                   document.forms['viewform'].submit();
+          }
+        });  
+      }); 
+   $('.sub-category-name').on('click', function(){
+              var id = $(this).attr('cat-id');
+              window.open("<?=BASE_URL;?>/iv_categories/editSubCategory/"+id, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=900,width=500,height=150");
+          });
 });
-
 </script>
 <style>
 table, th, td {
