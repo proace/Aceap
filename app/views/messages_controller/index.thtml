@@ -9,8 +9,8 @@
   
 function showMessages()
 {
-  var answer = window.open("<?=BASE_URL?>/messages/ShowMessages",'', 
-  "width=600, height=350, left=300, top=200");
+  //var answer = window.open("<?=BASE_URL?>/messages/ShowMessages",'', "width=600, height=350, left=300, top=200");
+  var answer = window.open("<?=BASE_URL?>/messages/showMessageHistory",'', "width=600, height=350, left=300, top=200");
 }
 function createMessage()
 {

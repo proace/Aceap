@@ -79,16 +79,16 @@ $(document).ready(function(){
 				<table>
 					<?php if($is_reply == 0){?>
 						<tr>
-								<td align="right">From:</td>
-								<td><b><?php echo $from_user;?></b>
-								</td>
+								<!-- <td align="right">From:</td>
+								<td><b><?php //echo $from_user;?></b>
+								</td> -->
 
 								<td align="right">Reminder date:</td>
 								<td>
 							    <?php echo $html->input('Message/to_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;'));?>
 								</td>
 								<td align="right">Time:</td>
-								<td>
+								<td colspan="4">
 						      <?php echo $html->hourOptionTag('Message/to_time') . " : " . $html->minuteOptionTag('Message/to_time'); ?>
 								</td>
 						</tr>

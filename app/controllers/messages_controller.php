@@ -226,6 +226,43 @@ class MessagesController extends AppController
 		
 	}
 
+	//Loki Show message history
+	function showMessageHistory()
+	{
+		$this->layout='list';
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+		$sort = $_GET['sort'];
+		$order = $_GET['order'];
+		$job_id = $_GET['job_id'];
+		if (!$order) $order = 'from_date desc';
+		$condition = "";
+		if ($job_id) $condition = " and m.file_link=$job_id ";
+
+		$query = "select m.id, m.from_date,
+										 m.from_user, concat(fu.first_name, ' ', fu.last_name) from_name,
+										 m.to_user, concat(tu.first_name, ' ', tu.last_name) to_name,
+										 m.txt, m.file_link, m.customer_link, m.state
+								from ace_rp_messages m
+								left outer join ace_rp_users tu on tu.id=m.to_user
+								left outer join ace_rp_users fu on fu.id=m.from_user
+							 where m.state<2 $condition
+							   and (m.to_user='".$this->Common->getLoggedUserID()."'
+									 or m.from_user='".$this->Common->getLoggedUserID()."'
+									 or m.to_role='".$this->Common->getLoggedUserRoleID()."')
+							 order by ".$order.' '.$sort;
+		
+		$items = array();
+		$result = $db->_execute($query);
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			foreach ($row as $k => $v)
+			  $items[$row['id']][$k] = $v;
+		}		
+		
+		$this->set('items', $items);
+	}
+
 	function saveMessage()
 	{
 
