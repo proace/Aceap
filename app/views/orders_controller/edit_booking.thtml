@@ -3863,7 +3863,24 @@ function get_data($url)
                     <td></td>
                 </tr> -->
                 
-                
+                <tr>
+                    <td>
+                        <table>
+                            <tr>
+                                <td>Images:</td>
+                                <?php foreach ($allImages as $key => $value) {?>
+                                    <td>
+                                        <div style="position: relative; padding:0; width: 30px;"> 
+                                                <span style="position:absolute;right: 0px;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-nu="1" image-name="<?php echo $value?>"></span>
+                                                <img id="" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$value;?>" style="max-height:28px;height:auto;cursor:pointer;">
+                                        </div>
+                                    </td>
+                                <?php } ?>
+                            </tr>
+                        </table>
+                    </td>
+
+                </tr>
                 
                 <tr>
                     <td colspan=4 id="CurrentItems" style="vertical-align:top">

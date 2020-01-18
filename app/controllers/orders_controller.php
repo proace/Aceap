@@ -2136,12 +2136,30 @@ class OrdersController extends AppController
             // Check submitted data for any special parameters to be set
             $order_id = $this->params['url']['order_id'];
             $customer_id = $this->params['url']['customer_id'];
-            
+
+            $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
             if($customer_id)
             {
                 $this->Customer->id = $customer_id;
                 $cus = $this->Customer->read();     
                 $this->set('campaingId',$cus['Customer']['campaign_id']);
+                $allImages = array();
+                //Loki: Get all images of orders
+                $query = "SELECT photo_1, photo_2 FROM ace_rp_orders where customer_id = ".$customer_id."";
+                $result = $db->_execute($query);
+                while($row = mysql_fetch_array($result))
+                {
+                    if(!empty($row['photo_1']) && $row['photo_1'] != null){
+                        $allImages[] = $this->getPhotoPath($row['photo_1']);
+                    }
+                    if(!empty($row['photo_2']) && $row['photo_2'] != null)
+                    {
+                        $allImages[] = $this->getPhotoPath($row['photo_2']);
+                    }
+                    // $allImages[] = $this->getPhotoPath($row['photo_1']);
+                    // $allImages[] = $this->getPhotoPath($row['photo_2']);
+                }
+                $this->set("allImages",$allImages);
             }
             
             
@@ -2149,7 +2167,7 @@ class OrdersController extends AppController
             $show_app_order='display:none';
             $show_permits = 'display:none';
 
-            $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+          
 
             //Remove all reserved timeslots
             $query = "
@@ -2194,6 +2212,21 @@ class OrdersController extends AppController
                 $this->data = $this->Order->read();
                 $h_booked='';
                 $h_tech='';
+                $allImages = array();
+                //Loki: Get all images of orders
+                $query = "SELECT photo_1, photo_2 FROM ace_rp_orders where customer_id = ". $this->data['Customer']['id']."";
+                $result = $db->_execute($query);
+                while($row = mysql_fetch_array($result))
+                {
+                   if(!empty($row['photo_1']) && $row['photo_1'] != null){
+                        $allImages[] = $this->getPhotoPath($row['photo_1']);
+                    }
+                    if(!empty($row['photo_2']) && $row['photo_2'] != null)
+                    {
+                        $allImages[] = $this->getPhotoPath($row['photo_2']);
+                    }
+                }
+                $this->set("allImages",$allImages);
                 foreach ($this->data['BookingItem'] as $oi)
                 {
                     if ($oi['class']==0)
@@ -2295,23 +2328,23 @@ class OrdersController extends AppController
             }
             else
             {
-            // The 'new order' situation
-            $this->set("isSourceVal",'0');
-            $created_by = $this->Common->getLoggedUserID();
-            $created_date = date('Y-m-d H:i');
-            $modified_by = $this->Common->getLoggedUserID();
-            $modified_date = date('Y-m-d H:i');
-            // Retrieve an additional information from the submitted parameters
-            $this->data['Order']['job_date'] = $this->params['url']['job_date'];
-            $this->data['Order']['job_time_beg'] = $this->params['url']['job_time_beg'];
-            $this->data['Order']['job_technician1_id'] = $this->params['url']['job_technician1_id'];
-            $this->data['Order']['job_technician2_id'] = $this->params['url']['job_technician2_id'];
-            // $this->data['Order']['order_campaing_id'] = 1;
-            // Orders created by the 'new callback' action are callbacks
-            if ( in_array($_GET['action_type'], array('callback','comeback','dnc') ) )//$_GET['action_type'] == 'callback')
-                $this->data['Order']['order_status_id'] = 7;
-            else
-                $this->data['Order']['order_status_id'] = 1;
+                // The 'new order' situation
+                $this->set("isSourceVal",'0');
+                $created_by = $this->Common->getLoggedUserID();
+                $created_date = date('Y-m-d H:i');
+                $modified_by = $this->Common->getLoggedUserID();
+                $modified_date = date('Y-m-d H:i');
+                // Retrieve an additional information from the submitted parameters
+                $this->data['Order']['job_date'] = $this->params['url']['job_date'];
+                $this->data['Order']['job_time_beg'] = $this->params['url']['job_time_beg'];
+                $this->data['Order']['job_technician1_id'] = $this->params['url']['job_technician1_id'];
+                $this->data['Order']['job_technician2_id'] = $this->params['url']['job_technician2_id'];
+                // $this->data['Order']['order_campaing_id'] = 1;
+                // Orders created by the 'new callback' action are callbacks
+                if ( in_array($_GET['action_type'], array('callback','comeback','dnc') ) )//$_GET['action_type'] == 'callback')
+                    $this->data['Order']['order_status_id'] = 7;
+                else
+                    $this->data['Order']['order_status_id'] = 1;
 
                 // Default sub-status: Not confirmed (1)
                 $this->data['Order']['order_substatus_id'] = 1;
@@ -2706,7 +2739,29 @@ class OrdersController extends AppController
             $this->set('jobDate', $jobDate);
             $this->set('fromTech', $fromTech);
             $num_items = 0;
+
             $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+            if($customer_id)
+            {
+                $this->Customer->id = $customer_id;
+                $cus = $this->Customer->read();     
+                $this->set('campaingId',$cus['Customer']['campaign_id']);
+                $allImages = array();
+                //Loki: Get all images of orders
+                $query = "SELECT photo_1, photo_2 FROM ace_rp_orders where customer_id = ".$customer_id."";
+                $result = $db->_execute($query);
+                while($row = mysql_fetch_array($result))
+                {
+                    if(!empty($row['photo_1']) && $row['photo_1'] != null){
+                        $allImages[] = $this->getPhotoPath($row['photo_1']);
+                    }
+                    if(!empty($row['photo_2']) && $row['photo_2'] != null)
+                    {
+                        $allImages[] = $this->getPhotoPath($row['photo_2']);
+                    }
+                }
+                $this->set("allImages",$allImages);
+            }
             // If order ID is submitted, prepare order's data to be displayed
             if ($order_id)
             {
@@ -2714,6 +2769,16 @@ class OrdersController extends AppController
                 $this->Order->id = $order_id;
                 $this->data = $this->Order->read();
 
+                $allImages = array();
+                //Loki: Get all images of orders
+                $query = "SELECT photo_1, photo_2 FROM ace_rp_orders where customer_id = ". $this->data['Customer']['id']."";
+                $result = $db->_execute($query);
+                while($row = mysql_fetch_array($result))
+                {
+                    $allImages[] = $this->getPhotoPath($row['photo_1']);
+                    $allImages[] = $this->getPhotoPath($row['photo_2']);
+                }
+                $this->set("allImages",$allImages);
                 $h_booked='';
                 $h_tech='';
                 $b_actions = false;
