@@ -47,6 +47,9 @@ function sendFeedback() {
 		
 }
 
+$(document).ready(function(){
+	});
+
 </script>
 <form method="post" action="<?php echo $html->url('/orders/feedbacks_add?id='.$this->params['url']['id'])?>">
 <input type="hidden" name="data[id]" value="<?=$this->params['url']['id']?>" />
@@ -84,6 +87,14 @@ function sendFeedback() {
 						<td id="customer_name"><?=$this->data['Customer']['first_name']?> <?=$this->data['Customer']['last_name']?></td>
 					</tr>
 					<tr> 
+						<td>Customer Email:</td>
+						<td id="customer_email"><?=$this->data['Customer']['email']?></td>
+					</tr>
+					<tr> 
+						<td>Customer Cellphone:</td>
+						<td id="customer_cellphone"><?=$this->data['Customer']['cell_phone']?></td>
+					</tr>
+					<tr> 
 						<td>Service date:</td>
 						<td id="job_date"><?=$this->data['Order']['job_date']?></td>
 					</tr>
@@ -92,8 +103,16 @@ function sendFeedback() {
 						<td><?=$this->data['Type']['name']?></td>
 					</tr>
 					<tr> 
-						<td><strong>Order total:</strong></td>
+						<td><strong>Invoice total:</strong></td>
 						<td><?php echo $HtmlAssist->prPrice($total); ?></td>
+					</tr>
+					<tr> 
+						<td>Payment Type:</td>
+						<td id="payment_type"><?=$this->data['OrderPaymentMethod']['name']?></td>
+					</tr>
+					<tr> 
+						<td><strong>Paid Amount:</strong></td>
+						<td id="paid_amount"><?=$this->data['Payment']['paid_amount']?></td>
 					</tr>
 					<tr> 
 						<td>Tech name 1:</td>
@@ -145,7 +164,7 @@ function sendFeedback() {
 		</td>
 		<td>
 				<table border="0" cellspacing="0" cellpadding="5">
-				  <tr>
+				 <!--  <tr>
 					  <td>1. We normally call our customers every 6 month or one year. Which one do you prefer?</td>
 				  </tr>
 				  <tr>
@@ -155,9 +174,9 @@ function sendFeedback() {
 					    <input type="button" onclick="document.getElementById('callback_date').value='<?=$callback_date_12?>';" value="1 year">
 					    <input type="button" onclick="document.getElementById('callback_date').value='<?=$callback_date_dnc?>';" value="DNC">
 				    </td>
-				  </tr>
+				  </tr> -->
 				  <tr>
-					  <td>2. Did our Tech leave a sticker on your furnace or boiler?</td>
+					  <td>1. Did our Tech leave a sticker on your furnace or boiler?</td>
 				  </tr>
 				  <tr>
 				    <td>
@@ -165,7 +184,7 @@ function sendFeedback() {
 				    </td>
 				  </tr>
 				  <tr>
-					  <td>3. Did our Tech give his phone number for emergency?</td>
+					  <td>2. Did our Tech give his phone number for emergency?</td>
 				  </tr>
 				  <tr>
 				    <td>
@@ -173,18 +192,18 @@ function sendFeedback() {
 				    </td>
 				  </tr>
 					<tr> 
-						<td>4. How much did you pay in total?</td>
+						<td>3. How much did you pay in total?</td>
 				  </tr>
 				  <tr>
 						<td><?= $html->input('Order/feedback_price');?></td>
-					</tr>
-					<tr> 
-						<td>5. Quality of our service:</td>
+				</tr>
+				<tr> 
+						<td>4. Quality of our service:</td>
 				  </tr>
 				  <tr>
 				    <td>
 						<?php echo $html->selectTag('Order/feedback_quality', array('BAD'=>'BAD','OK'=>'OK','GOOD'=>'GOOD','EXCELLENT'=>'EXCELLENT'), $this->data['Order']['feedback_quality'], array('onchange' => 'ShowMarks(this)'));?>
-						<div id="PositiveMarks" <? if ($this->data['Order']['feedback_quality']=='BAD') echo 'style="display:none;"';?>>
+						<!-- <div id="PositiveMarks" <? if ($this->data['Order']['feedback_quality']=='BAD') echo 'style="display:none;"';?>>
 								<input type="checkbox" name="data[Order][feedback_professional]" <? if ($this->data['Order']['feedback_professional']) echo 'checked';?>>Professional techs<br/>
 								<input type="checkbox" name="data[Order][feedback_knowledgeable]" <? if ($this->data['Order']['feedback_knowledgeable']) echo 'checked';?>>Knowledgeable techs<br/>
 								<input type="checkbox" name="data[Order][feedback_skilled]" <? if ($this->data['Order']['feedback_skilled']) echo 'checked';?>>Skilled techs<br/>
@@ -197,7 +216,16 @@ function sendFeedback() {
 								<input type="checkbox" name="data[Order][feedback_not_skilled]" <? if ($this->data['Order']['feedback_not_skilled']) echo 'checked';?>>Not skilled techs<br/>
 								<input type="checkbox" name="data[Order][feedback_not_clear]" <? if ($this->data['Order']['feedback_not_clear']) echo 'checked';?>>Not clear/understandable techs<br/>
 								<input type="checkbox" name="data[Order][feedback_not_timing]" <? if ($this->data['Order']['feedback_not_timing']) echo 'checked';?>>Didn't show up<br/>
-						</div>
+						</div> -->
+						</td>
+					</tr>
+					<tr>
+						<td>
+							5. Would you give us a 5 star review?
+						</td>
+					</tr>
+					<tr>
+						<td><?php echo $html->selectTag('Order/feedback_review_star', array(0=>'No',1=>'Yes'), $this->data['Order']['feedback_review_star']);?>
 						</td>
 					</tr>
 				  <tr> 
@@ -206,8 +234,8 @@ function sendFeedback() {
 	        <tr>
 		        <td><?= $html->textarea('Order/feedback_comment',array('style' => "width:450px; height: 80px;"));?></td>
           </tr>
-				  <tr> 
-		        <td>Solution :</td>
+			<tr> 
+		        <td>Tech Recommendation :</td>
           </tr>
 	        <tr>
 		        <td><?= $html->textarea('Order/feedback_suggestion',array('style' => "width:450px; height: 80px;"));?></td>

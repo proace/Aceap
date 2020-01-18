@@ -241,11 +241,12 @@ class InventoriesController extends AppController
 	function index()
 	{
 		$this->layout= 'blank';
-		
+		$allTechnicians = $this->Lists->Technicians();
 		$items = $this->Inventory->getTechInventory();
 		$stock = $this->Inventory->getWarehouseInventory('wh_');
 		$items['Warehouse'] = $stock['Warehouse'];
 		$this->set('items', $items);
+		$this->set('allTechnicians', $allTechnicians);
 	}
 	
 	function GetLocations(){
@@ -1627,7 +1628,8 @@ class InventoriesController extends AppController
 		$db->_execute($query);
 	}
 	
-	function editDefault()
+	//Loki: Commented
+	/*function editDefault()
 	{
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$this->layout="list";
@@ -1646,6 +1648,24 @@ class InventoriesController extends AppController
 		}
 		
 		$this->set('items', $items);		
+	}*/
+
+	//reuseable item = 26, parts=8
+	function editDefault()
+	{
+		$categoryId = isset($_GET['category_id']) ? $_GET['category_id'] : 8;
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$this->layout="list";
+		$allTechnicians = $this->Lists->Technicians();
+
+		$query = "SELECT * FROM iv_items_labeled2 WHERE category_id = ".$categoryId." AND active = 1";
+		$result  = $db->_execute($query);
+		$items = array();
+		while($row = mysql_fetch_array($result)) {
+			$items[] = $row;
+		}
+		$this->set('items', $items);		
+		$this->set('allTechnicians', $allTechnicians);		
 	}
 
 	function saveDefault()
@@ -1674,12 +1694,12 @@ class InventoriesController extends AppController
 		
 		if ($this->params['url']['ffromdate'] != '')
 			$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
-    else
+    	else
 			$fdate = date("Y-m-d");
 
 		if ($this->params['url']['ftodate'] != '')
 			$tdate = date("Y-m-d", strtotime($this->params['url']['ftodate']));
-    else
+    	else
 			$tdate = date("Y-m-d");
 
 		$sqlConditions = "";
@@ -1777,6 +1797,8 @@ class InventoriesController extends AppController
 				$status = $row['status'];
 				$supplier_id = $row['supplier_id'];
 				$po_number = $row['po_number'];
+				$item_image1 = $row['item_image1'];
+				$item_image2 = $row['item_image2'];
 			}
 
 			$query = "select *
@@ -1807,6 +1829,8 @@ class InventoriesController extends AppController
 		$this->set('unit_model', $unit_model);		
 		$this->set('unit_serial', $unit_serial);		
 		$this->set('po_number', $po_number);		
+		$this->set('item_image1', $item_image1);		
+		$this->set('item_image2', $item_image2);		
 		$this->set('allTechnicians', $this->Common->getSelector($allTechnicians,'tech_id',$tech_id));
 		$this->set('allStatuses', $this->Common->getSelector($this->GetAllStatuses(),'status',$status));
 		$this->set('suppliers', $this->Common->getSelector($allSuppliers,'supplier',$supplier_id));
@@ -2130,12 +2154,12 @@ class InventoriesController extends AppController
         }
         foreach ($_POST['itemName'] as $key => $value) {
              if(!empty($value)){
-             	$db->_execute("INSERT INTO ace_iv_items (sku,name, description1, description2,efficiency, model,  iv_category_id, iv_brand_id, iv_supplier_id, supplier_price, selling_price, regular_price, active, iv_sub_category_id) VALUES ('".$_POST['itemSku'][$key]."', '".$value."', '','', '','','36','','".$supplierId."', '".$_POST['itemPurchasePrice'][$key]."','".$_POST['itemSellingPrice'][$key]."','','1', '26')");    
-             	// $db->_execute("INSERT INTO ace_iv_items (sku,name, description1, description2,efficiency, model,  iv_category_id, iv_brand_id, iv_supplier_id, supplier_price, selling_price, regular_price, active, iv_sub_category_id) VALUES ('".$_POST['itemSku'][$key]."', '".$value."', '','', '','','37','','".$supplierId."', '".$_POST['itemPurchasePrice'][$key]."','".$_POST['itemSellingPrice'][$key]."','','1', '101')");         	
+             	// $db->_execute("INSERT INTO ace_iv_items (sku,name, description1, description2,efficiency, model,  iv_category_id, iv_brand_id, iv_supplier_id, supplier_price, selling_price, regular_price, active, iv_sub_category_id) VALUES ('".$_POST['itemSku'][$key]."', '".$value."', '','', '','','37','','".$supplierId."', '".$_POST['itemPurchasePrice'][$key]."','".$_POST['itemSellingPrice'][$key]."','','1', '26')");    
+             	$db->_execute("INSERT INTO ace_iv_items (sku,name, description1, description2,efficiency, model,  iv_category_id, iv_brand_id, iv_supplier_id, supplier_price, selling_price, regular_price, active, iv_sub_category_id) VALUES ('".$_POST['itemSku'][$key]."', '".$value."', '','', '','','36','','".$supplierId."', '".$_POST['itemPurchasePrice'][$key]."','".$_POST['itemSellingPrice'][$key]."','','1', '101')");         	
              	
              	$lastinsertID = $db->lastInsertId();
-                $item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active, sub_category_id, sub_category_name) VALUES ('".$_POST['itemSku'][$key]."',".$lastinsertID.", '".$value."', '','', '','','' ,'One Time Purchase' ,'".$supplierName."' ,'36','','".$supplierId."', '".$_POST['itemPurchasePrice'][$key]."','".$_POST['itemSellingPrice'][$key]."','','1', '26', 'Inactive')";
-                 // $item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active, sub_category_id, sub_category_name) VALUES ('".$_POST['itemSku'][$key]."',".$lastinsertID.", '".$value."', '','', '','','' ,'One Time Purchase' ,'".$supplierName."' ,'37','','".$supplierId."', '".$_POST['itemPurchasePrice'][$key]."','".$_POST['itemSellingPrice'][$key]."','','1', '101', 'Inactive')";
+                // $item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active, sub_category_id, sub_category_name) VALUES ('".$_POST['itemSku'][$key]."',".$lastinsertID.", '".$value."', '','', '','','' ,'One Time Purchase' ,'".$supplierName."' ,'37','','".$supplierId."', '".$_POST['itemPurchasePrice'][$key]."','".$_POST['itemSellingPrice'][$key]."','','1', '26', 'Inactive')";
+                 $item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active, sub_category_id, sub_category_name) VALUES ('".$_POST['itemSku'][$key]."',".$lastinsertID.", '".$value."', '','', '','','' ,'One Time Purchase' ,'".$supplierName."' ,'36','','".$supplierId."', '".$_POST['itemPurchasePrice'][$key]."','".$_POST['itemSellingPrice'][$key]."','','1', '101', 'Inactive')";
                $res = $db->_execute($item_label2);
                 
                 $items[$i]['name']            = $value;
@@ -2223,8 +2247,108 @@ class InventoriesController extends AppController
         {
         	 echo json_encode($items);
         }
-         // echo json_encode($items);
         exit();
+    }
+
+    /*Loki: Get tech inventory data*/
+    function techInventory(){
+    	
+    }
+
+  /*  function techItemRequest (){
+    	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+    	$itemPart = json_decode(stripslashes($_POST['itemPartNum']), true);
+    	$itemName = json_decode(stripslashes($_POST['itemName']), true);
+    	$itemQuantity = json_decode(stripslashes($_POST['itemQuantity']), true);
+    	$doc_date = date("Y-m-d", strtotime($_POST['date']));
+    	$ref_number = $_POST['orderRef'];
+    	$status = 1;
+    	$notes = $_POST['notes'];
+    	$image1 = $_FILES['fileval1'];
+    	$image2 = $_FILES['fileval2'];
+    	$tech_id = $this->Common->getLoggedUserID();
+    	$fileName1 = '';
+    	$fileName2 = '';
+    	if(!empty($image1)){
+                $fileName1 = time()."_".$image1['name'];
+                $fileTmpName1 = $image1['tmp_name'];
+
+                if($image1['error'] == 0)
+                {
+                    $move = move_uploaded_file($fileTmpName1 ,ROOT."/app/webroot/request-item-image/".$fileName1);
+                } 
+    	}
+    	if(!empty($image2)){
+
+                $fileName2 = time()."_".$image2['name'];
+                $fileTmpName2 = $image2['tmp_name'];
+
+                if($image2['error'] == 0)
+                {
+                    $move = move_uploaded_file($fileTmpName2 ,ROOT."/app/webroot/request-item-image/".$fileName2);
+                }
+    	}
+    	$query = "INSERT INTO ace_rp_inventory_requests	(tech_id, notes, docdate, flagactive, ref_number, status, item_image1, item_image2) VALUES (".$tech_id.", '".$notes."','".$doc_date."', 1, '".$ref_number."', ".$status.", '".$fileName1."', '".$fileName2."')";
+		$db->_execute($query);
+		$id = $db->lastInsertId();
+		// $sql = "INSERT INTO ace_rp_messages
+		// 				(txt, state, from_user, from_date, 
+		// 				 to_user, to_date, to_time)
+		//  VALUES ('<a target=\"main_view\" href=\"/acebeta/index.php/inventories/editRequest?id=$id&rurl=requests%3F\">Parts requested by tech</a>: $unit_make $unit_model ($unit_serial) $notes', 0, ".$this->Common->getLoggedUserID().", current_date(),
+		// 				 57499, current_date(), '00:00')";
+		// $db->_execute($sql);
+		$sql = "INSERT INTO ace_rp_messages
+						(txt, state, from_user, from_date, 
+						 to_user, to_date, to_time)
+		 VALUES ('Part request generated by technician.', 0, ".$tech_id.", current_date(),
+						 44851, current_date(), '00:00')";
+		$db->_execute($sql);
+
+
+		foreach ($itemName as $key => $value)
+		{
+			if(!empty($value['value'])){
+				$query = "INSERT INTO ace_rp_inventory_request_items
+									(doc_id, qty, name, part_number) 
+									VALUES ($id, ".$itemQuantity[$key]['value'].",
+									'".$value['value']."', ".$itemPart[$key]['value'].")";
+				$result = $db->_execute($query);
+			}
+		}
+		if($result){
+			$response  = array("res" => "OK");
+            echo json_encode($response);
+		}
+    	exit();
+    }
+*/
+    //Loki: Add tech default inventory items
+    function saveTechDefaultInventory()
+    {	
+    	$now = date("Y-m-d");
+		$techArray = json_decode(stripslashes($_POST['technician']), true);
+		$itemArray = json_decode(stripslashes($_POST['items']), true);
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		foreach ($techArray as $key => $value) 
+		{
+			foreach ($itemArray as $itemKey => $itemValue) {
+					$checkExisting = "SELECT * FROM ace_rp_tech_inventory_item where tech_id = ".$value." AND item_id =".$itemValue['item_id']."";
+					$executeRes = $db->_execute($checkExisting);
+					$row = mysql_fetch_array($executeRes, MYSQL_ASSOC);
+					if(!empty($row)) {
+						$newQuantity = $itemValue['item_quantity'] + $row['quantity'];
+						$res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = ".$newQuantity." where id = ".$row['id']."");
+					} else{
+						$query = "INSERT INTO ace_rp_tech_inventory_item (tech_id, item_id, quantity, updated_date) VALUES (".$value.",".$itemValue['item_id'].", ".$itemValue['item_quantity'].", '".$now."')";
+						$res = $db->_execute($query);
+					}
+				}	
+		}
+		if($res){
+			$response  = array("res" => "OK");
+            echo json_encode($response);
+		}
+		exit();
     }
 }
 ?>

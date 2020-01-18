@@ -436,6 +436,12 @@ function createMessage()
   "width=450, height=300, left=300,top=200");
 
 }
+function showFeedback()
+{
+    var answer = window.open("<?=BASE_URL?>/orders/feedbacks_add?id=<?php echo $this->data["Order"]["id"];?>",'',
+  "width=850, height=600, left=300,top=200");
+
+}
 function SaveCustomerData(){
 	$.get("<?=BASE_URL;?>/orders/saveCustomerData",
 		{
@@ -3065,9 +3071,9 @@ function get_data($url)
     <?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 3) {?>
     <div class="tabtrigger <?=$tab11?>" id="trigger11" onclick="openTab(11);">Email History</div>
     <?php }?>
-    <?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 3) {?>
+   <!--  <?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 3) {?>
     <div class="tabtrigger <?=$tab12?>" id="trigger12" onclick="openTab(12);">SMS History</div>
-    <?php }?>
+    <?php }?> -->
 <?php if (!isset($_GET['hotlist'])) {?>
     <!--<div class="tabtrigger" id="trigger4" onclick="openTab(4);">Feedback</div>-->
 	<?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13) {?>
@@ -3076,6 +3082,7 @@ function get_data($url)
 	<?php }?>
     <div class="tabtrigger tabOff" id="trigger6" onclick="createMessage();">Remind</div>
 	<?php }?>
+    <div class="tabtrigger tabOff" id="trigger6" onclick="showFeedback();">FeedBack</div>
 </div>
 </td>
 </tr>

@@ -6,7 +6,66 @@ $(function() {
 	var live_server = "/acesys/index.php/";
 	
 	var l = $(location).attr('href');
-    
+	//Loki: open pay via office box
+	$("#officeBox").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Pay Via Office",
+            autoOpen: false,
+            width: 700,
+            height: 500,
+        });
+    $('#payViaOfc').live('click', function(){
+    	$( "#officeBox" ).dialog("open");
+    });
+    //Loki: open tech recommendation box.
+	$("#recommendBox").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Tech Recommend",
+            autoOpen: false,
+            width: 700,
+            height: 500,
+        });
+    $('#techRecommended').live('click', function(){
+    	$( "#recommendBox" ).dialog("open");
+    });
+
+    $("#saveRecommend").live("click", function(){
+    	var msg = $("#recommendMsg").val();
+    	var orderNum = $("#orderNum").val();
+    	var orderId = $("#InvoiceOrderId").val();
+    	$.ajax({
+			url: live_server + "orders/addTechRecommendation",
+			type: "post",
+			dataType:"json",
+			data: {orderId:orderId, msg:msg, orderNum:orderNum},
+			success: function(data)
+			{
+				if(data.res == 1){
+					$("#recommendBox").dialog("close");
+				}
+			}
+		});
+    });
+
+    $("#saveOfficePay").live("click", function(){
+    	var msg = $("#officeMsg").val();
+    	var orderNum = $("#orderNum").val();
+    	var orderId = $("#InvoiceOrderId").val();
+    	$.ajax({
+			url: live_server + "orders/payViaOffice",
+			type: "post",
+			dataType:"json",
+			data: {orderId:orderId, msg:msg, orderNum:orderNum},
+			success: function(data)
+			{
+				if(data.res == 1){
+					$("#officeBox").dialog("close");
+				}
+			}
+		});
+    });
 	if(l.indexOf("acesys-2.0") != -1) G_URL = test_server;
 	else G_URL = live_server;
 	
@@ -457,6 +516,13 @@ function computeValues() {
 	$("#current_tax").val(current_tax); 
 	$("#current_total").val(+current_cost + +current_tax);
 	$("#current_balance").val(+current_cost + +current_tax + -current_deposit);
+	var payableAmount = $("#paid_by_amount").val();
+	console.log(payableAmount);
+	if(payableAmount == 0)
+	{
+		$("#paid_by_amount").val(+current_cost + +current_tax + -current_deposit);	
+	}
+	
 	
 }
 

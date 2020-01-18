@@ -145,8 +145,12 @@ input[type=text] {
             <td>Postal code:</td>
             <td><?php echo $job['Customer']['postal_code'] ?></td>
         </tr>
+         <tr>
+            <td>Cell Phone:</td>
+            <td><?php echo $job['Customer']['cell_phone'] ?></td>
+        </tr>
         <tr>
-            <td>Phone number:</td>
+            <td>Home Phone:</td>
             <td><?php echo $job['Customer']['phone'] ?></td>
         </tr>
     </table>

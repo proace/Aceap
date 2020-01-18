@@ -85,61 +85,49 @@ document.title += " :: Feedbacks";
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
     <tr>
         <td width="50" style="background-color:#CCCCCC;border-style: none;"><b><u>REF #</b></u></td>
-<?php if ($common->getLoggedUserRoleID()!=1) {?>
-				<th width="30"><u>Feed back</u></th>
-<?}?>
+        <?php if ($common->getLoggedUserRoleID()!=1) {?>
+        	<th width="30"><u>Feed back</u></th>
+        <?}?>
         <th width="110">Customer</th>
         <th width="80">Service date</th>
         <th width="110">Tech</th>
-<?php if ($common->getLoggedUserRoleID()!=1) {?>
-        <th width="80">Call back date</th>
-<?}?>
-        <th width="70">Order total</th>
-<?php if ($common->getLoggedUserRoleID()!=1) {?>
+        <th>Cell Phone</th>
+        <th width="70">Invoice total</th>
         <th width="70">Paid</th>
-<?}?>
         <th width="50">Sticker</th>
         <th width="50">Emerg. Phone</th>
         <th>Quality</th>
-<?php if ($common->getLoggedUserRoleID()!=1) {?>
-        <th>Answers</th>
-        <th>Office Notes</th>
-<?}?>
-        <th>Notes</th>
+        <?php if ($common->getLoggedUserRoleID()!=1) {?>
+                <th>Star</th>
+                <!-- <th>Office Notes</th> -->
+        <?}?>
+                <th>Notes</th>
     </tr>
 <?php $r=1;
 	foreach ($orders as $obj): 
 	$class = 'cell'.(++$r%2);
 ?>
-    <tr class="<?= $class ?>">
-<?php if ($common->getLoggedUserRoleID()==1) {?>
-      	<td rowspan=2 style="background-color:#CCCCCC;border-style: none;"><?php echo $html->link($obj['order_number'],'/orders/techBooking?order_id='.$obj['id']); ?></td>
-<? }else{ ?>
-      	<td rowspan=2 style="background-color:#CCCCCC;border-style: none;"><?php echo $html->link($obj['order_number'],'/orders/editBooking?order_id='.$obj['id']); ?></td>
-				<td rowspan=2><?php echo $html->link('Edit','/orders/feedbacks_add?id='. $obj['id'].'&ffromdate='.$fdate.'&ftodate='.$tdate.'&ftechname='.$techname.'&fphone='.$phone.'&fcallbackfromdate='.$callbackfdate.'&fcallbacktodate='.$callbacktdate) ?></td>
-<?}?>
-      	<td>&nbsp;<?php echo $obj['customer_name']; ?></td>
-      	<td rowspan=2>&nbsp;<?php echo date("Y-m-d",strtotime($obj['job_date'])); ?></td>
-      	<td>&nbsp;<?php echo $obj['tech1_name']; ?></td>
-<?php if ($common->getLoggedUserRoleID()!=1) {?>
-      	<td rowspan=2>&nbsp;<?php echo $obj['callback_date'] == '' ? '' :date("Y-m-d",strtotime($obj['callback_date'])); ?></td>
-<?}?>
-				<td rowspan=2 align="right"><?php echo $HtmlAssist->prPrice($obj['total']); ?></td>
-<?php if ($common->getLoggedUserRoleID()!=1) {?>
-      	<td rowspan=2 align="right">&nbsp;<?php echo $HtmlAssist->prPrice($obj['feedback_price']); ?></td>
-<?}?>
-      	<td rowspan=2>&nbsp;<?php echo $obj['feedback_sticker']; ?></td>
-      	<td rowspan=2>&nbsp;<?php echo $obj['feedback_number']; ?></td>
-		<td rowspan=2>&nbsp;<?php echo $obj['feedback_quality']; ?></td>
-<?php if ($common->getLoggedUserRoleID()!=1) {?>
-		<td rowspan=2>&nbsp;<?php echo $obj['feedback_suggestion']; ?></td>
-        <td rowspan=2 style="vertical-align:text-top">&nbsp;<?php echo $obj['office_note']; ?></td>
-<?}?>
-      	<td rowspan=2>&nbsp;<?php echo $obj['feedback_comment']; ?></td>
-    </tr>
-    <tr class="<?= $class ?>">
-      	<td>&nbsp;<?php echo $obj['customer_phone']; ?></td>
-      	<td>&nbsp;<?php echo $obj['tech2_name']; ?></td>
+<tr class="<?=$class;?>">
+    <?php if ($common->getLoggedUserRoleID()==1) {?>
+          	<td style="background-color:#CCCCCC;border-style: none;"><?php echo $html->link($obj['order_number'],'/orders/techBooking?order_id='.$obj['id']); ?></td>
+    <? }else{ ?>
+      	<td  style="background-color:#CCCCCC;border-style: none;"><?php echo $html->link($obj['order_number'],'/orders/editBooking?order_id='.$obj['id']); ?></td>
+				<td><?php echo $html->link('Edit','/orders/feedbacks_add?id='. $obj['id'].'&ffromdate='.$fdate.'&ftodate='.$tdate.'&ftechname='.$techname.'&fphone='.$phone.'&fcallbackfromdate='.$callbackfdate.'&fcallbacktodate='.$callbacktdate) ?></td>
+    <?}?>
+      	<td >&nbsp;<?php echo $obj['customer_name']; ?></td>
+      	<td >&nbsp;<?php echo date("Y-m-d",strtotime($obj['job_date'])); ?></td>
+        <td >&nbsp;<?php echo $obj['tech1_name']; ?></td>
+      	<td >&nbsp;<?php echo $obj['cell_phone']; ?></td>
+        <td  align="right"><?php echo $HtmlAssist->prPrice($obj['total']); ?></td>
+		<td  align="right"><?php echo $HtmlAssist->prPrice($obj['paid_amount']); ?></td>
+      	<td >&nbsp;<?php echo $obj['feedback_sticker']; ?></td>
+      	<td >&nbsp;<?php echo $obj['feedback_number']; ?></td>
+		<td >&nbsp;<?php echo $obj['feedback_quality']; ?></td>
+    <?php if ($common->getLoggedUserRoleID()!=1) {?>
+            <!-- <td rowspan=2>&nbsp;<?php // echo $obj['feedback_suggestion']; ?></td> -->
+       <td >&nbsp;<?php echo $obj['review_star'] ?></td>
+    <?}?>
+      	<td  style="vertical-align:text-top">&nbsp;<?php echo $obj['feedback_comment']; ?></td>
     </tr>
     <?php endforeach; ?>
 </table>
@@ -152,7 +140,3 @@ document.title += " :: Feedbacks";
 	</td>
 </tr>
 </table>
-<br/><br/>
-<br/><br/>
-<br/><br/>
-<br/><br/>

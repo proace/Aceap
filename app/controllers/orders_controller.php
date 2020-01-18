@@ -763,8 +763,8 @@ class OrdersController extends AppController
                     $techId = $_SESSION['user']['id'];
                     $jobDate = date("dMY", strtotime($jobDate));
                     $url = 'action=view&order=&sort=&currentPage=1&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option=1&ffromdate='.urlencode($jobDate).'&cur_ref=';
-                    // $this->redirect('orders/invoiceTabletPayment?order_id='.$this->data['Order']['id']);
-                    $this->redirect('commissions/calculateCommissions?'.$url);
+                    $this->redirect('orders/invoiceTabletPayment?order_id='.$this->data['Order']['id']);
+                    //$this->redirect('commissions/calculateCommissions?'.$url);
                 }
                 else {
                 if($_POST['havetoprint'] == 3 && $_SESSION['user']['role_id']==6)
@@ -2759,8 +2759,8 @@ class OrdersController extends AppController
                     $this->set('invoice_image_path', $rowPayment['payment_image']);
                 }
                 //Load current questions
-            $this->set('CurrentQuestionsTextOffice', $this->_showQuestions($order_id, 0));
-            $this->set('CurrentQuestionsTextTech', $this->_showQuestions($order_id, 1));
+                $this->set('CurrentQuestionsTextOffice', $this->_showQuestions($order_id, 0));
+                $this->set('CurrentQuestionsTextTech', $this->_showQuestions($order_id, 1));
 
                 //Load Created By
                 $created_by = $this->data['Order']['created_by'];
@@ -2783,13 +2783,27 @@ class OrdersController extends AppController
                 $this->data['Order']['job_time_beg'] = $this->params['url']['job_time_beg'];
                 $this->data['Order']['job_technician1_id'] = $this->params['url']['job_technician1_id'];
                 $this->data['Order']['job_technician2_id'] = $this->params['url']['job_technician2_id'];
-
+                $forEstimate = isset($this->params['url']['forEstimate']) ? $this->params['url']['forEstimate'] : 0;
+                $partRequest = isset($this->params['url']['part_request']) ? $this->params['url']['part_request'] : 0;
+                $fromTechPay = isset($this->params['url']['fromTechPay']) ? $this->params['url']['fromTechPay'] : 0;
+                $mainId = isset($this->params['url']['main_id']) ? $this->params['url']['main_id'] : 0;
                 $this->data['Order']['order_status_id'] = 1;
 
                 // Default sub-status: Not confirmed (1)
                 $this->data['Order']['order_substatus_id'] = 1;
 
-            $this->data['Order']['booking_source_id'] = $this->Common->getLoggedUserID();
+                if($partRequest == 1){
+                    // live= type=81, truck=40
+                    // local= type=70, truck=23
+                    $this->data['Order']['order_type_id'] = 81;
+                    $this->data['Order']['job_truck'] = 40;
+                }
+                if(!empty($this->params['url']['booking_source_id']))
+                {
+                    $this->data['Order']['booking_source_id'] =  $this->params['url']['booking_source_id'];
+                } else {
+                    $this->data['Order']['booking_source_id'] = $this->Common->getLoggedUserID();
+                }
 
                 // If customer ID is submitted, read the customer's data
                 if ($customer_id)
@@ -2807,7 +2821,11 @@ class OrdersController extends AppController
                 $this->data['Order']['order_number'] = 1+$row['num'];
             }
         }
+
+        $this->set('mainId', $mainId);
+        $this->set('forEstimate', $forEstimate);
         $this->set('num_items', $num_items);
+        $this->set('fromTechPay', $fromTechPay);
 
         // PREPARE DATA FOR UI
         // Get Associated Options
@@ -6769,28 +6787,30 @@ class OrdersController extends AppController
         //Convert date from date picker to SQL format
         if ($this->params['url']['ffromdate'] != '')
             $this->params['url']['ffromdate'] = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
-    else
-      $this->params['url']['ffromdate'] = date("Y-m-d", strtotime(date("d M Y")) - 24*60*60);
+        else
+          // $this->params['url']['ffromdate'] = date("Y-m-d", strtotime(date("d M Y")) - 24*60*60);
+          $this->params['url']['ffromdate'] = date("Y-m-d", strtotime(date("d M Y")));
 
-        if ($this->params['url']['ftodate'] != '')
-            $this->params['url']['ftodate'] = date("Y-m-d", strtotime($this->params['url']['ftodate']));
-    else
-      $this->params['url']['ftodate'] = date("Y-m-d", strtotime(date("d M Y")) - 24*60*60);
+            if ($this->params['url']['ftodate'] != '')
+                $this->params['url']['ftodate'] = date("Y-m-d", strtotime($this->params['url']['ftodate']));
+        else
+          // $this->params['url']['ftodate'] = date("Y-m-d", strtotime(date("d M Y")) - 24*60*60);
+          $this->params['url']['ftodate'] = date("Y-m-d", strtotime(date("d M Y")));
 
-        //Pick today's date if no date
-        $fdate = ($this->params['url']['ffromdate'] != '' ? $this->params['url']['ffromdate']: "" ) ;
-        $tdate = ($this->params['url']['ftodate'] != '' ? $this->params['url']['ftodate']: "" ) ;
-        $phone = $this->params['url']['fphone'];
+            //Pick today's date if no date
+            $fdate = ($this->params['url']['ffromdate'] != '' ? $this->params['url']['ffromdate']: "" ) ;
+            $tdate = ($this->params['url']['ftodate'] != '' ? $this->params['url']['ftodate']: "" ) ;
+            $phone = $this->params['url']['fphone'];
 
-        $allTechnicians = $this->Lists->Technicians();
-    $ftechid = $this->params['url']['ftechid'];
-        if ($this->Common->getLoggedUserRoleID()==1) $ftechid = $this->Common->getLoggedUserID();
-        $allQuality = array('BAD'=>'BAD','OK'=>'OK','GOOD'=>'GOOD','EXCELLENT'=>'EXCELLENT');
-    $fquality = $this->params['url']['fquality'];
-        //CONDITIONS
-        //**********
+            $allTechnicians = $this->Lists->Technicians();
+        $ftechid = $this->params['url']['ftechid'];
+            if ($this->Common->getLoggedUserRoleID()==1) $ftechid = $this->Common->getLoggedUserID();
+            $allQuality = array('BAD'=>'BAD','OK'=>'OK','GOOD'=>'GOOD','EXCELLENT'=>'EXCELLENT');
+        $fquality = $this->params['url']['fquality'];
+            //CONDITIONS
+            //**********
 
-    $allJobTypes = $this->Lists->ListTable('ace_rp_order_types');
+        $allJobTypes = $this->Lists->ListTable('ace_rp_order_types');
 
         $db =& ConnectionManager::getDataSource('default');
         if($fdate != '')
@@ -6820,11 +6840,12 @@ class OrdersController extends AppController
                         a.feedback_callback_date,
                         a.feedback_price,
                         a.feedback_comment,
+                        u.cell_phone,
                         if (a.feedback_sticker=1,'Yes',if (a.feedback_sticker=0,'No','')) feedback_sticker,
                         if (a.feedback_number=1,'Yes',if (a.feedback_number=0,'No','')) feedback_number,
                         a.feedback_suggestion,
                         a.feedback_quality,
-
+                        a.feedback_review_star,
                         u.first_name,
                         u.last_name,
                         u.phone as customer_phone,
@@ -6853,12 +6874,30 @@ class OrdersController extends AppController
             $orders[$row['id']]['customer_name'] = $row['first_name'].' '.$row['last_name'];
             $orders[$row['id']]['tech1_name'] = $allTechnicians[$row['job_technician1_id']];
             $orders[$row['id']]['tech2_name'] = $allTechnicians[$row['job_technician2_id']];
-      $orders[$row['id']]['job_type'] = $allJobTypes[$row['order_type_id']];
+            $orders[$row['id']]['job_type'] = $allJobTypes[$row['order_type_id']];
+            
 
-      $totals = $this->Common->getOrderTotal($row['id']);
-            $orders[$row['id']]['total'] = $totals['sum_total'];
+            if(!empty($row['feedback_review_star']))
+            {
+                  $orders[$row['id']]['review_star'] = ($row['feedback_review_star'] == 1) ? 'Yes' : 'No';
+            } else {
+                $orders[$row['id']]['review_star'] ='';
+            }
+
+            $this->Order->id = $row['id'];
+            $this->data = $this->Order->read();
+             $subtotal = 0;
+            foreach ($this->data['BookingItem'] as $key => $value) {
+                $subtotal += ($value['price'] * $value['quantity']) - $value['discount'];
+            }
+            $tax = round($subtotal*0.05,2);                
+            $totals = $subtotal + $tax;
+
+            // $totals = $this->Common->getOrderTotal($row['id']);
+            $orders[$row['id']]['total'] = $totals;
+            $orders[$row['id']]['paid_amount'] = $this->data['Payment']['paid_amount'];
         }
-
+      
         $this->set("previousPage",$previousPage);
         $this->set("nextPage",$nextPage);
         $this->set("orders", $orders);
@@ -6867,8 +6906,8 @@ class OrdersController extends AppController
         $this->set("fquality", $fquality);
         $this->set('allTechnician', $allTechnicians);
         $this->set('allQuality', $allQuality);
-    $this->set('prev_fdate', date("d M Y", strtotime($fdate) - 24*60*60));
-    $this->set('next_tdate', date("d M Y", strtotime($tdate) + 24*60*60));
+        $this->set('prev_fdate', date("d M Y", strtotime($fdate) - 24*60*60));
+        $this->set('next_tdate', date("d M Y", strtotime($tdate) + 24*60*60));
         if($fdate!='')
             $this->set('fdate', date("d M Y", strtotime($fdate)));
         if($tdate!='')
@@ -6905,13 +6944,14 @@ class OrdersController extends AppController
             $feedback_sticker = $this->data['Order']['feedback_sticker'];
             $feedback_number = $this->data['Order']['feedback_number'];
             $feedback_suggestion = $this->data['Order']['feedback_suggestion'];
+            $feedback_star = $this->data['Order']['feedback_review_star'];
             $call_result_id = 2;
             if($_POST['callback_date'] =='') $call_result_id = 3;
 
             if($errorExist == 1)
             {
                 if( $this->params['url']['id'] > 0)
-        {
+                {
                     $this->Order->id = $this->params['url']['id'];
                     $this->data = $this->Order->read();
                     $this->set('callback_date', $call_back_date);
@@ -6919,7 +6959,8 @@ class OrdersController extends AppController
                     $this->data['Order']['feedback_number'] = $feedback_number;
                     $this->data['Order']['feedback_sticker'] = $feedback_sticker;
                     $this->data['Order']['feedback_price'] = $feedback_price;
-          $this->data['Order']['feedback_comment'] = $feedback_comment;
+                    $this->data['Order']['feedback_comment'] = $feedback_comment;
+                    $this->data['Order']['feedback_review_star'] = $feedback_star;
 
                     //Set Query string back to hidden field (Search fields form list page)
                     $this->set('search_query',$_POST["search_query"]);
@@ -6928,57 +6969,62 @@ class OrdersController extends AppController
                 $this->render();
                 exit;
             }
+            if($this->data['Order']['feedback_review_star'] == 1){
+                $this->Order->id = $this->data['id'];
+                $orderDetails = $this->Order->read();
+                $sendMsg = $this->sendReviewText($orderDetails['Customer']['cell_phone'], $orderDetails['Customer']['email'],null, $orderDetails['Customer']['id']);
+                $sendEmail = $this->sendReviewEmail($orderDetails['Customer']['cell_phone'], $orderDetails['Customer']['id'], $orderDetails['Customer']['email']);
+            }
+            //$this->data['Order']['feedback_callback_date'] = date("Y-m-d", strtotime($_POST['callback_date'] ));
+            // if ($this->data['Order']['feedback_professional']=='on')
+            //     $this->data['Order']['feedback_professional']=1;
+            // else
+            //     $this->data['Order']['feedback_professional']=0;
 
-            $this->data['Order']['feedback_callback_date'] = date("Y-m-d", strtotime($_POST['callback_date'] ));
-            if ($this->data['Order']['feedback_professional']=='on')
-                $this->data['Order']['feedback_professional']=1;
-            else
-                $this->data['Order']['feedback_professional']=0;
+            // if ($this->data['Order']['feedback_knowledgeable']=='on')
+            //     $this->data['Order']['feedback_knowledgeable']=1;
+            // else
+            //     $this->data['Order']['feedback_knowledgeable']=0;
 
-            if ($this->data['Order']['feedback_knowledgeable']=='on')
-                $this->data['Order']['feedback_knowledgeable']=1;
-            else
-                $this->data['Order']['feedback_knowledgeable']=0;
+            // if ($this->data['Order']['feedback_skilled']=='on')
+            //     $this->data['Order']['feedback_skilled']=1;
+            // else
+            //     $this->data['Order']['feedback_skilled']=0;
 
-            if ($this->data['Order']['feedback_skilled']=='on')
-                $this->data['Order']['feedback_skilled']=1;
-            else
-                $this->data['Order']['feedback_skilled']=0;
+            // if ($this->data['Order']['feedback_clear']=='on')
+            //     $this->data['Order']['feedback_clear']=1;
+            // else
+            //     $this->data['Order']['feedback_clear']=0;
 
-            if ($this->data['Order']['feedback_clear']=='on')
-                $this->data['Order']['feedback_clear']=1;
-            else
-                $this->data['Order']['feedback_clear']=0;
+            // if ($this->data['Order']['feedback_timing']=='on')
+            //     $this->data['Order']['feedback_timing']=1;
+            // else
+            //     $this->data['Order']['feedback_timing']=0;
 
-            if ($this->data['Order']['feedback_timing']=='on')
-                $this->data['Order']['feedback_timing']=1;
-            else
-                $this->data['Order']['feedback_timing']=0;
+            // if ($this->data['Order']['feedback_not_professional']=='on')
+            //     $this->data['Order']['feedback_not_professional']=1;
+            // else
+            //     $this->data['Order']['feedback_not_professional']=0;
 
-            if ($this->data['Order']['feedback_not_professional']=='on')
-                $this->data['Order']['feedback_not_professional']=1;
-            else
-                $this->data['Order']['feedback_not_professional']=0;
+            // if ($this->data['Order']['feedback_not_knowledgeable']=='on')
+            //     $this->data['Order']['feedback_not_knowledgeable']=1;
+            // else
+            //     $this->data['Order']['feedback_not_knowledgeable']=0;
 
-            if ($this->data['Order']['feedback_not_knowledgeable']=='on')
-                $this->data['Order']['feedback_not_knowledgeable']=1;
-            else
-                $this->data['Order']['feedback_not_knowledgeable']=0;
+            // if ($this->data['Order']['feedback_not_skilled']=='on')
+            //     $this->data['Order']['feedback_not_skilled']=1;
+            // else
+            //     $this->data['Order']['feedback_not_skilled']=0;
 
-            if ($this->data['Order']['feedback_not_skilled']=='on')
-                $this->data['Order']['feedback_not_skilled']=1;
-            else
-                $this->data['Order']['feedback_not_skilled']=0;
+            // if ($this->data['Order']['feedback_not_clear']=='on')
+            //     $this->data['Order']['feedback_not_clear']=1;
+            // else
+            //     $this->data['Order']['feedback_not_clear']=0;
 
-            if ($this->data['Order']['feedback_not_clear']=='on')
-                $this->data['Order']['feedback_not_clear']=1;
-            else
-                $this->data['Order']['feedback_not_clear']=0;
-
-            if ($this->data['Order']['feedback_not_timing']=='on')
-                $this->data['Order']['feedback_not_timing']=1;
-            else
-                $this->data['Order']['feedback_not_timing']=0;
+            // if ($this->data['Order']['feedback_not_timing']=='on')
+            //     $this->data['Order']['feedback_not_timing']=1;
+            // else
+            //     $this->data['Order']['feedback_not_timing']=0;
 
             if (($this->data['Order']['feedback_sticker']!='0')&&($this->data['Order']['feedback_sticker']!='1'))
                 $this->data['Order']['feedback_sticker'] = 3;
@@ -7070,8 +7116,18 @@ class OrdersController extends AppController
                 if($this->data['Customer']['callback_date'] !='')
                     $this->set('callback_date', date("d M Y", strtotime($this->data['Customer']['callback_date'])));
 
-                $totals = $this->Common->getOrderTotal($this->data['Order']['id']);
-                $this->set('total',$totals['sum_total']);
+                $subtotal = 0;
+
+                foreach ($this->data['BookingItem'] as $key => $value) {
+                    $subtotal += ($value['price'] * $value['quantity']) - $value['discount'];
+                }
+                $tax = round($subtotal*0.05,2);    
+
+
+                $total = $subtotal + $tax;
+               // $totals = $this->Common->getOrderTotal($this->data['Order']['id']);
+                //$this->set('total',$totals['sum_total']);
+                $this->set('total',$total);
 
                 $job_date = new DateTime($this->data['Order']['job_date']);
                 $job_date->modify('+6 month');
@@ -11592,7 +11648,8 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $query = "UPDATE ace_rp_orders SET tech_visible_agent = 1 WHERE id = $order_id";
             $db->_execute($query);
         }
-        
+        $allTechnicians = $this->Lists->Technicians();
+        $this->set('allTechnicians', $allTechnicians);
         $this->set('job_type_id', $job_type_id);
         $this->set('city_id', $city_id);
         $this->set('order_id', $order_id);
@@ -16019,16 +16076,27 @@ function deleteUserFromCampaign()
     }
 
     //Loki: Send Review Email
-    function sendReviewEmail()
+    function sendReviewEmail($phone=null, $customerId = null, $cusEmail = null)
     {
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-        $phone_number = $_POST['phone'];
-        $cusId = $_POST['cusId'];
-        $email = $_POST['email'];
-        $message = $_POST['message'];
         $currentDate = gmdate("Y-m-d\TH:i:s\Z");
         $sender_id = $this->Common->getLoggedUserID();
         $template_subject = "Rate Our Service";
+        if(!empty($_POST['email']))
+        {
+            $phone_number = $_POST['phone'];
+            $cusId = $_POST['cusId'];
+            $email = $_POST['email'];
+            $message = $_POST['message'];
+        } else {
+            $phone_number   = $phone;
+            $cusId          = $customerId;
+            $email          = $cusEmail;
+            $settings = $this->Setting->find(array('title'=>'review_text'));
+            $template = $settings['Setting']['valuetxt'];
+            $template = $this->Common->removeSlash($template);
+            $message  = $template;
+        }
         if(!empty($email))
         {   
             
@@ -16047,11 +16115,14 @@ function deleteUserFromCampaign()
             $message = mysql_real_escape_string($message);
             $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$cusId.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
             $result = $db->_execute($query);
-            if ($result) {
+            if ($result && empty($phone)) {
                 $response  = array("res" => "OK");
                 echo json_encode($response);
                 exit();
-            }   
+            } else {
+                    return true;
+                    exit();
+                }
         }
         exit();
     }
@@ -16253,7 +16324,51 @@ function deleteUserFromCampaign()
         }
         exit();
     }
-
+    // Loki: save tech recommendations in feedback
+    function addTechRecommendation()
+    {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $msg = mysql_real_escape_string($_POST['msg']);
+        $id = $_POST['orderId'];
+        $orderNum = $_POST['orderNum'];
+        $toDate = date("Y-m-d");
+        $currenUser = $this->Common->getLoggedUserID();
+        $result = $db->_execute("UPDATE ace_rp_orders set feedback_suggestion ='".$msg."' where id =".$id."");
+        $anchor = '<a href="'.BASE_URL.'/orders/feedbacks_add?id='. $id.'&rurl=orders%2FscheduleView%3F" target="_blank">'. $orderNum.'</a>';
+        $txt = 'Please check tech recommendation for '.$anchor;
+        if($result){
+            $officeList = $this->Lists->UsersByRoles(6);
+            foreach ($officeList as $key => $value) {
+            $db->_execute("INSERT INTO `ace_rp_messages` (`to_date`,`to_user`,`txt`,`from_date`,`from_user`) VALUES ('".$toDate."',".$key.", '".$txt."','".$toDate."',".$currenUser.")");
+            }
+            $response  = array("res" => "1");
+            echo json_encode($response);
+            exit();
+        }
+        exit();
+    }
+    function payViaOffice()
+    {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $msg = mysql_real_escape_string($_POST['msg']);
+        $id = $_POST['orderId'];
+        $orderNum = $_POST['orderNum'];
+        $toDate = date("Y-m-d");
+        $currenUser = $this->Common->getLoggedUserID();
+        //$anchor = '<a href="'.BASE_URL.'/orders/feedbacks_add?id='. $id.'&rurl=orders%2FscheduleView%3F" target="_blank">'. $orderNum.'</a>';
+        $txt = 'Please add paymnet for order '.$orderNum .'<br>'.$msg;
+        
+            $officeList = $this->Lists->UsersByRoles(6);
+            foreach ($officeList as $key => $value) {
+           $result =  $db->_execute("INSERT INTO `ace_rp_messages` (`to_date`,`to_user`,`txt`,`from_date`,`from_user`) VALUES ('".$toDate."',".$key.", '".$txt."','".$toDate."',".$currenUser.")");
+            }
+            if($result){
+            $response  = array("res" => "1");
+                echo json_encode($response);
+                exit();
+            }
+            exit();
+    }
     // function webcamUpload(){
 
     // }
@@ -16285,6 +16400,5 @@ function deleteUserFromCampaign()
         $this->requestAction('/inventories/_store_sku', array('pass' => array('123')));
          exit();
     }
-   
 }
 ?>

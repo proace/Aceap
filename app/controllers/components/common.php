@@ -280,7 +280,7 @@ class CommonComponent extends Object
 
 						array(
 
-							'name' => 'Status',
+							'name' => 'Warehouse',
 
 							'url' => BASE_URL.'/inventories/index',
 
@@ -330,7 +330,7 @@ class CommonComponent extends Object
 
 						array(
 
-							'name' => 'Edit Defaults',
+							'name' => 'Truck Default Items',
 
 							'url' => BASE_URL.'/inventories/editDefault',
 
@@ -1292,14 +1292,14 @@ class CommonComponent extends Object
 					)
 				)
 			);
-//	$menu['10']['name'] = 'Discounts',//
-//	$menu['10']['url'] = BASE_URL.'/tableeditor?table=ace_rp_coupons',
-//	$menu['10']['img'] = 'icon-lg-back.png',
+		//	$menu['10']['name'] = 'Discounts',//
+		//	$menu['10']['url'] = BASE_URL.'/tableeditor?table=ace_rp_coupons',
+		//	$menu['10']['img'] = 'icon-lg-back.png',
 
-	/*$menu['10']['name'] = 'Adv. Cards',
-	$menu['10']['url'] = BASE_URL.'/cards',
-	$menu['10']['img'] = 'icon-lg-card.png',*/
-		}
+			/*$menu['10']['name'] = 'Adv. Cards',
+			$menu['10']['url'] = BASE_URL.'/cards',
+			$menu['10']['img'] = 'icon-lg-card.png',*/
+				}
 		
 		elseif (($roleID == 3)||($roleID == 9)) // TELEMARKETERS and OUTSOURCE AGENTS
 		{

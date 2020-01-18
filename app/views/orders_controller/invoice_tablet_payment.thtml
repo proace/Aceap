@@ -320,6 +320,7 @@ function upload_photo(cur,i) {
     <?php $job = $order ?>
     <?php if(isset($job)) { ?>
     <div class="header">
+        <input type="hidden" name="orderNum" id="orderNum" value="<?php echo $job['Order']['order_number'] ?>" >
     <h1>#<?php echo $job['Order']['order_number'] ?> - <?php echo $job['Type']['name'] ?></h1>
    <table>
         <tr>
@@ -356,7 +357,11 @@ function upload_photo(cur,i) {
             <td><?php echo $job['Customer']['postal_code'] ?></td>
         </tr>
         <tr>
-            <td>Phone number:</td>
+            <td>Cell Phone:</td>
+            <td><?php echo $job['Customer']['cell_phone'] ?></td>
+        </tr>
+        <tr>
+            <td>Home Phone:</td>
             <td><?php echo $job['Customer']['phone'] ?></td>
         </tr>
     </table>
@@ -647,8 +652,13 @@ function upload_photo(cur,i) {
         
         <div class="next_div">
             <div>
-                <a class="payBtn" style="text-decoration: navajowhite;font-size: 13px;" href="https://www.acecare.ca/pay-here?orderId=<?php echo base64_encode($job['Order']['id']); ?>" target="_balnk"> Pay Here </a>
-                <input type="button" class="commonCls" name="estimate" onclick="window.open('<?php echo BASE_URL ?>/orders/techBooking?order_id=<?php echo $job['Order']['id']?> & rurl=&fromTech=2', '_self')" value="Estimate" />
+               <!--  <a class="payBtn" style="text-decoration: navajowhite;font-size: 13px;" href="https://www.acecare.ca/pay-here?orderId=<?php echo base64_encode($job['Order']['id']); ?>" target="_balnk"> Pay Here </a> -->
+
+              <!--   <input type="button" class="commonCls" name="estimate" onclick="window.open('<?php //echo BASE_URL ?>/orders/techBooking?order_id=<?php echo $job['Order']['id']?> & rurl=&fromTech=2', '_self')" value="Estimate" /> -->
+               <input type="button" class="commonCls" id= "payViaOfc" name="payViaOfc" value="Pay Via Office" />
+                <input type="button" class="commonCls" id= "techRecommended" name="techRecommended" value="Tech Recommended" />
+                <input type="button" class="commonCls" name="estimate" onclick="window.open('<?php echo BASE_URL ?>/orders/techBooking?customer_id=<?php echo $job['Customer']['id']?> &order_id=0&main_id=<?=$job['Order']['id']?>&fromTechPay=1&forEstimate=1&job_technician1_id=<?php echo $job['Order']['job_technician1_id']?>&booking_source_id=<?php echo $job['Order']['booking_source_id']?>', '_self')" value="Estimate" />
+                 <input type="button" class="commonCls" name="partRequest" onclick="window.open('<?php echo BASE_URL ?>/orders/techBooking?customer_id=<?php echo $job['Customer']['id']?> &order_id=0&fromTechPay=1&main_id=<?=$job['Order']['id']?>&forEstimate=1&part_request=1&job_technician1_id=<?php echo $job['Order']['job_technician1_id']?>&booking_source_id=<?php echo $job['Order']['booking_source_id']?>', '_self')" value="Part Request" />
                 <span style="font-size: 14px">Email Receipt</span><input class="largerCheckbox" type="checkbox" name="paymentReceipt" id="paymnetReceipt" value="0">
                  <input type="email" name="newEmail" id="receiptEmail"  value="<?php echo isset($job['Customer']['email']) ? $job['Customer']['email'] : ''; ?>" class="emailBox">
                  <input type="button" class="commonCls" name="saveJobs" id="saveJobPayment" value="Save" />
@@ -775,6 +785,38 @@ function upload_photo(cur,i) {
     <input type="button"  class="reminder-button" name="cancel" value="Cancel" onclick="hideInvoiceReview();">
     </div>  
     </body>
+</div>
+<div id="recommendBox" style="display: none;">
+    <table>
+        <tr>
+            <td>
+                <textarea rows="10" cols="70" id="recommendMsg"></textarea>            
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="button" name="saveRecommend" id="saveRecommend" value="Save" style="padding: 5px; margin-top: 5px;">    
+            </td>
+        </tr>
+    </table>
+</div>
+<div id="officeBox" style="display: none;">
+    <table>
+        <tr>
+            <td>
+                <textarea rows="10" cols="70" id="officeMsg">
+Card Number:
+Expiry:
+Cvv:
+                </textarea>            
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="button" name="saveOffice" id="saveOfficePay" value="Save" style="padding: 5px; margin-top: 5px;">    
+            </td>
+        </tr>
+    </table>
 </div>
 </body>
 </html>

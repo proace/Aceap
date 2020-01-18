@@ -76,6 +76,11 @@ class Order extends AppModel
 								WHERE ace_rp_users.id=ace_rp_users_roles.user_id AND 
 									(ace_rp_users_roles.role_id=3 OR ace_rp_users_roles.role_id=7)',
 							'foreignKey' 	=> 'booking_source_id'
+							),
+				'OrderPaymentMethod' => array('className'    	=> 'OrderPaymentMethod',
+							'conditions'    => '',
+							'order'    	=> '',
+							'foreignKey'   	=> 'payment_method_type'
 							)
 
 				);

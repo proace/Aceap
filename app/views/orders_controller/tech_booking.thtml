@@ -12,6 +12,25 @@ document.title += " :: Edit Booking";
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
 <style type="text/css">
+#ajax_item_results_0 {
+    border-collapse: collapse;
+    background: #FFFF99;
+    color: #000000;
+    width: 55%;
+}
+#ajax_item_results_1 {
+    border-collapse: collapse;
+    background: #FFFF99;
+    color: #000000;
+    width: 55%;
+}
+#ajax_item_results_0 td, #ajax_item_results_0 th {
+  border: 1px solid #ddd;
+}
+
+#ajax_item_results_1 td, #ajax_item_results_1 th {
+  border: 1px solid #ddd;
+}
  .acecare-td-adjust {
   position: relative;
   height: 20px;
@@ -539,7 +558,7 @@ function showChangePrevious()
 function CheckWithSchedule()
 {
   var job_date = $('#OrderJobDate').val();
-  var new_item = window.showModalDialog("<?=BASE_URL?>/orders/scheduleView?schedule_mode=inside&ffromdate="+job_date,
+  var new_item = window.open("<?=BASE_URL?>/orders/scheduleView?schedule_mode=inside&ffromdate="+job_date,
 				'', "dialogWidth:1000px; dialogHeight:600px; dialogLeft:100px; dialogTop:100px;");
   $('#OrderJobTruck').val(new_item[0]);
   $('#OrderJobDate').val(new_item[1]);
@@ -636,6 +655,62 @@ function checkText() {
 		$("#s" + suggestion_id).removeAttr("disabled", "disabled");
 	});
 }
+function ajax(event) {
+    var val = $(event).val().trim();
+    var data_class = $(event).attr("data-class");
+    // Return all items if:
+    // 1) allItems is not passed as an argument.
+    // 2) allItems is not false
+    // Return only active items.
+     if(val != '' && val != null ){
+         $.ajax({
+              url: "<?=BASE_URL;?>/inventories/ajaxItems",
+              type: "GET",
+              dataType: 'json',
+              data: {query:val,active:true},
+              success: function(data){
+                ajax_finished(data,data_class)
+              }
+            });
+     } else {
+        $("#ajax_item_results_"+data_class).hide();
+     }
+}
+
+function ajax_finished(data, data_class) {
+    accessData = data;
+    if (data.length===0) {
+        ajax_failed("no results", data_class);
+        return false;
+    }
+    template = $('#ajax_item_result_template_'+data_class);
+    table = $('#ajax_item_results_'+data_class);
+    table.empty();
+    for(i in data) {
+        result = template.clone();
+        result.children(".item_id_"+data_class).html(data[i]["id"]);
+        result.children(".name_"+data_class).html(data[i]["name"]);
+        result.children(".sku_"+data_class).html(data[i]["sku"]);
+        // result.children(".price").html(data[i]["price"]);
+        result.children(".price_"+data_class).html(data[i]["price"]);
+        result.children(".purchase_price_"+data_class).html(data[i]["purchase_price"]);
+        result.children(".category_id_"+data_class).html(data[i]["category_id"]);
+        result.children(".model_"+data_class).html(data[i]["model"]);
+        result.children(".brand_"+data_class).html(data[i]["brand"]);
+        result.show();
+        result.bind("click",function(){result_clicked(this, data_class);});
+        result.appendTo(table);
+    }
+    table.show();
+    $("#add_item_"+data_class).hide();
+}
+function result_clicked(clicked_item, data_class){
+    dat = $(clicked_item);
+    table = $('#ajax_item_results_'+data_class);
+    table.hide();
+    $('.ajax_item_name_'+data_class).val('');
+    addItem(dat.children(".item_id_"+data_class).text(), dat.children(".name_"+data_class).text(), dat.children(".price_"+data_class).text(),data_class, dat.children(".category_id_"+data_class).text(), dat.children(".purchase_price_"+data_class).text(),"" ,"1",dat.children(".model_"+data_class).text(), dat.children(".brand_"+data_class).text());
+}
 
 $(document).ready(function(){
 function upload_photo(cur,i) {  
@@ -655,6 +730,10 @@ function upload_photo(cur,i) {
     // $('#uploading_' + i).show();
 }
 
+// Loki: search item via name
+ $(".ajax_item_name").live("keyup",function(){
+        ajax(this);
+    });
  $(".disply_preview").live("change",function(e){
         console.log("hua");
         var img_ct = $(this).attr("data-ct").trim();
@@ -1073,18 +1152,16 @@ input[type=text] {
 					<td class="special_section" onclick="location.href='./techBooking?customer_id=<?=$this->data['Customer']['id']?>&order_id=0';">
 						<u style="color:blue">New booking</u>
 					</td>
-                    <td class="special_section" onclick="location.href='./techCustomerInterest?customer_id=<?=$this->data['Customer']['id']?>&order_id=0';">
-						<u style="color:blue">Customer Interest</u>
-					</td>
+                
 					<td class="special_section" onclick="CheckWithSchedule()">
 						<u style="color:blue;cursor:pointer">Show Schedule</u>
 					</td>
-                    <td class="special_section" onclick="CheckWithTimeslot()">
+                    <!-- <td class="special_section" onclick="CheckWithTimeslot()">
 							  <u style="color:blue;cursor:pointer">Timeslots</u>
-				  </td>
-					<td class="special_section" onclick="$('#tabA4').toggle();">
+				  </td> -->
+					<!-- <td class="special_section" onclick="$('#tabA4').toggle();">
 						<u style="color:blue;cursor:pointer">Feedback</u>
-					</td>
+					</td> -->
                     <td class="special_section" onclick="window.open('<?=BASE_URL?>/orders/printView?id=<?=$this->data["Order"]["id"]?>');return false;">
                     	<u style="color:blue;cursor:pointer">Print</u>
                     </td>
@@ -1167,14 +1244,18 @@ input[type=text] {
                     <td align="right">Job Type:</td>
                     <td>
                     <?php 
-					if (($common->getLoggedUserID()!=$this->data['Order']['booking_source_id'])
-					  &&($common->getLoggedUserID()!=$this->data['Order']['booking_source2_id'])) 
-					{
-						echo $html->hidden('Order/order_type_id');
-						echo '<b>'.$job_types[$this->data['Order']['order_type_id']].'</b>';
-					}
-                    else
-						echo $html->selectTag('Order/order_type_id', $job_types, $this->data['Order']['order_type_id'],array("onchange" => "JobTypeChange()"));
+                    if($forEstimate == 1){
+                        echo $html->selectTag('Order/order_type_id', $job_types, $this->data['Order']['order_type_id'],array("onchange" => "JobTypeChange()"));
+                    } else {
+    					if (($common->getLoggedUserID()!=$this->data['Order']['booking_source_id'])
+    					  &&($common->getLoggedUserID()!=$this->data['Order']['booking_source2_id'])) 
+    					{
+    						echo $html->hidden('Order/order_type_id');
+    						echo '<b>'.$job_types[$this->data['Order']['order_type_id']].'</b>';
+    					}
+                        else
+    						echo $html->selectTag('Order/order_type_id', $job_types, $this->data['Order']['order_type_id'],array("onchange" => "JobTypeChange()"));
+                    }
                    ?>
                     </td>
                     <td align="right">Truck #:</td>
@@ -1321,15 +1402,15 @@ input[type=text] {
 						</div>
                     </td>
                 </tr>
-                <tr>
+                <!-- <tr>
                 	<td align="right">Insurable:</td>
-                	<td><?php echo $html->selectTag('Order/insurable',$yesOrNo, $this->data['Order']['insurable']);?>
+                	<td><?php //echo $html->selectTag('Order/insurable',$yesOrNo, $this->data['Order']['insurable']);?>
                     </td>
-                </tr>
+                </tr> -->
                 <tr>
-                	<td align="right">Door Hanger:</td>
-                	<td><?php echo $this->data['Order']['is_door_hanger']==1?"Yes":"No"; ?>
-                    </td>
+                	<!-- <td align="right">Door Hanger:</td>
+                	<td><?php //echo $this->data['Order']['is_door_hanger']==1?"Yes":"No"; ?>
+                    </td> -->
                   <!--   <td></td>    -->                 
                      <td>
                         <?php if (!empty($this->data['Order']['photo_1']) || $this->data['Order']['photo_1'] != '') { ?>
@@ -1368,6 +1449,10 @@ input[type=text] {
                         <a id="addBookedItemsList" title="View Items in a List"></a>
                         <a id="addBookedItemsTree" title="View Items in a Tree"></a>
                         <input type="button" value="From Supplier" onclick="addItem(1227, '', '0', 0, 1, '', '')" />
+                        <input autocomplete="off" class='ajax_item_name' data-class="0" />
+                               <a id="add_item_0" class="add_item_button" style ="display: none;" href='javascript:add_unknown_item(0);'>Add to Inventory</a>
+                        <table id='ajax_item_results_0'>
+                        </table>
                         <div class="clear_this"></div>
 						<div id="item_selector0" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
 						<table>
@@ -1409,6 +1494,16 @@ input[type=text] {
 									</tr>
 								</table>
 							</td></tr>
+                              <tr id='ajax_item_result_template_0' style='display:none'>
+                                <td class='name_0'>Result</td>
+                                <td class='sku_0'></td>
+                                <td class='price_0' ></td>
+                                <td class='item_id_0' ></td>
+                                <td class='purchase_price_0'></td>
+                                <td class='category_id_0'></td>
+                                <td class='model_0' style='display:none'></td>
+                                <td class='brand_0' style='display:none'></td>
+                            </tr>
 							<tr height=10px><td></td></tr>
 							<?php
 							if (($common->getLoggedUserID()==$this->data['Order']['job_technician1_id'])
@@ -1422,6 +1517,10 @@ input[type=text] {
                                 <a id="addTechnicianSalesList" title="View Items in a List"></a>
                                 <a id="addTechnicianSalesTree" title="View Items in a Tree"></a>
                                 <input type="button" value="From Supplier" onclick="addItem(1227, '', '0', 1, 1, '', '')" />
+                                <input autocomplete="off" class='ajax_item_name' data-class="1"/>
+                                 <a id="add_item_1" class="add_item_button" style= "display: none;" href='javascript:add_unknown_item(1);'>Add to Inventory</a>
+                                <table id='ajax_item_results_1'>
+                                </table>
                                 <div class="clear_this"></div>
 								<div id="item_selector1" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
 								<table id="CurrentItemsTableTech" cellspacing=0 colspacing=0 class="inResultsBooking">
@@ -1443,7 +1542,18 @@ input[type=text] {
 									<tr>
 										<td id="NewItemsTech" class="newitem" colspan=7 style="display:none"></td>
 									</tr>
+                                    <tr id='ajax_item_result_template_1' style='display:none'>
+                                    <td class='name_1'>Result</td>
+                                    <td class='sku_1'></td>
+                                    <td class='price_1' ></td>
+                                    <td class='item_id_1' ></td>
+                                    <td class='purchase_price_1'></td>
+                                    <td class='category_id_1'></td>
+                                    <td class='model_1' style='display:none'></td>
+                                    <td class='brand_1' style='display:none'></td>
+                                </tr>
 								</table>
+
 							</td></tr>
 							<?php
 							}
@@ -1502,16 +1612,16 @@ input[type=text] {
 					<td style="vertical-align:top">
 						<table>
 							<tr><td id="CurrentItemsTotal" style="vertical-align:top"></td></tr>
-							<tr>
+							<!-- <tr>
 								<td>Parts warranty:<br/>
-									<?php echo $html->input('Order/parts_warranty', array('style' => 'width: 85px; cursor: hand; cursor: pointer;'));?>
+									<?php // echo $html->input('Order/parts_warranty', array('style' => 'width: 85px; cursor: hand; cursor: pointer;'));?>
 								</td>
 							</tr>
 							<tr>
 								<td>Labor warranty:<br/>
-									<?php echo $html->input('Order/labor_warranty', array('style' => 'width: 85px; cursor: hand; cursor: pointer;'));?>
+									<?php // echo $html->input('Order/labor_warranty', array('style' => 'width: 85px; cursor: hand; cursor: pointer;'));?>
 								</td>
-							</tr>
+							</tr> -->
 						</table>
 						<table id="PaymentsSection" class="special_section" width=100%>
 							<tr><td colspan=2>
@@ -1584,7 +1694,12 @@ input[type=text] {
                 <?php } else {  
 					echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(); return false;" ));	
 				} ?>
-				&nbsp;&nbsp;&nbsp;<input type="button" value="Exit" onclick="history.go(-1);" class="buttons">
+				&nbsp;&nbsp;&nbsp;
+                <?php if($fromTechPay == 1){ ?>
+                 <input type="button" value="Exit" onclick="location.href='<?=BASE_URL?>/orders/invoiceTabletPayment?order_id=<?=$mainId?>'" class="buttons">
+                 <?php } else {?>   
+                    <input type="button" value="Exit" onclick="history.go(-1);" class="buttons">
+                <?php } ?>
 			</div>
 		</div>
 	</div>
