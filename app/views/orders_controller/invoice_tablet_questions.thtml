@@ -421,5 +421,7 @@ input[type=text] {
 <pre>
 <?php //print_r($working_answers) ?>
 </pre>
+<?php echo $this->element('tech_footer'); ?>
+
 </body>
 </html>

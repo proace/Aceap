@@ -456,5 +456,6 @@ th {
 <input type="button" class="review-btn" name="skip" value="Next" id="next_page">
 <?php } ?>
 </div>
+<?php echo $this->element('tech_footer'); ?>
 </body>
 </html>

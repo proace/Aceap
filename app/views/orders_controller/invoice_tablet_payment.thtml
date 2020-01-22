@@ -818,5 +818,6 @@ Cvv:
         </tr>
     </table>
 </div>
+<?php echo $this->element('tech_footer'); ?>
 </body>
 </html>

@@ -151,7 +151,7 @@
 				data: {'editor':data,'order_id':order_id},
 				success: function(data) {
 					if(fromTech == 3 || fromTech== 2){
-						document.location.href="techBooking?order_id=<?= $order_id ?>&from_tech_page=<?= $fromTech ?>&fromEstimate=1";
+						document.location.href="techBooking?order_id=<?= $order_id ?>&customer_id=<?=$cusId ?>&from_tech_page=<?= $fromTech ?>&main_id=<?= $mainId ?>&fromTechPay=1&fromEstimate=1";
 					}else {
 						document.location.href="editBooking?order_id=<?= $order_id ?>&from_tech_page=<?= $fromTech ?>&fromEstimate=1";
 					}

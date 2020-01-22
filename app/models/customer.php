@@ -8,6 +8,13 @@ class Customer extends AppModel
 
 	var $name = 'Customer';
 	var $validate = array();
+	var $hasMany = array(
+							'PartImages' => array(	'className' 	=> 'UserPartImages',
+													'conditions'	=> '',
+													'dependent'		=> true,
+													'foreignKey'	=> 'customer_id'
+									)
+				);
 
   	// Method creates a log record for the coming change of data
 	// Created: Anthony Chernikov, 06/08/2010

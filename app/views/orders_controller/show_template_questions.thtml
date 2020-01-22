@@ -155,8 +155,11 @@
             <td class="<?php echo $row ?>"><?php echo $question['value'] ?></td>
             <td class="<?php echo $row ?>">
             <?php if(count($responses[$question_id]) > 0) { ?>
+            <!-- value="<?php echo isset($working_answers[$question_id]['response_text']) ? $working_answers[$question_id]['response_text'] : isset($carried_answers[$question_id]['response_text'])?$carried_answers[$question_id]['response_text']:'' ?>" -->
+
             <input type="hidden" class="question_id" value="<?php echo $question_id ?>" />
-            <input type="text" class="text_response rank<?php echo $question['rank'] ?> required" name="data[Template][<?php echo $question_id ?>][response_text]" value="<?php echo isset($working_answers[$question_id]['response_text'])?$working_answers[$question_id]['response_text']:isset($carried_answers[$question_id]['response_text'])?$carried_answers[$question_id]['response_text']:'' ?>" />
+            <input type="text" class="text_response rank<?php echo $question['rank'] ?> required" name="data[Template][<?php echo $question_id ?>][response_text]" value="<?php if(!empty($working_answers[$question_id]['response_text'])) {
+             echo $working_answers[$question_id]['response_text'];} else { if(!empty($carried_answers[$question_id]['response_text'])) { echo $carried_answers[$question_id]['response_text'];} else { echo '';} } ?>" />
             <div class="response_codes">
                 <?php foreach($responses[$question_id] as $response_id => $response) { ?>
                 <div class="code">

@@ -1034,6 +1034,8 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
         //if (!$order['permit_ordered']) $color = 'background-color: #5555FF';
         if ($order['tech_visible'] == '0') $color = 'background-color: #555555';
     }
+
+    if ($order['order_type_id'] == 81) $color = 'background-color: #00e5ff';
     //echo '<BR>RESPONSE<BR><pre>';print_r($order);exit;
     $id = $order['id'];
     /*if($order['emal_bounce_status']==1){

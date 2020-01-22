@@ -77,7 +77,9 @@ class CommonComponent extends Object
 		$row = mysql_fetch_array($result, MYSQL_ASSOC);
 		return $row; 
     }
-    function uploadPhoto($file,$order_id, $config, $i)
+    
+    //function uploadPhoto($file, $order_id, $config, $i, $customer_id = null)
+    function uploadPhoto($file_name,$file_tmpname, $order_id, $config, $i, $customer_id = null)
 	{
 		date_default_timezone_set('America/Los_Angeles');
 
@@ -94,17 +96,19 @@ class CommonComponent extends Object
 		if (!file_exists($day)) {
 			mkdir('upload_photos/'.$day, 0755);
 		}
-		$path = $file['name'];
+		// $path = $file['name'];
+		$path = $file_name;
 		$ext = pathinfo($path, PATHINFO_EXTENSION);
 		$name = date('Ymdhis', time()).$order_id.$i.'.'.$ext;
-
+		
 		if ( 0 < $file['error'] ) {
 	        // echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
 	    } else {
-	        move_uploaded_file($file['tmp_name'], 'upload_photos/'.$day.'/'.$name);
+	        move_uploaded_file($file_tmpname, 'upload_photos/'.$day.'/'.$name);
 	    }
 
-		$sql = "UPDATE ace_rp_orders SET photo_".$i." = '".$name."' WHERE id = ".$order_id;
+		// $sql = "UPDATE ace_rp_orders SET photo_".$i." = '".$name."' WHERE id = ".$order_id;
+		$sql = "INSERT INTO ace_rp_user_part_images (customer_id, image_name) VALUES (".$customer_id.", '".$name."')";
 		$db =& ConnectionManager::getDataSource($config);
 		$result = $db->_execute($sql);
 

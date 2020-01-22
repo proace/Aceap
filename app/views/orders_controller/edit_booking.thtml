@@ -409,7 +409,10 @@ function openTab(n){
 
 	if(1 == n)
 	{
-		$("#show-new-booking").trigger("click");
+
+       // location.href='./editBooking?order_id=<?=$this->data['Order']['id']?>';
+		//Loki commented
+        //$("#show-new-booking").trigger("click");
 	}
 	nopen = n;
 }
@@ -3071,9 +3074,6 @@ function get_data($url)
     <?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 3) {?>
     <div class="tabtrigger <?=$tab11?>" id="trigger11" onclick="openTab(11);">Email History</div>
     <?php }?>
-   <!--  <?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 3) {?>
-    <div class="tabtrigger <?=$tab12?>" id="trigger12" onclick="openTab(12);">SMS History</div>
-    <?php }?> -->
 <?php if (!isset($_GET['hotlist'])) {?>
     <!--<div class="tabtrigger" id="trigger4" onclick="openTab(4);">Feedback</div>-->
 	<?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13) {?>
@@ -3083,6 +3083,9 @@ function get_data($url)
     <div class="tabtrigger tabOff" id="trigger6" onclick="createMessage();">Remind</div>
 	<?php }?>
     <div class="tabtrigger tabOff" id="trigger6" onclick="showFeedback();">FeedBack</div>
+    <?php if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 3) {?>
+    <div class="tabtrigger <?=$tab13?>" id="trigger13" onclick="openTab(13);">Images</div>
+    <?php }?>
 </div>
 </td>
 </tr>
@@ -3750,25 +3753,26 @@ function get_data($url)
                     <td></td>
                     <td></td>
 <!-- 					<td></td>
- -->                    <td>
-						<?php if (!empty($this->data['Order']['photo_1']) || $this->data['Order']['photo_1'] != '') { ?>
-							<div style="position: relative; padding:0; width: 30px;"> 
-									<span style="position:absolute;right: 0px;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-nu="1" image-name="<?php echo $this->data['Order']['photo_1']?>"></span>
-									<img id="photo_1" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_1'];?>" style="max-height:28px;height:auto;cursor:pointer;">				 		
-								</div>	
-							<!-- <img id="photo_1" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_1'];?>" style="max-height:28px;height:auto;cursor:pointer;"> -->
-							 
-						<?php } else {?>
-							<img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
-							<div class="cls-acecare-td-adjust">
-								<label for="sortpicture1" >Upload</label>
-								<input type="file" name="sortpic1" id="sortpicture1" class="disply_preview" data-ct="photo1">
-								
-							</div>
-							<?php }?>
-					</td>
+ -->                   <td>
+                          <input type="file" name="sortpic1[]" id="sortpicture1" class="disply_preview" data-ct="photo1" multiple="multiple">
+
+                          <!-- <?php if (!empty($this->data['Order']['photo_1']) || $this->data['Order']['photo_1'] != '') { ?>
+                            <div style="position: relative; padding:0; width: 30px;"> 
+                                    <span style="position:absolute;right: 0px;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-nu="1" image-name="<?php echo $this->data['Order']['photo_1']?>"></span>
+                                    <img id="photo_1" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_1'];?>" style="max-height:28px;height:auto;cursor:pointer;">                       
+                                </div>  
+                        <?php } else {?>
+                            <img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
+                            <div class="cls-acecare-td-adjust">
+                                <label for="sortpicture1" >Upload</label>
+                                <input type="file" name="sortpic1" id="sortpicture1" class="disply_preview" data-ct="photo1">
+                                
+                            </div>
+                            <?php }?> -->
+                            
+					   </td>
 					<td>
-						<?php if (!empty($this->data['Order']['photo_2']) || $this->data['Order']['photo_2'] != '') { ?>
+						<!-- <?php if (!empty($this->data['Order']['photo_2']) || $this->data['Order']['photo_2'] != '') { ?>
 							<div style="position: relative; padding:0; width: 30px;"> 
 									<span style="position:absolute;right: 0px;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-nu="2" image-name="<?php echo $this->data['Order']['photo_2']?>"></span>
 									<img id="photo_2" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_2'];?>" style="max-height:28px;height:auto;cursor:pointer;">				 		
@@ -3781,7 +3785,7 @@ function get_data($url)
 								
 								
 							</div>
-							<?php }?>
+							<?php }?> -->
 					</td>
                 </tr>
                 <!-- <tr>
@@ -3863,15 +3867,14 @@ function get_data($url)
                     <td></td>
                 </tr> -->
                 
-                <tr>
-                    <td>
+               <!--  <tr>
+                    <td colspan="4">
                         <table>
                             <tr>
                                 <td>Images:</td>
                                 <?php foreach ($allImages as $key => $value) {?>
                                     <td>
                                         <div style="position: relative; padding:0; width: 30px;"> 
-                                                <span style="position:absolute;right: 0px;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-nu="1" image-name="<?php echo $value?>"></span>
                                                 <img id="" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$value;?>" style="max-height:28px;height:auto;cursor:pointer;">
                                         </div>
                                     </td>
@@ -3881,7 +3884,7 @@ function get_data($url)
                     </td>
 
                 </tr>
-                
+                 -->
                 <tr>
                     <td colspan=4 id="CurrentItems" style="vertical-align:top">
 						<table>
@@ -4529,7 +4532,22 @@ function get_data($url)
 		  }?>
 	</table>
 </div>
-
+<div id="tabA13" style="display:<?=$page13?>; width:100%">
+    <table style="width:100%">
+        <tr>
+            <th>Images</th>
+        </tr>
+        <tr>
+         <?php foreach ($allImages as $key => $value) {?>
+            <td>
+                <div style="position: relative; padding:0; width: 30px;"> 
+                        <img id="" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$value;?>" style="max-height:28px;height:auto;cursor:pointer;">
+                </div>
+            </td>
+        <?php } ?>
+        </tr>
+    </table>
+</div>
 <!-- echo '<tr><td href="javascript:void(0)" onclick="playRecording('.$newRecName.');">'.$ -->
 
     <div id="tabA4" style="display:none"><!-- Feedback -->

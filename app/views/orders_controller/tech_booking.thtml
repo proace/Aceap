@@ -156,6 +156,19 @@ function CloseJobsHistory(){
   $('#OpenHistoryText').show();
   $('#CloseHistoryText').hide();
 }
+
+function OpenImageHistory(){
+    $('#showImages').show();
+    $('#OpenImageHistory').hide();
+    $('#CloseImageHistory').show();
+} 
+
+function CloseImageHistory()
+{
+    $('#showImages').hide();
+    $('#OpenImageHistory').show();
+    $('#CloseImageHistory').hide();
+}
 function ShowAN(el){
   if (($(el).val()>2)&&($(el).val()<6))	$("#auth_number").parent().show();
 	else $("#auth_number").parent().hide();
@@ -1156,6 +1169,13 @@ input[type=text] {
 					<td class="special_section" onclick="CheckWithSchedule()">
 						<u style="color:blue;cursor:pointer">Show Schedule</u>
 					</td>
+                    <td class="special_section" id="OpenImageHistory" onclick="OpenImageHistory()">
+                        <u style="color:blue">Show Images</u>
+                        <!-- <img id="JobHistoryWorking" style="display:none" src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/> -->
+                    </td>
+                    <td class="special_section" id="CloseImageHistory" onclick="CloseImageHistory()" style="display:none">
+                        <u style="color:blue">Hide Images</u>
+                    </td>
                     <!-- <td class="special_section" onclick="CheckWithTimeslot()">
 							  <u style="color:blue;cursor:pointer">Timeslots</u>
 				  </td> -->
@@ -1180,6 +1200,19 @@ input[type=text] {
                     
 				</tr>
 			</table>
+
+                <table class="special_section" id="showImages" style="width:100%;display:none;" cellspacing=0 cellpadding=0>
+                    <tr>
+                     <?php foreach ($allImages as $key => $value) {?>
+                        <td>
+                            <div style="position: relative; padding:0; width: 30px;"> 
+                                    <img id="" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$value;?>" style="max-height:28px;height:auto;cursor:pointer;">
+                            </div>
+                        </td>
+                    <?php } ?>
+                    </tr>
+                </table>
+
 			<table id="JobHistory" class="special_section" style="display:none;" cellspacing=0 cellpadding=0>
 				<tr>
 				  <td style="clear: both;background:#FFFFEE;"></td>
@@ -1380,6 +1413,7 @@ input[type=text] {
 					?></strong>
                     
                     <input type="hidden" name="data[Order][order_status_id]" id="OrderOrderStatusId" value="<?php echo $this->data['Order']['order_status_id'];?>" />
+
                     <!--
 						<input type="radio" id="radiostatus" name="data[Order][order_status_id]" value="1" <?=((!$this->data['Order']) || ($this->data['Order']['order_status_id']==1) ? 'checked' : '');?> onclick="StatusChange(this)">&nbsp;Booked&nbsp;&nbsp;
 						<input id="radiostatus" type="radio" name="data[Order][order_status_id]" value="5" <?=($this->data['Order']['order_status_id']==5 ? 'checked' : '');?> onclick="StatusChange(this)">&nbsp;Done&nbsp;&nbsp;
@@ -1389,7 +1423,7 @@ input[type=text] {
                     </td>
                 </tr>
                 <tr>
-                    <td colspan=2>
+                    <td colspan=4>
                     <?php
                     if (($this->data['Order']['order_status_id']=="3")||($this->data['Order']['order_status_id']=="4"))
                           $ShowReason = 'block'; 
@@ -1412,8 +1446,9 @@ input[type=text] {
                 	<td><?php //echo $this->data['Order']['is_door_hanger']==1?"Yes":"No"; ?>
                     </td> -->
                   <!--   <td></td>    -->                 
-                     <td>
-                        <?php if (!empty($this->data['Order']['photo_1']) || $this->data['Order']['photo_1'] != '') { ?>
+                     <td colspan="4">
+                         <input type="file" name="sortpic1[]" id="sortpicture1" class="disply_preview" data-ct="photo1" multiple="multiple">
+                       <!--  <?php if (!empty($this->data['Order']['photo_1']) || $this->data['Order']['photo_1'] != '') { ?>
                             <img id="photo_1" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_1'];?>" style="max-height:28px;height:auto;cursor:pointer;">
                              
                         <?php } else {?>
@@ -1423,10 +1458,10 @@ input[type=text] {
                                 <input type="file" name="sortpic1" id="sortpicture1" class="disply_preview" data-ct="photo1">
                                 
                             </div>
-                            <?php }?>
+                            <?php }?> -->
                     </td>
-                    <td>
-                        <?php if (!empty($this->data['Order']['photo_2']) || $this->data['Order']['photo_2'] != '') { ?>
+                    <!-- <td> -->
+                       <!--  <?php if (!empty($this->data['Order']['photo_2']) || $this->data['Order']['photo_2'] != '') { ?>
                             <img id="photo_2" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_2'];?>" style="max-height:28px;height:auto;cursor:pointer;">
 
                         <?php } else {?>
@@ -1437,26 +1472,27 @@ input[type=text] {
                                 
                                 
                             </div>
-                            <?php }?>
-                    </td>
-                </tr>
+                            <?php }?> -->
+                    <!-- </td> -->
+               <!--  </tr>
                    <tr>
-                    <td>
+                    <td colspan="4">
                         <table>
                             <tr>
                                 <td>Images:</td>
                                 <?php foreach ($allImages as $key => $value) {?>
+                                    <?php if(!empty($value) && $value != NULL){ ?>
                                     <td>
                                         <div style="position: relative; padding:0; width: 30px;"> 
-                                                <span style="position:absolute;right: 0px;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-nu="1" image-name="<?php echo $value?>"></span>
                                                 <img id="" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$value;?>" style="max-height:28px;height:auto;cursor:pointer;">
                                         </div>
                                     </td>
+                                    <?php } ?>
                                 <?php } ?>
                             </tr>
                         </table>
                     </td>
-                </tr>
+                </tr> -->
                 <tr>
                     <td colspan=3 id="CurrentItems" style="vertical-align:top">
                     	<!--<input type="button" value="Add booked Items" onclick="showAddItems(0)" />-->
@@ -1700,7 +1736,7 @@ input[type=text] {
 				<?php if ($_SESSION['user']['role_id'] == 6) {?>
 				<input type="button" value="Print blank" onclick="window.open('<?=BASE_URL?>/orders/printBlank?job_type='+$('#OrderOrderTypeId').val());return false;" class="buttons">
 				<?php }?>-->
-				
+				<input type="hidden" name="data[Order][main_id]" id="OrderMainId" value="<?php echo $mainId?>" />
                 <?php if($this->data['Order']['id'] != 0) {
                     echo $html->submit("Save", array("class" => "buttons","onclick" => "javascript:document.getElementById('havetoprint').value=1;ValidateFields(); return false;" ));
 					// echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(); return false;" ));
@@ -1712,7 +1748,7 @@ input[type=text] {
 					echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(); return false;" ));	
 				} ?>
 				&nbsp;&nbsp;&nbsp;
-                <?php if($fromTechPay == 1){ ?>
+                <?php if($fromTechPay == 1 && ($mainId > 0)){ ?>
                  <input type="button" value="Exit" onclick="location.href='<?=BASE_URL?>/orders/invoiceTabletPayment?order_id=<?=$mainId?>'" class="buttons">
                  <?php } else {?>   
                     <input type="button" value="Exit" onclick="history.go(-1);" class="buttons">
@@ -1733,4 +1769,5 @@ input[type=text] {
 <div class="invoice-img-enlarge" title="Photo">
     <img src="<?=$imgPath?>" style="width:100%;">
 </div>
+
 </form>

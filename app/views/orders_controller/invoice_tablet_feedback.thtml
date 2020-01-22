@@ -64,14 +64,15 @@ function upload_photo(i) {
 	if($('input[id="sortpicture'+i+'"]').val().length == 0) {
 		return;
 	}
-	var formData = new FormData();
+	var customerId = $("#InvoiceCustomerId").val();
+    var formData = new FormData();
 	formData.append('section', 'general');
 	formData.append('action', 'previewImg');
 	// Main magic with files here
 	formData.append('image', $('input[id="sortpicture'+i+'"]')[0].files[0]);
     $(".overlay"+i).show();
 	$.ajax({
-		url: '<?=BASE_URL?>/orders/uploadPhoto/<?=$order['Order']['id'] ?>/'+i,
+		url: '<?=BASE_URL?>/orders/uploadPhoto/<?=$order['Order']['id'] ?>/'+i+'/'+customerId,
 		dataType: 'text',
 		cache: false,
 		contentType: false,
@@ -174,6 +175,7 @@ function upload_photo(i) {
         <?php echo $html->input('Invoice/phone', array('type'=>'hidden', 'value'=>$job['Customer']['phone'])); ?>
         <?php echo $html->input('Invoice/has_booking', array('type'=>'hidden', 'id'=>'has_booking', 'value'=>0)); ?>
         <?php echo $html->input('Invoice/city_id', array('type'=>'hidden', 'id'=>'city_id', 'value'=>$city_id)); ?>
+
         <div class="order_div">
         <h3>#<?php echo $job['Order']['order_number'] ?> - <?php echo $job['Type']['name'] ?></h3>
         <table class="item_table office">
@@ -404,5 +406,6 @@ function upload_photo(i) {
 <div class="invoice-img-enlarge" title="Photo">
     <img src="<?=$imgPath?>" style="width:100%;">
 </div>
+<?php echo $this->element('tech_footer'); ?>
 </body>
 </html>
