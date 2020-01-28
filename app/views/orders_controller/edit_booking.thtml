@@ -1648,7 +1648,6 @@ $(function () {
                   data: payload,
                   dataType: 'json',
                   success: function(data){
-                    console.log("inn2");
                         var invoiceName = data['imageName'];
                         var supplierName = data['supplier_name'];
                         var invoiceId = data['invoice_id'];
@@ -1665,9 +1664,76 @@ $(function () {
         }
     });        
 });
-
+// $(".",cur).text();
 $(document).ready(function(){
     
+    //Loki: choose address from addresses
+    $(".customerAddresses").live("click", function(){
+        var cur = $(this);
+        $(".customerAddresses").css("background-color", "#989696");
+        $(cur).css("background-color", "#00ff00");
+        var id = cur.attr("address-id");
+        var unit = $(".address_unit",cur).text();
+        var streetNum = $(".address_street_number",cur).text();
+        var street = $(".address_street",cur).text();
+        var city = $(".city",cur).text().trim();
+        var postal_code = $(".postal_code",cur).text();
+
+        $("#CustomerPostalCode").val(postal_code);
+        $("#CustomerAddressStreetNumber").val(streetNum);
+        $("#CustomerAddressStreet").val(street);
+        //$("#CustomerCity").val(city);
+        $("#CustomerAddressUnit").val(unit);
+        $("#address_id").val(id);
+        $('#CustomerCity option[value="'+city+'"]').attr('selected','selected');
+        $("#campaing-select option[data-camp-city='"+city+"']").attr("selected",true);
+    });
+   //Loki: check customer exist or not using phone number
+   $("#CustomerCellPhone").live("change", function(){
+        var phoneNum    = $("#CustomerCellPhone").val();
+        var numType     = $(this).attr('num_type');
+        var strlength   = phoneNum.length;
+        if(strlength >= 10)
+        {
+            $.ajax({
+                  url: "<?=BASE_URL;?>/customers/checkCustomerExist",
+                  type: "POST",
+                  data: {phoneNum:phoneNum,numType:numType },
+                  dataType: 'json',
+                  success: function(data){
+                        if(data.res > 0){
+                            var msg = "User already exist for booking <a href='<?=BASE_URL;?>/orders/editBooking?customer_id="+data.res+" &order_id=0' style='color: blue;'>Click Here</a>";
+                            $("#user_message_box").html(msg);
+                            $("#user_message_box").dialog("open");
+                        }
+                    }
+                });
+        }
+   });
+
+    $("#CustomerPhone").live("change", function(){
+        var phoneNum    = $("#CustomerPhone").val();
+        var numType     = $(this).attr('num_type');
+        var strlength   = phoneNum.length;
+        if(strlength >= 10)
+        {
+            $.ajax({
+                  url: "<?=BASE_URL;?>/customers/checkCustomerExist",
+                  type: "POST",
+                  data: {phoneNum:phoneNum,numType:numType },
+                  dataType: 'json',
+                  success: function(data){
+                        if(data.res > 0){
+                            var msg = "User already exist <a href='<?=BASE_URL;?>/orders/editBooking?customer_id="+data.res+" &order_id=0' style='color: blue;'>Click Here</a>";
+                            $("#user_message_box").html(msg);
+                            $("#user_message_box").dialog("open");
+                        }
+                    }
+                });
+        }
+   });
+   
+
     // Loki: Remove onr time purchase item from item_box
     $(".removeOnetimeItem").live("click", function(){
         $(this).closest('tr').remove();
@@ -1751,6 +1817,18 @@ $(document).ready(function(){
 	      }
 	    });
 	  }
+      //Loki: open box for user exist message
+      $(function () {
+            $("#user_message_box").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "Error",
+                autoOpen: false,
+                width: 700,
+                height: 200,
+                cache: false
+            });           
+        });
       //Loki open box to add multiple one time purchase items.
       $(function () {
             $("#item_box").dialog({
@@ -2992,7 +3070,7 @@ function get_data($url)
         <input type="button"  name="cancel" value="Cancel" onclick="hideItemBox();" style="margin-top: 5px;" />
     </form>
 </div>
-
+<div id="user_message_box" style="display: none;"></div>
 <!-- The Modal -->
 <div id="myModalNew" class="modal">
   <!-- Modal content -->
@@ -3101,6 +3179,37 @@ function get_data($url)
             <?php echo $html->hidden('Customer/id')?>
             <table>
                 <tr>
+                    <td align="right">Cell Phone*:</td>
+                    <td>
+                    <?php echo $html->input('Customer/cell_phone',array("value"=>$common->displayPhone($html->tagValue('Customer/cell_phone')), 'style' => 'width: 140px;', 'num_type' => '1')); ?><br/>
+                    <span class="fa fa-phone call_icon" onclick="call_cell_phone();" aria-hidden="true"></span>
+                    <span class="fa fa-comments" style="font-size: 17px; color:green;" onclick="showSmsBox();" aria-hidden="true"></span>
+                    <?php echo $html->tagErrorMsg('Customer/cell_phone','Please enter in a cell phone for this customer.'); ?>
+                    <span class="fa fa-commenting-o openReviewBox" style='font-size:17px' aria-hidden="true" title="Review Text" onclick="showReviewTextBox();"></span>
+                    </td>
+                    
+                </tr>
+                 <tr>
+                   <td></td>
+                   <td><!-- <a href="javascript:void(0)" id="dial2" class="green" onclick=call('dial2','hangup2')>Dial</a>  -->
+                    <a href="javascript:void(0)" id="hangup2" class="red" onclick=hangup('dial2','hangup2')>Hang Up</a></td>
+                </tr>
+                <tr>
+                    <td align="right">Home Phone:</td>
+                    <td>
+                    <?php echo $html->input('Customer/phone',array("value"=>$common->displayPhone($html->tagValue('Customer/phone')), 'style' => 'width: 145px;', 'num_type' => '2')); ?><br>
+                    <span class="fa fa-phone call_icon"  onclick="call_phone();" aria-hidden="true"></span>
+                    <?php echo $html->tagErrorMsg('Order/CustomerPhone','Please enter in a phone for this customer.') ?>
+                    <span class="fa fa-envelope openMailBox" style="font-size: 15px; color:#3c8dbc;" aria-hidden="true"></span>
+                    <span class='fa fa-envelope-open-o openReviewMailBox' style='font-size:15px' aria-hidden="true" title="Review Email"></span>
+                    </td>
+                </tr>
+                <tr>
+                   <td></td>
+                   <td><!-- <a href="javascript:void(0)" id="dial" class="green" onclick=call('dial','hangup')>Dial</a> -->
+                    <a href="javascript:void(0)"    id="hangup" class="red" onclick=hangup('dial','hangup') >Hang Up</a></td>
+                </tr>
+                <tr>
                     <td align="right">First Name:</td>
                     <td>
                     <?php echo $html->input('Customer/first_name', array('style' => 'width: 140px;')); ?>
@@ -3128,6 +3237,7 @@ function get_data($url)
 					</td>
 				</tr>
 				<tr>
+                    <input type="hidden" name="data[Order][address_id]" id="address_id" value="<?= $this->data['Order']['address_id']?>">
 					<td align="right">Unit:</td>
 					<td><?php echo $html->input('Customer/address_unit', array('style' => 'width: 120px;')); ?></td>
 				</tr>
@@ -3155,38 +3265,6 @@ function get_data($url)
                     <?php echo $html->tagErrorMsg('Customer/postal_code','Please enter in a postal code for this customer.') ?>
                     </td>
                 </tr>
-                <tr>
-                    <td align="right">Cell Phone*:</td>
-                    <td>
-                    <?php echo $html->input('Customer/cell_phone',array("value"=>$common->displayPhone($html->tagValue('Customer/cell_phone')), 'style' => 'width: 140px;')); ?><br/>
-                    <span class="fa fa-phone call_icon" onclick="call_cell_phone();" aria-hidden="true"></span>
-                    <span class="fa fa-comments" style="font-size: 17px; color:green;" onclick="showSmsBox();" aria-hidden="true"></span>
-                    <?php echo $html->tagErrorMsg('Customer/cell_phone','Please enter in a cell phone for this customer.'); ?>
-                    <span class="fa fa-commenting-o openReviewBox" style='font-size:17px' aria-hidden="true" title="Review Text" onclick="showReviewTextBox();"></span>
-                    </td>
-                    
-                </tr>
-                 <tr>
-                   <td></td>
-                   <td><!-- <a href="javascript:void(0)" id="dial2" class="green" onclick=call('dial2','hangup2')>Dial</a>  -->
-                    <a href="javascript:void(0)" id="hangup2" class="red" onclick=hangup('dial2','hangup2')>Hang Up</a></td>
-                </tr>
-                <tr>
-                    <td align="right">Home Phone:</td>
-                    <td>
-                    <?php echo $html->input('Customer/phone',array("value"=>$common->displayPhone($html->tagValue('Customer/phone')), 'style' => 'width: 145px;')); ?><br>
-                    <span class="fa fa-phone call_icon"  onclick="call_phone();" aria-hidden="true"></span>
-                    <?php echo $html->tagErrorMsg('Order/CustomerPhone','Please enter in a phone for this customer.') ?>
-                    <span class="fa fa-envelope openMailBox" style="font-size: 15px; color:#3c8dbc;" aria-hidden="true"></span>
-                    <span class='fa fa-envelope-open-o openReviewMailBox' style='font-size:15px' aria-hidden="true" title="Review Email"></span>
-                    </td>
-                </tr>
-                <tr>
-                   <td></td>
-                   <td><!-- <a href="javascript:void(0)" id="dial" class="green" onclick=call('dial','hangup')>Dial</a> -->
-                    <a href="javascript:void(0)"    id="hangup" class="red" onclick=hangup('dial','hangup') >Hang Up</a></td>
-                </tr>
-               
                 <tr>
                     <td align="right">Business Phone:</td>
                     <td>
@@ -3281,6 +3359,34 @@ function get_data($url)
         </div>
     </div>
     <input type="button" class="edit_info" value="Edit Info" onclick="showEditUserInfo()"/>
+    <div>Addresses:</div> <br/>
+    <?php foreach ($allAddresses as $key => $value) {?>
+        <div>
+            
+            <table class="customerAddresses" address-id="<?=$value['id'];?>" style="background: <?php echo ($value['id'] == $this->data['Order']['address_id'] ? '#00ff00' : '#989696')?>">
+                <tr>
+                   <td>Unit:</td>
+                    <td class="address_unit"><?= $value['address_unit']?></td>
+                </tr>
+                <tr>
+                    <td>Street number:</td>
+                    <td class="address_street_number"><?= $value['address_street_number']?></td>
+                </tr>
+                <tr>
+                    <td>Street:</td>
+                    <td class="address_street"><?= $value['address_street']?></td>
+                </tr>
+                <tr>
+                    <td>City:</td>
+                    <td class="city"><?= $value['city']?></td>
+                </tr>
+                <tr>
+                    <td>Postal Code:</td>
+                    <td class="postal_code"><?= $value['postal_code']?></td>
+                </tr>
+            </table>
+        </div>
+    <?php } ?>
 </td>
 <td style="text-align:left;vertical-align:top">
 	<table id="tabA1" style="display:<?=$page1?>">
@@ -5095,6 +5201,9 @@ $(document).ready(function(){
 		
 	</script>
 <style>
+.customerAddresses{
+    border: 1px solid black; width:65%; cursor: pointer; background-color: #989696;margin-top: 2%;
+}
 #one_time_item_table td{
     padding: 3px;
 }

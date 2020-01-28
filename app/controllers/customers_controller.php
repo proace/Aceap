@@ -1222,6 +1222,34 @@ $h .= ' <tr>
 		
 	}
 
+	/*	Loki: Check customer exist
+		num_type  = 2 (home phone)
+		num_type  = 1 (cell phone)
+	*/
+	
+	function checkCustomerExist()
+	{
+		$db =& ConnectionManager::getDataSource('default');
+		$phone_num 		= str_replace('-','', trim($_POST['phoneNum']));
+		$number_type 	= $_POST['numType'];
+		if($number_type == 1){
+			$sqlCond = "cell_phone =".$phone_num;
+		} else {
+			$sqlCond = "phone =".$phone_num;
+		}
+		$result = $db->_execute("SELECT id from ace_rp_customers where ".$sqlCond." order by id desc limit 1 ;");
+		$row = mysql_fetch_array($result);
+		if(!empty($row['id']))
+		{
+			$response  = array("res" => $row['id']);
+            echo json_encode($response);
+		} else {
+			$response  = array("res" => "0");
+            echo json_encode($response);
+		}
+		exit();
+
+	}
 
 }
 ?>

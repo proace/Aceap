@@ -13,7 +13,12 @@ class Customer extends AppModel
 													'conditions'	=> '',
 													'dependent'		=> true,
 													'foreignKey'	=> 'customer_id'
-									)
+							),
+							'CustomerAddresses' => array(	'className' 	=> 'CustomerAddresses',
+													'conditions'	=> '',
+													'dependent'		=> true,
+													'foreignKey'	=> 'customer_id'
+							)
 				);
 
   	// Method creates a log record for the coming change of data

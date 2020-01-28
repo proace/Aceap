@@ -149,10 +149,12 @@ class OrdersController extends AppController
     // Created: 06/02/2010, Anthony Chernikov
     function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null, $techOrderId=null, $send_cancalled_email = null, $showDefault=null, $jobDate = null )
     {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
             $this->preViewEstimate($_POST);
         }else
         {
+           
             //Prepare the date for entry into the DB
             //Set nulls into the empty selects
             $this->Common->SetNull($this->data['Order']['booking_source_id']);
@@ -209,12 +211,45 @@ class OrdersController extends AppController
                     }
                 }
             }
+            //Loki: get customer address information
+            $this->data['Order']['address_unit']            = $this->data['Customer']['address_unit'];
+            $this->data['Order']['address_street_number']   = $this->data['Customer']['address_street_number'];
+            $this->data['Order']['address_street']          = $this->data['Customer']['address_street'];
+            $this->data['Order']['city']                    = $this->data['Customer']['city'];
+            $this->data['Order']['postal_code']             = $this->data['Customer']['postal_code'];
+        //Loki: save address details of customers
+
+        // if($this->data['Order']['address_id'] == 0 && !empty($this->data['Customer']['id']))
+        // {
+        //     $db->_execute("INSERT INTO ace_rp_customer_addresses (customer_id, address_unit, address_street_number, address_street, city, postal_code) VALUES (".$this->data['Customer']['id'].", '".$this->data['Customer']['address_unit']."', ".$this->data['Customer']['address_street_number'].", '".$this->data['Customer']['address_street']."', '".$this->data['Customer']['city']."', '".$this->data['Customer']['postal_code']."')");
+        //     $this->data['Order']['address_id'] = $db->lastInsertId();
+        //     $this->data['Customer']['address_id'] = $this->data['Order']['address_id'];
+        // } else {
+        //     $db->_execute("UPDATE ace_rp_customer_addresses set address_unit = '".$this->data['Customer']['address_unit']."', address_street_number = ".$this->data['Customer']['address_street_number'].", address_street = '".$this->data['Customer']['address_street']."', city = '".$this->data['Customer']['city']."', postal_code = '".$this->data['Customer']['postal_code']."' where id = ".$this->data['Order']['address_id']."");
+            
+        //         $this->data['Customer']['address_id'] = $this->data['Order']['address_id'];
+        // }
+
+        if($this->data['Order']['address_id'] != 0 && !empty($this->data['Customer']['city']))
+        {
+             $db->_execute("UPDATE ace_rp_customer_addresses set address_unit = '".$this->data['Customer']['address_unit']."', address_street_number = ".$this->data['Customer']['address_street_number'].", address_street = '".$this->data['Customer']['address_street']."', city = '".$this->data['Customer']['city']."', postal_code = '".$this->data['Customer']['postal_code']."' where id = ".$this->data['Order']['address_id']."");
+            
+                $this->data['Customer']['address_id'] = $this->data['Order']['address_id'];
+        }
             // /Added by Maxim Kudryavtsev - for booking member cards
+
 
             // Save the customer
             if ($saveCustomer==1)
                 if (!empty($this->data['Customer'])) $this->_SaveCustomer();
-
+           
+            if(isset($this->data['Order']['address_id']) && $this->data['Order']['address_id'] == 0)
+            {
+                $db->_execute("INSERT INTO ace_rp_customer_addresses (customer_id, address_unit, address_street_number, address_street, city, postal_code) VALUES (".$this->data['Customer']['id'].", '".$this->data['Customer']['address_unit']."', ".$this->data['Customer']['address_street_number'].", '".$this->data['Customer']['address_street']."', '".$this->data['Customer']['city']."', '".$this->data['Customer']['postal_code']."')");
+                $this->data['Order']['address_id'] = $db->lastInsertId();
+                // $this->data['Customer']['address_id'] = $this->data['Order']['address_id'];
+                $db->_execute("UPDATE ace_rp_customers set address_id = ".$this->data['Order']['address_id']."");
+            }
                 // Cancelled jobs shouldn't have a time
             if ($this->data['Order']['order_status_id'] == 3)
             {
@@ -224,6 +259,7 @@ class OrdersController extends AppController
                 $this->data['Order']['job_time_end'] = '';
             }
 
+           
             // Get some customer's information into this order
             $this->data['Order']['job_postal_code'] = $this->data['Customer']['postal_code'];
             $this->data['Order']['customer_id'] = $this->data['Customer']['id'];
@@ -253,8 +289,8 @@ class OrdersController extends AppController
         if($this->data['Note']['urgency_id'] == 4) {
             $this->data['Order']['needs_approval'] = 0;
         }
-
-        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        
+        
         if ($this->data['Order']['order_status_id']!=6)
         {
             if ($this->data['Order']['id'])
@@ -1053,7 +1089,6 @@ class OrdersController extends AppController
     }
 
     function orderEstimate($order_id , $bookingItem, $fromTech=null, $cusId = null, $mainOrderId = 0 ){
-
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         // Read the order's data from database
         $this->set("cusId", $cusId);
@@ -1150,6 +1185,7 @@ class OrdersController extends AppController
                     <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
                     <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
                     <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
+                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Add</strong></td>
                 </tr>';
 
 
@@ -1162,6 +1198,7 @@ class OrdersController extends AppController
                     <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
                     <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
                     <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
+                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Add</strong></td>
                 </tr>';
 
                 $subTotalPrice1 = 0;
@@ -1178,8 +1215,9 @@ class OrdersController extends AppController
                         <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
                         <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['price']. '</td>
                         <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
+                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['addition']. '</td>
                     </tr>';
-                    $subTotalPrice1 = $subTotalPrice1+($value['price']*$value['quantity']-$value['discount']);
+                    $subTotalPrice1 = $subTotalPrice1+(($value['price']*$value['quantity'])+($value['addition'])-($value['discount']));
                 }
 
 
@@ -1192,8 +1230,9 @@ class OrdersController extends AppController
                         <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
                         <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['price']. '</td>
                         <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
+                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['addition']. '</td>
                     </tr>';
-                    $subTotalPrice2 = $subTotalPrice2+($value['price']*$value['quantity']-$value['discount']);
+                    $subTotalPrice2 = $subTotalPrice2+(($value['price']*$value['quantity'])+($value['addition'])-($value['discount']));
                 }
             }
 
@@ -2158,12 +2197,15 @@ class OrdersController extends AppController
                 $cus = $this->Customer->read();   
                 $this->set('campaingId',$cus['Customer']['campaign_id']);
                 $allImages = array();
+                $allAddresses  = $cus['CustomerAddresses'];
                  foreach ($cus['PartImages'] as $key => $value) {
                      if(!empty($value['image_name']) && $value['image_name'] != null){
                         $allImages[] = $this->getPhotoPath($value['image_name']);
                     }
                 }
+                //$this->data['Order']['address_id'] = $cus['Customer']['address_id'];
                 $this->set("allImages",$allImages);
+                $this->set("allAddresses",$allAddresses);
             }
             
             
@@ -2218,16 +2260,24 @@ class OrdersController extends AppController
                 $h_tech='';
                 $allImages = array();
                 //Loki: Get all images of orders
-               // $query = "SELECT photo_1, photo_2 FROM ace_rp_orders where customer_id = ". $this->data['Customer']['id']."";
-                $query = "SELECT image_name FROM ace_rp_user_part_images where customer_id = ". $this->data['Customer']['id']."";
-                $result = $db->_execute($query);
-                while($row = mysql_fetch_array($result))
-                {
-                   if(!empty($row['image_name']) && $row['image_name'] != null){
-                        $allImages[] = $this->getPhotoPath($row['image_name']);
+                $this->Customer->id = $this->data['Customer']['id'];
+                $customerData = $this->Customer->read();   
+                foreach ($customerData['PartImages'] as $key => $value) {
+                     if(!empty($value['image_name']) && $value['image_name'] != null){
+                        $allImages[] = $this->getPhotoPath($value['image_name']);
                     }
                 }
+                $allAddresses  = $customerData['CustomerAddresses'];
+                
                 $this->set("allImages",$allImages);
+                $this->set("allAddresses",$allAddresses);
+                if(!empty($this->data['Order']['city'])){
+                    $this->data['Customer']['address_unit']             = $this->data['Order']['address_unit'];
+                    $this->data['Customer']['address_street_number']    = $this->data['Order']['address_street_number'];
+                    $this->data['Customer']['address_street']           = $this->data['Order']['address_street'];
+                    $this->data['Customer']['city']                     = $this->data['Order']['city'];
+                    $this->data['Customer']['postal_code']              = $this->data['Order']['postal_code'];
+                }
                 foreach ($this->data['BookingItem'] as $oi)
                 {
                     if ($oi['class']==0)
@@ -2775,6 +2825,7 @@ class OrdersController extends AppController
                     }
                 }
                 $this->set("allImages",$allImages);
+                $this->data['Order']['address_id'] = $cus['Customer']['address_id'];
             }
 
             // If order ID is submitted, prepare order's data to be displayed
@@ -5588,13 +5639,15 @@ class OrdersController extends AppController
                          concat(u.first_name,' ',u.last_name) as customer_name, u.city as user_city, u.email, 
                          jt.name job_type_name, a.verified_by_id, rr.role_id, jt.category_id,
                          a.app_ordered_by, a.permit_result, a.order_number, CONCAT(ur.name, ' - ', cr.name) dCancelReason,
-                         a.tech_visible,a.tech_visible_agent
+                         a.tech_visible,a.tech_visible_agent, a.city as order_city, a.address_unit as order_address_unit, a.address_street as order_address_street,a.postal_code as order_postal_code,
+                         a.address_street_number as order_address_street_number
                     FROM `ace_rp_orders` as a
                     LEFT JOIN `ace_rp_order_types` as jt on ( a.order_type_id = jt.id )
                     LEFT JOIN `ace_rp_customers` as u on ( a.customer_id = u.id )
                     LEFT JOIN `ace_rp_users` as s on ( a.booking_source_id = s.id )
                     LEFT JOIN `ace_rp_users` as t on ( a.booking_telemarketer_id = t.id )
                     LEFT JOIN `ace_rp_users_roles` as rr on ( rr.user_id = t.id )
+                    -- LEFT JOIN `ace_rp_zones` as c on ( (LCASE(LEFT(a.job_postal_code,3)) = LCASE(LEFT(c.postal_code,3))) or (LCASE(c.city) LIKE LCASE(u.city)) )
                     LEFT JOIN `ace_rp_zones` as c on ( (LCASE(LEFT(a.job_postal_code,3)) = LCASE(LEFT(c.postal_code,3))) or (LCASE(c.city) LIKE LCASE(u.city)) )
                     LEFT JOIN ace_rp_cancellation_reasons cr ON a.cancellation_reason = cr.id
                     LEFT JOIN ace_rp_roles ur ON ur.id = cr.role_id
@@ -5607,6 +5660,13 @@ class OrdersController extends AppController
         $result = $db->_execute($query);
         while($row = mysql_fetch_array($result))
         {
+            if(!empty($row['order_city']))
+            {
+               $row['address'] = $row['order_address_unit'].' , '.$row['order_address_street_number'].' , '.$row['order_address_street'];
+               $row['postal_code'] = $row['order_postal_code'];
+               $row['user_city'] = $row['order_city'];
+            }
+         
             $orders[$row['id']]['is_gmail'] = 0 ;
             $explodEmail = explode("@",$row['email']);
             if($explodEmail[1] == "gmail.com")
@@ -5651,8 +5711,9 @@ class OrdersController extends AppController
                 $orders[$row['id']]['permit_ordered'] = true;
             else
                 $orders[$row['id']]['permit_ordered'] = false;
-        }
 
+
+        }
         //Determine if all trucks use same techs
         foreach ($trucks as $truck_k => $truck_v)
         {

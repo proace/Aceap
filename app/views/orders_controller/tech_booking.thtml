@@ -1098,6 +1098,7 @@ input[type=text] {
 					</td>
                 </tr>
                 <tr>
+                     <input type="hidden" name="data[Order][address_id]" id="address_id" value="<?= $this->data['Order']['address_id']?>">
                     <td align="right">City:</td>
                     <td><b id="CustomerCity"><?=$this->data['Customer']['city']?></b>
                     <?php foreach($cities_with_id as $key => $cid) { ?>
