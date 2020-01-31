@@ -48,7 +48,9 @@ $(function() {
 						{
 							if(loggedUserId == 6)
 			        		{
-			        			window.location.href = G_URL+"pages/main";
+			        			target = window.parent.frames["main_view"];
+								target.location = G_URL+"orders/scheduleView";
+			        			// window.location.href = G_URL+"pages/main";
 			        		} else {
 			        			window.location.href = G_URL+"orders/invoiceTabletPayment?order_id="+orderId;
 			        		}

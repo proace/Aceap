@@ -1550,12 +1550,12 @@ input[type=text] {
 							</td></tr>
                               <tr id='ajax_item_result_template_0' style='display:none'>
                                 <td class='name_0'>Result</td>
+                                <td class='model_0'></td>
                                 <td class='sku_0'></td>
                                 <td class='price_0' ></td>
                                 <td class='item_id_0' ></td>
                                 <td class='purchase_price_0'></td>
                                 <td class='category_id_0'></td>
-                                <td class='model_0' style='display:none'></td>
                                 <td class='brand_0' style='display:none'></td>
                             </tr>
 							<tr height=10px><td></td></tr>
@@ -1598,12 +1598,13 @@ input[type=text] {
 									</tr>
                                     <tr id='ajax_item_result_template_1' style='display:none'>
                                     <td class='name_1'>Result</td>
+                                     <td class='model_1'></td>
                                     <td class='sku_1'></td>
                                     <td class='price_1' ></td>
                                     <td class='item_id_1' ></td>
                                     <td class='purchase_price_1'></td>
                                     <td class='category_id_1'></td>
-                                    <td class='model_1' style='display:none'></td>
+                                   
                                     <td class='brand_1' style='display:none'></td>
                                 </tr>
 								</table>

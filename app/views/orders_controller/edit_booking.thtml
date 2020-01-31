@@ -338,7 +338,7 @@ function hidePasswordBox(){
 // }
 function emailInvoice(order_id, i=0){
 	var email = $('#emailinput').val();
-	 	window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office'+'&fromBooking=1', '_new');
+	 	window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office'+'&fromBooking=1', '_self');
 	 	return false;	 
 }
 function invoiceprint(order_id) {
@@ -1664,9 +1664,26 @@ $(function () {
         }
     });        
 });
+
+
 // $(".",cur).text();
 $(document).ready(function(){
-    
+     $("#saveImages").live("click", function(e){
+        e.preventDefault();
+        var formdata = new FormData($("#editBookingform_new")[0]);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', "<?=BASE_URL;?>/customers/saveImages", true);
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            $("#trigger1").click();
+          } else {
+            alert('Something went wrong uploading the file.');
+          }
+        };
+
+        xhr.send(formdata);
+   });
     //Loki: choose address from addresses
     $(".customerAddresses").live("click", function(){
         var cur = $(this);
@@ -1985,15 +2002,14 @@ $(document).ready(function(){
 	});                 
 // Delete purchase images
 	$(".delete-purchase-image").live("click", function(){
-		var id = $('#OrderId').val();
+		var id = $(this).attr("image-id");
 		var imgPath = $(this).attr("image-name");
-		var imageNo = $(this).attr("image-nu");
 		$.ajax({
 		url: '<?=BASE_URL?>/orders/removePurchaseImage',
 		dataType: 'html',
 		type: 'POST',
 		cache: false,
-		data: {oid:id, imgPath:imgPath,imgNo:imageNo},
+		data: {id:id, imgPath:imgPath},
 		success: function(data) {
 				res = JSON.parse(data);
 				if(res.res == "OK")
@@ -3110,7 +3126,7 @@ function get_data($url)
 
 <?php //echo phpinfo(); ?>
 
-<form name="editBookingform" action="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
+<form name="editBookingform" id="editBookingform_new" action="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $this->data["Order"]["id"];?>&customer_id=<?php echo $this->data["Customer"]["id"];?>" method="post" enctype="multipart/form-data">
 <!-- This tag creates our form tag -->
  <!-- Set booking from campaing value -->
 <input type="hidden" id="is_source1_val" name="is_source1_val" value="<?=$isSourceVal?>"> 
@@ -3175,9 +3191,15 @@ function get_data($url)
         <div class="frame-header-left"></div>
         <div class="frame-header-title">Customer's information</div>
         <div class="frame-header-right"></div>
+        <div><b>Address: </b><a href="<?=$HtmlAssist->getOrderGoogleMap($this->data['Customer'])?>" target="_blank"><img src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-globe.png" style="border: 0px; width: 15px; height: 15px; vertical-align: middle;"></a></div>
         <div class="frame-body" style="clear: both;">
             <?php echo $html->hidden('Customer/id')?>
             <table>
+               <!--  <tr>
+                    <td align="right"><b>Address:</b></td>
+                    <td><a href="<?=$HtmlAssist->getOrderGoogleMap($this->data['Customer'])?>" target="_blank"><img src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-globe.png" style="border: 0px; width: 15px; height: 15px; vertical-align: middle;"></a>
+                    </td>
+                </tr> -->
                 <tr>
                     <td align="right">Cell Phone*:</td>
                     <td>
@@ -3200,7 +3222,7 @@ function get_data($url)
                     <?php echo $html->input('Customer/phone',array("value"=>$common->displayPhone($html->tagValue('Customer/phone')), 'style' => 'width: 145px;', 'num_type' => '2')); ?><br>
                     <span class="fa fa-phone call_icon"  onclick="call_phone();" aria-hidden="true"></span>
                     <?php echo $html->tagErrorMsg('Order/CustomerPhone','Please enter in a phone for this customer.') ?>
-                    <span class="fa fa-envelope openMailBox" style="font-size: 15px; color:#3c8dbc;" aria-hidden="true"></span>
+                    <!-- <span class="fa fa-envelope openMailBox" style="font-size: 15px; color:#3c8dbc;" aria-hidden="true"></span> -->
                     <span class='fa fa-envelope-open-o openReviewMailBox' style='font-size:15px' aria-hidden="true" title="Review Email"></span>
                     </td>
                 </tr>
@@ -3227,15 +3249,16 @@ function get_data($url)
 					<td align="right">E-Mail:</td>
 					<td>
 					<?php echo $html->input('Customer/email', array("onchange"=>"if (this.value != '') document.getElementById('maillink').innerHTML='<a href=\"#\" onclick=\"newWindow(\\'./sendMail?email='+this.value+'\\',\\'\\',480,350,\\'resize=no\\');\">E-Mail Customer</a>';", "id"=>"emailinput", 'style' => 'width: 140px;')); ?>
+                    <span class="fa fa-envelope openMailBox" style="font-size: 15px; color:#3c8dbc;" aria-hidden="true"></span>
 					<?php echo $html->tagErrorMsg('Order/CustomerEmail1','Please enter in an email for this customer.') ?>
 					<?php echo $html->tagErrorMsg('Order/CustomerEmail2','Please enter in a valid email for this customer.') ?>
 					</td>
                 </tr>
-				<tr>
+				<!-- <tr>
 					<td align="right"><b>Address:</b></td>
 					<td><a href="<?=$HtmlAssist->getOrderGoogleMap($this->data['Customer'])?>" target="_blank"><img src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-globe.png" style="border: 0px; width: 15px; height: 15px; vertical-align: middle;"></a>
 					</td>
-				</tr>
+				</tr> -->
 				<tr>
                     <input type="hidden" name="data[Order][address_id]" id="address_id" value="<?= $this->data['Order']['address_id']?>">
 					<td align="right">Unit:</td>
@@ -3781,7 +3804,8 @@ function get_data($url)
 						<?php } ?>
                     </td>
                     <?php if ($_SESSION['user']['role_id'] == 6) {?>
-					<td align="right">Commission:</td>
+					
+                    <td align="right" colspan="3">Commission:</td>
 					<td>
 						<b>$<?=$tech2_comm?></b>
 						<a href="<?=$tech2_comm_link?>">Commission page</a>
@@ -3860,9 +3884,10 @@ function get_data($url)
                     <td></td>
 <!-- 					<td></td>
  -->                   <td>
-                          <input type="file" name="sortpic1[]" id="sortpicture1" class="disply_preview" data-ct="photo1" multiple="multiple">
+                        <!-- Loki commented -->
+                          <!-- <input type="file" name="sortpic1[]" id="sortpicture1" class="disply_preview" data-ct="photo1" multiple="multiple"> -->
 
-                          <!-- <?php if (!empty($this->data['Order']['photo_1']) || $this->data['Order']['photo_1'] != '') { ?>
+                         <!--  <?php if (!empty($this->data['Order']['photo_1']) || $this->data['Order']['photo_1'] != '') { ?>
                             <div style="position: relative; padding:0; width: 30px;"> 
                                     <span style="position:absolute;right: 0px;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-nu="1" image-name="<?php echo $this->data['Order']['photo_1']?>"></span>
                                     <img id="photo_1" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_1'];?>" style="max-height:28px;height:auto;cursor:pointer;">                       
@@ -4030,12 +4055,12 @@ function get_data($url)
 							</td></tr>
                             <tr id='ajax_item_result_template_0' style='display:none'>
                                 <td class='name_0'>Result</td>
+                                <td class='model_0'></td>
                                 <td class='sku_0'></td>
                                 <td class='price_0' ></td>
                                 <td class='item_id_0' ></td>
                                 <td class='purchase_price_0'></td>
-                                <td class='category_id_0'></td>
-                                <td class='model_0' style='display:none'></td>
+                                <td class='category_id_0'></td> 
                                 <td class='brand_0' style='display:none'></td>
                             </tr>
 							<tr height=10px><td></td></tr>
@@ -4082,12 +4107,12 @@ function get_data($url)
 									</tr>
                                 <tr id='ajax_item_result_template_1' style='display:none'>
                                     <td class='name_1'>Result</td>
+                                    <td class='model_1'></td>
                                     <td class='sku_1'></td>
                                     <td class='price_1' ></td>
                                     <td class='item_id_1' ></td>
                                     <td class='purchase_price_1'></td>
                                     <td class='category_id_1'></td>
-                                    <td class='model_1' style='display:none'></td>
                                     <td class='brand_1' style='display:none'></td>
                                 </tr>
 									<?php echo $tech_items; ?>
@@ -4639,18 +4664,58 @@ function get_data($url)
 	</table>
 </div>
 <div id="tabA13" style="display:<?=$page13?>; width:100%">
-    <table style="width:100%">
+    <table style="width:100%" class="imagesTable">
         <tr>
             <th>Images</th>
         </tr>
         <tr>
-         <?php foreach ($allImages as $key => $value) {?>
+         <?php foreach ($allImages as $key => $value) {
+           
+            ?>
             <td>
-                <div style="position: relative; padding:0; width: 30px;"> 
-                        <img id="" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$value;?>" style="max-height:28px;height:auto;cursor:pointer;">
+                <div style="position: relative; padding:0;"> 
+                    <span style="position:absolute;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?php echo $value['image_name']; ?>" image-id="<?php echo $value['id']; ?>"></span>
+                    <img id="" class="invoice-openImg order-images" src="<?php echo ROOT_URL.'/upload_photos/'.$value['image_name'];?>">
                 </div>
             </td>
+            
         <?php } ?>
+        </tr>
+        <tr>
+            <td colspan="4"></td>
+        </tr>
+        <tr>
+            <td>
+                 <img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
+                    <div class="cls-acecare-td-adjust">
+                        <label for="sortpicture1" >Upload</label>
+                        <input type="file" name="sortpic1[]" id="sortpicture1" class="disply_preview" data-ct="photo1">
+                    </div>
+            </td>
+            <td>
+                 <img id="pre-image_photo2" class="pre-image_photo2 invoice-openImg" src="#" alt="your image" />
+                    <div class="cls-acecare-td-adjust">
+                        <label for="sortpicture2" >Upload</label>
+                        <input type="file" name="sortpic1[]" id="sortpicture2" class="disply_preview" data-ct="photo2">
+                    </div>
+            </td>
+            <td>
+                 <img id="pre-image_photo3" class="pre-image_photo3 invoice-openImg" src="#" alt="your image" />
+                    <div class="cls-acecare-td-adjust">
+                        <label for="sortpicture3" >Upload</label>
+                        <input type="file" name="sortpic1[]" id="sortpicture3" class="disply_preview" data-ct="photo3">
+                    </div>
+            </td>
+            <td>
+                 <img id="pre-image_photo4" class="pre-image_photo4 invoice-openImg" src="#" alt="your image" />
+                    <div class="cls-acecare-td-adjust">
+                        <label for="sortpicture4" >Upload</label>
+                        <input type="file" name="sortpic1[]" id="sortpicture4" class="disply_preview" data-ct="photo4">
+                    </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4"><input type="button" name="saveImage" id="saveImages" value="Save" style="padding: 5px"></td>
         </tr>
     </table>
 </div>
@@ -4820,8 +4885,6 @@ function get_data($url)
 <?php //print_r($this->data['Order']) ?>
 <!--<input type="button" onclick="alert(document.getElementById('CustomerId').value);" value="test customer" />-->
 <input type="hidden" name="from_dialer" id="from_dialer"value="<?= $from_dialer?>">
-
-
 </form>
 <div  id="dialer_callback" style="display: none">      
 	<!-- Modal content -->
@@ -5201,6 +5264,14 @@ $(document).ready(function(){
 		
 	</script>
 <style>
+.image-section{
+    position: relative; padding:0;
+}
+.order-images{
+    cursor:pointer;
+    height: 200px;
+    width: 125px;
+}
 .customerAddresses{
     border: 1px solid black; width:65%; cursor: pointer; background-color: #989696;margin-top: 2%;
 }
@@ -5235,7 +5306,9 @@ $(document).ready(function(){
 	text-align: center;
 	/*border: 1px solid black;*/
 }
-
+.imagesTable td {
+    padding-top: 25px;
+}
 .tab11-table td, .tab11-table th {
   border: 1px solid black;
   font-size: 12px;

@@ -1,6 +1,8 @@
 <?php
 //error_reporting(E_ALL);
-
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 class CommonComponent extends Object
 {
 	function startup(&$controller){
@@ -99,11 +101,19 @@ class CommonComponent extends Object
 		// $path = $file['name'];
 		$path = $file_name;
 		$ext = pathinfo($path, PATHINFO_EXTENSION);
-		$name = date('Ymdhis', time()).$order_id.$i.'.'.$ext;
+		if($order_id !=0)
+		{
+			$name = date('Ymdhis', time()).$order_id.$i.'.'.$ext;
+		} 
+		else {
+			$name = date('Ymdhis', time()).'.'.$ext;
+		}
+		
 		
 		if ( 0 < $file['error'] ) {
 	        // echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
 	    } else {
+	    	echo "in";
 	        move_uploaded_file($file_tmpname, 'upload_photos/'.$day.'/'.$name);
 	    }
 
@@ -111,7 +121,6 @@ class CommonComponent extends Object
 		$sql = "INSERT INTO ace_rp_user_part_images (customer_id, image_name) VALUES (".$customer_id.", '".$name."')";
 		$db =& ConnectionManager::getDataSource($config);
 		$result = $db->_execute($sql);
-
 		return $result;
 	}
 	//# LOKI- Techinician upload pictures from commission page.
@@ -2084,7 +2093,8 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 		// $phone = str_replace ('-','', $phone);
 
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/send_text_sms.php");
+		//curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/send_text_sms.php");
+		curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/send_text_sms.php");
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS,"phone=".urlencode($phone)."&body=".urlencode($message));
 		// receive server response ...
@@ -2104,7 +2114,8 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 	function getSmsStatus($id)
 	{
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/get_sms_status.php");
+		//curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/get_sms_status.php");
+		curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/get_sms_status.php");
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS,"id=".$id);
 		// receive server response ...
@@ -2140,7 +2151,8 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 		try
 		{
 			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
+			//curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
+			curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailcheck.php");
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".urlencode($body)."&imagePath=".$imagePath);
 			// receive server response ...

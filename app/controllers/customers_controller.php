@@ -6,7 +6,7 @@ class CustomersController extends AppController
 	//To avoid possible PHP4 problems
 	var $name = "CustomersController";
 
-	var $uses = array('Customer', 'Order', 'Setting');
+	var $uses = array('Customer', 'Order', 'Setting','User');
 
 	var $helpers = array('Time','Ajax','Common');
 	var $components = array('HtmlAssist', 'RequestHandler','Common','Lists');
@@ -1248,6 +1248,26 @@ $h .= ' <tr>
             echo json_encode($response);
 		}
 		exit();
+
+	}
+
+	//Loki: save images 
+	function saveImages()
+	{
+		$customerId = $_POST['data']['Customer']['id'];
+		$images = $_FILES['sortpic1'];
+
+		if(!empty($customerId))
+		{
+			foreach ($images['name'] as $key => $value) {
+	                if(!empty($value)){
+	                    $imageResult = $this->Common->uploadPhoto($value,$images['tmp_name'][$key] ,0 , $config = $this->User->useDbConfig, 1, $customerId);
+	                }
+	             }  
+
+	          echo $imageResult;
+	          exit();
+		}
 
 	}
 

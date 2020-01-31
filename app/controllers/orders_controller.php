@@ -232,7 +232,7 @@ class OrdersController extends AppController
 
         if($this->data['Order']['address_id'] != 0 && !empty($this->data['Customer']['city']))
         {
-             $db->_execute("UPDATE ace_rp_customer_addresses set address_unit = '".$this->data['Customer']['address_unit']."', address_street_number = ".$this->data['Customer']['address_street_number'].", address_street = '".$this->data['Customer']['address_street']."', city = '".$this->data['Customer']['city']."', postal_code = '".$this->data['Customer']['postal_code']."' where id = ".$this->data['Order']['address_id']."");
+             $db->_execute("UPDATE ace_rp_customer_addresses set address_unit = '".$this->data['Customer']['address_unit']."', address_street_number = '".$this->data['Customer']['address_street_number']."', address_street = '".$this->data['Customer']['address_street']."', city = '".$this->data['Customer']['city']."', postal_code = '".$this->data['Customer']['postal_code']."' where id = ".$this->data['Order']['address_id']."");
             
                 $this->data['Customer']['address_id'] = $this->data['Order']['address_id'];
         }
@@ -245,7 +245,7 @@ class OrdersController extends AppController
            
             if(isset($this->data['Order']['address_id']) && $this->data['Order']['address_id'] == 0)
             {
-                $db->_execute("INSERT INTO ace_rp_customer_addresses (customer_id, address_unit, address_street_number, address_street, city, postal_code) VALUES (".$this->data['Customer']['id'].", '".$this->data['Customer']['address_unit']."', ".$this->data['Customer']['address_street_number'].", '".$this->data['Customer']['address_street']."', '".$this->data['Customer']['city']."', '".$this->data['Customer']['postal_code']."')");
+                $db->_execute("INSERT INTO ace_rp_customer_addresses (customer_id, address_unit, address_street_number, address_street, city, postal_code) VALUES (".$this->data['Customer']['id'].", '".$this->data['Customer']['address_unit']."', '".$this->data['Customer']['address_street_number']."', '".$this->data['Customer']['address_street']."', '".$this->data['Customer']['city']."', '".$this->data['Customer']['postal_code']."')");
                 $this->data['Order']['address_id'] = $db->lastInsertId();
                 // $this->data['Customer']['address_id'] = $this->data['Order']['address_id'];
                 $db->_execute("UPDATE ace_rp_customers set address_id = ".$this->data['Order']['address_id']."");
@@ -2172,7 +2172,7 @@ class OrdersController extends AppController
             $file = isset($_FILES['uploadFile'])? $_FILES['uploadFile'] : null;
             $invoiceImages = isset($_FILES['uploadInvoice'])? $_FILES['uploadInvoice'] : null;
             $photoImage1 = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
-            //$photoImage2 = isset($_FILES['sortpic2'])? $_FILES['sortpic2'] : null;
+           // $photoImage2 = isset($_FILES['sortpic2'])? $_FILES['sortpic2'] : null;
             $this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2, $fromTech, $techOrderId, $send_cancalled_email, $showDefault);
         }
         else
@@ -2200,7 +2200,9 @@ class OrdersController extends AppController
                 $allAddresses  = $cus['CustomerAddresses'];
                  foreach ($cus['PartImages'] as $key => $value) {
                      if(!empty($value['image_name']) && $value['image_name'] != null){
-                        $allImages[] = $this->getPhotoPath($value['image_name']);
+                       // $allImages[] = $this->getPhotoPath($value['image_name']);
+                        $allImages[$key]['id'] = $value['id'];
+                        $allImages[$key]['image_name'] = $this->getPhotoPath($value['image_name']);
                     }
                 }
                 //$this->data['Order']['address_id'] = $cus['Customer']['address_id'];
@@ -2259,16 +2261,18 @@ class OrdersController extends AppController
                 $h_booked='';
                 $h_tech='';
                 $allImages = array();
+
                 //Loki: Get all images of orders
                 $this->Customer->id = $this->data['Customer']['id'];
                 $customerData = $this->Customer->read();   
                 foreach ($customerData['PartImages'] as $key => $value) {
                      if(!empty($value['image_name']) && $value['image_name'] != null){
-                        $allImages[] = $this->getPhotoPath($value['image_name']);
+                        $allImages[$key]['id'] = $value['id'];
+                        $allImages[$key]['image_name'] = $this->getPhotoPath($value['image_name']);
                     }
                 }
+        
                 $allAddresses  = $customerData['CustomerAddresses'];
-                
                 $this->set("allImages",$allImages);
                 $this->set("allAddresses",$allAddresses);
                 if(!empty($this->data['Order']['city'])){
@@ -6187,14 +6191,15 @@ class OrdersController extends AppController
     }
     function sendEmailUsingMailgun($to,$subject,$body,$order_id = null, $imagePath =null){
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
+            //curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
+            curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailcheck.php");
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".urlencode($body)."&imagePath=".$imagePath);
             // receive server response ...
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $msgid = curl_exec ($ch);//exit;
             curl_close ($ch);
-            $this->manageMailgunEmailLogs($msgid, $subject, $order_id);
+            //$this->manageMailgunEmailLogs($msgid, $subject, $order_id);
             return $msgid;
         //var_export($response);
         //$this->verifyEmailUsingMailgun($to,$subject,$order_id,$msgid);
@@ -6222,7 +6227,8 @@ class OrdersController extends AppController
     function verifyEmailUsingMailgun($subject){
         //echo '<br>MSGID ='.$msgid = trim($msgid);
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailgun_response.php");
+        //curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailgun_response.php");
+        curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailgun_response.php");
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS,"subject=".$subject);
         // receive server response ...
@@ -11471,6 +11477,17 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             }
 
             $this->set('notes',$notes);
+
+            $this->Customer->id = $orderDetails['Order']['customer_id'];
+            $cus = $this->Customer->read();
+            $allImages = array();
+            foreach ($cus['PartImages'] as $key => $value) {
+                 if(!empty($value['image_name']) && $value['image_name'] != null){
+                    $allImages[] = $this->getPhotoPath($value['image_name']);
+                }
+            }
+            //$this->data['Order']['address_id'] = $cus['Customer']['address_id'];
+            $this->set("allImages",$allImages);
     }
 
     function invoiceTabletOverviewSave() {
@@ -15541,19 +15558,12 @@ function deleteUserFromCampaign()
 
     function removePurchaseImage()
     {
-        $orderId = $_POST['oid'];
+        $id = $_POST['id'];
         $imgPath = $_POST['imgPath'];
-        $imgNu = $_POST['imgNo'];
         $rootPath = getcwd();
         unlink($rootPath.'/upload_photos/'.$imgPath);
-        if($imgNu == 1)
-        {
-            $pic = 'photo_1';
-        }else{
-            $pic = 'photo_2';
-        }
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-        $query = "UPDATE ace_rp_orders set ".$pic." = NULL where id=".$orderId;
+        $query = "DELETE from ace_rp_user_part_images  where id =".$id;
         $res = $db->_execute($query);
         if ($res) {
             $response  = array("res" => "OK");
@@ -15795,7 +15805,8 @@ function deleteUserFromCampaign()
         }
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailgun_status.php");
+        //curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailgun_status.php");
+        curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailgun_status.php");
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS,"link=".$link);
         // receive server response ...
@@ -15955,7 +15966,8 @@ function deleteUserFromCampaign()
         {
             $messageId = $row['message_id'];
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailgun_message_data.php");
+            //curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailgun_message_data.php");
+            curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailgun_message_data.php");
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS,"message_id=".$messageId);
             // receive server response ...
