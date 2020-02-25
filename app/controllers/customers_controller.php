@@ -1256,15 +1256,14 @@ $h .= ' <tr>
 	{
 		$customerId = $_POST['data']['Customer']['id'];
 		$images = $_FILES['sortpic1'];
-
+		$config = $this->User->useDbConfig;
 		if(!empty($customerId))
 		{
 			foreach ($images['name'] as $key => $value) {
-	                if(!empty($value)){
-	                    $imageResult = $this->Common->uploadPhoto($value,$images['tmp_name'][$key] ,0 , $config = $this->User->useDbConfig, 1, $customerId);
+	                if($images['error'][$key] == 0){
+	                    $imageResult = $this->Common->uploadPhoto($value,$images['tmp_name'][$key] ,0 ,$config , 1, $customerId);
 	                }
 	             }  
-
 	          echo $imageResult;
 	          exit();
 		}

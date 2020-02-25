@@ -11,6 +11,8 @@ document.title += " :: Edit Booking";
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/store_tree.js"></script>
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
+
 <style type="text/css">
 #ajax_item_results_0 {
     border-collapse: collapse;
@@ -124,6 +126,7 @@ document.title += " :: Edit Booking";
         $(".invoice-openImg").live("click",function () {
             var imgPath = $(this).attr('src');
             $('.invoice-img-enlarge img').attr('src', imgPath);
+            $('.invoice-img-enlarge a').attr('href', imgPath);
             $('.invoice-img-enlarge').dialog('open');
         });
     }); 
@@ -212,7 +215,8 @@ function CloseQuestions(){
   $('#OpenQuestionsText').show();
   $('#CloseQuestionsText').hide();
 }
-function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, part_number, show_purchase='', model_number){
+function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, part_number, show_purchase='', model_number, item_brand='', sku='', quantity=0, purchase_invoice='', supplier_invoice='', supplier_name='', sub_category=''){
+
 	$("#item_selector0").html("").hide();
 	$("#item_selector1").html("").hide();
 				var index=1*document.getElementById("NumberOfItems").value;
@@ -237,7 +241,10 @@ function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, p
 							part_number:part_number,
 							item_class:new_type,
                             show_purchase:show_purchase, 
-                            model_number:model_number
+                            model_number:model_number,
+                            brand:item_brand,
+                            sku:sku,
+                            sub_category_id:sub_category
                         }),
 							dataType: "html",
 							async:false}).responseText;
@@ -722,7 +729,7 @@ function result_clicked(clicked_item, data_class){
     table = $('#ajax_item_results_'+data_class);
     table.hide();
     $('.ajax_item_name_'+data_class).val('');
-    addItem(dat.children(".item_id_"+data_class).text(), dat.children(".name_"+data_class).text(), dat.children(".price_"+data_class).text(),data_class, dat.children(".category_id_"+data_class).text(), dat.children(".purchase_price_"+data_class).text(),"" ,"1",dat.children(".model_"+data_class).text(), dat.children(".brand_"+data_class).text());
+    addItem(dat.children(".item_id_"+data_class).text(), dat.children(".name_"+data_class).text(), dat.children(".price_"+data_class).text(),data_class, dat.children(".category_id_"+data_class).text(), dat.children(".purchase_price_"+data_class).text(),"" ,"1",dat.children(".model_"+data_class).text(), dat.children(".brand_"+data_class).text(),dat.children(".sku_"+data_class).text());
 }
 
 $(document).ready(function(){
@@ -748,11 +755,8 @@ function upload_photo(cur,i) {
         ajax(this);
     });
  $(".disply_preview").live("change",function(e){
-        console.log("hua");
         var img_ct = $(this).attr("data-ct").trim();
         var cur = $(this);
-        console.log("img_ct",img_ct );
-        console.log("div=",cur );
        upload_photo(cur[0],img_ct);
     });
   last_jt='<?=$this->data['Order']['order_type_id']?>';
@@ -1517,7 +1521,8 @@ input[type=text] {
 									<!--<tr onclick="showAddItems(0)" style="cursor:hand;">-->
                                     <tr>
 										<th align=left>Items<!--<input type="button" value="Add booked items"/>--></th>
-										<th style="width:30px">Qty</th>
+										<th style="width:30px">Part No.</th>
+                                        <th style="width:30px">Qty</th>
 										<th style="width:50px">Price</th>
 										<th style="width:55px;color:red;">Disc</th>
 										<th style="width:55px">Add</th>
@@ -1526,18 +1531,23 @@ input[type=text] {
 										<!-- <th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
 										<th style="width:50px;background:#55bb55;color:white;">Tech add</th>
 										<th style="width:25px">Print</th> -->
-										<th style="width:25px">&nbsp;</th>
+										<th class="order_warehouse_quantity" style="width:20px">Quantity</th>
+                                        <th class="order_item_status" style="width:20px;">Order</th>
+                                        <th style="width:25px">Remove</th>
 									</tr>
 														<?php } else { ?>
 									<tr>
 										<th align=left>Booked items</th>
+                                        <th style="width:30px">Part No.</th>
 										<th style="width:30px">Qty</th>
 										<th style="width:50px">Price</th>
 										<th style="width:55px;color:red;">Disc</th>
 										<th style="width:55px">Add</th>
 										<th style="width:55px">Prch</th>
 										<th style="width:55px">Sum</th>
-                                        <th style="width:25px;background:#DDFFDD">&nbsp;</th>
+                                        <th class="order_warehouse_quantity" style="width:20px">Quantity</th>
+                                        <th class="order_item_status" style="width:20px;">Order</th>
+                                        <th style="width:25px;background:#DDFFDD">Remove</th>
 										<!-- <th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
 										<th style="width:50px;background:#55bb55;color:white;">Tech add</th>
 									</tr> -->
@@ -1769,7 +1779,9 @@ input[type=text] {
 <? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
 <?php //print_r($this->data['Order']) ?>
 <div class="invoice-img-enlarge" title="Photo">
-    <img src="<?=$imgPath?>" style="width:100%;">
+    <img src="<?=$imgPath?>" class="rotate-image" style="width:100%;">
+    <?php echo $this->element('image_rotate'); ?>
+    <button class="w3-btn"> <a href="#" onclick="this.href =" download>Download</a> </button>
 </div>
 
 </form>

@@ -1,5 +1,7 @@
 <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />	
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
+
 <style type="text/css">
 .booking-com{
     vertical-align: top;
@@ -73,7 +75,8 @@
 	    $(".openImg1").click(function () {
 	    	var imgPath = $(this).attr('src');
 	    	$('.img-enlarge1 img').attr('src', imgPath);
-	        $('.img-enlarge1').dialog('open');
+	        $('.img-enlarge1 a').attr('href', imgPath);
+            $('.img-enlarge1').dialog('open');
 	    });
     });
      $(function () {
@@ -88,7 +91,8 @@
 	    $(".invoice-openImg").live("click",function () {
 	    	var imgPath = $(this).attr('src');
 	    	$('.invoice-img-enlarge img').attr('src', imgPath);
-	        $('.invoice-img-enlarge').dialog('open');
+	        $('.invoice-img-enlarge a').attr('href', imgPath);
+            $('.invoice-img-enlarge').dialog('open');
 	    });
     });		
 function SelectTech(techId)
@@ -1029,9 +1033,13 @@ $(document).ready(function()
 </tr>
 </table>
 <div class="img-enlarge1" title="Photo">
-  <img src="" style="width:100%;">
+    <img src="" class="rotate-image" style="width:100%;">
+    <?php echo $this->element('image_rotate'); ?>
+    <button class="w3-btn"> <a href="#" onclick="this.href =" download>Download</a> </button>
 </div>
-<div class="invoice-img-enlarge" title="Photo">
+<div class="invoice-img-enlarge rotate-image" title="Photo">
 	<img src="<?=$imgPath?>" style="width:100%;">
+    <?php echo $this->element('image_rotate'); ?>
+    <button class="w3-btn"> <a href="#" onclick="this.href =" download>Download</a> </button>
 </div>
 </form>

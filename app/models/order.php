@@ -81,6 +81,11 @@ class Order extends AppModel
 							'conditions'    => '',
 							'order'    	=> '',
 							'foreignKey'   	=> 'payment_method_type'
+							),
+				'Supplier' => array('className'    	=> 'Supplier',
+							'conditions'    => '',
+							'order'    	=> '',
+							'foreignKey'   	=> 'app_ordered_supplier_id'
 							)
 
 				);
@@ -133,6 +138,7 @@ class Order extends AppModel
 
 	var $hasMany = array(	'BookingItem' => array(	'className' 	=> 'OrderItem',
 													'dependent'		=> true,
+													'order'    	=> 'id ASC',
 													'foreignKey'	=> 'order_id'
 						),
 							'BookingCoupon' => array(	'className' 	=> 'OrderCoupon',

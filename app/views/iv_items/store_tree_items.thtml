@@ -31,6 +31,9 @@
             <input type="hidden" class="item_description2" value="<?php echo $item['description2'] ?>" />
             <input type="hidden" class="item_mode" value="<?php echo $mode ?>" />
             <input type="hidden" class="item_brand" value="<?php echo $item['brand'] ?>" />
+            <input type="hidden" class="item_sku" value="<?php echo $item['sku'] ?>" />
+            <input type="hidden" class="item_sub_category_id" value="<?php echo $item['sub_category_id'] ?>" />
+
            <td class="left"><input type="checkbox" name="addItem" class="addItems"></td>
             <td class="right"><?php echo $item['name'] ?></td>
             <td class="right"><?php echo $item['model'] ?></td>  

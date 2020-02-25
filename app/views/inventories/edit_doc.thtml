@@ -221,16 +221,16 @@ function edit_known_item(item, row_index,category_id) {
 }
 function ajax_failed( why ) {
 	template = $('#ajax_item_result_template');
-	table = $('#ajax_item_results');
+	table = $('#ajax_item_results tbody');
 	table.empty();
-	result = template.clone();
+	$('#ajax_item_results thead').hide();
+
 	if (why=="no supplier") {
-		result.children(".name").html("Please choose a supplier."); }
+		table.html("Please choose a supplier."); }
 	if (why=="no results") {
-		result.children(".name").html("No items match your search. <a href='javascript:add_unknown_item();'>Add it?</a>"); }
-	result.show();
-	result.appendTo(table);
-	table.show(); }
+		table.html("No items match your search. <a href='javascript:add_unknown_item();'>Add it?</a>"); }
+	table.show();
+ }
 function ajax_finished( data ) {
 	accessData = data;
 	if (data.length===0) {
@@ -238,7 +238,7 @@ function ajax_finished( data ) {
 		return false;
 	}
 	template = $('#ajax_item_result_template');
-	table = $('#ajax_item_results');
+	table = $('#ajax_item_results tbody');
 	table.empty();
 	for(i in data) {
 		result = template.clone();
@@ -248,11 +248,12 @@ function ajax_finished( data ) {
 		result.children(".price").html(data[i]["purchase_price"]);
 		result.children(".purchase_price").html(data[i]["purchase_price"]);
 		result.children(".category_id").html(data[i]["category_id"]);
+		result.children(".remove_item").html('<input type="checkbox" name="delete_item" class="delete_items" item-id="'+data[i]["id"]+'" />');
 		result.show();
-		result.bind("click",function(){result_clicked(this);});
+		// result.bind("click",function(){result_clicked(this);});
 		result.appendTo(table);
 	}
-	table.show();
+	table.parent().show();
 }
 function result_clicked(clicked_item) {
 	dat = $(clicked_item);
@@ -302,7 +303,95 @@ function result_supplier_clicked(clicked_item)
 	$("#supplier_text").html($("#supplier :selected").text());
 	$("#search_supplier").val('');
 }
+// Loki: show pdf preview
+function upload_photo_pdf(cur) {  
+    //var file = $('input[id="sortpicture'+i+'"]')[0];
+    if (cur.files && cur.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        var base64Value = e.target.result;
+        var newBase64Value = base64Value.replace('data:application/wps-office.pdf', 'data:application/pdf');
+        $('#pre-image-pdf')
+        .attr('data-doc_lnk', newBase64Value)
+        .width(86)
+        .height(50);
+        $('#pre-image-pdf').css("display","block");
+    };
+    reader.readAsDataURL(cur.files[0]);
+  }
+}
+
 $(function(){
+	//Loki: Remove items 
+	$("#delete_selected_items").live("click", function(){
+		var Id = '';
+           $(".delete_items:checkbox:checked").each(function(){
+              Id += (Id != "")? "," : "";
+              Id += $(this).attr("item-id");
+          });
+          $.ajax({
+          url: "<?=BASE_URL;?>/inventories/deleteItems",
+          type: "POST",
+	      data : {Id:Id},
+	      dataType: 'json',
+          success: function(data){
+				if(data.res == "1")
+				{	
+					$(".delete_items:checkbox:checked").each(function(){
+						$(this).parent().parent().remove();
+					});
+				}             
+			}
+        });
+	});
+
+	$("#add_selected_items").live("click", function(){
+		var Id = '';
+		table = $('#ajax_item_results');
+		table.hide();
+		$('#ajax_item_name').val('');
+		$(".delete_items:checkbox:checked").each(function(){
+			var cur = $(this ).parent().parent();
+			 var itemId = $('.item_id',cur).text();
+			 var name = $('.name',cur).text();
+			 var price = $('.price',cur).text();
+			 var sku = $('.sku',cur).text();
+			 var purchasePrice = $('.purchase_price',cur).text();
+			 var catId = $('.category_id',cur).text();
+				
+				 // addItem(dat.children(".item_id").text(), dat.children(".name").text(), dat.children(".price").text(), dat.children(".sku").text(), "", "", "", "", dat.children(".purchase_price").text(),dat.children(".category_id").text());
+
+				 addItem(itemId, name,price, sku, "", "", "", "", purchasePrice,catId);
+		  	 });
+	});
+
+	 $(".disply_preview_image").live("change",function(e){
+        var cur = $(this);
+       upload_photo_pdf(cur[0]);
+    });
+	$(function () {
+        $(".invoice-pdf-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 900,
+            height: 764,
+        });
+        $(".show-pdf-image").live("click",function (e) {
+            e.preventDefault();
+            var imgPath = $(this).attr('data-doc_lnk');
+           if(imgPath !== undefined){
+                var docFrame = '<iframe width="100%" height="100%"  src="'+imgPath+'" frameborder="0" scrolling="no" id="myFrame" ></iframe>';
+                $('#doc-modal').html('');
+                $('#doc-modal').append(docFrame);
+                $('#doc-modal').load(docFrame);
+                }else{
+                    $('#doc-modal').html('Sorry some error found');
+                }
+                $('.invoice-pdf-enlarge').dialog('open');
+        });
+    }); 
 	$('#ajax_supplier_results').hide();
 	$("#ajax_item_results").hide();
 	$("#ajax_item_name").live("keyup",ajax);
@@ -1003,7 +1092,7 @@ $(function () {
 					<td align="right">Invoice Images:</td>
 					<td>
 						<?php foreach ($invoiceImageArr as $key => $value) { ?>
-							 <img style="height: 36px;width: 26px; padding: 5px" class="invoice-openImg" src="<?php echo ROOT_URL.'/app/webroot/purchase-invoice-images/'.$value?>" alt="your image" /> 
+							   <img class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="<?php echo '/acesys/app/webroot/purchase-invoice-images/'.$value;?>" style="height: 70px;width: 70px;"  >
 						<?php }?>
 					</td>
 				</tr>
@@ -1041,7 +1130,7 @@ $(function () {
 					<td align="right">Invoice Images:</td>
 					<td>
 						<?php foreach ($invoiceImageArr as $key => $value) { ?>
-							 <img style="height: 36px;width: 26px; padding: 5px" class="invoice-openImg" src="<?php echo ROOT_URL.'/app/webroot/purchase-invoice-images/'.$value?>" alt="your image" /> 
+							  <img class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="<?php echo '/acesys/app/webroot/purchase-invoice-images/'.$value;?>" style="height: 70px;width: 70px;"  >
 						<?php }?>
 					</td>
 				</tr>
@@ -1107,11 +1196,17 @@ $(function () {
 					</td>
 					<!-- <td><input type="text" name="lastPo" value="<?php echo $last_po_number  ?>"></td> -->
 					<td >
-						<img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
+						<!-- <img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
 							<div class="cls-acecare-td-adjust">
 								<label for="sortpicture1" >Upload</label>
 								<input type="file" name="sortpic1" id="sortpicture1" class="disply_preview" data-ct="photo1" style="width: 30px">
-							</div>
+							</div> -->
+	                    <img id="pre-image-pdf" class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="" alt="your image" style="display: none;"/>
+	                    <div class="cls-acecare-td-adjust" style="width: 70px; padding: 3px;">
+                   		 <label for="sortpic1" style="background: lightgrey;" >Attach</label>
+                    	<input type="file" name="sortpic1" id="sortpicture1" class="disply_preview_image" data-ct="photo3" style="width: 70px;">
+                		</div> 
+
 					</td>
 					<td>Last PO: <?php echo ' '.$last_po_number ?></td>
 				</tr>
@@ -1230,7 +1325,22 @@ $(function () {
 								<td colspan="7" style="border-right-style:none; position:relative;">
 									<label for="ajax_item_name"><b>Search.</b> Type in a Description, Name, or Model Number (or SKU if a Supplier is selected):</label><input autocomplete="off" id='ajax_item_name' />
 									<table id='ajax_item_results'>
-										
+										<thead>
+											<tr>
+												<input type="button" name="add_item" value="Add" id="add_selected_items">
+												<input type="button" name="delete_item" value="Remove" id="delete_selected_items" style="margin-left: 5px;">												
+											</tr>
+											<tr>
+												<th><b>Name</b></th>
+												<th><b>Sku</b></th>
+												<th><b>Price</b></th>
+												<th><b>Item Id</b></th>
+												<th><b>Purchase Price</b></th>
+												<th><b>Category Id</b></th>
+												<th><b>Add/Remove</b></th>
+											</tr>
+										</thead>
+										<tbody></tbody>
 									</table>
 								</td>
 							</tr>        
@@ -1242,6 +1352,7 @@ $(function () {
 								<td class='item_id'></td>
 								<td class='purchase_price'></td>
 								<td class='category_id'></td>
+								<td class='remove_item'></td>
 							</tr>
                         <?php } ?>
 						<?php
@@ -1615,6 +1726,9 @@ $(function () {
 			<td><input type="button" value="Save" id="save_credit_payment" name="" style="padding: 6px;"></td>
 		</tr>
 	</table>
+</div>
+<div class="invoice-pdf-enlarge" title="Photo" style="display: none">
+    <div id="doc-modal" style="width: 100%, height:100%"></div>
 </div>
 <div class="invoice-img-enlarge" title="Photo" style="display: none">
 	<img src="<?=$imgPath?>" style="width:100%;">

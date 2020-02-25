@@ -7,10 +7,17 @@
 <meta name="apple-mobile-web-app-capable" content="yes">-->
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
-<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_overview_pooja.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_overview_pooja.js?time=<?= time();?>"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/eff_calculator.js"></script>
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.21.custom.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
+
+<style type="text/css">
+.hide_element{
+    display: none;
+}
+</style>
 </head>
 
 <body>
@@ -157,10 +164,24 @@
         </div>
         <h3>History</h3>
         <input type="button" id="show_history" value="Show History" />
+        <input type="button" id="hide_history" value="Hide History" class="hide_element" />
+        <input type="button" id="show_images" value="Show Images" />
+        <input type="button" id="hide_images" value="Hide Images"  class="hide_element"/>
         <div id="JobHistoryWorking">Loading...</div>
-        <div id="JobHistory"></div>
+        <div id="JobHistory" class="hide_element"></div>
         
-        
+
+        <table style="width:100%" id="all_images" class="hide_element">
+            <tr>
+             <?php foreach ($allImages as $key => $value) {?>
+                <td>
+                    <div style="position: relative; padding:0; width: 30px;"> 
+                            <img id="" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$value;?>" style="max-height:28px;height:auto;cursor:pointer;">
+                    </div>
+                </td>
+            <?php } ?>
+            </tr>
+        </table>
         <!--<div class="time_log">
         	Time In:
             <?php $begin = explode(":", $order['Order']['fact_job_beg']); ?>
@@ -237,6 +258,11 @@
         </td>
     </tr>
 </table>
+</div>
+<div class="invoice-img-enlarge" title="Photo" style="display: none">
+    <img class="rotate-image" src="<?=$imgPath?>" style="width:100%;">
+    <?php echo $this->element('image_rotate'); ?>
+    <button class="w3-btn"> <a href="#" onclick="this.href =" download>Download</a> </button>
 </div>
 <?php echo $this->element('tech_footer'); ?>
 </body>

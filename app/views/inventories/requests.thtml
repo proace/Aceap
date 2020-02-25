@@ -57,8 +57,8 @@
 
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
     <tr>
-				<td class="item_name_td" style="display:none"><?php echo strtoupper($cur_item['name']);?></td>
-				<td class="part_number_td" style="display:none"><?php echo strtoupper($cur_item['part_number']);?></td>
+		<td class="item_name_td" style="display:none"><?php echo strtoupper($cur_item['name']);?></td>
+		<td class="part_number_td" style="display:none"><?php echo strtoupper($cur_item['part_number']);?></td>
         <th width="150"><a href="javascript:setOrder('tech_id');">Tech</a></th>
         <th width="100"><a href="javascript:setOrder('docdate');">Date</a></th>
         <th width="100"><a href="javascript:setOrder('status');">Status</a></th>

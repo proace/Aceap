@@ -3,10 +3,6 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/meio.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
-<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
- -->
-<!--  <script type="text/javascript" src="http://beneposto.pl/jqueryrotate/js/jQueryRotateCompressed.js"> -->
-<!-- </script> -->
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.quicksearch.js"></script>
@@ -302,12 +298,7 @@ function hideReviewEmailBox() {
     $( "#reviewEmail" ).dialog("close");
 }
 
-// function showEmailBox() {
 
-// 	setTimeout(function(){ addTinyMCE(); }, 50);
-	
-// 	$( "#sendSeparateEmail" ).dialog("open");
-// }
 function hideItemBox() {
     $("#item_box").dialog("close");
 }
@@ -317,25 +308,7 @@ function hideEmailBox() {
 function hidePasswordBox(){
     $( "#open_source_password" ).dialog("close");
 }
-// function emailInvoice(order_id, i=0){
-// 	var email = $('#emailinput').val();
-// 	 if(0 == i)
-// 	 {
-// 	 	window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office', '_new');
-// 	 	return false;
-// 	 } else if(1 == i)
-// 	 {
-// 	 	window.open('<?=BASE_URL?>/orders/invoiceTabletPrint?order_id='+ order_id +'&type=office', '_new');
-// 	 	return false;
-// 	 	// var URL = '<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office';
-// 	 } else {
-// 	 	var URL = '<?=BASE_URL?>/orders/emailInvoiceReviewLinks?order_id='+ order_id +'&email='+ email +'&type=office';
-// 	 }
-	 
-// 	 $.get(URL, function(data){
-// 	 	console.log(data);
-// 	 });
-// }
+
 function emailInvoice(order_id, i=0){
 	var email = $('#emailinput').val();
 	 	window.open('<?=BASE_URL?>/orders/invoiceTabletEprint?order_id='+ order_id +'&email='+ email +'&type=office'+'&fromBooking=1', '_self');
@@ -374,26 +347,26 @@ function showestimateSubmit(){
 	
 }
 
-	function onSubstatusChange(el){
-		if ($(el).val()==4) $('#notifiedBy').show(); else  $('#notifiedBy').hide();
+function onSubstatusChange(el){
+	if ($(el).val()==4) $('#notifiedBy').show(); else  $('#notifiedBy').hide();
+}
+function CheckPaymentMethod(elem){
+if (elem.value==9){
+  $(".fin_fields").show();
+	}else{
+  $(".fin_fields").hide();
 	}
-  function CheckPaymentMethod(elem){
-    if (elem.value==9){
-      $(".fin_fields").show();
-		}else{
-      $(".fin_fields").hide();
-		}
-	}
-	function GetCalc(){
-		var prc=$("#calc_price").val();
-		var per=$("#calc_period").val();
-		$.post("<?=BASE_URL?>/orders/calc", {calc_price:prc,calc_period:per},
-			function(data){
-				val = jQuery.parseJSON(data);
-				$("#calc_monthly").html('$'+val['calc_monthly']);
+}
+function GetCalc(){
+	var prc=$("#calc_price").val();
+	var per=$("#calc_period").val();
+	$.post("<?=BASE_URL?>/orders/calc", {calc_price:prc,calc_period:per},
+		function(data){
+			val = jQuery.parseJSON(data);
+			$("#calc_monthly").html('$'+val['calc_monthly']);
 //				$("#calc_total").html('$'+val['calc_total']);
-		});
-	}
+	});
+}
 var CheckPrcCount=0;
 var nopen = <?=$tab_num?>;
 var item_type=0;
@@ -430,7 +403,9 @@ function ChangeSupplier(element){
 			if (val['phone']) {txt += "phone: "+val['phone']; dev = ', ';}
 			if (val['address']) txt += dev+"addr: "+val['address'];
 			if (val['city']) txt += dev+", "+val['city'];
-      $("#SupplierInfo").html(txt);
+        $("#SupplierInfo").html(txt);
+        $("#purchase_supplier_info").val(txt);
+        $("#purchase_supplier_name").val(val['name']);
 		});
 }
 function createMessage()
@@ -501,7 +476,9 @@ function CloseJobsHistory(){
 }
 function JobTypeChange(){
   jt=$('#OrderOrderTypeId').val();
-	if ((jt==10)||(jt==31)) $('#ApplianceOrder').show();  else $('#ApplianceOrder').hide();
+    // for Local
+    // if ((jt==10)||(jt==31) || (jt==70)) $('#ApplianceOrder').show();  else $('#ApplianceOrder').hide();
+	if ((jt==10)||(jt==31) || (jt==81)) $('#ApplianceOrder').show();  else $('#ApplianceOrder').hide();
   if ((jt==9)||(jt==10))
 	{
     $("#PreviousSection").show();
@@ -562,7 +539,7 @@ function CloseQuestions(){
   $('#OpenQuestionsText').show();
   $('#CloseQuestionsText').hide();
 }
-function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, part_number, show_purchase='', model_number, item_brand='', sku='', quantity=0, purchase_invoice='', supplier_invoice='', supplier_name=''){
+function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, part_number, show_purchase='', model_number, item_brand='', sku='', quantity=0, purchase_invoice='', supplier_invoice='', supplier_name='', sub_category=''){
     $("#item_selector0").html("").hide();
 	$("#item_selector1").html("").hide();
 	var index=1*document.getElementById("NumberOfItems").value;
@@ -597,8 +574,9 @@ function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, p
                             invoice_image:purchase_invoice,
                             supplier_name:supplier_name,
                             supplier_invoice:supplier_invoice,
-                            sku:sku
-							}),
+                            sku:sku,
+                            sub_category_id:sub_category
+						}),
 					dataType: "html",
 					async:false}).responseText;
 	$("#order_"+index).html(bodyContent);
@@ -849,6 +827,16 @@ function ValidateFields(jobstatus, show_box=0)
 		if(submitForm){
 		    if(((submitForm==true) && (OrderID!='')) && jobstatus !=1){
 				// alert('ImIn');
+                var orderTypeId = $("#OrderOrderTypeId").val();
+                var supplierId = $("#OrderAppOrderedSupplierId").val();
+                // Local = 70 live= 81
+                if(orderTypeId == 81)
+                { 
+                    if(supplierId == "" || supplierId == null ){
+                        alert("Please fill supplier details.");
+                        return false;
+                    } 
+                }                
 					$.get("<?=BASE_URL;?>/orders/conflictCheckExistingJob",
                     {jobstatus:jobstatus,
                      customer_city:customerCity,
@@ -885,8 +873,18 @@ function ValidateFields(jobstatus, show_box=0)
             });
             if(is_zero > 0){
                 alert("Please add purchase price for custom part.");
-                return false;
+               
             }
+             var orderTypeId = $("#OrderOrderTypeId").val();
+                var supplierId = $("#OrderAppOrderedSupplierId").val();
+                // Local = 70 live= 81
+                if(orderTypeId == 81)
+                { 
+                    if(supplierId == "" || supplierId == null ){
+                        alert("Please fill supplier details.");
+                         return false;
+                    } 
+                }
 			$.get("<?=BASE_URL;?>/orders/conflictCheck",
 				{jobstatus:jobstatus,
 				 customer_city:customerCity,
@@ -958,12 +956,12 @@ function ValidateFields(jobstatus, show_box=0)
 	}
 
 }
-function TotalCalculation()
+function TotalCalculation(techPercent)
 {
     subtotal = 0;
     CheckPrcCount = 0;
-
-	$('#CurrentItemsTable').children('tbody').children('.booked').each(function(i, el) {
+    invoiceSubTotal = 0;
+	$('#MainItemsTable #CurrentItemsTable').children('tbody').children('.booked').each(function(i, el) {
 		qty = $(el).children('.quantity').children('input').val();
 		if (qty!=null && qty != undefined){
 			prc = $(el).children('.price').children('input').val();
@@ -979,66 +977,188 @@ function TotalCalculation()
 			var purchase = (purch * qty);
 			var orgPrc = (prc * qty);
 			$(el).children('.amount').html('$'+amount);
+            if($(el).children('.order_status_val ').children('input').is(":checked")){
+               invoiceSubTotal += parseFloat(purch) * qty;
+            }
+            
+            if(techPercent != undefined )
+            {
+                var percentVal = $(techPercent).val();
+                var percentType = $(techPercent).attr('purchaseType');
+                newPrchAmount = 0;
+                if(percentType == 1)
+                {
+                    var newPrchAmount = (parseFloat(purch) * parseInt(percentVal))/ 100;
+                } else if(percentType == 2) {
+                    var newPrchAmount = parseFloat(percentVal);
+                }
+                $(el).children('.tech_purchase').children('input').val('');
+                $(el).children('.tech_purchase').children('input').val(parseFloat(purch) + parseFloat(newPrchAmount));
+                $("#tech_percentage").val(percentVal);
+                $("#tech_percentage_type").val(percentType);
+
+            } 
+            // Default tech percentage 
+            else {
+                var percentVal = $("#tech_percentage").val();
+                var percentType = $("#tech_percentage_type").val();
+                newPrchAmount = 0;
+                if(percentType == 1)
+                {
+                    var newPrchAmount = (parseFloat(purch) * parseInt(percentVal))/ 100;
+                } else if(percentType == 2) {
+                    var newPrchAmount = parseFloat(percentVal);
+                }
+                $(el).children('.tech_purchase').children('input').val('');
+                $(el).children('.tech_purchase').children('input').val(parseFloat(purch) + parseFloat(newPrchAmount));
+            }
+
 			//$(el).children('.price').find("span").text(orgPrc);
 			//$(el).children('.purchase').find("span").text(purchase);
 		}
     });
-<?php
-//Telemarketers can not see technicians part
-if (($common->getLoggedUserRoleID() != "3")
-	&&($common->getLoggedUserRoleID() != "9"))
+    <?php
+    //Telemarketers can not see technicians part
+    if (($common->getLoggedUserRoleID() != "3")
+    	&&($common->getLoggedUserRoleID() != "9"))
+    {
+    ?>
+    		$('#CurrentItemsTableTech').children('tbody').children('tr').each(function(i, el) {
+    			qty = $(el).children('.quantity').children('input').val();
+    			if (qty!=null){
+    				prc = $(el).children('.price').children('input').val();
+    				disc = $(el).children('.discount').children('input').val();
+    				var purch = $(el).children('.purchase').children('input').val();
+    				add = $(el).children('.addition').children('input').val();
+    				if (prc=="") prc=0;
+    				if (disc=="") disc=0;
+    				if (add=="") add=0;
+    				if(purch=="") purch=0;
+    				var purchase = (purch * qty);
+    				var orgPrc = (prc * qty);
+    				amount = parseFloat(prc) * qty - (1*disc) + (1*add);
+    				subtotal += amount;
+    				$(el).children('.amount').html('$'+amount);
+    				//$(el).children('.price').find("span").text(orgPrc);
+    				//$(el).children('.purchase').find("span").text(purchase);
+    			}
+        });
+    <?php
+    }
+    ?>
+        hst = 0;
+        if (subtotal>0) hst = subtotal*0.05;
+     	  total = subtotal+hst;
+        h = '<table class="total" cellspacing=0>';
+    		h += '<tr><td align="right" style="border-right:none;">Subtotal:</td><td align="right">'+subtotal.toFixed(2)+'</td></tr>';
+        h += '<tr><td align="right" style="border-right:none;">GST:</td><td align="right">'+hst.toFixed(2)+'</td></tr>';
+    		h += '<tr><td align="right" style="border-right:none;">Total:</td><td align="right">'+total.toFixed(2)+'</td></tr>';
+    <?php
+    //Telemarketers can not see technicians part
+    if (($common->getLoggedUserRoleID() != "3")
+    	&&($common->getLoggedUserRoleID() != "9")
+    	&&($this->data['Type']['category_id']==2))
+    {
+    ?>
+    		var deposit = $("#OrderCustomerDeposit").val();
+    		if (!deposit) deposit="<?=$this->data['Order']['customer_deposit']?>";
+    		var balance = total-deposit;
+        h += '<tr><td align="right" style="border-right:none;">Deposit:</td><td align="right">'
+    		    + '<input name="data[Order][customer_deposit]" id="OrderCustomerDeposit" style="width: 45px;" value="'+deposit+'" onchange="TotalCalculation()"/></td></tr>';
+        if (deposit)
+      	  h += '<tr><td align="right" style="border-right:none;">Balance:</td><td align="right">'+balance.toFixed(2)+'</td></tr></table>';
+    <?php
+    }
+    ?>
+    		h += '</table>';
+    	$("#current_item_total").val(total.toFixed(2));
+        $("#CurrentItemsTotal").html(h);
+        $("#invoiceSubTotal").val(invoiceSubTotal.toFixed(2));
+        $("#invoiceGst").val((invoiceSubTotal * 0.05 ).toFixed(2));
+        $("#invoicePst").val((invoiceSubTotal * 0.07 ).toFixed(2));
+      	$("#invoiceTotal").val((invoiceSubTotal + (invoiceSubTotal * 0.12 )).toFixed(2));
+}
+function NewTotalCalculation()
 {
-?>
-		$('#CurrentItemsTableTech').children('tbody').children('tr').each(function(i, el) {
-			qty = $(el).children('.quantity').children('input').val();
-			if (qty!=null){
-				prc = $(el).children('.price').children('input').val();
-				disc = $(el).children('.discount').children('input').val();
-				var purch = $(el).children('.purchase').children('input').val();
-				add = $(el).children('.addition').children('input').val();
-				if (prc=="") prc=0;
-				if (disc=="") disc=0;
-				if (add=="") add=0;
-				if(purch=="") purch=0;
-				var purchase = (purch * qty);
-				var orgPrc = (prc * qty);
-				amount = parseFloat(prc) * qty - (1*disc) + (1*add);
-				subtotal += amount;
-				$(el).children('.amount').html('$'+amount);
-				//$(el).children('.price').find("span").text(orgPrc);
-				//$(el).children('.purchase').find("span").text(purchase);
-			}
+    subtotal = 0;
+    CheckPrcCount = 0;
+
+    $('#request_items #CurrentItemsTable').children('tbody').children('.booked').each(function(i, el) {
+        qty = $(el).children('.quantity').children('input').val();
+        if (qty!=null && qty != undefined){
+            prc = $(el).children('.price').children('input').val();
+            var purch = $(el).children('.purchase').children('input').val();
+            disc = $(el).children('.discount').children('input').val();
+            add = $(el).children('.addition').children('input').val();
+            if (prc=="") prc=0;
+            if (disc=="") disc=0;
+            if (add=="") add=0;
+            if(purch=="") purch=0;
+            amount = parseFloat(prc) * qty - (1*disc) + (1*add);
+            subtotal += amount;
+            var purchase = (purch * qty);
+            var orgPrc = (prc * qty);
+            $(el).children('.amount').html('$'+amount);
+            //$(el).children('.price').find("span").text(orgPrc);
+            //$(el).children('.purchase').find("span").text(purchase);
+        }
     });
-<?php
-}
-?>
-    hst = 0;
-    if (subtotal>0) hst = subtotal*0.05;
- 	  total = subtotal+hst;
-    h = '<table class="total" cellspacing=0>';
-		h += '<tr><td align=right style="border-right:none;">Subtotal:</td><td align=right>'+subtotal.toFixed(2)+'</td></tr>';
-    h += '<tr><td align=right style="border-right:none;">GST:</td><td align=right>'+hst.toFixed(2)+'</td></tr>';
-		h += '<tr><td align=right style="border-right:none;">Total:</td><td align=right>'+total.toFixed(2)+'</td></tr>';
-<?php
-//Telemarketers can not see technicians part
-if (($common->getLoggedUserRoleID() != "3")
-	&&($common->getLoggedUserRoleID() != "9")
-	&&($this->data['Type']['category_id']==2))
-{
-?>
-		var deposit = $("#OrderCustomerDeposit").val();
-		if (!deposit) deposit="<?=$this->data['Order']['customer_deposit']?>";
-		var balance = total-deposit;
-    h += '<tr><td align=right style="border-right:none;">Deposit:</td><td align=right>'
-		    + '<input name="data[Order][customer_deposit]" id="OrderCustomerDeposit" style="width: 45px;" value="'+deposit+'" onchange="TotalCalculation()"/></td></tr>';
-    if (deposit)
-  	  h += '<tr><td align=right style="border-right:none;">Balance:</td><td align=right>'+balance.toFixed(2)+'</td></tr></table>';
-<?php
-}
-?>
-		h += '</table>';
-	$("#current_item_total").val(total.toFixed(2));
-  	$("#CurrentItemsTotal").html(h);
+    <?php
+    //Telemarketers can not see technicians part
+    if (($common->getLoggedUserRoleID() != "3")
+        &&($common->getLoggedUserRoleID() != "9"))
+    {
+    ?>
+            $('#CurrentItemsTableTech').children('tbody').children('tr').each(function(i, el) {
+                qty = $(el).children('.quantity').children('input').val();
+                if (qty!=null){
+                    prc = $(el).children('.price').children('input').val();
+                    disc = $(el).children('.discount').children('input').val();
+                    var purch = $(el).children('.purchase').children('input').val();
+                    add = $(el).children('.addition').children('input').val();
+                    if (prc=="") prc=0;
+                    if (disc=="") disc=0;
+                    if (add=="") add=0;
+                    if(purch=="") purch=0;
+                    var purchase = (purch * qty);
+                    var orgPrc = (prc * qty);
+                    amount = parseFloat(prc) * qty - (1*disc) + (1*add);
+                    subtotal += amount;
+                    $(el).children('.amount').html('$'+amount);
+                    //$(el).children('.price').find("span").text(orgPrc);
+                    //$(el).children('.purchase').find("span").text(purchase);
+                }
+        });
+    <?php
+    }
+    ?>
+        hst = 0;
+        if (subtotal>0) hst = subtotal*0.05;
+          total = subtotal+hst;
+        h = '<table class="total" cellspacing=0>';
+            h += '<tr><td align="right" style="border-right:none;">Subtotal:</td><td align="right">'+subtotal.toFixed(2)+'</td></tr>';
+        h += '<tr><td align="right" style="border-right:none;">GST:</td><td align="right">'+hst.toFixed(2)+'</td></tr>';
+            h += '<tr><td align="right" style="border-right:none;">Total:</td><td align="right">'+total.toFixed(2)+'</td></tr>';
+    <?php
+    //Telemarketers can not see technicians part
+    if (($common->getLoggedUserRoleID() != "3")
+        &&($common->getLoggedUserRoleID() != "9")
+        &&($this->data['Type']['category_id']==2))
+    {
+    ?>
+            var deposit = $("#OrderCustomerDeposit").val();
+            if (!deposit) deposit="<?=$this->data['Order']['customer_deposit']?>";
+            var balance = total-deposit;
+        h += '<tr><td align="right" style="border-right:none;">Deposit:</td><td align="right">'
+                + '<input name="data[Order][customer_deposit]" id="OrderCustomerDeposit" style="width: 45px;" value="'+deposit+'" onchange="TotalCalculation()"/></td></tr>';
+        if (deposit)
+          h += '<tr><td align="right" style="border-right:none;">Balance:</td><td align="right">'+balance.toFixed(2)+'</td></tr></table>';
+    <?php
+    }
+    ?>
+            h += '</table>';
+        $("#current_item_total").val(total.toFixed(2));
+        $("#CurrentItemsTotal").html(h);
 }
 var ChangeDetailsShow=0;
 var last_jt=0;
@@ -1459,7 +1579,25 @@ function upload_photo(cur,i) {
     reader.readAsDataURL(cur.files[0]);
   }
 }
+function upload_photo_pdf(cur) {  
+    //var file = $('input[id="sortpicture'+i+'"]')[0];
+    if (cur.files && cur.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        var base64Value = e.target.result;
+        var newBase64Value = base64Value.replace('data:application/wps-office.pdf', 'data:application/pdf');
+        $('#pre-image-pdf')
+        .attr('data-doc_lnk', newBase64Value)
+        .width(86)
+        .height(50);
+        $('#pre-image-pdf').css("display","block");
+    };
+    reader.readAsDataURL(cur.files[0]);
+  }
+}
+
 function ajax(event) {
+    $('.delete_items').attr('checked', false);
     var val = $(event).val().trim();
     var data_class = $(event).attr("data-class");
     // Return all items if:
@@ -1499,8 +1637,9 @@ function add_unknown_item(classId)
 }
 function ajax_failed(why, data_class) {
     template = $('#ajax_item_result_template_'+data_class);
-    table = $('#ajax_item_results_'+data_class);
+    table = $('#ajax_item_results_'+data_class+' tbody');
     table.empty();
+    $('#ajax_item_results_'+data_class+' thead').hide();
     result = template.clone();
     if (why=="no supplier") {
         result.children(".name_"+data_class).html("Please choose a supplier."); }
@@ -1519,7 +1658,7 @@ function ajax_finished(data, data_class) {
         return false;
     }
     template = $('#ajax_item_result_template_'+data_class);
-    table = $('#ajax_item_results_'+data_class);
+    table = $('#ajax_item_results_'+data_class+' tbody');
     table.empty();
     for(i in data) {
         result = template.clone();
@@ -1532,11 +1671,13 @@ function ajax_finished(data, data_class) {
         result.children(".category_id_"+data_class).html(data[i]["category_id"]);
         result.children(".model_"+data_class).html(data[i]["model"]);
         result.children(".brand_"+data_class).html(data[i]["brand"]);
+        result.children(".sub_category_id_"+data_class).html(data[i]["sub_category_id"]);
+        result.children(".remove_item_"+data_class).html('<input type="checkbox" name="delete_item" class="delete_items" item-id="'+data[i]["id"]+'" item-class="'+data_class+'"/>');
         result.show();
-        result.bind("click",function(){result_clicked(this, data_class);});
+        //result.bind("click",function(){result_clicked(this, data_class);});
         result.appendTo(table);
     }
-    table.show();
+    table.parent().show();
     $("#add_item_"+data_class).hide();
 }
 function result_clicked(clicked_item, data_class){
@@ -1544,7 +1685,7 @@ function result_clicked(clicked_item, data_class){
     table = $('#ajax_item_results_'+data_class);
     table.hide();
     $('.ajax_item_name_'+data_class).val('');
-    addItem(dat.children(".item_id_"+data_class).text(), dat.children(".name_"+data_class).text(), dat.children(".price_"+data_class).text(),data_class, dat.children(".category_id_"+data_class).text(), dat.children(".purchase_price_"+data_class).text(),"" ,"1",dat.children(".model_"+data_class).text(), dat.children(".brand_"+data_class).text());
+    addItem(dat.children(".item_id_"+data_class).text(), dat.children(".name_"+data_class).text(), dat.children(".price_"+data_class).text(),data_class, dat.children(".category_id_"+data_class).text(), dat.children(".purchase_price_"+data_class).text(),"" ,"1",dat.children(".model_"+data_class).text(), dat.children(".brand_"+data_class).text(), dat.children(".sku_"+data_class).text(),'','','','',dat.children(".sub_category_id_"+data_class).text());
 }
 
 function searchSupplier(eve){
@@ -1598,76 +1739,132 @@ function result_supplier_clicked(clicked_item)
      $("#supplierId").val(supId);
 }
 
-$(function () {
-    // $("#one_time_item_form_data").live("submit", function(e){
+$(function () {  
     $("#save_one_time_item").live("click", function(e){
         e.preventDefault();
-        var payload = $('#one_time_item_form_data').serializeArray();
-        var supplierId = $("#supplierId").val();
-        if(supplierId == '' || supplierId == undefined)
-        {
-            alert("Please select supplier.");
-            return false;
-        }
-        var image   = $('#invoice_image')[0].files[0];
-        var boxId   = $("#onetime_box_id").val();
-        var techId  = $("#OrderJobTechnician1Id ").val();
-        var orderId  = $('#po_number').val();
-        if(image == '' || image == null || image == 'undefined')
-        {
-            payload.push({name: 'image', value: ''});
-            payload.push({name: 'techId', value: techId});
-            payload.push({name: 'orderId', value: orderId});
-             $.ajax({
-              url: "<?=BASE_URL;?>/inventories/createPurchaseInvoice",
-              type: "POST",
-              data: payload,
-              dataType: 'json',
-              success: function(data){
-                   var invoiceName = data['imageName'];
-                   var supplierName = data['supplier_name'];
-                   var invoiceId = data['invoice_id'];
-                    $.each(data, function (index, value) {
-                       if(value['name'] != '' && value['name'] != undefined)
-                        addItem(1227, value['name'], value['selling_price'], boxId, 1, value['purchase_price'], '','','','',value['sku'],value['quantity'],invoiceName,invoiceId, supplierName);
-                    });     
-                    hideItemBox();      
-                }
-            });
-        } else {
-            var reader = new FileReader();
-            var baseString;
-            reader.onloadend = function () {
-                baseString = reader.result;
-                payload.push({name: 'image', value: baseString});
-                payload.push({name: 'techId', value: techId});
-                payload.push({name: 'orderId', value: orderId});
-                 $.ajax({
-                  url: "<?=BASE_URL;?>/inventories/createPurchaseInvoice",
-                  type: "POST",
-                  data: payload,
-                  dataType: 'json',
-                  success: function(data){
-                        var invoiceName = data['imageName'];
-                        var supplierName = data['supplier_name'];
-                        var invoiceId = data['invoice_id'];
-                        $.each(data, function (index, value) {
-                           if(value['name'] != '' && value['name'] != undefined)
-                            addItem(1227, value['name'], value['selling_price'], boxId, 1, value['purchase_price'], '','','','',value['sku'],value['quantity'],invoiceName,invoiceId, supplierName);
-
-                        });     
-                        hideItemBox();     
-                    }
-                });
-            };
-           reader.readAsDataURL(image);           
-        }
-    });        
+        var formdata = new FormData($("#editBookingform_new")[0]);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', "<?=BASE_URL;?>/orders/saveOrderPurchase", true);
+        xhr.onload = function () {
+            var response = JSON.parse(xhr.response);
+            if(response.res == 1)
+            {
+                $("#orderInvoiceImage").val(response.image_name);
+            } else {
+                alert("Please create order first.");
+            }
+        };
+        xhr.send(formdata);
+    });    
 });
 
 
 // $(".",cur).text();
 $(document).ready(function(){
+
+    $(".delete_selected_items").live("click", function(){
+        var Id = '';
+           $(".delete_items:checkbox:checked").each(function(){
+              Id += (Id != "")? "," : "";
+              Id += $(this).attr("item-id");
+          });
+          $.ajax({
+          url: "<?=BASE_URL;?>/inventories/deleteItems",
+          type: "POST",
+          data : {Id:Id},
+          dataType: 'json',
+          success: function(data){
+                if(data.res == "1")
+                {   
+                    $(".delete_items:checkbox:checked").each(function(){
+                        $(this).parent().parent().remove();
+                    });
+                }             
+            }
+        });
+    });
+
+    $(".add_selected_items").live("click", function(){
+        var Id = '';
+        var itemClass = $(this).attr("item-class");
+        table = $('#ajax_item_results_'+itemClass);
+        table.hide();
+        $('#ajax_item_name').val('');
+        $(".delete_items:checkbox:checked").each(function(){
+             var cur = $(this).parent().parent();
+             var itemId = $('.item_id_'+itemClass,cur).text();
+             var name = $('.name_'+itemClass,cur).text();
+             var price = $('.price_'+itemClass,cur).text();
+             var sku = $('.sku_'+itemClass,cur).text();
+             var purchasePrice = $('.purchase_price_'+itemClass,cur).text();
+             var catId = $('.category_id_'+itemClass,cur).text();
+             var modelId = $('.model_'+itemClass,cur).text();
+             var brandId = $('.brand_'+itemClass,cur).text();
+             var subCatId = $('.sub_category_id_'+itemClass,cur).text();
+             // addItem(dat.children(".item_id_"+data_class).text(), dat.children(".name_"+data_class).text(), dat.children(".price_"+data_class).text(),data_class, dat.children(".category_id_"+data_class).text(), dat.children(".purchase_price_"+data_class).text(),"" ,"1",dat.children(".model_"+data_class).text(), dat.children(".brand_"+data_class).text(), dat.children(".sku_"+data_class).text(),'','','','',dat.children(".sub_category_id_"+data_class).text());
+
+                 addItem(itemId, name, price, itemClass,catId, purchasePrice, "","1", modelId,brandId,sku, "", "","", "", subCatId );
+             });
+    });
+
+    // Get technician default percentage.
+    $("#OrderJobTechnician1Id").live("change", function(){
+        var techId = $("#OrderJobTechnician1Id").val();
+        $.ajax({
+              url: "<?=BASE_URL;?>/users/getTechPercentage",
+              type: "POST",
+              data: {techId:techId},
+              dataType: 'json',
+              success: function(data){
+                    $("#tech_percentage").val(data.res);
+                    $("#tech_percentage_type").val(1);
+                }
+            });
+    });
+    $("#generate_purchase_order").live("click", function(){
+        var countItem = 0;
+        var orderBy = $("#OrderAppOrderedBy").val();
+        var invoiceNo = $("#invoiceId").val();
+        if(orderBy == '' || orderBy == undefined)
+        {
+            alert("Please select ordered by user.");
+            return false;
+        }
+        if(invoiceNo == '' || invoiceNo == undefined)
+        {
+            alert("Please add invoice number.");
+            return false;
+        }
+
+        $('#MainItemsTable #CurrentItemsTable').children('tbody').children('.booked').each(function(i, el) {
+            if($(el).children('.order_status_val ').children('input').is(":checked")){
+               countItem++;
+            }
+        });
+
+         if(countItem > 0){
+             var formData = new FormData($("#editBookingform_new")[0]);
+             var techId  = $("#OrderJobTechnician1Id ").val();
+             formData.append("techId",techId);
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', "<?=BASE_URL;?>/inventories/createPurchaseInvoice", true);
+                xhr.onload = function () {
+                    var response = JSON.parse(xhr.response);
+                    if(response.res == 1)
+                    {
+                        alert("Purchase Order Created Successfully.")
+                        $("#generate_purchase_order").val("Purchased");
+                        // $("#item_box").dialog("close");
+                    }
+                };
+                
+                xhr.send(formData);
+         } else {
+            alert("Please select atleast one item.");
+            return false;
+         }
+    });
+    //Loki: get order items
      $("#saveImages").live("click", function(e){
         e.preventDefault();
         var formdata = new FormData($("#editBookingform_new")[0]);
@@ -1757,12 +1954,12 @@ $(document).ready(function(){
     });
 
     // Loki add one time purchase items in the table .
-    $("#add_one_time_item").live("click", function(){
-        template = $("#one_time_row"); 
-        tableTemp = $('#new_item_table');
-        result = template.clone();
-        $(result).removeAttr("id").addClass("remove_tr").show().appendTo(tableTemp);;
-    });
+    // $("#add_one_time_item").live("click", function(){
+    //     template = $("#one_time_row"); 
+    //     tableTemp = $('#new_item_table');
+    //     result = template.clone();
+    //     $(result).removeAttr("id").addClass("remove_tr").show().appendTo(tableTemp);;
+    // });
     // $(".search_supplier").live("keyup",searchSupplier);   
     $(".search_supplier").live("keyup",function(){
         searchSupplier(this);
@@ -1845,29 +2042,6 @@ $(document).ready(function(){
                 height: 200,
                 cache: false
             });           
-        });
-      //Loki open box to add multiple one time purchase items.
-      $(function () {
-            $("#item_box").dialog({
-                modal: true,
-                autoOpen: false,
-                title: "items",
-                autoOpen: false,
-                width: 900,
-                height: 400,
-                cache: false,
-                close : function(){
-                  $("#one_time_item_form_data")[0].reset();
-                  $("#pre-image_photo3").attr("src","").hide();
-                  $(".remove_tr").remove(); 
-              }  
-            });
-            $(".one_time_items").live("click",function () {
-                var boxId = $(this).attr('data-onetime-id');
-                $("#onetime_box_id").val(boxId);
-
-                $('#item_box').dialog('open');
-            });
         });
       //Loki Ask password for changing source1.
       $(function () {
@@ -1994,7 +2168,9 @@ $(document).ready(function(){
 				res = JSON.parse(data);
 				if(res.res == "OK")
 				{
-					location.reload(true);
+                    $("#order_paymnet_picture").hide();
+					$("#upload_payment_picture").show();
+                    //location.reload(true);
 				}
 			}			
 		});
@@ -2021,6 +2197,29 @@ $(document).ready(function(){
 
 	});
 
+    $(".delete-invoice-image").live("click", function (){
+        var id = $('#OrderId').val();
+       var imgPath = $(this).attr("image-name");
+        $.ajax({
+        url: '<?=BASE_URL?>/orders/removeInvoiceImage',
+        dataType: 'html',
+        type: 'POST',
+        cache: false,
+        data: {oid:id, imgPath:imgPath},
+        success: function(data) {
+                res = JSON.parse(data);
+                if(res.res == "OK")
+                {
+                    $("#invoice_order_image").hide();
+                    $("#invoice_order_upload").show();
+                    $("#orderInvoiceImage").val('');
+                    //location.reload(true);
+                }
+            }           
+        });
+        
+    });                
+
 	 $(function () {
 	    $(".invoice-img-enlarge").dialog({
 	        modal: true,
@@ -2032,8 +2231,9 @@ $(document).ready(function(){
 	    });
 	    $(".invoice-openImg").live("click",function () {
 	    	var imgPath = $(this).attr('src');
-	    	$('.invoice-img-enlarge img').attr('src', imgPath);
-	        $('.invoice-img-enlarge').dialog('open');
+            $('.invoice-img-enlarge img').attr('src', imgPath);
+            $('.invoice-img-enlarge a').attr('href', imgPath);	
+            $('.invoice-img-enlarge').dialog('open');
 	    });
     });
 	 
@@ -2094,12 +2294,6 @@ $(document).ready(function(){
 		});
 
 });
-
-	// $('#reminder-months').live("change", function(){
-	// 	$val = $(this).val();
-	// 	console.log($val);
-	// });
-
 	$('.reminder-email-type').live("change", function(){
 		var $cur = $(this);
 		var $val = $(this).val();
@@ -2136,6 +2330,12 @@ $(document).ready(function(){
 	    var cur = $(this);
 	   upload_photo(cur[0],img_ct);
 	});
+
+    $(".disply_preview_image").live("change",function(e){
+        var cur = $(this);
+       upload_photo_pdf(cur[0]);
+    });
+
 	//$('input:text').setMask();
 	$("#dialer_callback").dialog({
           autoOpen: false, 
@@ -2561,13 +2761,6 @@ function hideMyModal(){
 	// document.getElementById("reminderEmail").style.display = "none";
 }
 
-// function showSmsBox(){
-// 	document.getElementById("reminderSms").style.display = "block";
-// }
-// function hideSmsBox(){
-// 	document.getElementById("reminderSms").style.display = "none";
-// }
-
 function clickYes(){	
 	//document.getElementById("conffinal").style.display = "block";
 	//document.getElementById("confbtn").style.display = "none";
@@ -2575,8 +2768,7 @@ function clickYes(){
 	document.forms['editBookingform'].submit();
 }
 function clickNo(){
-	//document.getElementById("conffinal").style.display = "block";
-	//document.getElementById("confbtn").style.display = "none";
+
     var is_max_distance = $("#is_max_distance").val();
     if(is_max_distance == 1)
     {
@@ -2595,16 +2787,13 @@ function verification_type(Order){
 	var card_type = $("input[type='radio'].radioBtnClass:checked").val();
     if(card_type == 1){
     	emailInvoice(Order , 1);
-    	//window.location.reload(true);
-    	//window.location.href='scheduleView';
+    	
     	hideMyModal();
     }else if(card_type == 2){
     	emailInvoice(Order, 2);
-    	//window.location.href='scheduleView';
     	hideMyModal();
     }else if(card_type == 3){
     	noInvoiceReviewLink(Order);
-    	//window.location.href='scheduleView';
     	hideMyModal();
     }
 }
@@ -2647,6 +2836,7 @@ $(document).ready(function(){
 	display: block !important;
 }*/
 #ajax_item_results_0 {
+    display: none;
     border-collapse: collapse;
     background: #FFFF99;
     color: #000000;
@@ -2661,16 +2851,19 @@ $(document).ready(function(){
 }
 
 #ajax_item_results_1 {
+    display: none;
     border-collapse: collapse;
     background: #FFFF99;
     color: #000000;
 }
 #ajax_item_results_0 td, #ajax_item_results_0 th {
   border: 1px solid #ddd;
+  text-align: center;
 }
 
 #ajax_item_results_1 td, #ajax_item_results_1 th {
   border: 1px solid #ddd;
+  text-align: center;
 }
 .receipt_btn{
     position: absolute;
@@ -2886,19 +3079,6 @@ function get_data($url)
 		return $data;
 	}
 
-//$external_pause = 'http://96.53.56.234/agc/api.php?source=test&user=ALIACE&pass=Dguk7vKS9wQX&function=external_pause&agent_user=ACE1&value=PAUSE';
-//	$result = get_data($external_pause);
-
-//	$external_hangup = 'http://96.53.56.234/agc/api.php?source=test&user=ALIACE&pass=Dguk7vKS9wQX&function=&function=external_hangup&agent_user=ACE1&value=1';
-//	$result = get_data($external_hangup);
-
-	/*A - Answering Machine, B - Busy, CALLBK - Call Back *, DC - Disconnected Number, DEC - Declined Sale, DNC - DO NOT CALL, N - No Answer, NI - Not Interested, NP - No Pitch No Price, SALE - Sale Made, WRNBR - Wrong Number, XFER - Call Transferred*/
-
-//	$external_status = 'http://96.53.56.234/agc/api.php?source=test&user=ALIACE&pass=Dguk7vKS9wQX&function=&function=external_status&agent_user=ACE1&value=CALLBK';
-//	$result = get_data($external_status);
-
-
-
 ?>
 
 <!-- Trigger/Open The Modal -->
@@ -2921,7 +3101,7 @@ function get_data($url)
 </div>
  <!-- #Loki Show reminder email popup  -->
 <div id="reminderEmail" class="reminder-modal" >
-	<body>
+	<!-- <body> -->
 	<div class="reminder-modal-content">
 			<input type="hidden" id="reminder-type-val" name="reminderType">
 			<input type="hidden" id="hide_modal" name="hide_modal">
@@ -2967,11 +3147,11 @@ function get_data($url)
 				</td>
 			</tr>
 		</table>
-    <input type="button" style="float: left;width: 100;" class="reminder-button" id="quick_reminder" name="Quick Reminder" value="Quick Reminder" onclick="createMessage();">
-    <input type="button" class="reminder-button" id="save-reminder-email" name="OK" value="OK">
-	<input type="button"  class="reminder-button" name="cancel" value="Cancel" onclick="hideInvoiceReview();">
+        <input type="button" style="float: left;width: 100;" class="reminder-button" id="quick_reminder" name="Quick Reminder" value="Quick Reminder" onclick="createMessage();">
+        <input type="button" class="reminder-button" id="save-reminder-email" name="OK" value="OK">
+    	<input type="button"  class="reminder-button" name="cancel" value="Cancel" onclick="hideInvoiceReview();">
 	</div>	
-	</body>
+	<!-- </body> -->
 </div>
 
 
@@ -3012,80 +3192,6 @@ function get_data($url)
 <!--         <input type="button"  name="cancel" value="Cancel" onclick="hidePasswordBox();" style="padding: 5px;margin-top: 5px;">
  --></div>
 
-<div id="item_box" style="display: none;">
-    <form id="one_time_item_form_data" method="post" enctype="multipart/form-data">
-        <table id="one_time_item_table">
-            <tbody>
-                <tr>
-                    <td>Invoice:</td>
-                    <td>
-                        <img id="pre-image_photo3" class="pre-image_photo3 invoice-openImg" src="#" alt="your image" />
-                        <div class="cls-acecare-td-adjust" style="width: 70px; padding: 3px;">
-                            <label for="invoice_image" style="background: lightgrey;" >Upload</label>
-                            <input type="file" name="invoice_image" id="invoice_image" class="disply_preview" data-ct="photo3">
-                        </div> 
-                    </td>
-                    <td>Invoice No#:</td>
-                    <td><input type="text" name="invoiceId" id="invoiceId"></td>
-                </tr>
-                <tr>
-                    <td>Supplier Name:</td>
-                    <td><input type="text" class="search_supplier" name="supplierName" id="supplierName"></td>
-                    <input type="hidden" name="supplierId" id="supplierId">
-                </tr>
-                <tr>
-                    <td>
-                        <table id="ajax_supplier_results" class="supplier_result" style="display:none">
-                            <thead>
-                                <tr>
-                                    <th>id</th>
-                                    <th>name</th>
-                                    <th>phone</th>
-                                    <th>city</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr id="ajax_supplier_result_template">
-                                    <td class="id"></td>
-                                    <td class="name"></td>
-                                    <td class="phone"></td>
-                                    <td class="city"></td>
-                                </tr>           
-                            </tbody>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td><input type="button" id="add_one_time_item" value="Add Item" name="addItem" style="padding: 5px;"></td>
-                </tr>
-                <tr>
-                    <td>
-                        <table id="new_item_table" cellspacing=0 colspacing=0 class="inResultsBooking">
-                            <tr>
-                                <th>Item Name</th>
-                                <th>Sku</th>
-                                <th>Qty</th>
-                                <th>Selling Price</th>
-                                <th>Purchase Price</th>
-                                <th>Remove</th>
-                            </tr>
-                            <tr id="one_time_row" style="display: none;" >
-                                <td><input class="item-class" type="text" name="itemName[]"></td>
-                                <td><input type="text" class="sku-class" name="itemSku[]"></td>
-                                <td><input type="text" class="qlt-class" name="itemQuantity[]"></td>
-                                <td><input type="text" class="selling-class" name="itemSellingPrice[]"></td>
-                                <td><input type="text" class="purc-class" name="itemPurchasePrice[]"></td>
-                                <td><img class="removeOnetimeItem" src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <input type="submit" id="save_one_time_item" name="OK" value="Save" style="margin-top: 5px;" />
-        <input type="button"  name="cancel" value="Cancel" onclick="hideItemBox();" style="margin-top: 5px;" />
-    </form>
-</div>
 <div id="user_message_box" style="display: none;"></div>
 <!-- The Modal -->
 <div id="myModalNew" class="modal">
@@ -3135,10 +3241,10 @@ function get_data($url)
 <input type="hidden" id="resendTextVal" name="data[Order][resendTextVal]" value="1">
 <input type="hidden" name="currentUrl" id="currentUrl" value="<?=$currentUrl?>">
 <input type="hidden" name="showDefault" id="show-default" value="">
-<input type="hidden" name="campaingId" id="CuscampaingId"value="<?= $campaingId ?>">
-<input type="hidden" name="send_cancalled_email" id="send_cancalled_email"value="0">
-<input type="hidden" name="from_tech" id="from_tech"value="<?= $from_tech?>">
-<input type="hidden" name="techOrderId" id="techOrderId"value="<?= $techOrderId?>">
+<input type="hidden" name="campaingId" id="CuscampaingId" value="<?= $campaingId ?>">
+<input type="hidden" name="send_cancalled_email" id="send_cancalled_email" value="0">
+<input type="hidden" name="from_tech" id="from_tech" value="<?= $from_tech?>">
+<input type="hidden" name="techOrderId" id="techOrderId" value="<?= $techOrderId?>">
 <input type="hidden" name="recordingName" id="recordingName" value=""/>
 <input type="hidden" name="havetoprint" id="havetoprint" value="0"/>
 <input type="hidden" id="NumberOfItems" value="<?=$num_items;?>">
@@ -3154,7 +3260,7 @@ function get_data($url)
 	<input type="hidden" id="SendMailAgain" name="SendMailAgain">
 <?php }?>
 
-<table id="MainTable" width=90% heigth=90%>
+<table id="MainTable" style="width:90%; height:90%;">
 <tr><td colspan=3>
     <div>
     <div class="tabtrigger <?=$tab1?>" id="trigger1" onclick="openTab(1);">Booking Info</div>
@@ -3184,7 +3290,7 @@ function get_data($url)
 </td>
 </tr>
 <tr style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
-<td width=260px style="text-align:left;vertical-align:top">
+<td  style="width:260px;text-align:left;vertical-align:top">
     <!-- <input type="button" value="Change customer" onclick="showClients()"/> -->
     
     <div class="frame-wrap">
@@ -3193,6 +3299,7 @@ function get_data($url)
         <div class="frame-header-right"></div>
         <div><b>Address: </b><a href="<?=$HtmlAssist->getOrderGoogleMap($this->data['Customer'])?>" target="_blank"><img src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-globe.png" style="border: 0px; width: 15px; height: 15px; vertical-align: middle;"></a></div>
         <div class="frame-body" style="clear: both;">
+        <input type="hidden" name="data[Order][address_id]" id="address_id" value="<?= $this->data['Order']['address_id']?>">
             <?php echo $html->hidden('Customer/id')?>
             <table>
                <!--  <tr>
@@ -3214,7 +3321,7 @@ function get_data($url)
                  <tr>
                    <td></td>
                    <td><!-- <a href="javascript:void(0)" id="dial2" class="green" onclick=call('dial2','hangup2')>Dial</a>  -->
-                    <a href="javascript:void(0)" id="hangup2" class="red" onclick=hangup('dial2','hangup2')>Hang Up</a></td>
+                    <a href="javascript:void(0)" id="hangup2" class="red" onclick="hangup('dial2','hangup2')">Hang Up</a></td>
                 </tr>
                 <tr>
                     <td align="right">Home Phone:</td>
@@ -3229,7 +3336,7 @@ function get_data($url)
                 <tr>
                    <td></td>
                    <td><!-- <a href="javascript:void(0)" id="dial" class="green" onclick=call('dial','hangup')>Dial</a> -->
-                    <a href="javascript:void(0)"    id="hangup" class="red" onclick=hangup('dial','hangup') >Hang Up</a></td>
+                    <a href="javascript:void(0)"    id="hangup" class="red" onclick="hangup('dial','hangup')" >Hang Up</a></td>
                 </tr>
                 <tr>
                     <td align="right">First Name:</td>
@@ -3254,14 +3361,9 @@ function get_data($url)
 					<?php echo $html->tagErrorMsg('Order/CustomerEmail2','Please enter in a valid email for this customer.') ?>
 					</td>
                 </tr>
-				<!-- <tr>
-					<td align="right"><b>Address:</b></td>
-					<td><a href="<?=$HtmlAssist->getOrderGoogleMap($this->data['Customer'])?>" target="_blank"><img src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-globe.png" style="border: 0px; width: 15px; height: 15px; vertical-align: middle;"></a>
-					</td>
-				</tr> -->
+				
 				<tr>
-                    <input type="hidden" name="data[Order][address_id]" id="address_id" value="<?= $this->data['Order']['address_id']?>">
-					<td align="right">Unit:</td>
+					<td align="right">Apt Number:</td>
 					<td><?php echo $html->input('Customer/address_unit', array('style' => 'width: 120px;')); ?></td>
 				</tr>
 				<tr>
@@ -3269,7 +3371,7 @@ function get_data($url)
 					<td><?php echo $html->input('Customer/address_street_number', array('style' => 'width: 120px;')); ?></td>
 				</tr>
 				<tr>
-					<td align="right">Street:</td>
+					<td align="right">Street Name:</td>
 					<td><?php echo $html->input('Customer/address_street', array('style' => 'width: 120px;')); ?></td>
 				</tr>
 				<tr>
@@ -3324,18 +3426,8 @@ function get_data($url)
 					<input type="text" id="data[Customer][next_service]" name="data[Customer][next_service]" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$this->data["Customer"]["next_service"]?>">
 					</td>
 				</tr>
-<!--                <tr>
-                    <td align="right">Advantage Card:</td>
-                    <td>
-                    <?php echo $html->input('Order/card_number', array('onchange' => 'TotalPriceBeforeCard();', 'onkeyup' => 'TotalPriceBeforeCard();', 'id' => 'data[Order][card_number]')); ?>
-                    </td>
-								</tr>
                 <tr>
-                	<td align="right">Maintenance Package:</td>
-                    <td id="maintenancePackage"></td>
-                </tr> -->
-                <tr>
-                    <td align=center colspan=2>
+                    <td align="center" colspan="2">
                     <div id="maillink"></div>
                     <script language="JavaScript">
                     document.getElementById('emailinput').onchange();
@@ -3374,9 +3466,15 @@ function get_data($url)
 					<?php echo $html->textarea('txt_customer_note', array('rows' => 3, 'cols' => 35)); ?>
 				</td></tr>
 				<tr><td colspan=2>
-				  <tabale><tr>
-					<td><input type="button" value="Add Note" style="border-color: #72BF44 #72BF44 #72BF44 #72BF44;" onclick="javascript:AddCustomerNote();"/></td>
-					</tr></tabale>
+				  <table><tr>
+                      <?php if(!empty($this->data['Order']['id'])){?>
+                        <td>
+                            <input type="button" value="Add Note" style="border-color: #72BF44 #72BF44 #72BF44 #72BF44;" onclick="javascript:AddCustomerNote();"/>
+                        </td>
+                    <?php } else {?>
+                        <td></td>
+                    <?php } ?>
+					</tr></table>
 				</td></tr>
             </table>
         </div>
@@ -3456,27 +3554,10 @@ function get_data($url)
                     	<!-- <option value="estimateTabletPrint">Estimate Template</option> -->
                     </select>
                 </td>
-                <!--<td class="special_section" onclick="window.open('<?=BASE_URL?>/calls/invoiceprint?order_id=<?=$this->data["Order"]["id"]?>');return false;">
-					<u style="color:blue;cursor:pointer">Print Invoice</u>
-				</td>-->
-				<!--<?php if (!isset($_GET['hotlist'])) {?>
-				<td class="special_section" onclick="window.open('<?=BASE_URL?>/orders/invoiceTabletPrint?order_id=<?=$this->data["Order"]["id"]?>&type=office');return false;">
-					<u style="color:blue;cursor:pointer">Print Questions</u>
-				</td>
-				<?php }?>-->
+               
 
 				<?php if ($_SESSION['user']['role_id'] == 6) {?>
 				<td class="special_section" >
-				  <!--<?php if (!isset($_GET['hotlist'])) {?>
-                  <td class="special_section" onclick="window.open('<?=BASE_URL?>/orders/printBlank?job_type='+$('#OrderOrderTypeId').val());return false;">
-							  <u style="color:blue;cursor:pointer">Print Blank</u>
-				  </td>
-				  <?php }?>-->
-                  <!--<?php if($this->data["Order"]["id"]) { ?>
-                  <td class="special_section" onclick="showPlayer(<?=$this->data["Order"]["id"]?>, <?php echo $this->data['Order']['booking_telemarketer_id']; ?>, '<?php echo $this->data['Order']['booking_date']; ?>', <?php echo $this->data['Order']['customer_phone']; ?>)">
-							  <u style="color:blue;cursor:pointer">Recording</u>
-				  </td>
-                  <?php } ?>-->
                   <input type="button" value="Email Invoice" onclick="emailInvoice(<?=$this->data["Order"]["id"]?>);" name="invoice-email">
                   <?php }?>
               </td>
@@ -3489,44 +3570,119 @@ function get_data($url)
 			</table>
 				<?php if (isset($_GET['order_id'])||isset($_GET['job_truck'])) {?>
 <?php if ($common->getLoggedUserRoleID() == "6" ) {?>
-    <table id="ApplianceOrder" class="special_section" width=100% style="<?=$show_app_order?>">
+    <table id="ApplianceOrder" class="special_section"  style="width:100%; <?=$show_app_order?>">
     <tr>
 		<td colspan=2><u><b>Appliance order</b></u></td>
-		<td colspan=2>Supplier:<br/>
+		<td colspan=5>Supplier:<br/>
 			<?php echo $html->selectTag('Order/app_ordered_supplier_id', $allSuppliers, $this->data['Order']['app_ordered_supplier_id'], array('onchange'=>'ChangeSupplier(this)'));?>
 			<button id='select_supplier' onclick="ShowSelectSupply();return false;">Choose</button>
 		</td>
 	</tr>
     <tr>
-		<td>Order date:</td>
-		<td>
-			<?php echo $html->input('Order/app_ordered_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;'));?>
-		</td>
-		<td>Ordered by:</td>
-		<td>
-			<?php echo $html->selectTag('Order/app_ordered_by', $booking_sources, $this->data['Order']['app_ordered_by']);?>
-		</td>
+        <td colspan="2"></td>
+       
+    </tr>
+    <tr>
+        <td colspan="2"></td>
+        <td>PO #:</td>
+        <td colspan="5">
+            <?php echo $html->input('Order/app_po_number', array('style' => 'width: 100px;')); ?>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"></td>
+        <td>Total Invoice</td>
+        <td>
+           <?php echo $html->input('Order/total_invoice_amount', array('style' => 'width: 100px;')); ?>
+        </td>
+         <td colspan="3">
+            <?php if(!empty($this->data['Order']['invoice_image'])) {
+                $invoiceUploadDisplay1 = 'display:none;';
+                $invoiceImageDisplay1 = 'display:block;';
+            ?>                     
+            <?php } else {
+                $invoiceUploadDisplay1 = 'display:block;';
+                $invoiceImageDisplay1 = 'display:none;';
+            ?>
+            <?php } ?>
+           <input type="hidden" name="orderInvoiceImage" id="orderInvoiceImage" value="<?=$this->data['Order']['invoice_image'];?>">
+               <div id="invoice_order_image" style="<?php echo $invoiceImageDisplay1?>">
+                    <div style="position: relative; padding:0;"> 
+                        
+                        <span style="position:absolute;"><img style="height: 15px;width: 12px;" class="delete-invoice-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?=$this->data['Order']['invoice_image']?>"></span>
+                      <img class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="<?php echo '/acesys/app/webroot/purchase-invoice-images/'.$this->data['Order']['invoice_image'];?>" style="height: 70px;width: 70px;"  >
+                    </div>
+               </div>
+                <div id="invoice_order_upload"  style="<?php echo $invoiceUploadDisplay1?>">
+                    <!-- <img id="pre-image_photo3" class="pre-image_photo3 invoice-openImg" src="#" alt="your image" /> -->
+                    <img id="pre-image-pdf" class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="" alt="your image" style="display: none;"/>
+                    <div class="cls-acecare-td-adjust" style="width: 70px; padding: 3px;">
+                        <label for="invoice_image" style="background: lightgrey;" >Attach</label>
+                        <input type="file" name="invoice_image" id="invoice_image" class="disply_preview_image" data-ct="photo3" style="width: 70px;">
+                    </div> 
+                </div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <input type="button" id="generate_purchase_order" name="order" value="<?=($this->data['Order']['purchase_order_status']== 1) ? 'Purchased ':'Purchase'?>" style="margin-top: 5px; padding: 5px;" />
+        </td>
+        <td>Supplier Info:</td>
+        <input type="hidden" name="data[Order][purchase_supplier_info]" id="purchase_supplier_info" value="<?=$this->data['Order']['purchase_supplier_info']?>">
+        <td colspan="2" id="SupplierInfo" style="color:#004993"><?=$this->data['Order']['purchase_supplier_info']?></td>
+        <input type="hidden" name="supplier_name" id="purchase_supplier_name" value="<?=$this->data['Supplier']['name']?>">
+    </tr>
+
+    <tr>
+        <td>Invoice No#:</td>
+        <td><input type="text" name="data[Order][invoice_id]" id="invoiceId" value="<?=$this->data['Order']['invoice_id']?>"></td>
+        <td>Pick up by:</td>
+        <td>
+            <?php echo $html->selectTag('Order/app_ordered_pickup_person', $allTechnician, $this->data['Order']['app_ordered_pickup_person']);?>
+        </td>
+        <td>Sub Total:</td>
+        <td colspan="2"><input type="text" disabled name="invoiceSubTotal" id="invoiceSubTotal" value=""></td>
 	</tr>
     <tr>
+        <td>Order date:</td>
+        <td>
+            <?php echo $html->input('Order/app_ordered_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;'));?>
+        </td>
 		<td>Pick up date:</td>
 		<td>
 			<?php echo $html->input('Order/app_ordered_pickup_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;'));?>
 		</td>
-		<td>PO #:</td>
-		<td>
-			<?php echo $html->input('Order/app_po_number', array('style' => 'width: 100px;')); ?>
-		</td>
+		<td>Gst:</td>
+        <td colspan="2"><input type="text" disabled name="invoiceGst" id="invoiceGst" value=""></td>
 	</tr>
     <tr>
-		<td>Pick up by:</td>
-		<td>
-			<?php echo $html->selectTag('Order/app_ordered_pickup_person', $allTechnician, $this->data['Order']['app_ordered_pickup_person']);?>
-		</td>
-		<td colspan=2 id="SupplierInfo" style="color:#004993"></td>
+         <td>Ordered by:</td>
+        <td colspan="3">
+            <?php echo $html->selectTag('Order/app_ordered_by', $booking_sources, $this->data['Order']['app_ordered_by']);?>
+        </td>
+		<td>Pst:</td>
+        <td colspan="2"><input type="text" disabled name="invoicePst" id="invoicePst" value=""></td>
 	</tr>
+     <tr>
+        <td colspan="4"></td>
+        <td>Total:</td>
+        <td><input type="text" disabled name="invoiceTotal" id="invoiceTotal" value=""></td>
+        
+        <?php if(!empty($this->data['Order']['id'])){?>
+            <td>
+                <input type="submit" id="save_one_time_item" name="OK" value="Save" style="margin-top: 5px; padding: 5px;" />
+            </td>
+        <?php } else {?>
+            <td></td>
+        <?php } ?>
+    </tr>
+    <!-- <tr>
+        <td colspan="5"></td>
+        
+    </tr> -->
     </table>
     <input type="hidden" name="data[NumberOfPermits]" id="NumberOfPermits" value="<?=count($this->data['Permits'])?>">
-    <table id="PermitsSection" class="special_section" width=100% style="background-color:#EEEEFF;<?=$show_permits?>">
+    <table id="PermitsSection" class="special_section" style=" width:100%; background-color:#EEEEFF;<?=$show_permits?>">
 		<tr>
 			<td colspan=2><a href="<?=BASE_URL;?>/orders/permit?city=<?=$this->data['Customer']['city']?>" target="_blank">Permit application</a></td>
 			<td>Permit #:</td>
@@ -3656,27 +3812,27 @@ function get_data($url)
                 </tr>
 				<tr id="OpenQuestionsText" style="cursor:pointer;">
                 	<?php if($this->data['Order']['order_status_id'] == 5) { ?>
-                    <td align=right onclick="OpenQuestions(2)">
+                    <td align="right" onclick="OpenQuestions(2)">
 						<img id="QuestionsWorking2" style="display:none" src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>
 						<img src="<?=ROOT_URL?>/app/webroot/img/icon-sm-requested-bookings.png"/>
 					</td>
                     <td onclick="OpenQuestions(2)">Questions</td>
                     <?php $ttt = '';
                         if( ($common->getLoggedUserRoleID() == "13" ) || ($common->getLoggedUserRoleID() == "3" ) || ($common->getLoggedUserRoleID() == "9" )) $ttt = 'display:none';?>
-                    <td align=right onclick="OpenQuestions(1)" style="<?=$ttt?>">
+                    <td align="right" onclick="OpenQuestions(1)" style="<?=$ttt?>">
                         <img id="QuestionsWorking1" style="display:none" src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>
                         <img src="<?=ROOT_URL?>/app/webroot/img/icon-sm-requested-bookings.png"/>
                     </td>
                     <td onclick="OpenQuestions(1)" style="<?=$ttt?>">Tech questions section</td>
                     <?php } else { ?>
-					<td align=right onclick="OpenQuestions(0)">
+					<td align="right" onclick="OpenQuestions(0)">
 						<img id="QuestionsWorking0" style="display:none" src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>
 						<img src="<?=ROOT_URL?>/app/webroot/img/icon-sm-requested-bookings.png"/>
 					</td>
 					<td onclick="OpenQuestions(0)">Office questions section</td>
                     <?php $ttt = '';
 						if( ($common->getLoggedUserRoleID() == "13" ) || ($common->getLoggedUserRoleID() == "3" ) || ($common->getLoggedUserRoleID() == "9" )) $ttt = 'display:none';?>
-					<td align=right onclick="OpenQuestions(1)" style="<?=$ttt?>">
+					<td align="right" onclick="OpenQuestions(1)" style="<?=$ttt?>">
 						<img id="QuestionsWorking1" style="display:none" src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>
 						<img src="<?=ROOT_URL?>/app/webroot/img/icon-sm-requested-bookings.png"/>
 					</td>
@@ -3684,7 +3840,7 @@ function get_data($url)
                     <?php }//END if($this->data['Order']['order_status_id'] == 5) ?>
 				</tr>
 				<tr class="special_section" id="CloseQuestionsText" onclick="CloseQuestions()" style="cursor:pointer;display:none">
-					<td align=right><img src="<?=ROOT_URL?>/app/webroot/img/icon-sm-requested-bookings.png"/></td>
+					<td align="right"><img src="<?=ROOT_URL?>/app/webroot/img/icon-sm-requested-bookings.png"/></td>
 					<td colspan=4>Close questions section</td>
 				</tr>
 				<tr><td id="JobDetails0" colspan=5 style="cursor:pointer;display:none"><?=CurrentQuestionsTextOffice;?></td></tr>
@@ -3702,12 +3858,7 @@ function get_data($url)
                           echo $html->selectTag('Order/booking_source_id', $booking_sources, $this->data['Order']['booking_source_id'], array('style' => 'display: none;'));
                           echo '<b>'.$booking_sources[$this->data['Order']['booking_source_id']].'</b>';
                     }
-     //                if (!empty($this->data['Order']['booking_source_id']))
-					// {
-					// 	echo '<input type="hidden" name="data[Order][booking_source_id]" id="OrderBookingSourceId" value="'.$this->data['Order']['booking_source_id'].'">';
-					// }else{
-					// 	echo '<input type="hidden" name="data[Order][booking_source_id]" id="OrderBookingSourceId" value="'.$_SESSION["user"]["id"].'">';	
-					// }
+    
                     
                     ?>
                     <?php echo $html->tagErrorMsg('Order/booking_source_id','Please select the source for this order.') ?>
@@ -3835,6 +3986,12 @@ function get_data($url)
 							<input type="checkbox"<?php if ($this->data['Order']['reminderMail'] == 1) echo "checked"; ?> name="data[Order][reminderMail]" value="1" style="margin-left: 10px;">
 						<?php } ?>
                     </td>
+                    <input type="hidden" name="data[Order][tech_percentage]" id="tech_percentage" value="
+                    <?=$this->data['Order']['tech_percentage']?>">
+                    <input type="hidden" name="data[Order][tech_percentage_type]" id="tech_percentage_type" value="<?=$this->data['Order']['tech_percentage_type']?>">
+                    <td><span><b>Add %:</b></span><input type="text" name="add_tech_percentage" id="add_tech_percentage"  onchange="TotalCalculation(this);"style="width: 25%;" value="<?php echo ($this->data['Order']['tech_percentage_type'] == 1) ? $this->data['Order']['tech_percentage'] :'' ?>" purchaseType="1"></td>
+                    
+                    <td><span><b>Add Amount:</b></span><input type="text" name="add_tech_amount" id="add_tech_amount" onchange="TotalCalculation(this);"style="width: 25%;" value="<?php echo ($this->data['Order']['tech_percentage_type'] == 2) ? $this->data['Order']['tech_percentage'] : '' ?>" purchaseType="2"></td>
                 </tr>
                 <!-- loki -->
                 <tr>
@@ -3868,154 +4025,24 @@ function get_data($url)
 						<input style="width:100px;" type="text" alt="time" name="data[Order][notified_when]" value="<?=($this->data['Order']['notified_when'])?date("H:i",strtotime($this->data['Order']['notified_when'])):date("H:i")?>"/>
 					</td>
                 </tr>
-               <!--  <tr>
-                    <td></td>
-                    <td></td>
-					<?php if ($_SESSION['user']['role_id'] == 6) {?>
-					<td align="right">Commission:</td>
-					<td>
-						<b>$<?=$tech2_comm?></b>
-						<a href="<?=$tech1_comm_link?>">Commission page</a>
-					</td>
-					<?php }?>
-                </tr> -->
+              
                 <tr>
                     <td></td>
                     <td></td>
-<!-- 					<td></td>
- -->                   <td>
-                        <!-- Loki commented -->
-                          <!-- <input type="file" name="sortpic1[]" id="sortpicture1" class="disply_preview" data-ct="photo1" multiple="multiple"> -->
+                    <td>
 
-                         <!--  <?php if (!empty($this->data['Order']['photo_1']) || $this->data['Order']['photo_1'] != '') { ?>
-                            <div style="position: relative; padding:0; width: 30px;"> 
-                                    <span style="position:absolute;right: 0px;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-nu="1" image-name="<?php echo $this->data['Order']['photo_1']?>"></span>
-                                    <img id="photo_1" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_1'];?>" style="max-height:28px;height:auto;cursor:pointer;">                       
-                                </div>  
-                        <?php } else {?>
-                            <img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
-                            <div class="cls-acecare-td-adjust">
-                                <label for="sortpicture1" >Upload</label>
-                                <input type="file" name="sortpic1" id="sortpicture1" class="disply_preview" data-ct="photo1">
-                                
-                            </div>
-                            <?php }?> -->
                             
 					   </td>
 					<td>
-						<!-- <?php if (!empty($this->data['Order']['photo_2']) || $this->data['Order']['photo_2'] != '') { ?>
-							<div style="position: relative; padding:0; width: 30px;"> 
-									<span style="position:absolute;right: 0px;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-nu="2" image-name="<?php echo $this->data['Order']['photo_2']?>"></span>
-									<img id="photo_2" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_2'];?>" style="max-height:28px;height:auto;cursor:pointer;">				 		
-								</div>	
-						<?php } else {?>
-							<img id="pre-image_photo2" class="pre-image_photo2 invoice-openImg" src="#" alt="your image" />
-							<div class="cls-acecare-td-adjust">
-								<label for="sortpicture2" >Upload</label>
-								<input type="file" name="sortpic2" id="sortpicture_" class="disply_preview" data-ct="photo2">
-								
-								
-							</div>
-							<?php }?> -->
+					
 					</td>
                 </tr>
-                <!-- <tr>
-                    <td></td>
-                    <td></td>
-					<td></td>
-                    <td>
-						<?php if (!empty($this->data['Order']['photo_2']) || $this->data['Order']['photo_2'] != '') { ?>
-							<img id="photo_2" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_2'];?>" style="max-height:28px;height:auto;cursor:pointer;">
-
-						<?php } else {?>
-							<div class="cls-acecare-td-adjust">
-								<label for="sortpicture2" >Upload</label>
-								<input type="file" name="sortpic2" id="sortpicture2">
-							</div>
-							<?php }?>
-					</td>
-                </tr> -->
-
-        <?php /* ?><tr>
-                    <td align="right">Door Hanger:</td>
-                    <td> <?php echo $html->selectTag('Order/is_door_hanger',$yesOrNo, $this->data['Order']['is_door_hanger']);?></td>
-                    <td></td>
-                    <td style="position:relative">
-						<label for="sortpicture1" class="ui-button ui-widget ui-corner-all" style="cursor:pointer;padding:5px;background:#c5c5c5">Upload</label>
-	                    <input id="sortpicture1" type="file" name="sortpic1" style="visibility:hidden;"/>
-						<img src="/acesys/app/webroot/images/uploading.gif" width="20" id="uploading_1" style="position:absolute;display:none;left:55px;top:3px">
-				<!--		<input id="sortpicture1" type="file" name="sortpic" />
-						<button onclick="upload_photo(1);return false;">Upload</button> -->
-					</td>
-                </tr> <?php  */  ?>
-                <?php /* if ($_SESSION['user']['role_id'] == 6||$_SESSION['user']['role_id'] == 13) { ?>
-				<tr>
-                    <td align="right">Conf Rec</td>
-                    <td><?php echo $html->selectTag('Order/recording_confirmed',$yesOrNo, $this->data['Order']['recording_confirmed']);?>
-                    <?php echo $html->input('Order/recording_confirmed_by_id',array("type"=>"hidden"), $common->getLoggedUserID());?>
-                    </td>
-					<td></td>
-                    <td>
-						<?php if ($this->data['Order']['photo_2']) { ?>
-							<img id="photo_2" onclick="$('#dialog2').dialog({height:'auto', width:'auto'});$('#dialog').dialog('close');" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_2'];?>" style="max-height:100px;height:auto;cursor:pointer;">
-							<div id="dialog2" title="Photo" style="display:none">
-								<img id="big_photo_2" src="<?php echo ROOT_URL.'/upload_photos/'.$this->data['Order']['photo_2'];?>" style="max-height:600px;max-width:600px">
-							</div>
-						<?php } ?>
-					</td>
-                </tr>
-                <tr>
-                    <td align="right">Needs Approval</td>
-                    <td><?php echo $html->selectTag('Order/needs_approval',$yesOrNo, $this->data['Order']['needs_approval']);?>
-                    </td>
-                    <td></td>
-                    <td style="position:relative">
-						<label for="sortpicture2" class="ui-button ui-widget ui-corner-all" style="cursor:pointer;padding:5px;background:#c5c5c5">Upload</label>
-	                    <input id="sortpicture2" type="file" name="sortpic2" style="visibility:hidden;"/>
-						<img src="/acesys/app/webroot/images/uploading.gif" width="20" id="uploading_2" style="position:absolute;display:none;left:55px;top:3px">
-				<!--		<input id="sortpicture2" type="file" name="sortpic" />
-						<button onclick="upload_photo(2);return false;">Upload</button> -->
-					</td>
-                </tr>
-                <?php } */ ?> 
-                <!-- <tr>
-                    <td align="right">Referred By:</td>
-                    <td> -->
-<input type="hidden" id="referred_by_name" value="" readonly>
-                    <input type="hidden" id="referred_by_existing_userid" name="data[Customer][referred_by_existing_userid]" value="">
-						<?php /*echo $html->input('Order/referred_by', array('style' => 'width: 150px;')); */?>
-                  <!--  </td>
-                    <td align="right"></td>
-                    <td></td>
-                </tr> -->
-                <!-- <tr>
-                    <td align="right">Referrer Card Number:</td> 
-                    <td> -->
-<input type="hidden" id="ref_card_number"  value="" readonly>
-						<?php /*echo $html->input('Order/referred_by', array('style' => 'width: 150px;')); */?>
-                 <!--   </td>
-                    <td align="right"></td>
-                    <td></td>
-                </tr> -->
                 
-               <!--  <tr>
-                    <td colspan="4">
-                        <table>
-                            <tr>
-                                <td>Images:</td>
-                                <?php foreach ($allImages as $key => $value) {?>
-                                    <td>
-                                        <div style="position: relative; padding:0; width: 30px;"> 
-                                                <img id="" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$value;?>" style="max-height:28px;height:auto;cursor:pointer;">
-                                        </div>
-                                    </td>
-                                <?php } ?>
-                            </tr>
-                        </table>
-                    </td>
-
-                </tr>
-                 -->
+                    <input type="hidden" id="referred_by_name" value="" readonly>
+                    <input type="hidden" id="referred_by_existing_userid" name="data[Customer][referred_by_existing_userid]" value="">
+					
+                    <input type="hidden" id="ref_card_number"  value="" readonly>
+						
                 <tr>
                     <td colspan=4 id="CurrentItems" style="vertical-align:top">
 						<table>
@@ -4026,32 +4053,54 @@ function get_data($url)
                                 <input style="width:initial;" type="button" value="Close Items" id="closeBookedItems" />
                                 <a style="display:none;" id="addBookedItemsList" title="View Items in a List"></a>
                                 <a style="display:none;" id="addBookedItemsTree" title="View Items in a Tree"></a>
-                                <?php if (($common->getLoggedUserRoleID() != "3") &&($common->getLoggedUserRoleID() != "9")) { ?>
-                                <!--<input type="button" value="Purchase" onclick="addItem(1218, '', '0', 0, 1, '', '')" />-->
-                               <!--  <input type="button" value="Labor Description" onclick="addItem(0, '-custom item-', '0', 0, 0, '', '')" /> -->
-								<input type="button" value="One Time Purchase" id="one_time_item_0" class="one_time_items" data-onetime-id="0"/>
-								<?php } ?>
+                        
                                <input autocomplete="off" class='ajax_item_name' data-class="0" />
                                <a id="add_item_0" class="add_item_button" style ="display: none;" href='javascript:add_unknown_item(0);'>Add to Inventory</a>
-                                    <table id='ajax_item_results_0'>
-                                    </table>
+                               
+                                <table id='ajax_item_results_0'>
+                                    <thead>
+                                            <tr>
+                                                <input type="button" name="add_item" value="Add" class="add_selected_items" item-class="0">
+                                                <input type="button" name="delete_item" value="Remove" class="delete_selected_items" style="margin-left: 5px;">                                                
+                                            </tr>
+                                            <tr>
+                                                <th><b>Name</b></th>
+                                                <th><b>Model</b></th>
+                                                <th><b>Sku</b></th>
+                                                <th><b>Price</b></th>
+                                                <th><b>Item Id</b></th>
+                                                <th><b>Purchase Price</b></th>
+                                                <th><b>Category Id</b></th>
+                                                <th><b>Add/Remove</b></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                </table>
                                 <div class="clear_this"></div>
 								<div id="item_selector0" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
-								<table id="CurrentItemsTable" cellspacing=0 colspacing=0 class="inResultsBooking">
-									<!--<tr onclick="showAddItems(0)" style="cursor:hand;">-->
-                                    <tr>
-										<th align=left>Item<!--<input type="button" value="Add booked items"/>--></th>
-										<th style="width:30px">Qty</th>
-										<th style="width:50px">Price</th>
-										<th style="width:50px;color:red;">Disc</th>
-										<th style="width:50px">Add</th>
-										<th style="width:50px">Prch</th>
-										<th style="width:50px">Sum</th>
-										<th style="width:20px">&nbsp;</th>
-									</tr>
-									<?php echo $booked_items; ?>
-									<tr><td id="NewItems" class="newitem" colspan=7 style="display:none"></td></tr>
-								</table>
+								<div id="MainItemsTable">
+                                    <table id="CurrentItemsTable" cellspacing=0 colspacing=0 class="inResultsBooking">
+    									<!--<tr onclick="showAddItems(0)" style="cursor:hand;">-->
+                                        <tr>
+    										<th align=left>Item<!--<input type="button" value="Add booked items"/>--></th>
+                                            <th style="width:30px">Part No.</th>
+    										<th style="width:30px">Item Qty</th>
+    										<th style="width:50px">Price</th>
+    										<th style="width:50px;color:red;">Disc</th>
+    										<th style="width:50px">Add</th>
+                                            <th style="width:50px">Prch</th>
+    										<?php if ($common->getLoggedUserRoleID() == "6") { ?>
+                                            <th style="width:50px">Tech</th>
+                                            <?php } ?>
+    										<th style="width:50px">Sum</th>
+                                            <th class="order_item_status" style="width:20px;">Order</th>
+                                            <th style="width:20px"></th>
+                                            <th class="order_warehouse_quantity" style="width:20px">W</th>
+    									</tr>
+    									<?php echo $booked_items; ?>
+    									<tr><td id="NewItems" class="newitem" colspan=7 style="display:none"></td></tr>
+    								</table>
+                                </div>
 							</td></tr>
                             <tr id='ajax_item_result_template_0' style='display:none'>
                                 <td class='name_0'>Result</td>
@@ -4061,7 +4110,9 @@ function get_data($url)
                                 <td class='item_id_0' ></td>
                                 <td class='purchase_price_0'></td>
                                 <td class='category_id_0'></td> 
+                                <td class='remove_item_0'></td>
                                 <td class='brand_0' style='display:none'></td>
+                                <td class='sub_category_id_0' style='display:none'></td>
                             </tr>
 							<tr height=10px><td></td></tr>
 						<?php
@@ -4077,14 +4128,26 @@ function get_data($url)
                                 <input style="width:initial;" type="button" value="Close Items" id="closeTechnicianSales" />
                                 <a style="display:none" id="addTechnicianSalesList" title="View Items in a List"></a>
                                 <a style="display:none" id="addTechnicianSalesTree" title="View Items in a Tree"></a>
-                                <?php if (($common->getLoggedUserRoleID() != "3") &&($common->getLoggedUserRoleID() != "9")) { ?>
-                                <!--<input type="button" value="Purchase" onclick="addItem(1218, '', '0', 1, 1, '', '')" />-->
-							<!-- 	<input type="button" value="Labor Description" onclick="addItem(0, '-custom item-', '0', 1, 0, '', '')" /> -->
-								<input type="button" value="One Time Purchase" id="one_time_item_1" class="one_time_items" data-onetime-id="1"/>
-								<?php } ?>
                                 <input autocomplete="off" class='ajax_item_name' data-class="1"/>
                                  <a id="add_item_1" class="add_item_button" style= "display: none;" href='javascript:add_unknown_item(1);'>Add to Inventory</a>
                                 <table id='ajax_item_results_1'>
+                                    <thead>
+                                            <tr>
+                                                <input type="button" name="add_item" value="Add" class="add_selected_items" item-class="1">
+                                                <input type="button" name="delete_item" value="Remove" class="delete_selected_items" style="margin-left: 5px;">                                                
+                                            </tr>
+                                          <tr>
+                                                <th><b>Name</b></th>
+                                                <th><b>Model</b></th>
+                                                <th><b>Sku</b></th>
+                                                <th><b>Price</b></th>
+                                                <th><b>Item Id</b></th>
+                                                <th><b>Purchase Price</b></th>
+                                                <th><b>Category Id</b></th>
+                                                <th><b>Add/Remove</b></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
                                 </table>
                                 <div class="clear_this"></div>
 								<div id="item_selector1" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
@@ -4092,18 +4155,20 @@ function get_data($url)
 									<!--<tr onclick="showAddItems(1)" style="cursor:hand;background:#ffdddd">-->
                                     <tr>
 										<th style="background:#ffdddd" align=left>Item</th>
-										<th style="width:30px;background:#ffdddd">Qty</th>
+										<th style="width:30px ;background:#ffdddd">Part No.</th>
+                                        <th style="width:30px;background:#ffdddd">Item Qty</th>
 										<th style="width:50px;background:#ffdddd">Price</th>
 										<th style="width:50px;background:#ffdddd;color:red;">Disc</th>
 										<th style="width:50px;background:#ffdddd">Add</th>
 										<th style="width:50px;background:#ffdddd">Prch</th>
-										<th style="width:50px;background:#ffdddd">Sum</th>
-							<!-- <?php if ($common->getLoggedUserRoleID() == "6") { ?>
-										<th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
-										<th style="width:50px;background:#55bb55;color:white;">Tech add</th>
-							<?php } ?>
-										<th style="width:20px;background:#ffdddd">Print</th> -->
-										<th style="width:20px;background:#ffdddd">&nbsp;</th>
+                                        <?php if ($common->getLoggedUserRoleID() == "6") { ?>
+                                            <th style="width:50px;background:#ffdddd; display: none;">Tech</th>
+                                            <?php } ?>
+                                            <th style="width:50px;background:#ffdddd">Sum</th>
+                                            <th class="order_item_status" style="width:20px;background:#ffdddd; display: none;">Order</th>
+                                            <th style="width:20px;background:#ffdddd;"></th>
+                                            <th class="order_warehouse_quantity" style="width:20px;background:#ffdddd;display: none;">W</th>
+									
 									</tr>
                                 <tr id='ajax_item_result_template_1' style='display:none'>
                                     <td class='name_1'>Result</td>
@@ -4113,7 +4178,9 @@ function get_data($url)
                                     <td class='item_id_1' ></td>
                                     <td class='purchase_price_1'></td>
                                     <td class='category_id_1'></td>
+                                     <td class='remove_item_1'></td>
                                     <td class='brand_1' style='display:none'></td>
+                                    <td class='sub_category_id_1' style='display:none'></td>
                                 </tr>
 									<?php echo $tech_items; ?>
 									<tr><td id="NewItemsTech" class="newitem" colspan=7 style="display:none"></td></tr>
@@ -4156,25 +4223,7 @@ function get_data($url)
                             <img src="<?php echo ROOT_URL."/app/webroot/img/order_signatures/".$this->data['Order']['id'] ?>.png"  />
                         </div>
 						<table>
-							<!--<tr>
-								<td style="vertical-align:top"><b><u>Office Notes:</u></b>
-								<br/><div style="width:400px">
-								<?php echo $html->textarea('Order/job_notes_office', array('style' => "width:100%; height: 50px;", 'readonly'=>'readonly')); ?>
-								</div>
-								</td>
-							</tr>
-							<tr>
-								<td style="vertical-align:top"><b><u>Tech Notes:</u></b>
-								<br/>
-                                Booking Rating:
-								<?php echo $this->data['Order']['telem_rating']==1?"BAD":$this->data['Order']['telem_rating']==2?"GOOD":$this->data['Order']['telem_rating']==2?"EXCELLENT":""; ?>
-                                <br/>
-                                Office Rating:
-								<?php echo $this->data['Order']['office_rating']==1?"BAD":$this->data['Order']['office_rating']==2?"GOOD":$this->data['Order']['office_rating']==2?"EXCELLENT":""; ?>
-                                <br/>
-								<?php echo $this->data['Order']['job_notes_technician']; ?>
-								</td>
-							</tr>-->
+							
 							<?php if ($_SESSION['user']['role_id'] == 6) {?>
 							<tr>
 								<td>&nbsp;&nbsp;Tech time in:
@@ -4190,8 +4239,7 @@ function get_data($url)
 								<?php echo $html->hourOptionTag('Order/fact_job_end', null, 1); ?>
 								:
 								<?php echo $html->minuteOptionTag('Order/fact_job_end', null, 0); ?>
-								<!--&nbsp;Labor warranty:-->
-								<?php //echo $html->input('Order/labor_warranty', array('style' => 'width: 70px; cursor: hand; cursor: pointer;'));?>
+								
 								</td>
 							</tr>
 							<?php }?>
@@ -4267,30 +4315,36 @@ function get_data($url)
 					 	<?php 
 
 					 		if(isset($invoice_image_path) && !empty($invoice_image_path)){					 			
-						 		$imgPath =  '/acesys/app/webroot/payment-images/'.$invoice_image_path; 
-						 		?>
-						 		<div id="img-enlarge" title="Photo">
-								  <img src="<?php echo $imgPath; ?>" style="width:100%;">
-								</div>
-								<!-- <img src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png" image-name="<?php echo $imgPath; ?>"> -->
-								<div style="position: relative; padding:0; width: 30px;"> 
-									<span style="position:absolute;right: 0;"><img style="height: 15px;width: 12px;" id="delete-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?php echo $invoice_image_path; ?>"></span>
-									<img id="openImg" class="img" src="<?php echo $imgPath; ?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">					 	
-                                    <input type="button" class="receipt_btn" name="payment_receipt" id="payment_receipt" value="Email">
-								</div>
+						 		$imgPath =  '/acesys/app/webroot/payment-images/'.$invoice_image_path;
+                                $uploadDisplay = 'display:none;';
+                                $imageDisplay = 'display:block;'; ?>
+						 	<?php }else{ 
+                                $uploadDisplay = 'display:block;';
+                                $imageDisplay = 'display:none;';?> <?php } ?>
 
+
+                               <div id="order_paymnet_picture" style="<?php echo $imageDisplay?>"> 
+                                    <div id="img-enlarge" title="Photo">
+                                      <img class="rotate-image" src="<?php echo $imgPath; ?>" style="width:100%;">
+                                      <?php echo $this->element('image_rotate'); ?>
+                                      <button class="w3-btn"> <a href="#" onclick="this.href ='<?php echo $imgPath;?>'" download>Download</a> </button>
+                                    </div>  
+                                    <!-- <img src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png" image-name="<?php echo $imgPath; ?>"> -->
+                                    <div  style="position: relative; padding:0; width: 30px;"> 
+                                        <span style="position:absolute;right: 0;"><img style="height: 15px;width: 12px;" id="delete-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?php echo $invoice_image_path; ?>"></span>
+                                        <img id="openImg" class="img" src="<?php echo $imgPath; ?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">                     
+                                        <input type="button" class="receipt_btn" name="payment_receipt" id="payment_receipt" value="Email">
+                                    </div>
+                               </div>
                                <!-- <input type="button" name="payment_receipt" id="payment_receipt" value="Email"> -->
-						 		<?php 
-					 		}else{
-					 			?>
-					 			<img id="pre-image_photo1" class="pre-image_payment invoice-openImg" src="#" alt="your image" />
-					 			<div class="acecare-td-adjust">
-						 			<label for="Fileinput" >Upload</label>
-					 				<input type="file" name="uploadFile" id="Fileinput" class="disply_preview" data-ct="payment">
-					 			</div>	
-					 			<?php
-					 		}
-					 	?>
+						 	    <div id="upload_payment_picture" style="<?php echo $uploadDisplay?>">
+                                    <img id="pre-image_photo1" class="pre-image_payment invoice-openImg" src="#" alt="your image" />
+                                    <div  class="acecare-td-adjust" >
+                                        <label for="Fileinput" >Upload</label>
+                                        <input type="file" name="uploadFile" id="Fileinput" class="disply_preview" data-ct="payment">
+                                    </div>  
+                                </div>
+					 			
 					 </td>                
 				</tr>  
             </table>
@@ -4299,13 +4353,7 @@ function get_data($url)
             <!--&nbsp;<b><u>If Cancelled, Put the Reason:</u></b> <?php //echo $html->selectTag('Order/cancellation_reason', $cancellationReasons);?> -->
             <div style="float: left; text-align: left;">
 				<br/>
-                <!--
-				<input type="button" value="Print" onclick="window.open('<?=BASE_URL?>/orders/printView?id=<?=$this->data["Order"]["id"]?>');return false;" class="buttons">
-				<?php if ($_SESSION['user']['role_id'] == 6) {?>
-				<input type="button" value="Print Quote" onclick="window.open('<?=BASE_URL?>/orders/printEstimate?id=<?=$this->data["Order"]["id"]?>');return false;" class="buttons">
-				<input type="button" value="Print Blank" onclick="window.open('<?=BASE_URL?>/orders/printBlank?job_type='+$('#OrderOrderTypeId').val());return false;" class="buttons">
-				<?php }?>
-                -->
+               
 				<input type="hidden" name="reschedulerequest" id="reschedulerequest" value="0">
 				<?php
 				// Accountants have no permission to save orders
@@ -4328,9 +4376,7 @@ function get_data($url)
 					?>
                     <?php if($ShowSave) { ?>
                     <?php if($this->data['Order']['id'] != 0) {
-					//echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(); return false;" ));
-					//echo "&nbsp;&nbsp;&nbsp;";
-					//echo $html->submit("Save & Send", array("class" => "buttons","onclick" => "javascript:document.getElementById('havetoprint').value=1;ValidateFields(); return false;" ));
+					
 					?>
 					<input type="button" value="Save" onclick="javascript:document.getElementById('havetoprint').value=1;ValidateFields(); return false;" class="buttons">
 
@@ -4358,25 +4404,7 @@ function get_data($url)
                     <?php } ?>
                     &nbsp;&nbsp;&nbsp;<input type="button" value="Exit" onclick="history.go(-1);" class="buttons">
 
-                    <!-- <?php if($ShowSave) { ?>
-                    	<?php if($this->data['Order']['id'] != 0) { ?>
-
-                    			<div style="margin: -75px 1px -1px 453px;font-size: 14px;padding: 0px 1px 16px 0px;">
-                	    		<span>Estimate:</span><img  style="width: 33px;position: relative;top: 10px" onclick="showestimateSubmit()" src="<?=ROOT_URL?>/app/webroot/img/icon-lg-all-bookings.png"/>
-                	    		<div style="margin:-23px 0px 12px 109px;" id ="LastCallHistory"></div>
-                	    		</div>
-
-
-
-                	    	<?php }else{ ?>
-                	    		<div style="float: right;margin: -25px 0px 0px 188px;font-size: 14px;">
-
-                	    		<span>Estimate:<span><img  style="width: 33px;position: relative;top: 10px" onclick="showestimateSubmit();" src="<?=ROOT_URL?>/app/webroot/img/icon-lg-all-bookings.png"/>
-                	    		<div style="margin:-23px 0px 12px 109px;" id ="LastCallHistory"></div>
-                	    		</div>
-                	    	<?php }
-                		} 
-                	?> -->
+            
 
 						<br/>
 					</div>
@@ -4390,63 +4418,7 @@ function get_data($url)
             <div class="frame-header-left"></div>
             <div class="frame-header-title">Calls history</div>
             <div class="frame-header-right"></div>
-            <div class="frame-body" style="clear: both;"><!-- 
-                <table>
-					<tr>
-					      <td>Callback Date:</td>
-					      <td>
-					            <?php echo $html->input('CallRecord/callback_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;')); ?>
-					            <?php echo $html->tagErrorMsg('CallRecord/callback_date','Please enter in a correct date for the callback.') ?>
-					      </td>
-                          <td>
-                          <?php  if (($_SESSION['user']['role_id'] != 3)&&($_SESSION['user']['role_id'] != 9)) { ?>
-                          Call Date:
-                          <?php } ?>
-                          </td>
-					      <td>
-                          		<?php  if (($_SESSION['user']['role_id'] != 3)&&($_SESSION['user']['role_id'] != 9)) { ?>
-					            <?php echo $html->input('CallRecord/call_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;')); ?>
-					            <?php echo $html->tagErrorMsg('CallRecord/call_date','Please enter in a correct date for the last call.') ?>
-                                <?php } else { ?>
-                                <?php echo $html->hidden('CallRecord/call_date'); ?>
-                                <?php echo $html->input('CallRecord/call_date_disp', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'disabled'=>'disabled', 'value'=>$this->data['CallRecord']['call_date'])); ?>
-                                <?php } ?>
-					      </td>
-					</tr>
-						<tr>
-						      <td>Callback Time:</td>
-						      <td>
-						            <?php echo $html->hourOptionTag('CallRecord/callback_time', null, 1);/* . " : " . $html->minuteOptionTag('CallRecord/callback_time'); */?>
-									<input type="hidden" name="data[CallRecord][callback_time_min]" value="00"/>
-						      </td>
-                              <td>
-                              <?php  if (($_SESSION['user']['role_id'] != 3)&&($_SESSION['user']['role_id'] != 9)) { ?>
-                              Call Result:
-                              <?php } ?>
-                              </td>
-						      <td>
-						      <select id='CallRecordCallResultId' name="data['CallRecord']['call_result_id']">
-
-								<option value=""></option>
-
-								<?php
-								foreach($call_results as $k => $v) {
-									if($k != 10){
-										echo '<option value="'.$k.'"'.( $k === 2 ? ' selected' : '').'>'.$v.'</option>';
-									}
-								}
-								?>
-								&nbsp;&nbsp; -->
-
-							</select>
-                              		<?php  //if (($_SESSION['user']['role_id'] != 3)&&($_SESSION['user']['role_id'] != 9)) { ?>
-						          <!--   <?php echo $html->selectTag('CallRecord/call_result_id', $call_results, $this->data['CallRecord']['call_result_id']); ?> -->
-						            <?php echo $html->tagErrorMsg('CallRecord/call_result_id','Please select the call result for the last call.') ?>
-                                    <?php //} else { ?>
-                                    <?php //echo $html->hidden('CallRecord/call_result_id'); ?>
-                                    <?php //echo $html->selectTag('CallRecord/call_result_id_disp', $call_results, $this->data['CallRecord']['call_result_id'], array('disabled'=>'disabled'));?>
-                                    <?php //} ?>
-						     <!--  -->
+            <div class="frame-body" style="clear: both;">
 				<div id="CallHistory"></div>
 				<div></div>
 				<div id="TotalJobHistory"></div>
@@ -4494,7 +4466,7 @@ function get_data($url)
 							  <option value="9">9 Month</option>
 							</select>
 						</li>
-						<!-- <li><a href="javascript:void(0)" id="stop_mail_send" class="btn btn-teal btn-teal-r answer_reply select-button" clr="12">Stop Mail</a></li> -->
+						
 						<input type="hidden" value="<?php echo $orderNo; ?>" id="orderNo">
 						<input type="hidden" value="<?php echo $is_booking; ?>" id="answer_reply">
 						<li class="sub-w100"><a onclick="SaveDialerCallRecord()" class="btn btn-navy">Submit</a></li>
@@ -4521,7 +4493,7 @@ function get_data($url)
 				</div>
 				
 			<div class="ftr-right">
-				<div class="num-fild"><input type="text" id="direct-call" class="form-control" placeholder="Type number"></div>
+				<div class="num-fild"><input type="text" id="direct-call" class="form-control" placeholder="Type number"/></div>
 				
 				<div class="call-fild">
 				  	<a href="javascript:void(0)" onclick= "directPlaceCall();"class="fa fa-phone"> </a> 
@@ -4540,9 +4512,9 @@ function get_data($url)
 <div id="tabA11" style="display:<?=$page11?>; width:100%">
 	<div><h1>Email History</h1></div>
 	<div>
-		<input type="button" class="hide_show_btn" name="showEmail" value="Show History" id="showEmailHistory" onclick="showHideEmail(1);">
-		<input type="button" class="hide_show_btn" name="hideEmail" value="Hide History" id="hideEmailHistory" onclick="showHideEmail(2);">
-		<input type="button" style="float: right;" class="hide_show_btn" name="deleteAll" value="Hide Email" id="deleteAll">
+		<input type="button" class="hide_show_btn" name="showEmail" value="Show History" id="showEmailHistory" onclick="showHideEmail(1);"/>
+		<input type="button" class="hide_show_btn" name="hideEmail" value="Hide History" id="hideEmailHistory" onclick="showHideEmail(2);"/>
+		<input type="button" style="float: right;" class="hide_show_btn" name="deleteAll" value="Hide Email" id="deleteAll"/>
 	</div>
 	<!-- <br> -->
 	<div style="width:10px"><h3>Sent</h3></div>
@@ -4553,7 +4525,7 @@ function get_data($url)
 				<th>Status</th>
 				<th>Job type</th>
 				<th>Message</th>
-				<th><input id="markAll" type="checkbox" name="delete_all">Hide All</th>
+				<th><input id="markAll" type="checkbox" name="delete_all" />Hide All</th>
 			</tr>
 			 <?php
 			 foreach($emailLogs as $log) { ?>
@@ -4569,7 +4541,7 @@ function get_data($url)
 				 	}
 				 	?>
 				 	<td><?php echo $log['job_type_name'] ?></td>
-		 	        <input type="hidden" name="button_type" id="button_type" value="2">
+		 	        <input type="hidden" name="button_type" id="button_type" value="2"/>
 
 				 	<textarea class="log_content" style="display:none" id="log_content_<?=$log['id']?>"><?=$log['message']?></textarea>
 				 	<!-- <input type="textarea"> -->
@@ -4595,57 +4567,6 @@ function get_data($url)
 				 	<textarea style="display:none" id="received_log_content_<?=$log['id']?>"><?=$log['body']?></textarea>
 				 	<!-- <input type="textarea"> -->
 				 	<td><input type="button" class="receiveViewContents" name="receiveViewContents" value="View Content" content_id="<?=$log['id']?>"></td>
-			 	</tr>
-			<? }?>
-		</table>
-	</div>
-</div>
-
-<div id="tabA12" style="display:<?=$page12?>; width:100%">
-	<div><h1>SMS History</h1></div>
-	<div style="width:10px"><h3>Sent</h3></div>
-	<div id="sent_email">
-		<table class="tab11-table">
-			<tr>
-				<th>Sent On</th>
-				<th>Status</th>
-				<th>Message</th>
-			</tr>
-			 <?php
-			 foreach($smsLogs as $log) { ?>
-			 	<tr>
-				 	<td><b><?php echo $log['sms_date'] ?></b></td>
-				 	<?php if (1 == $log['is_sent']) {
-				 		echo '<td style="color:green"><b>Sent</b></td>';
-				 	} elseif (("" != $log['is_sent'])) {
-				 		echo '<td><b>In Progress</b></td>';
-				 	}
-				 	else{
-				 		echo '<td><b>In Progress</b></td>';
-				 	}
-				 	?>
-		 	        <input type="hidden" name="button_type" id="button_type" value="2">
-
-				 	<textarea class="log_content" style="display:none" id="sms_log_content_<?=$log['id']?>"><?=$log['message']?></textarea>
-				 	<td><input type="button" class="viewSmsContents" name="viewContents" value="View Content" content_id="<?=$log['id']?>"></td>
-				 	
-			 	</tr>
-			<? }?>
-		</table>
-	</div>
-	<div><h3>Received</h3></div>
-	<div>
-		<table class="tab11-table">
-			<tr>
-				<th>Received Date</th>
-				<th>Message</th>
-			</tr>
-			 <?php
-			 foreach($receivedSmsLogs as $log) { ?>
-			 	<tr>
-				 	<td><b><?php echo $log['received_date'] ?></b></td>
-				 	<textarea style="display:none" id="received_sms_log_content_<?=$log['id']?>"><?=$log['message']?></textarea>
-				 	<td><input type="button" class="receiveViewSmsContents" name="receiveViewContents" value="View Content" content_id="<?=$log['id']?>"></td>
 			 	</tr>
 			<? }?>
 		</table>
@@ -4719,117 +4640,6 @@ function get_data($url)
         </tr>
     </table>
 </div>
-<!-- echo '<tr><td href="javascript:void(0)" onclick="playRecording('.$newRecName.');">'.$ -->
-
-    <div id="tabA4" style="display:none"><!-- Feedback -->
-				<div class="frame-wrap">
-					<div class="frame-header-left"></div>
-					<div class="frame-header-title">
-						<?php echo $html->link('Feedback','/orders/feedbacks_add?id='.$this->data['Order']['id']) ?> Info:
-					</div>
-					<div class="frame-header-right"></div>
-					<div class="frame-body" style="clear: both;width:500px;">
-					  <b>1. We normally call our customers every 6 month or one year. Which one do you prefer?</b><br/>
-						<? echo $this->data['Order']['feedback_callback_date'] == '' ? '' :date("Y-m-d",strtotime($this->data['Order']['feedback_callback_date']));;?><br/><br/>
-					  <b>2. Did our Tech leave a sticker on your furnace or boiler?</b><br/>
-						<? echo ($this->data['Order']['feedback_sticker'] == '1' ? 'Yes' : 'No');?><br/><br/>
-					  <b>3. Did our Tech give his phone number for emergency?</b><br/>
-						<? echo ($this->data['Order']['feedback_number'] == '1' ? 'Yes' : 'No');?><br/><br/>
-					  <b>4. How much did you pay in total?</b><br/>
-						<? echo $this->data['Order']['feedback_price'];?><br/><br/>
-						<b>5. Quality of our service:</b><br/>
-						<? echo $this->data['Order']['feedback_quality'];?><br/><br/>
-						<b>Notes:</b><br/><? echo $this->data['Order']['feedback_comment'];?><br/>
-						<b>Solution:</b><br/><? echo $this->data['Order']['feedback_suggestion'];?>
-					</div><!--frame-body-->
-				</div><!--frame-wrap-->
-    </div>
-    <div id="tabA8" style="display:none"><!-- Financing -->
-				<div class="frame-wrap">
-					<div class="frame-header-left"></div>
-					<div class="frame-header-title">Financing info</div>
-					<div class="frame-header-right"></div>
-					<div class="frame-body" style="clear: both;width:500px;">
-            <table>
-							<tr>
-								<td align="right">Date of birth:</td>
-								<td>
-			            <?php echo $html->input('Customer/birth_date', array('style' => 'width: 85px; cursor: hand; cursor: pointer;', 'onclick' => 'scwShow(this,event);', 'onkeydown' => 'return false;')); ?>
-								</td>
-							</tr>
-							<tr>
-								<td align="right">Employer Name:</td>
-								<td>
-									<?php echo$html->input('Customer/employer_name', array('style' => 'width: 200px;')); ?>
-								</td>
-							</tr>
-							<tr>
-								<td align="right">Home ownership:</td>
-								<td>
-							    <?php echo $html->selectTag('Customer/house_type', array(0=>'Rent',1=>'Own'), $this->data['Order']['house_type']);?>
-								</td>
-							</tr>
-								<tr>
-									<td>Approval number:</td>
-									<td><?php echo $html->input('Order/financing_number', array('style' => 'width: 80px;'));?></td>
-								</tr>
-								<tr>
-									<td>Approved amount:</td>
-									<td><?php echo $html->input('Order/financing_amount', array('style' => 'width: 80px;'));?></td>
-								</tr>
-						</table>
-					</div><!--frame-body-->
-				</div><!--frame-wrap-->
-				<div class="frame-wrap">
-					<div class="frame-header-left"></div>
-					<div class="frame-header-title">Our information</div>
-					<div class="frame-header-right"></div>
-					<div class="frame-body" style="clear: both;width:500px;">
-            <table>
-							<tr><td colspan=2>Dealer or vendor #: 017585</td></tr>
-							<tr><td colspan=2>Credit approved hotline #: 1-888-737-3674</td></tr>
-							<tr><td colspan=2>Username: alisor</td></tr>
-							<tr><td colspan=2>Password: cool</td></tr>
-							<tr>
-								<td colspan=2>
-									<a href="https://www.ueiexpress.com/expressos/login.aspx">Financing web-site (ueiexpress.com)</a>
-								</td>
-							</tr>
-						</table>
-					</div><!--frame-body-->
-				</div><!--frame-wrap-->
-				<div class="frame-wrap">
-					<div class="frame-header-left"></div>
-					<div class="frame-header-title">Calculator</div>
-					<div class="frame-header-right"></div>
-					<div class="frame-body" style="clear: both;width:500px;">
-            <table>
-							<tr>
-								<td>price:</td>
-								<td>$<input type="text" id="calc_price" value="0" style="width:60px"></td>
-							</tr>
-							<tr>
-								<td>period:</td>
-								<td>
-									<select id="calc_period" value="0">
-										<option value=1>24 months</option>
-										<option value=2>36 months</option>
-										<option value=3>48 months</option>
-										<option value=4>60 months</option>
-									</select>
-								</td>
-							</tr>
-							<tr>
-								<td>monthly:</td>
-								<td><b id="calc_monthly"></b></td>
-							</tr>
-							<tr>
-								<td colspan=2><input type="button" value="GO" onclick="GetCalc()"></td>
-							</tr>
-						</table>
-					</div><!--frame-body-->
-				</div><!--frame-wrap-->
-    </div>
     <div id="tabA5" style="display:none"><!-- Changes history -->
 			<div class="frame-wrap">
 				<div class="frame-header-left"></div>
@@ -4849,8 +4659,8 @@ function get_data($url)
 					<div id="ChangesHistory"></div>
 				</div><!--frame-body-->
  			<div>
-					<input type="button" value="Print" onclick="window.open('<?=BASE_URL?>/orders/printView?id=<?=$this->data["Order"]["id"]?>');return false;" class="buttons">
-					<input type="hidden" name="reschedulerequest1" id="reschedulerequest" value="0">
+					<input type="button" value="Print" onclick="window.open('<?=BASE_URL?>/orders/printView?id=<?=$this->data["Order"]["id"]?>');return false;" class="buttons"/>
+					<input type="hidden" name="reschedulerequest1" id="reschedulerequest" value="0"/>
 					<!-- And finally, the submit button-->
 					<?php
 					// Accountants have no permission to save orders
@@ -4865,9 +4675,7 @@ function get_data($url)
 							$ShowSave = true;
 					}
 					if ($ShowSave)
-								{
-						//echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(); return false;" ));
-						//echo "&nbsp;&nbsp;&nbsp;";
+					{
 						echo $html->submit("Save & Send", array("class" => "buttons","onclick" => "javascript:document.getElementById('havetoprint').value=1;ValidateFields(); return false;" ));
 						echo $html->submit("Estimate", array("class" => "buttons","onclick" => "ValidateFields(8); return false;" ));
 					}
@@ -4884,7 +4692,7 @@ function get_data($url)
 <? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
 <?php //print_r($this->data['Order']) ?>
 <!--<input type="button" onclick="alert(document.getElementById('CustomerId').value);" value="test customer" />-->
-<input type="hidden" name="from_dialer" id="from_dialer"value="<?= $from_dialer?>">
+<input type="hidden" name="from_dialer" id="from_dialer"value="<?= $from_dialer?>"/>
 </form>
 <div  id="dialer_callback" style="display: none">      
 	<!-- Modal content -->
@@ -4938,13 +4746,6 @@ function get_data($url)
 					&nbsp;&nbsp;
 
 				</select>
-	              		<?php  //if (($_SESSION['user']['role_id'] != 3)&&($_SESSION['user']['role_id'] != 9)) { ?>
-			          <!--   <?php echo $html->selectTag('CallRecord/call_result_id', $call_results, $this->data['CallRecord']['call_result_id']); ?> -->
-			            <?php echo $html->tagErrorMsg('CallRecord/call_result_id','Please select the call result for the last call.') ?>
-	                    <?php //} else { ?>
-	                    <?php //echo $html->hidden('CallRecord/call_result_id'); ?>
-	                    <?php //echo $html->selectTag('CallRecord/call_result_id_disp', $call_results, $this->data['CallRecord']['call_result_id'], array('disabled'=>'disabled'));?>
-	                    <?php //} ?>
 			      </td>
 			</tr>
 			<tr>
@@ -5020,10 +4821,15 @@ function get_data($url)
 		<!-- <input type="submit" value="submit"/> -->
 	</table>
 </div>
-<input type="hidden" id="ConnectionStatus">  
-<input type="hidden" id="currentCallNum">  
+<input type="hidden" id="ConnectionStatus" />  
+<input type="hidden" id="currentCallNum"/>  
 <div class="invoice-img-enlarge" title="Photo" style="display: none">
-	<img src="<?=$imgPath?>" style="width:100%;">
+	<img src="" class="rotate-image" style="width:100%;">
+    <?php echo $this->element('image_rotate'); ?>
+    <button class="w3-btn"> <a href="#" onclick="this.href =" download>Download</a> </button>
+</div>
+<div class="invoice-pdf-enlarge" title="Photo" style="display: none">
+    <div id="doc-modal" style="width: 100%, height:100%"></div>
 </div>
 <div class="show_email_content" style="display: none, background-color: #ffffff">
 </div>
@@ -5126,8 +4932,8 @@ function get_data($url)
 	        autoOpen: false,
 	        title: "Photo",
 	        autoOpen: false,
-	        width: 1024,
-	        height: 786,
+	        width: 900,
+	        height: 764,
 	    });
 	    $("#openImg").click(function () {
 	        $('#img-enlarge').dialog('open');
@@ -5150,15 +4956,42 @@ $(function () {
 	        autoOpen: false,
 	        title: "Photo",
 	        autoOpen: false,
-	        width: 1024,
-	        height: 786,
+	        width: 900,
+	        height: 764,
 	    });
 	    $(".invoice-openImg").live("click",function () {
 	    	var imgPath = $(this).attr('src');
-	    	$('.invoice-img-enlarge img').attr('src', imgPath);
+            console.log("inn");
+            console.log(imgPath);
+            $('.invoice-img-enlarge img').attr('src', imgPath);
+	    	$('.invoice-img-enlarge a').attr('href', imgPath);
 	        $('.invoice-img-enlarge').dialog('open');
 	    });
     });	
+
+     $(function () {
+        $(".invoice-pdf-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 900,
+            height: 764,
+        });
+        $(".show-pdf-image").live("click",function (e) {
+            e.preventDefault();
+            var imgPath = $(this).attr('data-doc_lnk');
+           if(imgPath !== undefined){
+                var docFrame = '<iframe width="100%" height="100%"  src="'+imgPath+'" frameborder="0" scrolling="no" id="myFrame" ></iframe>';
+                $('#doc-modal').html('');
+                $('#doc-modal').append(docFrame);
+                $('#doc-modal').load(docFrame);
+                }else{
+                    $('#doc-modal').html('Sorry some error found');
+                }
+                $('.invoice-pdf-enlarge').dialog('open');
+        });
+    }); 
 	function showHotListData(ctype)
 		{
 			if("p" == ctype)
@@ -5240,27 +5073,7 @@ $(function () {
 			}
 	    }
 
-/*
-$(document).ready(function(){
-    if($('#CustomerPhone').val() == '') $('#dial').hide();
-    if($('#CustomerCellPhone').val() == '') $('#dial2').hide();
-    
-    $('#CustomerPhone').blur(function(){
-		if($('#CustomerPhone').val() == '') 
-		 { 
-		   $('#dial').hide();
-		   $('#hangup').hide();
-	     }
-	     });
-	 $('#CustomerCellPhone').blur(function(){     
-		if($('#CustomerCellPhone').val() == ''){
-		    $('#dial2').hide();
-		    $('#hangup2').hide();
-		} 
-    });
-    
 
-});		*/
 		
 	</script>
 <style>

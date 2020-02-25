@@ -98,26 +98,23 @@ class CommonComponent extends Object
 		if (!file_exists($day)) {
 			mkdir('upload_photos/'.$day, 0755);
 		}
-		// $path = $file['name'];
 		$path = $file_name;
 		$ext = pathinfo($path, PATHINFO_EXTENSION);
-		if($order_id !=0)
+		if($order_id != 0)
 		{
-			$name = date('Ymdhis', time()).$order_id.$i.'.'.$ext;
+			$name = date('Ymdhis', time()).$order_id.$i.'_'.$path;
 		} 
 		else {
-			$name = date('Ymdhis', time()).'.'.$ext;
+			$name = date('Ymdhis', time()).'_'.$path;
 		}
-		
-		
+			
 		if ( 0 < $file['error'] ) {
-	        // echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
+	        echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
 	    } else {
-	    	echo "in";
 	        move_uploaded_file($file_tmpname, 'upload_photos/'.$day.'/'.$name);
 	    }
 
-		// $sql = "UPDATE ace_rp_orders SET photo_".$i." = '".$name."' WHERE id = ".$order_id;
+		//$sql = "UPDATE ace_rp_orders SET photo_".$i." = '".$name."' WHERE id = ".$order_id;
 		$sql = "INSERT INTO ace_rp_user_part_images (customer_id, image_name) VALUES (".$customer_id.", '".$name."')";
 		$db =& ConnectionManager::getDataSource($config);
 		$result = $db->_execute($sql);
@@ -363,7 +360,7 @@ class CommonComponent extends Object
 
 						array(
 
-							'name' => 'Edit Item Names',
+							'name' => 'Item Inventory',
 
 							'url' => BASE_URL.'/iv_items/',
 
@@ -371,20 +368,20 @@ class CommonComponent extends Object
 
 						),
 
-						array(
-							'name' => 'Item Count',
-							'url' => BASE_URL.'/calls/inventorylocationscount',
-							'img' => 'icon-lg-price.png',
-							'target' => '_top'
-						),
+						// array(
+						// 	'name' => 'Item Count',
+						// 	'url' => BASE_URL.'/calls/inventorylocationscount',
+						// 	'img' => 'icon-lg-price.png',
+						// 	'target' => '_top'
+						// ),
 					
 						array(
-							'name' => 'Item Category',
+							'name' => 'Category',
 							'url' => BASE_URL.'/iv_categories/showItemCategory',
 							'img' => 'icon-lg-price.png',
 						),
 						array(
-							'name' => 'Item Sub Category',
+							'name' => 'Sub Category',
 							'url' => BASE_URL.'/iv_categories/showItemSubCategory',
 							'img' => 'icon-lg-price.png',
 						)
@@ -1103,7 +1100,7 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-price.png'
 						),*/
 						array(
-							'name' => 'Edit Item Names',
+							'name' => 'Item Inventory',
 							'url' => BASE_URL.'/iv_items/',
 							'img' => 'icon-lg-price.png'
 						),
@@ -1114,12 +1111,12 @@ class CommonComponent extends Object
 							'target' => '_top'
 						),
 						array(
-							'name' => 'Item Category',
+							'name' => 'Category',
 							'url' => BASE_URL.'/iv_categories/showItemCategory',		
 							'img' => 'icon-lg-price.png',
 						),
 						array(
-							'name' => 'Item Sub Category',
+							'name' => 'Sub Category',
 							'url' => BASE_URL.'/iv_categories/showItemSubCategory',
 							'img' => 'icon-lg-price.png',
 						),
@@ -2184,6 +2181,13 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
         curl_close($ch);
 
         return $result;
+	}
+
+	function printData($data)
+	{
+		echo "<pre>";
+		print_r($data); 
+		die;
 	}
 }
 ?>

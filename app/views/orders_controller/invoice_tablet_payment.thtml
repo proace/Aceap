@@ -20,6 +20,7 @@
 <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/layout.css" rel="stylesheet" type="text/css">
 <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/media-queries.css" rel="stylesheet" type="text/css">
 <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
 
 
 <style type="text/css">
@@ -513,7 +514,9 @@ function upload_photo(cur,i) {
                     $imgPath =  '/acesys/app/webroot/payment-images/'.$invoice_payment_photo; 
                     ?>
                     <div id="img-enlarge" title="Photo">
-                      <img src="<?php echo $imgPath; ?>" style="width:100%;">
+                      <!-- <img src="<?php echo $imgPath; ?>" style="width:100%;"> -->
+                        <img src="<?=$imgPath?>" class="rotate-image" style="width:100%;">
+                        <?php echo $this->element('image_rotate'); ?>
                     </div>
                     <div style="position: relative; padding:0;"> 
                         <span style="position:absolute;right: 0;"><img style="height: 15px;width: 12px;" id="delete-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?php echo $invoice_payment_photo; ?>"></span>
@@ -730,7 +733,10 @@ function upload_photo(cur,i) {
 </div>
 <pre><?php //print_r($jobs) ?></pre>
 <div class="invoice-img-enlarge" title="Photo">
-    <img src="<?=$imgPath?>" style="width:100%;">
+    <!-- <img src="<?=$imgPath?>" style="width:100%;"> -->
+    <img src="<?=$imgPath?>" class="rotate-image" style="width:100%;">
+    <?php echo $this->element('image_rotate'); ?>
+
 </div> 
 <div id="reminderEmail" class="reminder-modal" >
     <body>

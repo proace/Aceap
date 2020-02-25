@@ -11,8 +11,13 @@ class OrderItem extends AppModel
 							'order'        	=> '',
 							'dependent'		=> false,
 							'foreignKey'   	=> 'item_category_id'
-						)
-				);
+    						),
+                            'TechInventoryItem' => array('className'     => 'TechInventoryItem',
+                                'conditions'    => "",
+                                'order'         => '',
+                                'dependent'     =>  false,
+                                'foreignKey'    => 'item_id',                            )
+				        );
 }
 
 ?>

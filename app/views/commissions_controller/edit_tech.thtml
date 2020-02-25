@@ -154,9 +154,9 @@
 <?php endif; ?>
 <tr style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
   <td>
-    <table>
+    <table style="width: 100%;">
 		<tr>
-			<td>
+			<td colspan="3">
 				<?php if ($user_id == -1): ?>
 				<p><span class="sectionTitle">Default settings</span></p>
 				<?php else: ?>
@@ -171,6 +171,8 @@
 				<b style="font-size:10pt;">Default commission type:</b>
 				<?php echo $html->selectTag('User/commission_type', $comm_roles, $user_details['User']['commission_type']); ?>
 			</td>
+            <td align="right"><b style="font-size:10pt;">Default Tech Percentage</b></td>
+            <td><input type="text" name="data[User][commission_percentage]" value="<?=$user_details['User']['commission_percentage']?>" style="width: 25%;"></td>
 		</tr>
 		<?php endif; ?>
 	</table>

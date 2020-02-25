@@ -1249,5 +1249,15 @@ $h .= ' 		<tr>
 	 		}
 	 	exit();
 	}
+
+	function getTechPercentage()
+	{
+		$techId = $_POST['techId'];
+		$this->User->id = $techId;
+		$userData = $this->User->read();
+		$response  = array("res" => $userData['User']['commission_percentage']);
+		echo json_encode($response);
+		exit();
+	}
 }
 ?>

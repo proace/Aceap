@@ -74,13 +74,14 @@ class Queries {
 		// 	FROM iv_items_labeled2 i
 		// 	WHERE i.sub_category_id  IN (SELECT id FROM  `ace_iv_sub_categories` WHERE name ='".$needle."')";
 
-		$query = "SELECT i.id id,i.brand,i.model, i.name name, i.selling_price price, i.supplier_price purchase_price, i.category_id
+		$query = "SELECT i.id id,i.brand,i.model, i.name name, i.selling_price price, i.supplier_price purchase_price, i.category_id, i.sku, i.sub_category_id
 			FROM iv_items_labeled2 i
-			WHERE i.name LIKE \"%$needle%\"";
+			WHERE active = 1 and i.name LIKE \"%$needle%\"";
 		$results = $this->connection->_execute($query);
 		$response = array();
 		while ($row = mysql_fetch_assoc($results)) {
-			$response[] = $row; }
+				$response[] = $row;
+			 }
 		return $response;
 	}
 	function SearchPartsFromSuppliers($needle,$supplier_id) {
@@ -847,6 +848,7 @@ class InventoriesController extends AppController
 		}
 		if ($view)
 		{
+
 			$getPo = $db->_execute("SELECT * FROM ace_rp_invoice_po_number WHERE  `invoice_id` =".$doc_id."");
 			$getPoResult = mysql_fetch_assoc($getPo);
 			$this->set("new_po_number", $getPoResult['po_number']);
@@ -998,8 +1000,7 @@ class InventoriesController extends AppController
 				$row = mysql_fetch_array($result, MYSQL_ASSOC);
 				$original_invoice = $row['invoice'];
 			}
-			
-			
+				
 		}
 		
 		/* REFUNDS */
@@ -2137,12 +2138,16 @@ class InventoriesController extends AppController
 	// Loki: Create purchase invoice for one time purchased items.
     function createPurchaseInvoice()
     {
+    	// $this->Common->printData($_POST);
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-        $supplierName = $_POST['supplierName'];
-        $supplierId = $_POST['supplierId'];
-        $invoiceId = $_POST['invoiceId'];
+        $supplierName = $_POST['supplier_name'];
+        $supplierId = $_POST['data']['Order']['app_ordered_supplier_id'];
+        $invoiceId = $_POST['data']['Order']['invoice_id'];
         $techId = !empty($_POST['techId']) ? $_POST['techId'] : 0;
-        $orderId = $_POST['orderId'];
+        $orderId = $_POST['data']['Order']['id'];
+        $orderNum = $_POST['poNumber'];
+        $imageName = $_POST['orderInvoiceImage'];
+        $orderItems = $_POST['data']['Order']['BookingItem'];
         $items = array();
         $moveDate = date("Y-m-d");
         $doc_type = 1;
@@ -2152,26 +2157,35 @@ class InventoriesController extends AppController
         } else {
         	$locationData = 'tech:'.$techId.'';
         }
-        foreach ($_POST['itemName'] as $key => $value) {
-             if(!empty($value)){
-             	// $db->_execute("INSERT INTO ace_iv_items (sku,name, description1, description2,efficiency, model,  iv_category_id, iv_brand_id, iv_supplier_id, supplier_price, selling_price, regular_price, active, iv_sub_category_id) VALUES ('".$_POST['itemSku'][$key]."', '".$value."', '','', '','','37','','".$supplierId."', '".$_POST['itemPurchasePrice'][$key]."','".$_POST['itemSellingPrice'][$key]."','','1', '26')");    
-             	$db->_execute("INSERT INTO ace_iv_items (sku,name, description1, description2,efficiency, model,  iv_category_id, iv_brand_id, iv_supplier_id, supplier_price, selling_price, regular_price, active, iv_sub_category_id) VALUES ('".$_POST['itemSku'][$key]."', '".$value."', '','', '','','36','','".$supplierId."', '".$_POST['itemPurchasePrice'][$key]."','".$_POST['itemSellingPrice'][$key]."','','1', '101')");         	
+        
+        foreach ($orderItems as $key => $value) {
+             if($value['order_status'] == 1){
+             	//local sub_cat_id = 23, live local sub_cat_id = 16
+             	if($value['sub_category_id'] == 16)
+             	{
+             		// Local catId = 37, sub cat = 26
+             		//Live catId = 36, sub cat = 101
+             		$db->_execute("INSERT INTO ace_iv_items (sku,name, description1, description2,efficiency, model,  iv_category_id, iv_brand_id, iv_supplier_id, supplier_price, selling_price, regular_price, active, iv_sub_category_id) VALUES ('".$value['part_number']."', '".$value['name']."', '','', '','','36','','".$supplierId."', '".$value['price_purchase']."','".$value['price']."','','1', '101')"); 
+             		$lastinsertID = $db->lastInsertId();
+             		 $item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active, sub_category_id, sub_category_name) VALUES ('".$_POST['itemSku'][$key]."',".$lastinsertID.", '".$value['name']."', '','', '','','' ,'One Time Purchase' ,'".$supplierName."' ,'36','','".$supplierId."', '".$value['price_purchase']."','".$value['price']."','','1', '101', 'Inactive')";
+               		$res = $db->_execute($item_label2);   
+               		$itemId = $lastinsertID;
              	
-             	$lastinsertID = $db->lastInsertId();
-                // $item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active, sub_category_id, sub_category_name) VALUES ('".$_POST['itemSku'][$key]."',".$lastinsertID.", '".$value."', '','', '','','' ,'One Time Purchase' ,'".$supplierName."' ,'37','','".$supplierId."', '".$_POST['itemPurchasePrice'][$key]."','".$_POST['itemSellingPrice'][$key]."','','1', '26', 'Inactive')";
-                 $item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active, sub_category_id, sub_category_name) VALUES ('".$_POST['itemSku'][$key]."',".$lastinsertID.", '".$value."', '','', '','','' ,'One Time Purchase' ,'".$supplierName."' ,'36','','".$supplierId."', '".$_POST['itemPurchasePrice'][$key]."','".$_POST['itemSellingPrice'][$key]."','','1', '101', 'Inactive')";
-               $res = $db->_execute($item_label2);
+             	} else {
+	                $itemId = $value['item_id'];
+             	}
                 
-                $items[$i]['name']            = $value;
-                $items[$i]['sku']             = $_POST['itemSku'][$key];
-                $items[$i]['quantity']        = $_POST['itemQuantity'][$key];
-                $items[$i]['purchase_price']  = $_POST['itemPurchasePrice'][$key];
-                $items[$i]['selling_price']   = $_POST['itemSellingPrice'][$key];
-                $items[$i]['supplier_name']   = $supplierName;
-                $items[$i]['supplier_id']     = $supplierId;
-                $items[$i]['item_id']         = $lastinsertID;
-                $items[$i]['location']        = $locationData;
-                $i++;
+                	$items[$i]['name']            = $value['name'];
+	                $items[$i]['sku']             = $value['part_number'];
+	                $items[$i]['quantity']        = $value['quantity'];
+	                $items[$i]['purchase_price']  = $value['price_purchase'];
+	                $items[$i]['selling_price']   = $value['price'];
+	                $items[$i]['supplier_name']   = $supplierName;
+	                $items[$i]['supplier_id']     = $supplierId;
+	                $items[$i]['item_id']         = $itemId;
+	                $items[$i]['location']        = $locationData;
+	                $i++;
+                $db->_execute("UPDATE ace_rp_order_items SET order_status = 1 WHERE id =".$value['order_item_id']."");
              }
          }
 
@@ -2226,33 +2240,38 @@ class InventoriesController extends AppController
             $query = "UPDATE ace_iv_assets SET movement_id = {$doc_id} WHERE asset_id = '{$asset['id']}'";
             $db->_execute($query);
         }
-         $items['imageName'] = '';
+         $items['imageName'] =  $imageName;
          $items['supplier_name'] = $supplierName;
          $items['invoice_id'] = $invoiceId;
-        if(!empty($_POST['image']))
-        {
-            $image = $_POST['image'];
-            $image_parts = explode(";base64,", $image);
-            $image_type_aux = explode("image/", $image_parts[0]);
-            $image_type = $image_type_aux[1];
-            $image_base64 = base64_decode($image_parts[1]);
-            $imageName = uniqid().'.'.$image_type;
-            $items['imageName'] = $imageName;
-            $file = ROOT."/app/webroot/purchase-invoice-images/".$imageName;
-            file_put_contents($file, $image_base64);
-        }
-        $query = "INSERT INTO ace_iv_invoice (invoice_id, invoice, status_id, doc_type, total_purchase_amount,remaining_amount,invoice_image, po_number) VALUES ('{$doc_id}', '{$invoiceId}','6', '{$doc_type}', '{$total_purchase_amount}','{$total_purchase_amount}', '{$imageName}', '{$orderId}')";
+       
+        $query = "INSERT INTO ace_iv_invoice (invoice_id, invoice, status_id, doc_type, total_purchase_amount,remaining_amount,invoice_image, po_number) VALUES ('{$doc_id}', '{$invoiceId}','6', '{$doc_type}', '{$total_purchase_amount}','{$total_purchase_amount}', '{$imageName}', '{$orderNum}')";
         $result  = $db->_execute($query);
         if($result)
         {
-        	 echo json_encode($items);
-        }
+        	 //echo json_encode($items);
+        	/*Update order status to purchased*/
+        	$db->_execute("UPDATE ace_rp_orders SET purchase_order_status = 1 WHERE id =".$orderId."");
+        	$response  = array("res" => "1");
+            echo json_encode($response);
+            exit();
+        } 
         exit();
     }
 
     /*Loki: Get tech inventory data*/
     function techInventory(){
-    	
+    	$this->layout = "blank";
+    	$techId = $this->Common->getLoggedUserID();
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $query = "SELECT ti.quantity, lb.*,(select tin.quantity from ace_rp_tech_inventory_item tin where tech_id = 0 and item_id = lb.id) as warehouse_count FROM ace_rp_tech_inventory_item ti INNER JOIN iv_items_labeled2 lb on ti.item_id = lb.id  where ti.tech_id = ". $techId."";
+        $result = $db->_execute($query);
+        $items = array();
+
+        while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+            $items[] = $row;
+        }
+        $this->set("items", $items);
+        exit();
     }
 
   /*  function techItemRequest (){
@@ -2349,6 +2368,27 @@ class InventoriesController extends AppController
             echo json_encode($response);
 		}
 		exit();
+    }
+    // Loki: Delete items using purchase invoice page.
+    function deleteItems(){
+    	$itemIds = $_POST['Id'];
+    	// print_r($itemIds); die;
+    	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+		$query 		= "UPDATE  ace_iv_items set active = 0 where id IN (".$itemIds.")";
+		$result 	= $db->_execute($query);
+		if($result)
+		{
+			$query1 = "UPDATE  iv_items_labeled2 set active = 0 where id IN (".$itemIds.")";
+			$result1 = $db->_execute($query1);
+		}
+		if($result1)
+		{
+			$response  = array("res" => "1");
+ 			echo json_encode($response);
+ 			exit;
+		}
+    	exit();
     }
 }
 ?>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript">
+    $(document).ready(function(e){
+       setInterval( function(){     
+            get_chat_count();
+           // get_mail_count();
+        }, 20000 );
+
+       // var blink_speed = 500; 
+       // var t = setInterval(function () 
+       //   { var ele = document.getElementById('showMessage');
+       //       ele.style.visibility = (ele.style.visibility == 'hidden' ? '' : 'hidden'); }, blink_speed);
+});
+function get_chat_count(){ 
+ $.ajax({
+    url:"<?=BASE_URL;?>/messages/getMessages/", 
+    type: "GET",
+    success:function(result){ 
+            var res = JSON.parse(result);
+            count = res['total'];
+            if(count >= 1 && count > 0)
+            {
+                //$('#showMessage').text(count);
+                // window.open("<?=BASE_URL?>/messages/ShowMessages?fromMessage=1", "", "width=50,height=50,top=100, left=1300");
+                window.open("<?=BASE_URL?>/messages/ShowMessages?fromMessage=1", "", "width=450, height=350, left=300, top=200");
+
+            } if( count == 0)
+            {
+                $('#showMessage').text('');
+            }
+
+        }
+   });
+}
+</script>
+</head>
+<body>
+</body>
+</html>

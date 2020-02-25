@@ -1,4 +1,4 @@
-<?php
+<?php ob_start();
 
 class IvCategorySettingsController extends AppController
 

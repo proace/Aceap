@@ -696,6 +696,8 @@ class IvItemsController extends AppController
 			$items[$row['id']]['selling_price'] = number_format($row['selling_price'], 2, '.', '');
 
 			$items[$row['id']]['regular_price'] = number_format($row['regular_price'], 2, '.', '');
+			
+			$items[$row['id']]['sub_category_id'] = $row['sub_category_id'];
 
 		}
 

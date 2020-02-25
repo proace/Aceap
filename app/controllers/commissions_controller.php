@@ -395,71 +395,63 @@ class CommissionsController extends AppController
 
 		// Loki- Show commission only for the Done jobs and not have estimate paymnet type.
 	    // if($order['estimate_sent'] == 1 && $order['order_status'] ==  5) {
- 		 if($order['order_status_id'] ==  5 && $order['payment_method_type'] != 11 ) {
-		$query_items =
-
-			"select sum(if(i.is_appliance!=1,(oi.price-oi.price_purchase)*oi.quantity-oi.discount+oi.addition+oi.tech-oi.tech_minus,0)) sell_service,
+ 		if($order['order_status_id'] ==  5 && $order['payment_method_type'] != 11 ) {
+			// Live part_req = 81, local = 70
+			if($order['order_type_id'] == 81)
+			{
+				$query_items =  "select sum(if(i.is_appliance!=1,(oi.price-oi.tech_purchase_price)*oi.quantity-oi.discount+oi.addition+oi.tech-oi.tech_minus,0)) sell_service,
 
 					sum(if(i.is_appliance=1,oi.price*oi.quantity-oi.discount+oi.addition,0)) sell_appl,
 
 					oi.class sale_class
 
-			from ace_rp_order_items oi, ace_rp_items i
+				from ace_rp_order_items oi, ace_rp_items i
 
-		   where i.id=oi.item_id and i.is_appliance!=3 
+			   where i.id=oi.item_id and i.is_appliance!=3 
 
-			   and oi.order_id=" .$order['id'] ."
+				   and oi.order_id=" .$order['id'] ."
 
-		   group by oi.class";
+			   group by oi.class";
 
-		
+			   $query_items = "
 
-		// Edited by Maxim Kudryavtsev - exclude membership cards from commisions
+				select sum(if(i.iv_type_id != 1,(oi.price-oi.tech_purchase_price)*oi.quantity-oi.discount+oi.addition,0)) sell_service,
 
-		/*
+					sum(if(i.iv_type_id = 1,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) sell_appl,
 
-		$query_items = "
+					oi.class sale_class
 
-			select sum(if(i.iv_type_id != 1,(oi.price-oi.price_purchase)*oi.quantity-oi.discount+oi.addition,0)) sell_service,
+				from ace_rp_order_items oi
 
-				sum(if(i.iv_type_id = 1,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) sell_appl,			
+				left join ace_iv_items i
 
-				oi.class sale_class
+				on oi.item_id = i.id
 
-			from ace_rp_order_items oi
+				where oi.order_id=" .$order['id'] ." and oi.item_id not in (1106,1107)
 
-			left join ace_iv_items i
+				group by oi.class;";
 
-			on oi.item_id = i.id
+			} else {
 
-			where oi.order_id=" .$order['id'] ."
+			$query_items = "select sum(if(i.is_appliance!=1,(oi.price-oi.price_purchase)*oi.quantity-oi.discount+oi.addition+oi.tech-oi.tech_minus,0)) sell_service,
 
-			group by oi.class;
+					sum(if(i.is_appliance=1,oi.price*oi.quantity-oi.discount+oi.addition,0)) sell_appl,
 
-		";
+					oi.class sale_class
 
-*/
+				from ace_rp_order_items oi, ace_rp_items i
 
-		$query_items = "
+			   where i.id=oi.item_id and i.is_appliance!=3 
 
-			select sum(if(i.iv_type_id != 1,(oi.price-oi.price_purchase)*oi.quantity-oi.discount+oi.addition,0)) sell_service,
+				   and oi.order_id=" .$order['id'] ."
 
-				sum(if(i.iv_type_id = 1,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) sell_appl,
+			   group by oi.class";
 
-				oi.class sale_class
+		// Edited by Maxim Kudryavtsev - exclude membership cards from commisions	
 
-			from ace_rp_order_items oi
-
-			left join ace_iv_items i
-
-			on oi.item_id = i.id
-
-			where oi.order_id=" .$order['id'] ." and oi.item_id not in (1106,1107)
-
-			group by oi.class;
-
-		";
-
+		$query_items = "select sum(if(i.iv_type_id != 1,(oi.price-oi.price_purchase)*oi.quantity-oi.discount+oi.addition,0)) sell_service,sum(if(i.iv_type_id = 1,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) sell_appl,			
+				oi.class sale_class	from ace_rp_order_items oi left join ace_iv_items i on oi.item_id = i.id where oi.order_id=" .$order['id'] ." group by oi.class;";
+		}
 		// /Edited by Maxim Kudryavtsev - exclude membership cards from commisions
 
 
