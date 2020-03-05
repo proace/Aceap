@@ -81,7 +81,7 @@ class CommonComponent extends Object
     }
     
     //function uploadPhoto($file, $order_id, $config, $i, $customer_id = null)
-    function uploadPhoto($file_name,$file_tmpname, $order_id, $config, $i, $customer_id = null)
+    function uploadPhoto($file_name,$file_tmpname, $order_id, $config, $i, $customer_id = null, $fromTech=0)
 	{
 		date_default_timezone_set('America/Los_Angeles');
 
@@ -115,7 +115,7 @@ class CommonComponent extends Object
 	    }
 
 		//$sql = "UPDATE ace_rp_orders SET photo_".$i." = '".$name."' WHERE id = ".$order_id;
-		$sql = "INSERT INTO ace_rp_user_part_images (customer_id, image_name) VALUES (".$customer_id.", '".$name."')";
+		$sql = "INSERT INTO ace_rp_user_part_images (customer_id, image_name, from_tech) VALUES (".$customer_id.", '".$name."', ".$fromTech.")";
 		$db =& ConnectionManager::getDataSource($config);
 		$result = $db->_execute($sql);
 		return $result;
@@ -2188,6 +2188,22 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 		echo "<pre>";
 		print_r($data); 
 		die;
+	}
+
+	//Loki: delete the part images.
+	function deletePurchasePartImage($id, $imgPath)
+	{
+        $db =& ConnectionManager::getDataSource('default');
+		$rootPath = getcwd();
+        unlink($rootPath.'/upload_photos/'.$imgPath);
+        $query = "DELETE from ace_rp_user_part_images  where id =".$id;
+        $res = $db->_execute($query);
+        if ($res) {
+           return true;
+        } else {
+        	return false ;
+        }
+        exit();
 	}
 }
 ?>

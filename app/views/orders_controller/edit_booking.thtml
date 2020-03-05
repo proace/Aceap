@@ -1397,10 +1397,12 @@ function createMessage()
   "width=450,height=300,left=300,top=200");
 }
 function ShowSelectSupply(){
-  var supply_id = window.open("<?=BASE_URL?>/suppliers/index?mode=select",'',
-"width=800,height=600,left=100,top=50");
-	$("#OrderAppOrderedSupplierId").val(supply_id);
-	ChangeSupplier(document.getElementById("OrderAppOrderedSupplierId"));
+    var newwindow = window.open("<?=BASE_URL?>/suppliers/index?mode=select",'',
+    "width=800,height=600,left=100,top=50");
+    newwindow.onbeforeunload = function () {
+        ChangeSupplier(document.getElementById("OrderAppOrderedSupplierId"));
+    }
+   
 }
 function showAddItems(item_type)
 {
@@ -1761,7 +1763,17 @@ $(function () {
 
 // $(".",cur).text();
 $(document).ready(function(){
+    //Loki: set address fields blank for new address.
+    $("#add_new_address").live("click",function(){
+        $("#address_id").val('');
+        $("#CustomerAddressUnit").val('');
+        $("#CustomerAddressStreetNumber").val('');
+        $("#CustomerAddressStreet").val('');
+        $("#CustomerCity").val('');
+        $("#CustomerPostalCode").val('');
+    });
 
+    //Loki
     $(".delete_selected_items").live("click", function(){
         var Id = '';
            $(".delete_items:checkbox:checked").each(function(){
@@ -1783,7 +1795,7 @@ $(document).ready(function(){
             }
         });
     });
-
+    //Loki
     $(".add_selected_items").live("click", function(){
         var Id = '';
         var itemClass = $(this).attr("item-class");
@@ -3364,7 +3376,10 @@ function get_data($url)
 				
 				<tr>
 					<td align="right">Apt Number:</td>
-					<td><?php echo $html->input('Customer/address_unit', array('style' => 'width: 120px;')); ?></td>
+					<td>
+                        <?php echo $html->input('Customer/address_unit', array('style' => 'width: 75px;')); ?> 
+                        <input type="button" name="add_new_address" value="New" id="add_new_address" style="padding: 2px;width: 25%;">
+                    </td>
 				</tr>
 				<tr>
 					<td align="right">Street number:</td>

@@ -1,4 +1,12 @@
+<style type="text/css">
+.results {
+    border-collapse: collapse;
 
+}
+.results td, .results th {
+    border: 1px solid #3a3a3a;
+}
+</style>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
 <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
@@ -146,26 +154,23 @@ function InvoiceSubmitted(order_id, el){
 
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
     <tr>
-        <th rowspan=2 width="50px"><a href="javascript:setOrder('order_number');">REF #</a></td>
-        <th rowspan=2 width="100px"><a href="javascript:setOrder('order_status');">Status</a></th>
-        <th rowspan=2 width="100px"><a href="javascript:setOrder('job_type_name');">Job Type</a></th>
-        <th rowspan=2 width="100px"><a href="javascript:setOrder('tech1_name');">Tech 1</a></th>
-        <th rowspan=2 width="100px"><a href="javascript:setOrder('tech2_name');">Tech 2</a></th>
-        <th rowspan=2 width="100px"><b>Amount</b></th>
-        <th rowspan=2 width="60px"><b>Method</b></th>
-        <th rowspan=2 width="100px"><b>Payment Image</b></th>
-        <th colspan=5 width="150px"><b>Payment</b></th>
-        <th rowspan=2 width="100px">Balance</th>
-        <th rowspan=2 width="100px">Invoice submitted</th>
-		<th rowspan=2 width="50px">Booked items</td>
+        <th width="50px"><a href="javascript:setOrder('order_number');">REF #</a></th>
+        <th width="100px"><a href="javascript:setOrder('order_status');">Status</a></th>
+        <th width="100px"><a href="javascript:setOrder('job_type_name');">Job Type</a></th>
+        <th width="100px"><a href="javascript:setOrder('tech1_name');">Tech 1</a></th>
+        <th width="100px"><a href="javascript:setOrder('tech2_name');">Tech 2</a></th>
+        <th width="100px"><b>Amount</b></th>
+        <th width="60px"><b>Method</b></th>
+        <th width="100px"><b>Payment Image</b></th>
+        <th width="100px">Tech 1 Comm</th>
+        <th width="100px">Tech 2 Comm</th>
+        <th width="100px">Confirmed By</th>
+        <th width="100px">Balance</th>
+        <th width="100px">Invoice submitted</th>
+		<th  width="50px">Booked items</th>
     </tr>
-    <tr>
-        <th width="100">Method</th>
-        <th width="80px">Amount</th>
-        <th width="80px">Date</th>
-        <th colspan=2>Note</th>
-    </tr>
-		<?php $r=1;
+		
+        <?php $r=1;
 			foreach ($items as $obj) {
 				$class = 'cell'.(++$r%2);
 				$balance = 1*$obj['total_payments'] - 1*$obj['total'];
@@ -175,9 +180,9 @@ function InvoiceSubmitted(order_id, el){
 				if ($obj['order_status_id']==3) $bg = '#ffe1e1';
 				elseif ($obj['order_status_id']==5) $bg = '#e6ffcc';
 				$payments = $obj['payments'];
-				$cnt = count($payments)+1;
+				$cnt = 1; //count($payments)+1;
 		?>
-    <tr id="r<?=$r?>" class="cell0">
+    <tr>
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">
 								<a href="<?=BASE_URL?>/orders/editBooking?order_id=<?php echo $obj['id'].'&rurl='.urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING'])?>"><?=$obj['order_number']?></a>
 				</td>
@@ -187,7 +192,6 @@ function InvoiceSubmitted(order_id, el){
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech2_name']?></td>
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>"><?=(1*$obj['total']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['total'])?></td>
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech_payments']?></td>
-      	<!-- <td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech_auth']?></td> -->
         <td rowspan=<?=$cnt?> style="background:<?=$bg?>">
             <?php if (!empty($obj['payment_image']) || $obj['payment_image'] != '') { ?>
                     <div style="position: relative; padding:0; width: 10px;"> 
@@ -196,61 +200,15 @@ function InvoiceSubmitted(order_id, el){
                     </div>  
              <?php }?>    
         </td>
-      	<td colspan=5 style="background:<?=$bg?>">
-								<a id='add_payment_link<?=$obj['id']?>' href='#'
-								onclick='$("#addnewform<?=$obj['id']?>").show();$("#add_payment_link<?=$obj['id']?>").hide();$("#cancel_payment_link<?=$obj['id']?>").show();'>
-								Add new payment</a>
-								<a id='cancel_payment_link<?=$obj['id']?>' href='#' style='display:none'
-								onclick='$("#addnewform<?=$obj['id']?>").hide();$("#add_payment_link<?=$obj['id']?>").show();$("#cancel_payment_link<?=$obj['id']?>").hide();'>
-								Cancel</a>
-								<table id='addnewform<?=$obj['id']?>' style='display:none'>
-								<tr class="cell0">
-										<td style="background:<?=$bg?>">
-										<select id="method<?=$obj['id']?>">
-										<?php
-                    foreach ($allPaymentTypes as $id => $name)
-										{
-												$selected = '';																
-												if ($oi['payment_method'] == $id)	$selected = 'selected';
-												echo "<option $selected value='$id'>$name</option>";
-										}
-										?>
-										</select>
-										</td>
-										<td style="background:<?=$bg?>">
-												<input style="width:85px" id="amount<?=$obj['id']?>" value=""/>
-								    </td>
-										<td style="background:<?=$bg?>">
-												<input style="width:85px;cursor:pointer;" id="date<?=$obj['id']?>" value="<?=date('d M Y')?>"/>
-								    </td>
-										<td style="background:<?=$bg?>">
-												<input style="width:185px;cursor:pointer;" id="notes<?=$obj['id']?>" value=""/>
-								    </td>
-										<td style="background:<?=$bg?>">
-												<input type='button' value='Save' onclick='SavePayment(<?=$obj['id']?>);'/>
-								    </td>
-								</tr>
-								</table>
-				</td>
+        <td rowspan=<?=$cnt?> style="background:<?=$bg?>"><?=$obj['tech1_comm']?></td>
+        <td rowspan=<?=$cnt?> style="background:<?=$bg?>"><?=$obj['tech2_comm']?></td>
+      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>"><?=$obj['confirmed_by']?></td>
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>; color:<?=$bal_color?>"><?=(1*$balance==0)?'&nbsp;':$HtmlAssist->prPrice($balance)?></td>
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>;">
 						<input type='checkbox' <?php if ($obj['invoice_submitted']) echo 'checked'; ?> onclick='InvoiceSubmitted(<?=$obj['id']?>, this);'/>
 				</td>
 		<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['name']?></td>
     </tr>
-		<?php foreach ($payments as $ppp) {?>
-		<tr class="cell0">
-      	<td style="background:<?=$bg?>">&nbsp;<?=$ppp['payment_method']?></td>
-      	<td style="background:<?=$bg?>">
-				  <?=(1*$ppp['paid_amount']==0)?'&nbsp;':$HtmlAssist->prPrice($ppp['paid_amount'])?>
-				</td>
-      	<td style="background:<?=$bg?>">&nbsp;<?=$ppp['payment_date']?></td>
-      	<td style="background:<?=$bg?>">&nbsp;<?=$ppp['notes']?></td>
-				<td style="background:<?=$bg?>; width:40px">
-					<a href='#' style="color:blue" onclick='ErasePayment(<?=$ppp['id']?>);'>Delete</a>
-				</td>
-    </tr>
-    <? } ?>
     <? } ?>
 </table>
 <div class="invoice-img-enlarge" title="Photo" style="display: none">

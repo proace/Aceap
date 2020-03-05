@@ -12,7 +12,7 @@ class OrdersController extends AppController
     var $uses = array('TechInventoryItem', 'OrderEstimate','Order', 'CallRecord', 'User', 'Customer', 'OrderItem',
                     'Timeslot', 'OrderStatus', 'OrderType', 'Item',
                     'Zone','PaymentMethod','ItemCategory','InventoryLocation',
-                    'OrderSubstatus','Coupon','Setting','CallResult','Invoice', 'Question', 'Payment', 'Invoice','IvItem');
+                    'OrderSubstatus','Coupon','Setting','CallResult','Invoice', 'Question', 'Payment', 'Invoice','IvItem','UserPartImages');
 
     var $helpers = array('Common');
     var $components = array('HtmlAssist', 'Common', 'Lists');
@@ -2187,6 +2187,7 @@ class OrdersController extends AppController
 
         if (!empty($this->data['Order']))
         {
+
             $showDefault = isset($_POST['showDefault'])?$_POST['showDefault']:0;
             //If order information is submitted - save the order
             $send_cancalled_email = isset($_POST['send_cancalled_email'])?$_POST['send_cancalled_email']
@@ -2236,7 +2237,7 @@ class OrdersController extends AppController
                         $allImages[$key]['image_name'] = $this->getPhotoPath($value['image_name']);
                     }
                 }
-                //$this->data['Order']['address_id'] = $cus['Customer']['address_id'];
+                $this->data['Order']['address_id'] = $cus['Customer']['address_id'];
                 $this->set("allImages",$allImages);
                 $this->set("allAddresses",$allAddresses);
             }
@@ -2437,6 +2438,8 @@ class OrdersController extends AppController
                 $this->data['Order']['job_time_beg'] = $this->params['url']['job_time_beg'];
                 $this->data['Order']['job_technician1_id'] = $this->params['url']['job_technician1_id'];
                 $this->data['Order']['job_technician2_id'] = $this->params['url']['job_technician2_id'];
+                $this->data['Order']['app_ordered_date'] = date('d M Y');
+                $this->data['Order']['app_ordered_pickup_date'] = date('d M Y');
                 
                 if(!empty($this->params['url']['job_technician1_id']))
                 {                
@@ -2665,7 +2668,7 @@ class OrdersController extends AppController
         $this->set('payment_methods', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(), 'id', 'name'));
         $this->set('sub_status', $this->HtmlAssist->table2array($this->Order->OrderSubstatus->findAll(), 'id', 'name'));
         $this->set('allTechnician',$this->Lists->Technicians(true));
-        $this->set('allSuppliers',$this->Lists->ListTable('ace_rp_suppliers','',array('name','phone')));
+        $this->set('allSuppliers',$this->Lists->ListTable('ace_rp_suppliers','',array('name','city')));
         $this->set('allPermitMethods',$this->Lists->ListTable('ace_rp_apply_methods'));
         $this->set('allPermitStates',$this->Lists->ListTable('ace_rp_permit_states'));
         //$this->set('allCities',$this->Lists->ListTable('ace_rp_cities'));
@@ -12861,6 +12864,13 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
 
         $order = $this->Order->findById($order_id);
         $city = $order['Customer']['city'];
+        $partImages = $this->UserPartImages->findAll(array('conditions' => array('UserPartImages.customer_id' => $order['Customer']['id'], 'UserPartImages.from_tech' => 1)));
+         foreach ($partImages as $key => $value) {
+                     if(!empty($value['UserPartImages']['image_name']) && $value['UserPartImages']['image_name'] != null){
+                        $allImages[$key]['id'] = $value['UserPartImages']['id'];
+                        $allImages[$key]['image_name'] = $this->getPhotoPath($value['UserPartImages']['image_name']);
+                    }
+                }
         $this->set('order', $order);
         $this->set('last_order', $this->Order->findByJobEstimateId($order_id));
         $this->set('invoice', $this->Invoice->findByOrderId($order_id));
@@ -12909,6 +12919,8 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         {
             $methods[$row['id']] = $row;
         }
+       
+        $this->set('allImages', $allImages);
         $this->set('city_id', $city_id);
         $this->set('order_id', $order_id);
         $this->set('job_types',$this->Lists->OrderTypes());
@@ -16909,5 +16921,37 @@ function deleteUserFromCampaign()
     //     }
     //     exit();
     // }
+
+  // function getSuppliers()
+  // {
+  //   $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+  //   $query = "SELECT name, CONCAT(brand_furnace, ' ',brand_boiler,' ',brand_hwt, ' ', brand_part, ' ', brand_tankless, ' ', brand_heatpump) as equipment from ace_rp_suppliers where name IS NOT NULL AND name != '' group by name";
+  //   $res = $db->_execute($query);
+
+  //   while($row = mysql_fetch_array($res))
+  //   {
+  //       $db->_execute("INSERT INTO ace_rp_main_suppliers (name, equipment) VALUES ('".$row['name']."', '".$row['equipment']."')");
+  //   }
+
+  //   exit();
+
+  // }
+
+  // function matchSupplier()
+  // {
+  //    $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+  //   $query = "SELECT id, name from ace_rp_main_suppliers";
+  //   $res = $db->_execute($query);
+
+  //   while($row = mysql_fetch_array($res))
+  //   {
+  //       $db->_execute("UPDATE ace_rp_suppliers set main_supplier_id = ".$row['id']." where name LIKE '".$row['name']."'");
+  //   }
+
+  //   exit();
+
+  // }
 }
 ?>

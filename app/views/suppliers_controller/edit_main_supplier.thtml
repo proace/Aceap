@@ -1,0 +1,95 @@
+<script>
+//*** SET PAGE TITLE ***
+document.title += " :: Edit Item";
+//**********************
+$(document).ready(function(){
+    
+    $("#add_one_time_item").live("click", function(){
+        template = $("#one_time_row"); 
+        tableTemp = $('#new_item_table');
+        result = template.clone();
+        $(result).removeAttr("id").addClass("remove_tr").show().appendTo(tableTemp);;
+    });
+
+     // Loki: Remove onr time purchase item from item_box
+    $(".removeOnetimeItem").live("click", function(){
+        $(this).closest('tr').remove();
+    });
+});
+
+
+</script>
+<style type="text/css">
+#addbranch {
+        padding: 2%;
+        width: 20%;
+}
+.branch-width {
+    width: 96%;
+}
+.inResultsBooking{
+    width: 98%;
+}
+
+</style>
+
+<form name="editSupplierForm" action="<?=BASE_URL;?>/suppliers/saveMainSupplier" method="post">
+<?php echo $html->hidden('MainSupplier/id')?>
+<div class="frame-wrap" style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED; width: 100%;">
+        <div class="frame-header-left"></div>
+        <div class="frame-header-title">Supplier information</div>
+        <div class="frame-header-right"></div>
+        <div class="frame-body" style="clear: both;width: 100%;">
+                <table>
+                        <tr>
+                                <td align="right">Name:</td>
+                                <td>
+                                <?php echo $html->input('MainSupplier/name', array('style' => 'width: 250px')); ?>
+                                </td>
+                        </tr>
+                        <tr>
+                                <td align="right">Equipment:</td>
+                                <td>
+                                <?php echo $html->textarea('MainSupplier/equipment', array('style' => 'width: 250px')); ?>
+                                </td>
+                        </tr>
+                        <tr>
+                                <td align="right">Notes:</td>
+                                <td>
+                                <?php echo $html->textarea('MainSupplier/notes', array('style' => 'width: 250px')); ?>
+                                </td>
+                        </tr>
+                        <tr>
+                                <td><b>Branch</b></td>
+                                <td><input type="button" name="addbranch" id="add_one_time_item" value="Add"></td>
+                        </tr>
+                      <tr>
+                           <table id="new_item_table" cellspacing=0 colspacing=0 class="inResultsBooking">
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Address</th>
+                                <th>City</th>
+                                <th>Notes</th>
+                                <th>Remove</th>
+                            </tr>
+                            <tr id="one_time_row" style="display: none;" >
+                                <td><input class="branch-width" type="text" name="name[]"></td>
+                                <td><input type="text" class=" branch-width" name="phone[]"></td>
+                                <td><input type="text" class=" branch-width" name="address[]"></td>
+                                <td><input type="text" class=" branch-width" name="city[]"></td>
+                                <td><input type="text" class=" branch-width" name="notes[]"></td>
+                                <td><img class="removeOnetimeItem" src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png"></td>
+                            </tr>
+                        </table>
+                      </tr>
+                        <tr>
+                                <td style="text-align:right" colspan=2>
+                                                <?php echo $html->submit("Save", array("class" => "buttons"));?>
+                                                <input type="button" value="Exit" onclick="document.location.href='<?=BASE_URL?>/suppliers/index'" class="buttons">
+                                </td>
+                        </tr>
+                </table>
+        </div>
+</div>
+</form>

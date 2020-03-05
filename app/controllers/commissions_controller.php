@@ -125,7 +125,7 @@ class CommissionsController extends AppController
 
 		$this->set('comm_records',$this->getCommissionSettings($user_id));
 
-		$this->set('job_types',$this->Lists->ListTable('ace_rp_order_types','category_id=2'));
+		$this->set('job_types',$this->Lists->ListTable('ace_rp_order_types','category_id=2 and show_tech_commission = 1'));
 
 		$this->set('comm_roles',$this->Lists->ListTable('ace_rp_commissions_roles'));
 

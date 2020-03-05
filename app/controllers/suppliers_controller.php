@@ -12,7 +12,7 @@ class SuppliersController extends AppController
 
 
 
-	var $uses = array('User', 'Supplier');
+	var $uses = array('User', 'Supplier','MainSupplier');
 
 
 
@@ -101,14 +101,9 @@ class SuppliersController extends AppController
 		$search = $_GET['search'];
 		if (!$order) $order = 'id asc';
 		$search_str = '';
-		if ($search) $search_str = "and (brand_part like '%{$search}%' or
-        brand_furnace like '%{$search}%' or
-        brand_boiler like '%{$search}%' or
-        brand_hwt like '%{$search}%' or
-        brand_tankless like '%{$search}%' or
-        brand_heatpump like '%{$search}%')";     
+		if ($search) $search_str = "where (equipment like '%{$search}%'";     
 		
-		$query = "select * from ace_rp_suppliers i where i.flagactive=1 $search_str order by ".$order.' '.$sort;
+		$query = "select * from ace_rp_main_suppliers $search_str order by ".$order.' '.$sort;
 		
 		$items = array();
 		$result = $db->_execute($query);
@@ -149,9 +144,31 @@ class SuppliersController extends AppController
 
 	}
 
+	//Loki: edit the main supplier details.
+	function editMainSupplier()
+	{
+		$this->layout="list";
+		$supId = $_GET['sup_id'];
+
+		$this->MainSupplier->id = $supId;
+
+		$this->data = $this->MainSupplier->read();
+
+		// $this->data = $details['MainSupplier'];
+	}
+
+	function editSupplierBranch()
+	{
+		$this->layout="list";
+		$branchId = $_GET['branch_id'];
+
+		$this->Supplier->id = $branchId;
+
+		$this->data = $this->Supplier->read();		
+	}
 
 
-	function saveItem()
+	function saveSupplierBranch()
 
 	{
 
@@ -172,8 +189,83 @@ class SuppliersController extends AppController
 		$this->redirect('/suppliers/index');
 
 	}
+	//Loki: Get all supplier branches.
+	function getSupplierBranch()
+	{
+		$supplierId = $_GET['sup_id'];
+		$branches = $this->Supplier->findAll(array('condition' => array('Supplier.main_supplier_id' =>  $supplierId)));
+		$sRes = '<table class="sup_branch">';
+		
+		$sRes .= '<tr>
+		<th>Id</th>
+		<th>Name</th>
+		<th>Phone</th>
+		<th>Address</th>
+		<th>City</th>
+		<th>Notes</th>
+		</tr>';
+		foreach ($branches as $key => $value) {
+			$sRes .= '<tr onclick="ClickRow(this)" style="cursor:pointer;">';
+			$sRes .= '<td><a href="'.BASE_URL.'/suppliers/editSupplierBranch?branch_id='.$value['Supplier']['id'].'">'.$value['Supplier']['id'].'</a></td>';
+			$sRes .= '<td>'.$value['Supplier']['name'].'</td>';
+			$sRes .= '<td>'.$value['Supplier']['phone'].'</td>';
+			$sRes .= '<td>'.$value['Supplier']['address'].'</td>';
+			$sRes .= '<td>'.$value['Supplier']['city'].'</td>';
+			$sRes .= '<td>'.$value['Supplier']['notes'].'</td>';
+			$sRes .= '</tr>';
+		}
+		$sRes .= '</table>';
+
+	   echo $sRes;
+	    exit;
+	}
+
+	/*Loki: save main supplier data.*/
+	function saveMainSupplier()
+	{
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		// $this->Common->printData($_POST);
+		$supplierDetails = $_POST['data']['MainSupplier'];
+		if(!empty($supplierDetails['id']))
+		{
+			$this->MainSupplier->id = $supplierDetails['id'];
+			$this->MainSupplier->save($supplierDetails);
+			$this->redirect('/suppliers/index');
+			if(!empty($_POST['name'][1]))
+			{
+				foreach ($_POST['name'] as $key => $value) {
+					if(!empty($value))
+					{
+						$db->_execute("INSERT INTO ace_rp_suppliers (name,phone, address, city, notes,main_supplier_id) VALUES  ('".$value."', '".$_POST['phone'][$key]."', '".$_POST['address'][$key]."', '".$_POST['city'][$key]."', '".$_POST['notes'][$key]."', ".$supplierDetails['id'].")");
+					}
+				}
+			}
 
 
+		} else {
+			$this->MainSupplier->save($supplierDetails);
+			if ($this->MainSupplier->id)
+            {
+                $supplierId = $this->MainSupplier->id;
+            }   
+            else {
+              $supplierId = $this->MainSupplier->getLastInsertId();
+            }
+            if(!empty($_POST['name'][1]))
+			{
+				foreach ($_POST['name'] as $key => $value) {
+					if(!empty($value))
+					{
+						$db->_execute("INSERT INTO ace_rp_suppliers (name,phone, address, city, notes,main_supplier_id) VALUES  ('".$value."', '".$_POST['phone'][$key]."', '".$_POST['address'][$key]."', '".$_POST['city'][$key]."', '".$_POST['notes'][$key]."', ".$supplierId.")");
+					}
+				}
+			}
+            $this->redirect('/suppliers/index');
+		}
+
+		exit();
+
+	}
 
 }
 

@@ -4,19 +4,40 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.quicksearch.js"></script>
 
 <script>
-function ClickRow(id,name){
-		<?php $r=1;
-			if ($_REQUEST['mode']=='select'){
-				echo "window.returnValue=name;";
-				echo "window.close();";
-			}
-			elseif ($_REQUEST['mode']=='id'){
-				echo "window.returnValue=id;";
-				echo "window.close();";
-			}
-			else
-				echo "document.location.href='".BASE_URL."/suppliers/editItem?item_id='+id";
-		?>
+var cur = '';
+// function ClickRow(id,name){
+//     console.log("here");
+// 		<?php $r=1;
+// 			if ($_REQUEST['mode']=='select'){
+// 				echo "window.returnValue=name;";
+// 				echo "window.close();";
+// 			}
+// 			elseif ($_REQUEST['mode']=='id'){
+// 				echo "window.returnValue=id;";
+// 				echo "window.close();";
+// 			}
+// 			else
+// 				echo "document.location.href='".BASE_URL."/suppliers/editItem?item_id='+id";
+// 		?>
+// }
+
+function ClickRow(ev){
+     id = $(ev).closest('tr').children('td:first').text();
+     window.opener.document.getElementById('OrderAppOrderedSupplierId').value = id;
+     window.close();
+}
+
+function showBranches(sup_id, el)
+{
+    $('.details').hide();
+    if (cur==el) {cur=''; return;}
+    cur=el;
+    $(el).html('<img src="<?=ROOT_URL?>/app/webroot/img/wait30trans.gif"/>').parent().show();
+    $.get("<?=BASE_URL;?>/suppliers/getSupplierBranch",
+        {sup_id:sup_id},
+        function(data){
+            $(el).html(data);
+        });  
 }
 
 $(function () {
@@ -33,6 +54,19 @@ $(function () {
 	left:-10px;
 	top:-10px;
 	font-size:140%;
+}
+.results td {
+    text-align: center;
+}
+.sup_branch {
+  border-collapse: collapse;
+  background:  #faff99 ;
+  width: 100%
+}
+
+.sup_branch th, 
+.sup_branch td {
+  border: 1px solid black;
 }
 </style>
 <?php if($ismobile == 1) { ?>
@@ -54,7 +88,7 @@ $(function () {
 		</tr>
 		<tr>
 			<td align="left">
-				<input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/suppliers/editItem'" class="buttons" />
+				<input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/suppliers/editMainSupplier'" class="buttons" />
 			</td>
 			<td>			
 				Search:&nbsp;
@@ -70,17 +104,11 @@ $(function () {
 
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
     <tr>
-        <th width="50" style="background-color:#CCCCCC;border-style: none;"><b><u>ID</b></u></td>
+        <th width="25" style="background-color:#CCCCCC;border-style: none;"><b><u>ID</b></u></td>
         <th width="200"><a href="javascript:setOrder('name');">Name</a></th>
-        <th width="100"><a href="javascript:setOrder('phone');">Phone</a></th>
-        <th width="100"><a href="javascript:setOrder('city');">City</a></th>
-        <th width="150"><a href="javascript:setOrder('address');">Address</a></th>
-        <th><a href="javascript:setOrder('brand_part');">Parts</a></th>
-        <th><a href="javascript:setOrder('brand_furnace');">Furnaces</a></th>
-        <th><a href="javascript:setOrder('brand_boiler');">Boilers</a></th>
-        <th><a href="javascript:setOrder('brand_hwt');">Hot Water Tanks</a></th>
-        <th><a href="javascript:setOrder('brand_tankless');">Tankless</a></th>
-        <th><a href="javascript:setOrder('brand_heatpump');">Heatpump</a></th>
+        <th width="200"><a href="javascript:setOrder('equipment');">Equipment</a></th>
+        <th width="200"><a href="javascript:setOrder('notes');">Notes</a></th>
+        
     </tr>
 		<?php $r=1;
 			foreach ($items as $obj): 
@@ -88,20 +116,14 @@ $(function () {
 		?>
     <tr id="r<?=$r?>" class="<?=$class?> affected" 
     	<?php  if ($_SESSION['user']['role_id'] == 6 || $_SESSION['user']['role_id'] == 5 || $_SESSION['user']['role_id'] == 1) { ?>
-    	onclick="ClickRow(<?=$obj['id']?>,'<?=$obj['name']?>')" 
+    	onclick="showBranches(<?=$obj['id']?>, '#details<?=$obj['id']?>')" 
         <?php } ?>
         style="cursor:pointer;">
-			<td class="firstcol" style="background-color:#CCCCCC;border-style: none;"><?=$obj['id']?></td>
+			<td class="firstcol" style="background-color:#CCCCCC;border-style: none;"><a href="<?=BASE_URL?>/suppliers/editMainSupplier?sup_id=<?=$obj['id']?>"><?=$obj['id']?></a></td>
 			<td>&nbsp;<?php echo $obj['name']; ?></td>
-			<td>&nbsp;<?php echo $obj['phone']; ?></td>
-			<td>&nbsp;<?php echo $obj['city']; ?></td>
-			<td>&nbsp;<?php echo $obj['address']; ?></td>
-     	<td>&nbsp;<?php echo $obj['brand_part']; ?></td>
-     	<td>&nbsp;<?php echo $obj['brand_furnace']; ?></td>
-     	<td>&nbsp;<?php echo $obj['brand_boiler']; ?></td>
-     	<td>&nbsp;<?php echo $obj['brand_hwt']; ?></td>
-     	<td>&nbsp;<?php echo $obj['brand_tankless']; ?></td>
-     	<td>&nbsp;<?php echo $obj['brand_heatpump']; ?></td>
+            <td>&nbsp;<?php echo $obj['equipment']; ?></td>
+			<td>&nbsp;<?php echo $obj['notes']; ?></td>
     </tr>
+    <tr class="details" style="display:none;"><td colspan=12 id="details<?=$obj['id']?>"></td></tr>
     <?php endforeach; ?>
 </table>

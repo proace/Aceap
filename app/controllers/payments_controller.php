@@ -25,12 +25,12 @@ class PaymentsController extends AppController
 		if ($this->params['url']['ffromdate'] != '')
 			$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
 		else
-			$fdate = date("Y-m-d");
+			$fdate = date("Y-m-d", strtotime("-1 days"));
 
 		if ($this->params['url']['ftodate'] != '')
 			$tdate = date("Y-m-d", strtotime($this->params['url']['ftodate']));
 		else
-			$tdate = date("Y-m-d");
+			$tdate = date("Y-m-d", strtotime("-1 days"));
 
 		$sqlConditions = "";
 		if($fdate != '')
@@ -44,11 +44,13 @@ class PaymentsController extends AppController
 				
 		if (!$order) $order = 'order_number asc';
 		
-		$query = "select o.id, o.order_number, o.job_date, o.order_status_id,
+		$query = "select o.id, o.order_number, o.job_date, o.order_status_id,o.job_technician1_id,o.job_technician2_id,
+										o.booking_source_id, o.booking_source2_id,
 										 s.name order_status, o.invoice_submitted,
 										 concat(t1.first_name,' ',t1.last_name) tech1_name,
 										 concat(t2.first_name,' ',t2.last_name) tech2_name,
 										 concat(c.first_name,' ',c.last_name) client_name,
+										 concat(t3.first_name,' ',t3.last_name) confirmed_by,
 										 c.address_street client_address, c.phone client_phone,
 										 o.order_type_id, o.order_status_id, jt.category_id,
 										 jt.name job_type_name, o.customer_deposit,o.payment_image,
@@ -65,6 +67,7 @@ class PaymentsController extends AppController
 							  left outer join ace_rp_customers c on o.customer_id=c.id
 							  left outer join ace_rp_users t1 on o.job_technician1_id=t1.id
 							  left outer join ace_rp_users t2 on o.job_technician2_id=t2.id
+							  left outer join ace_rp_users t3 on o.verified_by_id=t3.id
 							  left outer join ace_rp_order_statuses s on s.id=o.order_status_id
 							 where order_status_id in (1,5) $sqlConditions 
 							 order by $order $sort";
@@ -78,8 +81,28 @@ class PaymentsController extends AppController
 		$result = $db->_execute($query);
 		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
 		{
+			// $this->Common->printData($row);
 			$totals = $this->Common->getOrderTotal($row['id']);
 			
+			$comm = $this->requestAction('/commissions/getForOrder/'.$row['id']);
+            $tech1_comm = $comm[0][1]['total_comm'];
+            $tech2_comm = $comm[0][2]['total_comm'];
+     
+            if ($row['booking_source_id'] == $row['job_technician1_id'])
+                $tech1_comm += $comm[0][3]['total_comm'];
+            elseif ($row['booking_source_id']==$row['job_technician2_id'])
+                $tech2_comm += $comm[0][3]['total_comm'];
+            elseif ($row['booking_source2_id']==$row['job_technician1_id'])
+                $tech1_comm += $comm[0][4]['total_comm'];
+            elseif ($row['booking_source2_id']==$row['job_technician2_id'])
+                $tech2_comm += $comm[0][4]['total_comm'];
+           
+           $items[$row['id']]['tech1_comm'] = round($tech1_comm, 2);
+           $items[$row['id']]['tech2_comm'] = round($tech2_comm, 2);
+            // $this->set('tech2_comm', round($tech2_comm, 2));
+            // $this->set('tech1_comm', round($tech1_comm, 2));
+
+
 			if (($amount_search)&&($amount_search!=$totals['sum_total'])) continue;
 			
 			//$items[$row['id']]['total'] = $totals['sum_total'] - $row['customer_deposit'];
@@ -174,6 +197,8 @@ class PaymentsController extends AppController
 		$email = $_REQUEST['email'];
 		$send_receipt = $_REQUEST['sendReceipt'];
 		$order_id = $_REQUEST['order_id'];
+		$orderNum = $_REQUEST['orderNum'];
+		$customerId = $_REQUEST['customerId'];
 		$method = $_REQUEST['method'];
 		$amount = $_REQUEST['amount'];
 		$payment_type = $_REQUEST['payment_type'];
@@ -182,16 +207,25 @@ class PaymentsController extends AppController
 		$note = $_REQUEST['notes'];
 		$file 	= isset($_FILES['payment_image'])? $_FILES['payment_image'] : null;
 		$loggedUserId 	= $this->Common->getLoggedUserID();
-		$anchor = '<a href="'.BASE_URL.'/orders/editBooking?order_id='.$order_id.'&rurl=orders%2FscheduleView%3F">'.$order_id.'</a>';
+		$anchor = '<a href="'.BASE_URL.'/orders/editBooking?order_id='.$order_id.'&rurl=orders%2FscheduleView%3F">'.$orderNum.'</a>';
 		$message = 'Please collect payment for '.$anchor;
 		$toDate = date('Y-m-d');
 		$fromDate = date('Y-m-d H:i:s');
+		$photoImage1 = $_FILES['sortpic1'];
 		if($file !== null)
 		{
 			
             $this->User->id = $loggedUserId;
 			$imageResult 	= $this->Common->commonSavePaymentImage($file, $order_id , $config = $this->User->useDbConfig);
 		}
+		 if(!empty($photoImage1))
+        {    
+            foreach ($photoImage1['name'] as $key => $value) {
+                if(!empty($value)){
+                    $imageResult = $this->Common->uploadPhoto($value,$photoImage1['tmp_name'][$key] , $order_id , $config = $this->User->useDbConfig, 1, $customerId,1);
+                }
+             }  
+        }
 		//$date = date("Y-m-d", strtotime($_REQUEST['date']));
 		$date = date("Y-m-d");
 		$creator = $this->Common->getLoggedUserID();
@@ -791,6 +825,20 @@ class PaymentsController extends AppController
              echo json_encode($response);
 		}
 		exit();
+	}
+
+	function deletePartImage()
+	{
+		$id = $_POST['id'];
+        $imgPath = $_POST['imgPath'];
+
+		$res = $this->Common->deletePurchasePartImage($id,$imgPath);
+		 if ($res) {
+            $response  = array("res" => "OK");
+            echo json_encode($response);
+            exit();
+        }
+        exit();
 	}
 
 }

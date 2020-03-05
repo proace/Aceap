@@ -6,6 +6,27 @@ $(function() {
 	var live_server = "/acesys/index.php/";
 	
 	var l = $(location).attr('href');
+	
+	// Delete purchase images
+	$(".delete-purchase-image").live("click", function(){
+		var id = $(this).attr("image-id");
+		var imgPath = $(this).attr("image-name");
+		$.ajax({
+		url: live_server+'payments/deletePartImage',
+		dataType: 'html',
+		type: 'POST',
+		cache: false,
+		data: {id:id, imgPath:imgPath},
+		success: function(data) {
+				res = JSON.parse(data);
+				if(res.res == "OK")
+				{
+					location.reload(true);
+				}
+			}			
+		});
+	});
+
 	//Loki: open pay via office box
 	$("#officeBox").dialog({
             modal: true,
@@ -646,13 +667,15 @@ function SavePayment(){
 	var amount = $("#paid_by_amount").val();	
 	// var amount = $("#current_balance").val();	
 	var orderId = $("#remOrderId").val();
+	var orderNum = $("#orderNum").val();
+	var customerId = $("#customerId").val();
 	
 	if (!method) {alert('A payment method should be selected!'); return;}
 	if(amount == '' && paymentOption == 1 )
 	{
 		alert("Payment amount can't be blank"); return;
 	}
-	var formdata = new FormData();
+	var formdata = new FormData($("#items_form")[0]);
 	formdata.append("order_id",id);
 	formdata.append("method",method);
 	formdata.append("amount",amount);
@@ -660,6 +683,8 @@ function SavePayment(){
 	formdata.append("show_message",MessageOption);
 	formdata.append("sendReceipt",sendReceipt);
 	formdata.append("email",email);
+	formdata.append("orderNum",orderNum);
+	formdata.append("customerId",customerId);
 	if(!imageName)
 	{
 		if(option == 1)

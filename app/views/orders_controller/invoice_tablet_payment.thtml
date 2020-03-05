@@ -24,6 +24,43 @@
 
 
 <style type="text/css">
+.td_space{
+    padding-top: 10%;
+}
+.order-images{
+    cursor:pointer;
+    height: 150px;
+    width: 100px;
+}
+.cls-acecare-td-adjust {
+    position: relative;
+    height: 16;
+    width: 99px;
+    /* padding: 1; */
+    margin: 2px 0px 4px 0px;
+}
+.cls-acecare-td-adjust > input[type="file"]{
+  position: absoulte;
+  opacity: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0
+}
+
+.cls-acecare-td-adjust > label {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: #5f5c5c;
+  color: #000;
+  border-radius: 5px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer
+}
 .emailBox{
     margin: 0px auto 0 10px; margin-bottom: 10px; width: 200px; padding: 10px;
 }
@@ -491,7 +528,8 @@ function upload_photo(cur,i) {
     <!-- <div class="right"><input type="button" value="Save" id="save-payment-image" style=" margin-right: 30px;width: 100px;" /></div> -->
             
         <div class="right" id="payment_box">
-            <div class="clear_this"></div>
+        <div class="clear_this"></div>
+
         <!-- <div>Paid by: <?php echo $html->selectTag('Payment/payment_method_id', $payment_method); ?></div> -->
             <div> Paid by: 
             <select id="PaymentPaymentMethodId" name="data[Payment][payment_method_id]">
@@ -504,6 +542,8 @@ function upload_photo(cur,i) {
             </div>
 
             <div>Amount: <input type="text" class="right" id="paid_by_amount" name="data[Payment][amount]" value="<?=$job['Payment']['paid_amount']?>" /></div>
+
+
         	
             <!-- <div>Auth#: <input type="text" class="right" id="auth_number" name="data[Payment][auth_number]" value="" /></div> -->
             <img id="pre-image_photo1" style="float: right;" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
@@ -522,7 +562,6 @@ function upload_photo(cur,i) {
                         <span style="position:absolute;right: 0;"><img style="height: 15px;width: 12px;" id="delete-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?php echo $invoice_payment_photo; ?>"></span>
                         <img id="openImg" class="img" src="<?php echo $imgPath; ?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">                         
                     </div>
-                   <!--  <img id="openImg" src="<?php echo $imgPath; ?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">    -->                      
                     <?php 
                 }else{
                     ?>
@@ -533,18 +572,56 @@ function upload_photo(cur,i) {
                     <?php
                 }
             ?> 
-           <!--  </div>  
-                <div class="center" id="payment_details" style="width:100%;float: right;"></div>
-                <div><input type="button" value="Save" id="save_payment" /></div> 
-            </div> -->
-       <!-- <?php if($common->getLoggedUserRoleID() == 6) {?>
-            </div>  
-                <div class="center" id="payment_details" style="width:100%;float: right;"></div>
-                <div><input type="button" value="Save" id="save_payment" /></div> 
-            </div>
-        <?php } ?>
-         -->
         </div><!--END of order_div-->
+
+          <div>
+            <table>
+                <tr>
+                     <?php foreach ($allImages as $key => $value) {
+                       
+                        ?>
+                        <td>
+                            <div style="position: relative; padding:0;"> 
+                                <span style="position:absolute;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?php echo $value['image_name']; ?>" image-id="<?php echo $value['id']; ?>"></span>
+                                <img id="" class="invoice-openImg order-images" src="<?php echo ROOT_URL.'/upload_photos/'.$value['image_name'];?>">
+                            </div>
+                        </td>
+                        
+                    <?php } ?>
+                </tr>
+                <tr>
+                    <td class="td_space">
+                        <img id="pre-image_photo5" class="pre-image_photo5 invoice-openImg" src="#" alt="your image" />
+                        <div class="cls-acecare-td-adjust">
+                            <label for="sortpicture5" >Upload</label>
+                            <input type="file" name="sortpic1[]" id="sortpicture5" class="disply_preview" data-ct="photo5">
+                        </div>
+                    </td>
+                    <td class="td_space">
+                         <img id="pre-image_photo2" class="pre-image_photo2 invoice-openImg" src="#" alt="your image" />
+                            <div class="cls-acecare-td-adjust">
+                                <label for="sortpicture2" >Upload</label>
+                                <input type="file" name="sortpic1[]" id="sortpicture2" class="disply_preview" data-ct="photo2">
+                            </div>
+                    </td>
+                    <td class="td_space">
+                         <img id="pre-image_photo3" class="pre-image_photo3 invoice-openImg" src="#" alt="your image" />
+                            <div class="cls-acecare-td-adjust">
+                                <label for="sortpicture3" >Upload</label>
+                                <input type="file" name="sortpic1[]" id="sortpicture3" class="disply_preview" data-ct="photo3">
+                            </div>
+                    </td>
+                    <td class="td_space">
+                         <img id="pre-image_photo4" class="pre-image_photo4 invoice-openImg" src="#" alt="your image" />
+                            <div class="cls-acecare-td-adjust">
+                                <label for="sortpicture4" >Upload</label>
+                                <input type="file" name="sortpic1[]" id="sortpicture4" class="disply_preview" data-ct="photo4">
+                            </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        
         <div class="order_div">
         <?php if($last_order['Order']['order_number'] != "") { ?>
         <?php echo $html->input('Order2/id', array('type'=>'hidden', 'value'=>$last_order['Order']['id'])); ?>        
@@ -652,7 +729,7 @@ function upload_photo(cur,i) {
         <?php } ?>
         </div><!--END of order_div-->
         
-        
+      
         <div class="next_div">
             <div>
                <!--  <a class="payBtn" style="text-decoration: navajowhite;font-size: 13px;" href="https://www.acecare.ca/pay-here?orderId=<?php echo base64_encode($job['Order']['id']); ?>" target="_balnk"> Pay Here </a> -->

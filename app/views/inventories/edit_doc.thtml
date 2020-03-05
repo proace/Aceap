@@ -828,22 +828,13 @@ function calculateTotalRefundRows() {
 	$('#refund_item_total').html('$'+grant_total);
 }
 function ShowSelectSupply(){
-	// var supply_id = window.showModalDialog("<?=BASE_URL?>/suppliers/index?mode=id",'', 
- //  	"dialogWidth:800px; dialogHeight:600px; dialogLeft:100px; dialogTop:50px;");
-
- 	var supply_id = window.open("<?=BASE_URL?>/suppliers/index?mode=id",'', "dialogWidth:800px; dialogHeight:600px; dialogLeft:100px; dialogTop:50px;");
- 	
- 	var timer = setInterval(function ()
-    {
-        if (supply_id.closed)
-        {
-            clearInterval(timer);
-            var returnValue = supply_id.returnValue;
-            $("#supplier").val(returnValue);
-			$("#supplier_text").html($("#supplier :selected").text());
-			//toggle_supplier_readonly();
-        }
-    }, 500);
+ 	var newwindow = window.open("<?=BASE_URL?>/suppliers/index?mode=select",'', "width=800,height=600,left=100,top=50");
+     newwindow.onbeforeunload = function () {
+        var supId = $("#OrderAppOrderedSupplierId").val();
+        $("#supplier").val(supId);
+        $("#supplier_text").html($("#supplier :selected").text());
+        $("#search_supplier").val('');
+    }
 }
 purchase_first_submit = false; // for making user verify fields before saving
 function ValidateFields()
@@ -1171,8 +1162,9 @@ $(function () {
 		                <?=$suppliers?>
                         <?php if(!$doc_id) { ?>
                         <input type="text" name="search_supplier" id="search_supplier">
-                        <i class="fa fa-users"  id='select_supplier' onclick="ShowSelectSupply();return false;"></i>
-						<!-- <button id='select_supplier' onclick="ShowSelectSupply();return false;">Choose</button> -->
+                        <input type="hidden" name="OrderAppOrderedSupplierId" id="OrderAppOrderedSupplierId">
+                        <!-- <i class="fa fa-users"  id='select_supplier' onclick="ShowSelectSupply();return false;"></i> -->
+						<button id='select_supplier' onclick="ShowSelectSupply();return false;">Choose</button>
 						<table id='ajax_supplier_results' class="supplier_result">
 							<thead>
 								<tr>
@@ -1392,7 +1384,7 @@ $(function () {
 							if (isset($can_save_purchase)){ $disabled = ''; }
 							echo '<td><input style="width:80px;" type="text" id="refund_item_quantity_'.$cur.'" item-id="'.$oi['item_id'].'" onkeyup="calculateRefundItem('.$cur.',\'quantity\');" class="refund_quantity '.$cur.'" name="data[items][' .$cur .'][refund_quantity]" value="'.$oi['refund_quantity'].'" '. $disabled .'/></td>';
 							if (isset($can_save_purchase)){ $disabled = 'disabled="true"'; }
-							echo '<td><input style="width:80px" id="refund_item_prize_'.$cur.'" type="text" name="data[items][' .$cur .'][price]" value="'.$oi['regular_price'].'" '. $disabled .'/></td>';
+							echo '<td><input style="width:80px" id="refund_item_prize_'.$cur.'" type="text" name="data[items][' .$cur .'][price]" value="'.$oi['regular_price'].'" onkeyup="calculateRefundItem('.$cur.',\'quantity\');" /></td>';
 							
 							if (isset($can_save_purchase)){ $disabled = 'disabled="true"'; }
 							echo '<td><input id="data_refund_items_subtotal_'.$cur.'" style="width:80px" type="text" value="'.($oi['qty'] - $quantityData[$oi['item_id']]) * $oi['regular_price'].'" '. $disabled .'/></td>';
