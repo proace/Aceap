@@ -24,6 +24,7 @@ class User extends AppModel
                                      'finderQuery'  => '',
                                      'deleteQuery'  => '',
                                )
+                               
                                );
 	
 	var $hasOne = array('UserRole' => array('className' 	=> 'userrole',
@@ -33,6 +34,12 @@ class User extends AppModel
 		                                     		'foreignKey'   	=> 'user_id'
 		                  											)
 		                  );
+
+    var $hasMany = array(   'TechQualification' => array( 'className'     => 'TechQualification',
+                                                    'order'     => 'id ASC',
+                                                    'foreignKey'    => 'tech_id'
+                        )
+                );
 						  
   	// Method creates a log record for the coming change of data
 	// Created: Anthony Chernikov, 06/08/2010

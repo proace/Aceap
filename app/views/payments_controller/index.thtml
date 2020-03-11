@@ -17,7 +17,6 @@
         var id = $(this).attr("orderId");
         var imgPath = $(this).attr("image-name");
         var imageNo = $(this).attr("image-nu");
-        console.log("imageno=", imageNo);
         $.ajax({
         url: '<?=BASE_URL?>/orders/removePaymentImage',
         dataType: 'html',

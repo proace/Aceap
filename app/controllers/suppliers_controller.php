@@ -197,6 +197,7 @@ class SuppliersController extends AppController
 		$sRes = '<table class="sup_branch">';
 		
 		$sRes .= '<tr>
+		<th width="25" style="color: black"><i class="fa fa-trash" aria-hidden="true"></i>
 		<th>Id</th>
 		<th>Name</th>
 		<th>Phone</th>
@@ -206,6 +207,7 @@ class SuppliersController extends AppController
 		</tr>';
 		foreach ($branches as $key => $value) {
 			$sRes .= '<tr onclick="ClickRow(this)" style="cursor:pointer;">';
+			$sRes .= '<td><a href="'.BASE_URL.'/suppliers/deleteSupplierBranch?branch_id='.$value['Supplier']['id'].'"><i class="fa fa-trash" aria-hidden="true"></a></td>';
 			$sRes .= '<td><a href="'.BASE_URL.'/suppliers/editSupplierBranch?branch_id='.$value['Supplier']['id'].'">'.$value['Supplier']['id'].'</a></td>';
 			$sRes .= '<td>'.$value['Supplier']['name'].'</td>';
 			$sRes .= '<td>'.$value['Supplier']['phone'].'</td>';
@@ -267,6 +269,27 @@ class SuppliersController extends AppController
 
 	}
 
+	/*Loki: delete main suplier*/
+
+	function deleteMainSupplier()
+	{
+		$supplierId = $_GET['sup_id'];
+		$this->MainSupplier->id = $supplierId;
+		$this->MainSupplier->delete();
+		$this->redirect('/suppliers/index');
+	}
+
+
+	/*Loki: delete main suplier*/
+
+	function deleteSupplierBranch()
+	{
+		$supplierId = $_GET['branch_id'];
+		$this->Supplier->id = $supplierId;
+		$this->Supplier->delete();
+		$this->redirect('/suppliers/index');
+	}
+	
 }
 
 ?>

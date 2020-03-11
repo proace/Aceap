@@ -1581,18 +1581,16 @@ function upload_photo(cur,i) {
     reader.readAsDataURL(cur.files[0]);
   }
 }
-function upload_photo_pdf(cur) {  
+function upload_photo_pdf(cur, cur1) {  
     //var file = $('input[id="sortpicture'+i+'"]')[0];
     if (cur.files && cur.files[0]) {
     var reader = new FileReader();
     reader.onload = function (e) {
         var base64Value = e.target.result;
         var newBase64Value = base64Value.replace('data:application/wps-office.pdf', 'data:application/pdf');
-        $('#pre-image-pdf')
-        .attr('data-doc_lnk', newBase64Value)
-        .width(86)
+        $("#pre-image-pdf",cur1.parent().parent()).attr('data-doc_lnk', newBase64Value).width(86)
         .height(50);
-        $('#pre-image-pdf').css("display","block");
+        $("#pre-image-pdf",cur1.parent().parent()).css("display","block");
     };
     reader.readAsDataURL(cur.files[0]);
   }
@@ -1885,7 +1883,8 @@ $(document).ready(function(){
         xhr.open('POST', "<?=BASE_URL;?>/customers/saveImages", true);
         xhr.onload = function () {
           if (xhr.status === 200) {
-            $("#trigger1").click();
+            window.location.reload();
+            // $("#trigger1").click();
           } else {
             alert('Something went wrong uploading the file.');
           }
@@ -2345,7 +2344,7 @@ $(document).ready(function(){
 
     $(".disply_preview_image").live("change",function(e){
         var cur = $(this);
-       upload_photo_pdf(cur[0]);
+       upload_photo_pdf(cur[0], cur);
     });
 
 	//$('input:text').setMask();
@@ -4610,8 +4609,12 @@ function get_data($url)
             ?>
             <td>
                 <div style="position: relative; padding:0;"> 
-                    <span style="position:absolute;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?php echo $value['image_name']; ?>" image-id="<?php echo $value['id']; ?>"></span>
-                    <img id="" class="invoice-openImg order-images" src="<?php echo ROOT_URL.'/upload_photos/'.$value['image_name'];?>">
+                   
+                     <span style="position:absolute;"><img style="height: 15px;width: 12px;" class="delete-invoice-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?=$value['image_name'];?>"></span>
+                      <img class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="<?php echo '/acesys/upload_photos/'.$value['image_name'];?>" style="height: 70px;width: 70px;"  >
+
+                    <!-- <span style="position:absolute;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?php echo $value['image_name']; ?>" image-id="<?php echo $value['id']; ?>"></span>
+                    <img id="" class="invoice-openImg order-images" src="<?php echo ROOT_URL.'/upload_photos/'.$value['image_name'];?>"> -->
                 </div>
             </td>
             
@@ -4622,31 +4625,36 @@ function get_data($url)
         </tr>
         <tr>
             <td>
-                 <img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
+                  <img id="pre-image-pdf" class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="" alt="your image" style="display: none;"/>
                     <div class="cls-acecare-td-adjust">
                         <label for="sortpicture1" >Upload</label>
-                        <input type="file" name="sortpic1[]" id="sortpicture1" class="disply_preview" data-ct="photo1">
+                        <input type="file" name="sortpic1[]" id="sortpicture1" class="disply_preview_image" data-ct="photo1">
                     </div>
+                 <!-- <img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" /> -->
+                    <!-- <div class="cls-acecare-td-adjust">
+                        <label for="sortpicture1" >Upload</label>
+                        <input type="file" name="sortpic1[]" id="sortpicture1" class="disply_preview_image" data-ct="photo1">
+                    </div> -->
             </td>
             <td>
-                 <img id="pre-image_photo2" class="pre-image_photo2 invoice-openImg" src="#" alt="your image" />
+                <img id="pre-image-pdf" class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="" alt="your image" style="display: none;"/>
                     <div class="cls-acecare-td-adjust">
                         <label for="sortpicture2" >Upload</label>
-                        <input type="file" name="sortpic1[]" id="sortpicture2" class="disply_preview" data-ct="photo2">
+                        <input type="file" name="sortpic1[]" id="sortpicture2" class="disply_preview_image" data-ct="photo2">
                     </div>
             </td>
             <td>
-                 <img id="pre-image_photo3" class="pre-image_photo3 invoice-openImg" src="#" alt="your image" />
+                 <img id="pre-image-pdf" class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="" alt="your image" style="display: none;"/>
                     <div class="cls-acecare-td-adjust">
                         <label for="sortpicture3" >Upload</label>
-                        <input type="file" name="sortpic1[]" id="sortpicture3" class="disply_preview" data-ct="photo3">
+                        <input type="file" name="sortpic1[]" id="sortpicture3" class="disply_preview_image" data-ct="photo3">
                     </div>
             </td>
             <td>
-                 <img id="pre-image_photo4" class="pre-image_photo4 invoice-openImg" src="#" alt="your image" />
+                <img id="pre-image-pdf" class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="" alt="your image" style="display: none;"/>
                     <div class="cls-acecare-td-adjust">
                         <label for="sortpicture4" >Upload</label>
-                        <input type="file" name="sortpic1[]" id="sortpicture4" class="disply_preview" data-ct="photo4">
+                        <input type="file" name="sortpic1[]" id="sortpicture4" class="disply_preview_image" data-ct="photo4">
                     </div>
             </td>
         </tr>

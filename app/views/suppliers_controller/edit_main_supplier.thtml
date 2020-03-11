@@ -30,7 +30,9 @@ $(document).ready(function(){
 .inResultsBooking{
     width: 98%;
 }
-
+.inResultsBooking th{
+    background: #FFFF99;
+}
 </style>
 
 <form name="editSupplierForm" action="<?=BASE_URL;?>/suppliers/saveMainSupplier" method="post">

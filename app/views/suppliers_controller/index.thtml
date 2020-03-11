@@ -2,6 +2,7 @@
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.2.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.quicksearch.js"></script>
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
 
 <script>
 var cur = '';
@@ -45,6 +46,9 @@ $(function () {
 });
 </script>
 <style>
+.fa-trash {
+    font-size: 15px;
+}
 #return {
 	display:block;
 	color:#ff6633;
@@ -67,7 +71,9 @@ $(function () {
 .sup_branch th, 
 .sup_branch td {
   border: 1px solid black;
+    border-collapse: collapse;
 }
+
 </style>
 <?php if($ismobile == 1) { ?>
 	<a href="<?php echo BASE_URL ?>/pages/mobileMenu" id="return">Back to Main</a>
@@ -104,7 +110,8 @@ $(function () {
 
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
     <tr>
-        <th width="25" style="background-color:#CCCCCC;border-style: none;"><b><u>ID</b></u></td>
+        <th width="25" style="color: black"><i class="fa fa-trash" aria-hidden="true"></i></td>
+        <th width="25"><b><u>ID</b></u></td>
         <th width="200"><a href="javascript:setOrder('name');">Name</a></th>
         <th width="200"><a href="javascript:setOrder('equipment');">Equipment</a></th>
         <th width="200"><a href="javascript:setOrder('notes');">Notes</a></th>
@@ -119,10 +126,11 @@ $(function () {
     	onclick="showBranches(<?=$obj['id']?>, '#details<?=$obj['id']?>')" 
         <?php } ?>
         style="cursor:pointer;">
-			<td class="firstcol" style="background-color:#CCCCCC;border-style: none;"><a href="<?=BASE_URL?>/suppliers/editMainSupplier?sup_id=<?=$obj['id']?>"><?=$obj['id']?></a></td>
-			<td>&nbsp;<?php echo $obj['name']; ?></td>
-            <td>&nbsp;<?php echo $obj['equipment']; ?></td>
-			<td>&nbsp;<?php echo $obj['notes']; ?></td>
+        <td><a href="<?=BASE_URL?>/suppliers/deleteMainSupplier?sup_id=<?=$obj['id']?>"><i class="fa fa-trash" aria-hidden="true"></i></a></td>
+		<td ><a href="<?=BASE_URL?>/suppliers/editMainSupplier?sup_id=<?=$obj['id']?>"><?=$obj['id']?></a></td>
+		<td>&nbsp;<?php echo $obj['name']; ?></td>
+        <td>&nbsp;<?php echo $obj['equipment']; ?></td>
+		<td>&nbsp;<?php echo $obj['notes']; ?></td>
     </tr>
     <tr class="details" style="display:none;"><td colspan=12 id="details<?=$obj['id']?>"></td></tr>
     <?php endforeach; ?>

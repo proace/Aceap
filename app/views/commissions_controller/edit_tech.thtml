@@ -88,6 +88,9 @@
 </script>
 
 <style type="text/css">
+.frame-wrap{
+    width: 100%;
+}
 	.inactive{
 		color: #c8c8c8 !important;
 		cursor:default !important;
@@ -109,6 +112,7 @@
 	.results, .results td{
 		border-style: solid;
 		border-width:1px;
+        padding-top: 10px;
 	}
 	.calendar {
     width:50px;
@@ -131,6 +135,7 @@
 	top:-10px;
 	font-size:140%;
 }
+
 </style>
 <?php if($ismobile == 1) { ?>
 	<a href="<?php echo BASE_URL ?>/pages/mobileMenu" id="return">Back to Main</a>
@@ -180,7 +185,7 @@
         <div class="frame-header-left"></div>
         <div class="frame-header-title">Tech's information</div>
         <div class="frame-header-right"></div>
-        <div class="frame-body" style="clear: both;">
+        <div class="frame-body" style="clear: both; width: 96%;">
             <table>
                 <tr>
                     <td align="right">First Name:</td>
@@ -216,6 +221,84 @@
                     <td><input type="text" name='data[User][password]' value="<?=$user_details['User']['password']?>" style="width: 140px;" /></td>
 					<?php endif; ?>
 				</tr>
+                 <tr>
+                    <td align="right">Starting Date</td>
+                    <td>
+                        <!-- <input type="text" name='data[User][start_date]' value="<?=$user_details['User']['start_date']?>" style="width: 140px;" /> -->
+                        <input class="emboss" type="text" name="data[User][start_date]" style="width: 85px; cursor: hand; cursor: pointer;" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$user_details['User']['start_date']?>">
+                    </td>
+                  
+                    <td align="right">License:</td>
+                    <td><input type="text" name='data[User][license]' value="<?=$user_details['User']['license']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Bank Name</td>
+                    <td><input type="text" name='data[User][bank_name]' value="<?=$user_details['User']['bank_name']?>" style="width: 140px;" /></td>
+                  
+                    <td align="right">Bank Branch:</td>
+                    <td><input type="text" name='data[User][bank_branch]' value="<?=$user_details['User']['bank_branch']?>" style="width: 140px;" /></td>
+                </tr>
+                 <tr>
+                    <td align="right">Contract Exp Date</td>
+                    <td colspan="3">
+                        <!-- <input type="text" name='data[User][end_date]' value="<?=$user_details['User']['end_date']?>" style="width: 140px;" /> -->
+                        <input class="emboss" type="text" name="data[User][end_date]" style="width: 85px; cursor: hand; cursor: pointer;" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$user_details['User']['end_date']?>">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <table id="tech_qua">
+                        <tr>
+                            <th>Qualification</th>
+                            <th>Service</th>
+                            <th>Repair</th>
+                            <th>Installation</th>
+                        </tr>
+                        <tr>
+                            <td><b>Ac</b><input type="hidden" name="qa[1][id]" value="1"></td>
+                            <td><input type="text" name="qa[1][service]" value="<?=$user_details['TechQualification'][0]['service']?>"></td>
+                            <td><input type="text" name="qa[1][repair]" value="<?=$user_details['TechQualification'][0]['repair']?>"></td>
+                            <td><input type="text" name="qa[1][installation]" value="<?=$user_details['TechQualification'][0]['installation']?>"></td>
+                        </tr>
+                         <tr>
+                            <td><b>Boiler</b><input type="hidden" name="qa[2][id]" value="2"></td>
+                            <td><input type="text" name="qa[2][service]" value="<?=$user_details['TechQualification'][1]['service']?>"></td>
+                            <td><input type="text" name="qa[2][repair]" value="<?=$user_details['TechQualification'][1]['repair']?>"></td>
+                            <td><input type="text" name="qa[2][installation]" value="<?=$user_details['TechQualification'][1]['installation']?>"></td>
+                        </tr> 
+                        <tr>
+                            <td><b>Furnace</b><input type="hidden" name="qa[3][id]" value="3"></td>
+                            <td><input type="text" name="qa[3][service]" value="<?=$user_details['TechQualification'][2]['service']?>"></td>
+                            <td><input type="text" name="qa[3][repair]" value="<?=$user_details['TechQualification'][2]['repair']?>"></td>
+                            <td><input type="text" name="qa[3][installation]" value="<?=$user_details['TechQualification'][2]['installation']?>"></td>
+                        </tr> 
+                        <tr>
+                            <td><b>Hot Water Tank</b><input type="hidden" name="qa[4][id]" value="4"></td>
+                            <td><input type="text" name="qa[4][service]" value="<?=$user_details['TechQualification'][3]['service']?>"></td>
+                            <td><input type="text" name="qa[4][repair]" value="<?=$user_details['TechQualification'][3]['repair']?>"></td>
+                            <td><input type="text" name="qa[4][installation]" value="<?=$user_details['TechQualification'][3]['installation']?>"></td>
+                        </tr> 
+                        <tr>
+                            <td><b>Tankless</b><input type="hidden" name="qa[5][id]" value="5"></td>
+                            <td><input type="text" name="qa[5][service]" value="<?=$user_details['TechQualification'][4]['service']?>"></td>
+                            <td><input type="text" name="qa[5][repair]" value="<?=$user_details['TechQualification'][4]['repair']?>"></td>
+                            <td><input type="text" name="qa[5][installation]" value="<?=$user_details['TechQualification'][4]['installation']?>"></td>
+                        </tr> 
+                        <tr>
+                            <td><b>Fireplace</b><input type="hidden" name="qa[6][id]" value="6"></td>
+                            <td><input type="text" name="qa[6][service]" value="<?=$user_details['TechQualification'][5]['service']?>"></td>
+                            <td><input type="text" name="qa[6][repair]" value="<?=$user_details['TechQualification'][5]['repair']?>"></td>
+                            <td><input type="text" name="qa[6][installation]" value="<?=$user_details['TechQualification'][5]['installation']?>"></td>
+                        </tr>
+                        <tr>
+                            <td><b>Air Duct Cleaning</b><input type="hidden" name="qa[7][id]" value="7"></td>
+                            <td><input type="text" name="qa[7][service]" value="<?=$user_details['TechQualification'][6]['service']?>"></td>
+                            <td><input type="text" name="qa[7][repair]" value="<?=$user_details['TechQualification'][6]['repair']?>"></td>
+                            <td><input type="text" name="qa[7][installation]" value="<?=$user_details['TechQualification'][6]['installation']?>"></td>
+                        </tr>
+                    </table>
+                    </td>
+                </tr>
 				<?php //Ali, Sanaz, Maria Flor, Anthony
 					if (!$method): 
 				?>
@@ -224,6 +307,8 @@
 				</tr>
 				<?php endif; ?>
 			</table>
+
+            
         </div>
     </div>
     <div id="tab2" class="frame-wrap"  <? if (($_GET['view']==1)||($_GET['view']==2)) echo 'style="display:none"';?>>
@@ -239,7 +324,7 @@
 							<th rowspan=2>&nbsp;</th>
 							<th rowspan=2 class="Commission" width="70" style="background-color:#80ff80;">Booking comm</th>
 							<th rowspan=2 class="Commission" width="70" style="background-color:#c0c0c0;">Time comm</th>
-							<th rowspan=2 class="FixedRates" style="background-color:#80ff80;">Fixed rates</th>
+							<th rowspan=2 class="FixedRates" style="background-color:#80ff80;">Commission on installation Labour</th>
 							<th rowspan=2 style="background-color:#53ffff;">Upsales<br/>commission</th>
 							<th colspan=2 style="background-color:#53ffff;">Source commission</th>
 							<th rowspan=2 class="Commission" style="background-color:#c0c0c0;">Per Job</th>
@@ -249,7 +334,7 @@
 						</tr>
 						<tr>
 							<th width="70" style="background-color:#53ffff;">jobs</th>
-							<th style="background-color:#53ffff;">appliances</th>
+							<th style="background-color:#53ffff;">Commission on applaince Labour</th>
 						</tr>
 						<?php
 						$var = 'alone'; $txt= 'Alone';
@@ -259,7 +344,8 @@
 							<td>&nbsp;<b><?=$txt?></b>&nbsp;</td>
 							<td class="Commission"><input type="text" <?=$access_method?> name="data[Rates][1][<?=$x?>][0]" style="width:50px;" value="<?=$comm_records['Booking'][$var]?>"/>%</td>
 							<td class="Commission">$<input type="text" <?=$access_method?> name="data[Rates][5][<?=$x?>][0]" style="width:50px;" value="<?=$comm_records['Time'][$var]?>"/></td>
-							<td class="FixedRates">
+						<!-- loki commnetd -->
+                        <!-- 	<td class="FixedRates">
 								<table class="results" style="border-style:none" cellspacing=0>
 									<?php foreach ($job_types as $job_type_id => $job_type): ?>
 									<tr>
@@ -270,10 +356,14 @@
 									</tr>
 									<?php endforeach; ?>
 								</table>
-							</td>
+							</td> -->
+                            <td class="FixedRates">
+                                $<input type="text" <?=$access_method?> name="data[comm][6][<?=$x?>][39]" style="width:50px" value="<?=$comm_records['Fixed'][$var][39]?>"/>%
+                            </td>
 							<td><input type="text" <?=$access_method?> name="data[Rates][2][<?=$x?>][0]" style="width:50px" value="<?=$comm_records['Sales'][$var]?>"/>%</td>
 							<td><input type="text" <?=$access_method?> name="data[Rates][7][<?=$x?>][0]" style="width:50px" value="<?=$comm_records['Source'][$var]?>"/>%</td>
-							<td>
+							<!-- loki commnetd -->
+                            <!-- <td>
 								<table style="border-style:none" cellspacing=0>
 									<?php foreach ($job_types as $job_type_id => $job_type): ?>
 									<tr>
@@ -285,7 +375,12 @@
 									<?php endforeach; ?>
 								</table>
 							</td>
-							<td class="Commission">$<input type="text" <?=$access_method?> name="data[Rates][8][<?=$x?>][0]" style="width:50px;" value="<?=$comm_records['PerJob'][$var]?>"/></td>
+							 -->
+                             <td>
+                                 <input type="text" <?=$access_method?> name="data[comm][3][<?=$x?>][39]" style="width:50px" value="<?=$comm_records['Appliance'][$var][39]?>"/>%
+                            </td>
+                            
+                             <td class="Commission">$<input type="text" <?=$access_method?> name="data[Rates][8][<?=$x?>][0]" style="width:50px;" value="<?=$comm_records['PerJob'][$var]?>"/></td>
 							<td class="Commission">$<input type="text" <?=$access_method?> name="data[Rates][9][<?=$x?>][0]" style="width:50px;" value="<?=$comm_records['Driving'][$var]?>"/></td>
                             <td class="Commission">$<input type="text" <?=$access_method?> name="data[Rates][4][<?=$x?>][0]" style="width:50px;" value="<?=$comm_records['Redo'][$var]?>"/></td>
                             <td class="Commission">$<input type="text" <?=$access_method?> name="data[Rates][10][<?=$x?>][0]" style="width:50px;" value="<?=$comm_records['RedoPenalty'][$var]?>"/></td>

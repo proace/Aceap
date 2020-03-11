@@ -8,7 +8,7 @@ class CommissionsController extends AppController
 
 	var $name = "CommissionsController";
 
-	var $uses = array('Commission', 'User', 'Order');
+	var $uses = array('Commission', 'User', 'Order','TechQualification');
 
 	var $helpers = array('Common');
 
@@ -24,14 +24,16 @@ class CommissionsController extends AppController
 	function editTech($user_id = null)
 
 	{
-
 		$this->layout = "edit";
 
 		if (!empty($this->data))
 
 		{
+			// $this->Common->printData($this->data);
 
 			$user_id = $_POST['userid'];
+
+			$categories = $this->Lists->ListTable('ace_rp_order_types','category_id=2 and show_tech_commission = 1');
 
 			$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
 
@@ -52,12 +54,24 @@ class CommissionsController extends AppController
 											VALUES ('".$user_id."','".$com_type."','".$partner_type."','".$category."','".$rate."')");
 
 			
+			foreach($this->data['comm'] as $com_type => $val1)
+			{
+				foreach($val1 as $partner_type => $val2)
+				{
+					foreach ($categories as $key => $value) {
+						$db->_execute("INSERT INTO ace_rp_commissions (user_id, commission_type_id, partner_role_id, category_id, commission) VALUES ('".$user_id."','".$com_type."','".$partner_type."','".$key."','".$val2[39]."')");
+					}
+				}
+			}
 
 			if ($user_id>=0)
 
 			{
 
 				if ($user_id>0) $this->User->id = $user_id;
+
+				$this->data['User']['start_date'] = date('Y-m-d',strtotime($this->data['User']['start_date']));
+				$this->data['User']['end_date'] = date('Y-m-d',strtotime($this->data['User']['end_date']));
 
 				$this->User->save($this->data);
 
@@ -75,8 +89,14 @@ class CommissionsController extends AppController
 
 			}
 
- 			
-
+ 			if(!empty($_POST['qa']))
+ 			{
+ 				foreach ($_POST['qa'] as $key => $value) {
+ 					$value['tech_id'] = $user_id;
+ 					$value['qualification_id'] = $value['id'];
+ 					$this->TechQualification->save($value);
+ 				}
+ 			}
 			if ($this->data['rurl'][0])
 
 				$this->redirect($this->data['rurl'][0]);
@@ -87,8 +107,6 @@ class CommissionsController extends AppController
 
 		}
 
-		
-
 		if($user_id > 0)
 
 		{
@@ -97,10 +115,19 @@ class CommissionsController extends AppController
 
 			$user_details = $this->User->read();
 
+		 if (empty($user_details['User']['end_date']) || $user_details['User']['end_date'] == "0000-00-00")
+                $user_details['User']['end_date'] = date('d M Y');
+            else
+                $user_details['User']['end_date'] = date('d M Y', strtotime($user_details['User']['end_date']));
+
+            if (empty($user_details['User']['start_date']) || $user_details['User']['start_date'] == "0000-00-00")
+                $user_details['User']['start_date'] = date('d M Y');
+            else
+                $user_details['User']['start_date'] = date('d M Y', strtotime($user_details['User']['start_date']));
 		}
 
 		
-
+		// $this->Common->printData($user_details);
 		//Default user - view only
 
 		$access_method = 'disabled';
@@ -116,8 +143,6 @@ class CommissionsController extends AppController
 		  )
 
 			$access_method = '';
-
-								
 
 		//Set variables for the page
 
@@ -177,7 +202,6 @@ class CommissionsController extends AppController
 
 			$user_commissions = array();
 
-		
 
 		while ($row = mysql_fetch_array($result, MYSQL_ASSOC))
 
@@ -193,23 +217,20 @@ class CommissionsController extends AppController
 
 				$partner = 'alone';
 
-			
-
 			//Appliances sales and Fixed rate installer's commissions are also divided by job type
 
 			if (($row['commission_type_id']==3)||($row['commission_type_id']==6))
-
+			{
 				$user_commissions[$comm_types[$row['commission_type_id']]][$partner][$row['category_id']] = floatval($row['commission']);
-
-
-
-			else
-
+			}
+			else{
 				$user_commissions[$comm_types[$row['commission_type_id']]][$partner] = floatval($row['commission']);
+			}
+
 
 		}
 
-		
+		// $this->Common->printData($user_commissions);
 
 		return $user_commissions;
 
@@ -228,7 +249,6 @@ class CommissionsController extends AppController
 
 		$tech_comm_confirm = array();
 
-		
 
 		// Techs' commission methods
 
@@ -236,7 +256,6 @@ class CommissionsController extends AppController
 
 		if (!$order['t2_method']) $order['t2_method']=$order['t2_commission_type'];
 
-		
 
 		// For the job commission: if both technitians were set for this job   
 
@@ -419,6 +438,8 @@ class CommissionsController extends AppController
 
 					sum(if(i.iv_type_id = 1,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) sell_appl,
 
+					sum(if(i.iv_category_id = 37,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) labour_install,
+
 					oi.class sale_class
 
 				from ace_rp_order_items oi
@@ -446,12 +467,20 @@ class CommissionsController extends AppController
 				   and oi.order_id=" .$order['id'] ."
 
 			   group by oi.class";
-
 		// Edited by Maxim Kudryavtsev - exclude membership cards from commisions	
 
-		$query_items = "select sum(if(i.iv_type_id != 1,(oi.price-oi.price_purchase)*oi.quantity-oi.discount+oi.addition,0)) sell_service,sum(if(i.iv_type_id = 1,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) sell_appl,			
-				oi.class sale_class	from ace_rp_order_items oi left join ace_iv_items i on oi.item_id = i.id where oi.order_id=" .$order['id'] ." group by oi.class;";
+		/*local labour category = 38, live = 37*/
+		$query_items = "select sum(if(i.iv_type_id != 1,(oi.price-oi.price_purchase)*oi.quantity-oi.discount+oi.addition,0)) sell_service,
+			
+			sum(if(i.iv_type_id = 1,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) sell_appl,	
+			sum(if(i.iv_category_id = 37,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) labour_install,
+			oi.class sale_class	
+			from ace_rp_order_items oi left join ace_iv_items i on oi.item_id = i.id 
+			where oi.order_id=" .$order['id'] ." 
+			group by oi.class;";
 		}
+
+		
 		// /Edited by Maxim Kudryavtsev - exclude membership cards from commisions
 
 
@@ -467,12 +496,12 @@ class CommissionsController extends AppController
 			$order['job'][$row_items['sale_class']]=$row_items['sell_service'];
 
 			$order['appl'][$row_items['sale_class']]=$row_items['sell_appl'];
+			
+			$order['install_labour'][$row_items['sale_class']]=$row_items['labour_install'];
 
 			$order['total'][$row_items['sale_class']]=$row_items['sell_service']+$row_items['sell_appl'];
 
-		}
-
-		
+		}		
 
 		$num_of_sources = 1;
 
@@ -483,6 +512,7 @@ class CommissionsController extends AppController
 		if ($rows_persons[1]['id']&&$rows_persons[2]['id']) $num_of_techs = 2;
 
 
+		// $this->Common->printData($rows_persons);
 
 		//Calculate technicians' commissions for doing this job 
 
@@ -512,8 +542,6 @@ class CommissionsController extends AppController
 
 			$sale_class = $rows_persons[$x]['sale_class'];
 
-			
-
 			//Upsales 
 
 			// For the helper 10+10 the percent should be always 10
@@ -533,7 +561,6 @@ class CommissionsController extends AppController
 				//Sources will be given less percent for extra sales, than technicians.
 
 				if ($sale_class==0)
-
 					//For redo jobs sources are not applicable
 
 					if ($order['order_type_id']==9) $prc = 0;
@@ -548,7 +575,6 @@ class CommissionsController extends AppController
 
 			$rows_persons[$x]['sales_job_prc'] = $prc;
 
-		
 
 			// For the helper 10+10 the percent for appliences should be always 2
 
@@ -605,11 +631,11 @@ class CommissionsController extends AppController
 				elseif ($rows_persons[$x]['commission_type']==2) 
 
 				{
-
 					$prc = $comm_settings[$rows_persons[$x]['id']]['Fixed'][$rows_persons[$x]['prc_type']][$order['order_type_id']];
 
-					$rows_persons[$x]['booking_comm'] = $prc;
-
+					// $rows_persons[$x]['booking_comm'] = $prc;
+					$rows_persons[$x]['booking_comm'] = ($order['install_labour'][0] + $order['install_labour'][1]) * ($prc/100);
+					$order['total'][0] =  $order['install_labour'][0] + $order['install_labour'][1];
 				}
 
 				// 3. Tech paid per job
@@ -696,7 +722,6 @@ class CommissionsController extends AppController
 
 			}
 
-			
 
 			$rows_persons[$x]['total_comm'] +=$rows_persons[$x]['booking_comm']
 
@@ -1133,7 +1158,6 @@ class CommissionsController extends AppController
 				ORDER BY a.job_date desc 
 				$sqlPaging";
 
-	 //	print_r($query); die;
 			$result = $db->_execute($query);
 			$tech_comm_conf = array();
 			while($row = mysql_fetch_array($result, MYSQL_ASSOC))
@@ -1190,7 +1214,9 @@ class CommissionsController extends AppController
 
 				//COMMISSIONS CALCULATION
 
+
 				$all_data = $this->_calculate(&$orders[$row['id']], &$comm_settings);
+
 				$rows_persons = $all_data[0];
 				$tech_comm_conf[$row['id']] = $all_data[1];
 				$getInvoices = $this->getOrderInvoices($row['id']);
