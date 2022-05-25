@@ -1,4 +1,14 @@
 <?
+
+if($_COOKIE['acecare'])
+{
+	$id = session_regenerate_id();
+	$new_sessionid = session_id();
+	$db =& ConnectionManager::getDataSource('default');
+    $query1 = "UPDATE ace_rp_users set session_id = '".$new_sessionid."' where id =".$_COOKIE['acecare'];     
+    $result = $db->_execute($query1);
+}
+
 If( $this->params['controller'] != 'login' && $_SESSION['user']['id'] <= 0 && 
 	($this->params['controller'] != 'orders' && $this->params['action'] != 'requestAppointment') ) {  
 	$this->controller->redirect("login");

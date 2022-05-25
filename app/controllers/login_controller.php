@@ -2,14 +2,13 @@
 class LoginController extends AppController
 {
     var $name = 'Login';
-
     function index()
     {
 				$external_login = 0;
 				$logged_in = false;
 				$this->layout = "login";
 				$sessionId = session_id();
-
+				$_SESSION['sessionId'] = $sessionId;
 				if (isset($_GET['external_username']))
 				{
 						$this->data['Login']['username'] = $_GET['external_username'];
@@ -31,26 +30,28 @@ class LoginController extends AppController
 
 						} else {
 							if($this->data['Login']['password'] == 'puffthemagicdragon') {
-								$query = "SELECT a.id,a.show_board,a.active_commission, concat(a.first_name,' ',a.last_name) as name ,a.email,b.role_id as role_id, a.interface_id, c.style_sheet,a.vicidial_userid,
+								$query = "SELECT a.id,a.show_board,a.active_commission,a.show_estimate, concat(a.first_name,' ',a.last_name) as name ,a.email,b.role_id as role_id, a.interface_id, c.style_sheet,a.vicidial_userid,a.is_active,
 									CONCAT(HEX(a.id), HEX(a.username)) web_key, eprint_id
 									FROM ace_rp_users as a
 									INNER JOIN ace_rp_users_roles as b ON (a.id = b.user_id)
 									LEFT JOIN ace_rp_interface c ON a.interface_id = c.id
-									WHERE a.username like binary '".$this->data['Login']['username']."' and is_active=1 limit 1";
+									WHERE a.username like binary '".$this->data['Login']['username']."' and is_active !=0 limit 1";
 							} else {
-								$query = "SELECT a.id,a.show_board,a.active_commission, concat(a.first_name,' ',a.last_name) as name ,a.email,b.role_id as role_id, a.interface_id, c.style_sheet,a.vicidial_userid,
+								$query = "SELECT a.id,a.show_board,a.active_commission,a.show_estimate, concat(a.first_name,' ',a.last_name) as name ,a.email,b.role_id as role_id, a.interface_id, c.style_sheet,a.vicidial_userid,a.is_active,
 									CONCAT(HEX(a.id), HEX(a.username)) web_key, eprint_id
 									FROM ace_rp_users as a
 									INNER JOIN ace_rp_users_roles as b ON (a.id = b.user_id)
 									LEFT JOIN ace_rp_interface c ON a.interface_id = c.id
-									WHERE a.username = '".$this->data['Login']['username']."' and is_active=1 AND a.password = '".$this->data['Login']['password']."' limit 1";
+									WHERE a.username = '".$this->data['Login']['username']."' and is_active !=0 AND a.password = '".$this->data['Login']['password']."' limit 1";
 
 							}
 							$db =& ConnectionManager::getDataSource('default');
 							$result = $db->_execute($query);
 							if($row = mysql_fetch_array($result))
 							{
+								// error_reporting(E_ALL);
 									$userid = $row['id'];
+									
 									$_SESSION['user']['id'] = $row['id'];
 									$_SESSION['user']['name'] = $row['name'];
 									$_SESSION['user']['role_id'] = $row['role_id'];
@@ -58,17 +59,19 @@ class LoginController extends AppController
 									$_SESSION['user']['style_sheet'] = $row['style_sheet'];
 									$_SESSION['user']['web_key'] = $row['web_key'];
 									$_SESSION['user']['eprint_id'] = $row['eprint_id'];
+									$_SESSION['user']['show_estimate'] = $row['show_estimate'];
 									$_SESSION['user']['external'] = $external_login;
 									$_SESSION['user']['username_chat'] = $this->data['Login']['username'];
 									$_SESSION['user']['password_chat'] = $this->data['Login']['password'];
                                     $_SESSION['user']['email'] = $row['email'];
                                     $_SESSION['user']['vicidial_userid'] = $row['vicidial_userid'];
-                                     $_SESSION['user']['show_board'] = $row['show_board'];
-                                     $_SESSION['user']['tech_popup'] = 0;
-                                      $_SESSION['user']['open_chat'] = 1;
-                                      $_SESSION['user']['chat_open'] = 1;
-                                      $_SESSION['user']['old_chat_res'] = 0;
-                                       $_SESSION['user']['active_commission'] = $row['active_commission'];
+                                    $_SESSION['user']['show_board'] = $row['show_board'];
+                                    $_SESSION['user']['tech_popup'] = 0;
+                                    $_SESSION['user']['open_chat'] = 1;
+                                    $_SESSION['user']['chat_open'] = 1;
+                                    $_SESSION['user']['old_chat_res'] = 0;
+                                    $_SESSION['user']['active_commission'] = $row['active_commission'];
+
 									$this->_preloadValues();
 									$this->_preloadAccessRights($row['role_id']);
 									$IP = explode('.',getenv("REMOTE_ADDR"));
@@ -79,8 +82,10 @@ class LoginController extends AppController
 									//		$this->data['error'] = "You are not allowed to login remotely!";
 									//		$this->Session->write("message", "Remote login declined");
 									//} else
-											$logged_in = true;
-							}
+									$logged_in = true;
+									$_SESSION['user']['new_tech'] = $row['is_active'];
+											
+								}
 							else
 							{
 									$this->data['error'] = "Wrong username or password!";
@@ -131,6 +136,7 @@ class LoginController extends AppController
 					// to false.
 					if ($pos !== false) {
 						 $this->Session->write("ismobile", 1);
+						 setcookie('acecare',$_SESSION['user']['id'], time() + (86400 * 30), "/"); 
 					} else {
 						 $this->Session->write("ismobile", 0);
 					}
@@ -159,9 +165,14 @@ class LoginController extends AppController
 						$this->redirect("pages/main");
 					}
 
-                    if ($_SESSION['user']['role_id'] == 1) {
-                        $this->redirect("orders/invoiceTablet");
-                    }
+					if ($_SESSION['user']['role_id'] == 1) {
+						if($_SESSION['user']['new_tech'] == 2)
+						{
+							$this->redirect("users/inactiveTechDetails/".$_SESSION['user']['id']);
+						} else {
+                        	$this->redirect("orders/invoiceTablet");
+						}
+                    } 
 
 				}
 

@@ -1,0 +1,92 @@
+<style type="text/css">
+    body#page_index {
+        background-color:#ffffff !important;
+    }
+
+    .ui-widget-content {
+        border-color:#ffffff !important;
+    }
+
+</style>
+<li><?php //echo $criteria //for debugging ?>
+<div class="list_wrapper">
+
+    <span class="clear_this">&nbsp;</span>
+    </div>
+    <table class="list clear_this">
+        <tr>
+            <th></th>
+        	<th>SKU</th>
+            <th>Quantity</th>
+            <th>Name</th>                        
+            <th>Supplier Price</th>
+            <th>Selling Price</th>  
+            <th>Model</th>
+            <th>Efficiency</th>
+            <th>Brand</th>
+            <th>Supplier</th>
+            
+             <?php foreach ($inventoryTechnician as $tech => $value): ?>
+                <th><?php echo $value['short_name'] ?></th>
+            <?php endforeach ?>
+            <th>Description 1</th>
+            <th>Description 2</th>
+        </tr>
+        <?php $i = 0; ?>
+        <?php foreach($items as $item) { ?>
+        <tr class="<?php echo $i++%2==0?'odd':'even' ?> editable_item item"><input type="hidden" class="id" value="<?php echo $item['id'] ?>" />
+            <input type="hidden" class="item_active" value="<?php echo $item['active'] ?>" />
+            <input type="hidden" class="item_id" value="<?php echo $item['id'] ?>" />
+            <input type="hidden" class="item_sku" value="<?php echo $item['sku'] ?>" />
+            <input type="hidden" class="item_name" value="<?php echo $item['name'] ?>" />
+            <input type="hidden" class="item_model" value="<?php echo $item['model'] ?>" />
+            <input type="hidden" class="item_regular_price" value="<?php echo $item['regular_price'] ?>" />
+            <input type="hidden" class="item_selling_price" value="<?php echo $item['selling_price'] ?>" />
+            <input type="hidden" class="item_supplier_price" value="<?php echo $item['supplier_price'] ?>" />
+            <input type="hidden" class="item_efficiency" value="<?php echo $item['efficiency'] ?>" />
+            <input type="hidden" class="item_brand_id" value="<?php echo $item['brand_id'] ?>" />
+            <input type="hidden" class="item_supplier_id" value="<?php echo $item['supplier_id'] ?>" />
+            <input type="hidden" class="item_description1" value="<?php echo $item['description1'] ?>" />
+            <input type="hidden" class="item_description2" value="<?php echo $item['description2'] ?>" />
+            <input type="hidden" class="item_category_id" value="<?php echo $item['category_id'] ?>" />
+             <input type="hidden" class="item_sub_category_id" value="<?php echo $item['sub_category_id'] ?>" />
+             <input type="hidden" name="brandName" class="brand-name" value="<?=$item['brand_name']?>"/>
+            <input type="hidden" name="supplierName" class="supplier-name" value="<?=$item['supplier_name']?>"/>
+            <input type="hidden" name="categoryName" class="category-name" value="<?=$item['category_name']?>"/>
+             <input type="hidden" name="subCategoryName" class="sub-category-name" value="<?=$item['sub_category_name']?>"/>
+             <input type="hidden" name="markup_percent" class="markup_percent" value="<?=$item['markup_percent']?>"/>
+                 <input type="hidden" name="tech_percent" class="tech_percent" value="<?=$item['tech_percent']?>"/>
+            <td style="width: 33px;"><img style="height: 14px;width: 14px;" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" class="remove-dup-item" inactiveId = "<?=$item['inactiveId']?>" itemId="<?=$item['id']?>"><img src="<?=ROOT_URL?>/app/webroot/img/add.png" class="add-dup-item" itemId="<?=$item['id']?>"></td>
+            <td><?php echo $item['sku'] ?></td> 
+            <td><?php echo $item['default_quantity'] ?></td> 
+            <td><?php echo $item['name'] ?></td>                        
+            <td class="right "><?php echo $item['supplier_price'] ?></td>
+            <td class="right "><?php echo $item['selling_price'] ?></td>
+            <td><?php echo $item['model'] ?></td>
+            <td><?php echo $item['efficiency'] ?></td>
+            <td><?php echo $item['brand'] ?></td>
+            <td><?php echo $item['supplier'] ?></td>
+            
+             
+             <?php foreach ($inventoryTechnician as $tech => $value): ?>
+                <td class="right">
+                 <?php if(!empty($item['tech_data'])){?>
+                 <?php foreach ($item['tech_data'] as $tech1 => $value1): ?>
+                    <?php if($value['id'] == $value1['TechInventoryItem']['tech_id'] ) {?>
+                         <?php echo $value1['TechInventoryItem']['quantity'] ?>
+                    <?php } ?>
+                 <?php endforeach ?>
+             <?php } ?>
+            </td>
+            <?php endforeach ?>
+            <td><?php echo $item['description1'] ?></td>
+            <td><?php echo $item['description2'] ?></td>
+        </tr>
+        <?php } ?>
+    </table>    
+</div>
+<div class="clear_this">&nbsp;</div>
+</li>
+<pre>
+<?php //echo $query ?>
+</pre>

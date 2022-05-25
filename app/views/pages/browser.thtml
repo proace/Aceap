@@ -541,6 +541,12 @@
 	// }
 	function elementClick(el, job_date, job_id, userid, firstname, lastname, address_unit, address_street_number, address_street, city, postalcode, phone, cellphone, email, callback_date, lastcall_date, callresult, callback_note, telemarketer_id)
 	{
+		setTimeout(function(){ 
+
+			$('#main_view');
+		
+		
+		}, 3000);
 		$('.browser_item').css({'border-top':'none'}).css({'border-bottom':'1px solid #CCCCCC','background-color':''});
 		$('#listbox .dcell').css({'background-color':''});
 		$('.reminder_flag_class').css({'background-color':'#FFDDDD'});
@@ -549,9 +555,16 @@
 		el.css({'border-bottom':'2px solid #0000FF'}).css({'border-top':'2px solid #0000FF'});
 		el.addClass("active_user");
 		if (job_id)
-			parent.frames['main_view'].document.location.href='<?=BASE_URL;?>/orders/editBooking?order_id='+job_id;
+			<? if (($common->getLoggedUserRoleID()=="3")||($common->getLoggedUserRoleID()=="9")) { ?>
+						parent.frames['main_view'].document.location.href='<?=BASE_URL;?>/orders/editBooking?order_id='+job_id;
+                        <? }else{ ?>
+			
+		window.top.frames['main_view'].src='<?=BASE_URL;?>/orders/editBooking?order_id='+job_id;
+		
+			<? } ?>
 		else 
-		if ((parent.frames['main_view'].document.getElementById('OrderCustomerId')) && (parent.frames['main_view'].document.getElementById('OrderId').value == '') && (gup(parent.frames['main_view'].document.location.href, 'customer_id') == ''))
+		if (($('#main_view #OrderCustomerId')) && ($('#main_view #OrderId').val() == '')
+			&& (gup(parent.frames['main_view'].document.location.href, 'customer_id') == ''))
 		{
 			//Set values
 			parent.frames['main_view'].document.getElementById('OrderCustomerId').value = userid;
@@ -572,9 +585,10 @@
 		else
 		{
 			<? if (($common->getLoggedUserRoleID()=="3")||($common->getLoggedUserRoleID()=="9")) { ?>
-			parent.frames['main_view'].document.location.href='<?=BASE_URL;?>/orders/editBooking?hotlist=1&agent_select=1&customer_id='+userid;
-			<? }else{ ?>
-			parent.frames['main_view'].document.location.href='<?=BASE_URL;?>/orders/editBooking?hotlist=1&admin_select=1&customer_id='+userid;
+			parent.frames['main_view'].document.location.href='<?=BASE_URL;?>/orders/editBooking?hotlist=1&agent_select=1&customer_id='+userid;			
+						<? }else{ ?>
+			
+			window.top.frames['main_view'].src='<?=BASE_URL;?>/orders/editBooking?hotlist=1&admin_select=1&customer_id='+userid;
 			<? } ?>
 		}
 	}

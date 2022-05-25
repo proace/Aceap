@@ -16,6 +16,22 @@ class ListsComponent extends Object
         $this->controller->set('Lists', $this);
     }
 
+    function getTechPostal($RoleIDs)
+    {
+    	// error_reporting(E_ALL);
+    	$db =& ConnectionManager::getDataSource($this->controller->User->useDbConfig);
+    	$result = $db->_execute("
+				select a.id, a.postal_code
+				  from ace_rp_users as a, ace_rp_users_roles as b
+				 where a.id=b.user_id and b.role_id in (" .$RoleIDs .")
+				");
+				$Ret = array();
+				while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+						$Ret[$row['id']] = $row['postal_code'];
+				}
+
+				return $Ret;
+    }
 		// This is a list of all users that belong to one or several roles.
 		// $RoleIDs should be a single number for the single role or
 		// a string of comma-separated numbers for the plural roles
@@ -35,10 +51,46 @@ class ListsComponent extends Object
 				 order by name
 				");
 				
+			
 				$Ret = array();
 				while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
 						$Ret[$row['id']] = $row['name'];
 				}
+				
+				return $Ret;
+		}
+		// Loki: get technician for inventory
+		function inventoryTech($tech = 0)
+		{
+				$db =& ConnectionManager::getDataSource($this->controller->User->useDbConfig);
+				$condition = '';
+				if($tech > 0)
+				{
+					$condition = ' and a.id='.$tech;
+				}
+
+				 $a = "a.tech_inventory=1 and ";
+				
+				$result = $db->_execute("
+				select a.id, first_name, LEFT(first_name, 3) as short_name
+				  from ace_rp_users as a, ace_rp_users_roles as b
+				 where $a a.id=b.user_id and b.role_id = 1 ".$condition."
+				 order by first_name desc
+				");
+				
+				$Ret = array();
+				// $Ret[0]['id'] = 0;
+				// $Ret[0]['short_name'] = 'Whs';
+				//Loki: warehouse tech = 231433
+				while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+						// $Ret[$row['id']] = $row['short_name'];
+					$Ret[$row['id']]['id'] = $row['id'];
+					if($row['id'] == 231433){
+						$row['short_name'] = 'Whs';
+					}
+					$Ret[$row['id']]['short_name'] = $row['short_name'];
+				}
+				
 				
 				return $Ret;
 		}
@@ -624,6 +676,28 @@ class ListsComponent extends Object
 				return $Ret;
 		}
 		// Loki: Get sub categories on basis of category Id
+		function IvMidCategories($id = 0)
+		{
+			$condition = '';
+				if($id > 0)
+				{
+					$condition = " where category_id=".$id;
+				}
+				$db =& ConnectionManager::getDataSource("default");
+				
+				$result = $db->_execute("
+					SELECT *
+					FROM ace_iv_mid_categories".$condition);
+				
+				$Ret = array();
+				
+				while($row = mysql_fetch_array($result)) {
+					$Ret[$row['id']] = $row['name'];					
+				}
+				
+				return $Ret;
+		}
+		// Loki: Get sub categories on basis of category Id
 		function IvSubCategories($id)
 		{
 				$db =& ConnectionManager::getDataSource("default");
@@ -641,6 +715,24 @@ class ListsComponent extends Object
 				return $Ret;
 		}
 		
+			// Loki: Get sub categories on basis of category Id
+			function IvSubCategoryList()
+			{
+					$db =& ConnectionManager::getDataSource("default");
+					
+					$result = $db->_execute("
+						SELECT *
+						FROM  ace_iv_sub_categories");
+					
+					$Ret = array();
+					
+					while($row = mysql_fetch_array($result)) {
+						$Ret[$row['id']] = $row['name'];					
+					}
+					
+					return $Ret;
+			}
+
 		function EprintTerminals()
 		{
 				$db =& ConnectionManager::getDataSource("default");

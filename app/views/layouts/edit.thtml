@@ -1,6 +1,21 @@
 <?php
+
+
+// session_id($sessionId);  // $_POST['session_id'] = "4dkwkeiugraqhfpeq745l2c2a1";
+
+if($_COOKIE['acecare'])
+{
+	$id = session_regenerate_id();
+	$new_sessionid = session_id();
+	$db =& ConnectionManager::getDataSource('default');
+    $query1 = "UPDATE ace_rp_users set session_id = '".$new_sessionid."' where id =".$_COOKIE['acecare'];     
+    $result = $db->_execute($query1);
+}
+
+
 if ((isset($this->params['url']['logout'])) && ( $this->params['url']['logout'] == "1" ))
 {
+
 	unset($_SESSION['user']);
 	unset($_SESSION['menuWarehouse']);
 	unset($_SESSION['menuTech']);
@@ -11,10 +26,18 @@ if ((isset($this->params['url']['logout'])) && ( $this->params['url']['logout'] 
 
 	$this->controller->redirect("login");
 }
+// if(){
+// 	session_id($the_id_of_the_session_you_want_to_reopen);
+//    session_start();
+// }
 ?>
 
 <html>
 <head>
+<?php
+	$scw=ROOT_URL."/app/webroot/js/scw.js?v=".time();
+	
+	?>
 	<title>ACE</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 	
@@ -23,11 +46,17 @@ if ((isset($this->params['url']['logout'])) && ( $this->params['url']['logout'] 
 	<style type="text/css" media="all">
 	@import "<?=ROOT_URL;?>/app/webroot/css/style.css";
 	</style>
-	<script language="JavaScript" type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
+	<script language="JavaScript" type="text/javascript" src="<?= $scw;?>"></script>
 	<script language="JavaScript" type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
 	<!--[if lt IE 7.]>
 	<script defer type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/pngfix.js"></script>
 	<![endif]-->
+	<script type="text/javascript">
+		function loadBooking(orderId)
+		{
+    		document.location.href='<?=BASE_URL?>/orders/editBooking?order_id='+orderId+'&rurl=orders%2FscheduleView%3F';
+		}
+	</script>
 </head>
 <body>
 	<div class="wrapper">

@@ -34,10 +34,10 @@ table th {
 }
 .textus-MessageInputForm-submit {
     background-color: #8cc63f;
-    border-radius: 4px;
-    float: right;
+    border-radius: 10px;
+    margin-left:15px;
     height: 24px;
-    width: 28px !important;
+   font-size:12px;
     margin: 0;
     border: 0;
     padding: 0;
@@ -45,8 +45,9 @@ table th {
     display: inline-block;
     text-decoration: none;
     color: #fff;
-    margin: 1px auto;
-    font-size: 22px !important;
+    margin: 1px 8px;
+   padding:5px;
+   cursor:pointer;
 }
 .textus-ConversationListItem-preview {
     float: left;
@@ -71,10 +72,7 @@ table th {
    /* color: white;*/
     /*background: #29abe2;*/
 }
-.textus-ConversationListItem-link:hover {
-     color: white;
-    background: #29abe2;
- }
+
 .wrapper
 {
     padding: 10px 10px 10px 0px;
@@ -99,20 +97,61 @@ table th {
     overflow: hidden !important;
     text-overflow: ellipsis;
 }
+.sent-msg-out{
+ background-color: #2aabe2 !important;
+ border-radius:15px;
+ margin-bottom:5px;
+ margin-top:5px;
+}
+.sent-msg-in{
+
+background: rgb(230, 230, 230) !important;
+border-radius:15px;
+padding:5px;
+margin-bottom:5px;
+ margin-top:5px;
+}
+#searched_msg{
+width:228px;
+padding:5px;
+}
+
+.div_out{
+ color:#2aabe2;
+}
+
+.div_failed{
+ color:red;
+}
+
+
+.textus-ConversationListItem-link:hover {
+     color: white;
+    background: #29abe2;
+ }
+ .search_result{
+position:relative;
+height:300px;
+overflow:scroll;
+width:100%;
+display:none;
+line-height:50px;
+}
 </style>
 </head>
 <body>
 <form id="messageform" name="messageform" method="POST" action="">
     <input type="hidden" name="pageNo" id="pageNo" value="<?=$pageNo?>">
 <div style="padding-left: 5px;margin-top: -5px;">
-    <input type="text" class="search_box" name="search_str" id="search_str">
-    <input type="button" class="search_button" name="search" value="search" id="search_number" >
-    <input type="button" name="search_clear" value="clear" id="search_clear" >
+    <input autocomplete="off" type="text" class="search_box" name="search_str" id="search_str">
+    <div class="search_result" style="display:none"></div>
+    <!--<input type="button" class="search_button" name="search" value="search" id="search_number" >
+    <input type="button" name="search_clear" value="clear" id="search_clear" >-->
 </div>
 <div id="messagebox" class="messagebox">
  <!--    <i class="fa fa-envelope-o icon-size" id="show_unread_message" aria-hidden="true" title="Unread"></i>
     <i class="fa fa-commenting-o icon-size"></i> -->
-    <i class="textus-MessageInputForm-submit fa fa-paper-plane fa-fw" id="send_text_message" title="Send Text" onclick="sendTextMessage();"></i>
+    <span class="textus-MessageInputForm-submit" id="send_text_message" title="Send Text" onclick="sendTextMessage();">Compose</span>
 </div>  
 <div id="latest_msg">
     <?php //foreach($messages as $message) {?>
@@ -135,7 +174,7 @@ table th {
 $(document).ready(function() {
     getNewMessage();
    
-   $("#searched_msg").scroll( function() {
+  /* $("#searched_msg").scroll( function() {
         if($(this)[0].scrollHeight - $(this).scrollTop() == $(this).outerHeight()) {
             var pageNo = parseInt($("#searched_msg .textus-ConversationListItem-link:last-child").attr("page_num"));
             $.ajax({
@@ -150,7 +189,7 @@ $(document).ready(function() {
             });
             // getNewMessage();
         }
-    });
+    });*/
     
     // setInterval( function(){     
     //     var optionVal = $("#message_crit").val();
@@ -179,7 +218,7 @@ $(document).ready(function() {
         });
     $("#close_chat_popup").live("click",function(){
          parent.document.getElementById("adjust_size").setAttribute("cols","230, *, 230");
-         parent.document.getElementById("adjust_row_size").setAttribute("rows","60%,40%");
+         //parent.document.getElementById("adjust_row_size").setAttribute("rows","60%,40%");
          $( "#chat-window-card1" ).dialog("close");
     });
     $("#search_number").live("click", function(){
@@ -210,13 +249,18 @@ $(document).ready(function() {
         $.ajax({
             url:"<?=BASE_URL;?>/messages/sendTextMessage", 
             type: "POST",
+            dataType: 'json',
             data:{phone_num:phone_number, message:textMessage},
             success:function(data){ 
-                res = JSON.parse(data);
-                if(res.res == "OK")
-                {
-                   showChatBox(phone_number);
-                }
+                document.location.href = "<?=BASE_URL;?>/pages/message";
+                // parent.document.getElementById("adjust_size").setAttribute("cols","230, *, 230");
+                //  //parent.document.getElementById("adjust_row_size").setAttribute("rows","60%,40%");
+                //  $( "#chat-window-card1" ).dialog("close");
+                // res = JSON.parse(data);
+                // if(res.res == "OK")
+                // {
+                //    showChatBox(phone_number);
+                // }
             }
         });
     });
@@ -240,13 +284,12 @@ function showChatBox(phone_number)
 {
     var messageId = $("#message_id").val();
      $.ajax({
-            url:"<?=BASE_URL;?>/messages/getMessageHistory", 
+            url:"http://hvacproz.ca/acesystem2018/get_con_history.php?phone="+phone_number, 
             type: "POST",
             dataType: 'html',
             data:{phone_number:phone_number, messageId:messageId},
             success:function(data){
                 parent.document.getElementById("adjust_size").setAttribute("cols","230, *, 400");
-                parent.document.getElementById("adjust_row_size").setAttribute("rows","*,20%,20%");
                 $("#chat-window-card1").css({ 'display' : 'block'});
                 $("#chat-window-card1").html(data);
                 $("#chat-window-card1" ).dialog("open");
@@ -307,7 +350,7 @@ function getNewMessage()
     var offset = 0;
      //var offset = 0;
         $.ajax({
-            url:"<?=BASE_URL;?>/pages/message", 
+            url:"http://hvacproz.ca/acesystem2018/get_con.php",
             type: "POST",
             dataType: 'html',
             data:{offset:offset},
@@ -317,6 +360,56 @@ function getNewMessage()
             }
         });
 }
+$('.search_box').live('keyup', function() {
+		
+  var get_val = $(this).val();
+  if (get_val.length>=3) {
+	$('.search_result').show();
+	$('.search_result').html(`<div style="margin: 0 auto;
+    display: table;
+margin-top: 10%"><img src="http://i.imgur.com/KUJoe.gif"><br>please wait loading</div>`);
+    $.ajax({
+        url: 'http://hvacproz.ca/acesystem2018/get_contact.php',
+        
+        type: 'POST',
+        cache: false,
+        data:{get_val:get_val},
+        success: function(data) {
+               console.log(data);
+			   $('.search_result').show();
+			   $('.search_result').html(data);
+        }
+    });
+  }
+  else {
+	$('.search_result').hide();
+  }
+});
+$('.click_div').live('click',function(){
+var phone_number = $(this).attr('data-slug');
+$.ajax({
+            url:"http://hvacproz.ca/acesystem2018/get_main_page_con.php?phone="+phone_number, 
+            type: "POST",
+            dataType: 'html',
+            data:{phone_number:phone_number},
+            success:function(data){
+                $('.search_result').hide();
+                parent.document.getElementById("adjust_size").setAttribute("cols","230, *, 400");
+                parent.document.getElementById("adjust_row_size");
+                $("#chat-window-card1").css({ 'display' : 'block'});
+                $("#chat-window-card1").html(data);
+                $("#chat-window-card1" ).dialog("open");
+                $(".ui-dialog-titlebar").hide();
+                $("html, body").animate({
+                        scrollTop:  0
+                },'slow');
+                $("html, #chat-window-card1").animate({
+                        scrollTop:  0
+                },'slow');
+               
+            }
+        });
+});
 </script>
 </body>
 </html>

@@ -1,14 +1,4 @@
-<link rel="Stylesheet" type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/jpicker-1.1.6.min.css" />
-<link rel="Stylesheet" type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/jPicker.css" />
-<script src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.4.min.js" type="text/javascript"></script>
-<script src="<?=ROOT_URL;?>/app/webroot/js/jpicker-1.1.6.min.js" type="text/javascript"></script>
-<script type="text/javascript">        
-  $(document).ready(
-    function()
-    {
-      $('#InventoryLocationColor').jPicker();
-    });
-</script>
+
 <script>
 //*** SET PAGE TITLE ***
 document.title += " :: Edit Route";
@@ -35,8 +25,37 @@ document.title += " :: Edit Route";
 						<tr>
 								<td align="right">Route type:</td>
 								<td colspan=2>
-								<?php echo $html->selectTag('InventoryLocation/route_type', $allTypes, $this->data['InventoryLocation']['route_type']);?>
-								</td>
+                 <?php
+                 //echo "<pre>";
+                 //print_r($this->data['InventoryLocation']);
+                 ?>
+								<?php //echo $html->selectTag('InventoryLocation/route_type', $allTypes, $this->data['InventoryLocation']['route_type']);?>
+								<select name="data[InventoryLocation][route_type]" id="InventoryLocationRouteType">
+<option value="">&nbsp;</option>
+<?php
+foreach($allTypes as $val=> $type){
+  if($this->data['InventoryLocation']['route_type']==$val){
+    $selected='selected';
+  }
+  else{
+    $selected="";
+  }
+  if($type=='AC'){
+ $type="Repair";
+}
+if($type=='Furnace'){
+ $type="Service";
+}
+?>
+<option value=<?= $val ?> <?= $selected ?>>
+  <?= $type ?>
+</option>
+
+
+<?php } ?>
+                </select>
+                
+                </td>
 						</tr>
 						<tr>
 								<td align="right">Truck number:</td>

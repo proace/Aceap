@@ -1,0 +1,69 @@
+ <?php
+function search_revisions($dataArray, $search_value, $key_to_search, $other_matching_value = null, $other_matching_key = null) {
+    
+    $keys = array();
+    foreach ($dataArray as $key => $cur_value) {
+        if ($cur_value[$key_to_search] == $search_value) {
+            if (isset($other_matching_key) && isset($other_matching_value)) {
+                if ($cur_value[$other_matching_key] == $other_matching_value) {
+                    $keys[] = $key;
+                }
+            } else {
+             
+                $keys[] = $key;
+            }
+        }
+    }
+    return $keys;
+}
+ ?>
+ <ul class="nested">
+      <?php foreach ($trainingSubCategories as $obj) {
+        $video=0;
+       $image=0;
+       $notes=0;
+       $tech_support=0;
+       $document=0;
+       $data = search_revisions($get_data,$obj['AdminTrainingSubCategory']['id'],'sub_cat_id');
+       foreach($data as $datas){
+        $check = explode(',',$obj['AdminTrainingSubCategory']['allow']);
+        if($get_data[$datas]['type']==8){
+         $video++;
+        }
+        if($get_data[$datas]['type']==4){
+         $image++;
+        }
+        if($get_data[$datas]['type']==2){
+         $notes++;
+        }
+        if($get_data[$datas]['type']==1){
+         $tech_support++;
+        }
+        if($get_data[$datas]['type']==3){
+         $document++;
+        }
+        
+       }
+       if($video>0 || $image>0 || $notes>0 || $document>0 || $tech_support>0){
+        $class="active";
+       }
+ 
+       ?>
+      		 <li><span class="caret secondCat open_content" data-secondSubCatType="1"  data-subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>" ><?=$obj['AdminTrainingSubCategory']['name']?> </span>
+         <i class="fa fa-pencil-square-o editSubCat" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>"></i>
+         <i class="fa fa-trash-o deleteSubCat" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>"></i>
+      		 	<i data-secondSubCatType="1"  data-subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>"
+          class="fa fa-file open_content1"></i>
+          <ul class="nested">
+	               <!--<li><span class="caret" onclick="showSecondSubCtaegory(<?php echo $obj['AdminTrainingSubCategory']['id']; ?>,1,this)">Installation</span> <i class="fa fa-plus addSecondSubCat" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>" secondSubCatType="1" aria-hidden="true"></i></li>
+	               <li><span class="caret" onclick="showSecondSubCtaegory(<?php echo $obj['AdminTrainingSubCategory']['id']; ?>,2,this)">Repair</span> <i class="fa fa-plus addSecondSubCat" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>" secondSubCatType="2" aria-hidden="true"></i></li>
+	               <li><span class="caret" onclick="showSecondSubCtaegory(<?php echo $obj['AdminTrainingSubCategory']['id']; ?>,3,this)">Service</span> <i class="fa fa-plus addSecondSubCat" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>" secondSubCatType="3" aria-hidden="true"></i></li>
+	              <li>Tech Support <i class="fa fa-plus techSupport" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showTechSupport" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>"></i></li>
+	              <li>Note (<?= $notes ?>) <i class="fa fa-plus subCatNotes" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSubCatNotes" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>"></i></li>
+	              <li>Images (<?= $image ?>)  <i class="fa fa-plus subCatImages" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSubCatImages" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>"></i></li>
+	               <li>Document (<?= $document ?>) <i class="fa fa-plus subCatDocument" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSubCatDocuments" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>"></i></li>
+	               <li>Video (<?= $video ?>) <i class="fa fa-plus subCatVideo" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSubCatVideos" subcat-id="<?php echo $obj['AdminTrainingSubCategory']['id']; ?>"></i></li>-->
+	            </ul>
+	          </li>
+      <? } ?>
+     </ul>

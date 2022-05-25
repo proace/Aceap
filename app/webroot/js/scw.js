@@ -2965,7 +2965,16 @@
                  scwHide();
 
                  if (document.viewform && setNotClose == 0)
-                     document.viewform.submit();
+                    if (document.getElementById('currentPage')) {
+                        $("#currentPage").val(1);
+                        document.viewform.submit();
+                    } else {
+                        document.viewform.submit();
+                    }
+                                        // if($("#currentPage").length){
+                    //     $("#currentPage").val(1);
+                    // }
+
 
             };
 

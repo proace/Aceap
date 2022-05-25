@@ -1,21 +1,19 @@
-<? ob_start();
-// error_reporting(E_ALL));
-//App::import('Controller', 'Inventories');
-
+<? 
+ob_start();
 class OrdersController extends AppController
 {
     //To avoid possible PHP4 problemfss
     var $name = "OrdersController";
     var $G_URL  = "http://hvacproz.ca";
     // var $G_URL  = "http://localhost";
-
     var $uses = array('TechInventoryItem', 'OrderEstimate','Order', 'CallRecord', 'User', 'Customer', 'OrderItem',
                     'Timeslot', 'OrderStatus', 'OrderType', 'Item',
                     'Zone','PaymentMethod','ItemCategory','InventoryLocation',
-                    'OrderSubstatus','Coupon','Setting','CallResult','Invoice', 'Question', 'Payment', 'Invoice','IvItem','UserPartImages');
+                    'OrderSubstatus','Coupon','Setting','CallResult','Invoice', 'Question', 'Payment', 'Invoice','IvItem','UserPartImages','IvSubCategory','OrderInstallationItem','CreditcardPaymentDetails');
 
     var $helpers = array('Common');
-    var $components = array('HtmlAssist', 'Common', 'Lists');
+    var $components = array('HtmlAssist', 'Common', 'Lists', 'Tcpdf','Mpdf');
+    // var $components = array('HtmlAssist', 'Common', 'Lists', 'Tcpdf','Tpdf','Mpdf');
     var $itemsToShow = 20;
     var $pagesToDisplay = 10;
 
@@ -27,11 +25,11 @@ class OrdersController extends AppController
     function checkMailSend(){
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         if (isset($_REQUEST['ordid']))
-        {           
+        {
             $query = "SELECT mail_sent,booking_date FROM ace_rp_orders where id='".(int) $_REQUEST['ordid']."'";
             $result = $db->_execute($query);
             $row = mysql_fetch_array($result);
-            echo $row['mail_sent'].'@@'.$row['booking_date'];exit;  
+            echo $row['mail_sent'].'@@'.$row['booking_date'];exit;
         }else{
             echo 2;exit;
         }
@@ -43,6 +41,8 @@ class OrdersController extends AppController
       //if( $this->action == 'index' ) {
       //    $this->Common->checkRoles(array('6','3','4','1','9','13'));
       //}
+        // print_r($_SESSION['user']);
+        // die('hey');
       if( $this->action == 'editBooking' || $this->action == 'reschedule' || $this->action == 'cancel' ) {
         $this->Common->checkRoles(array('6','3','4','8','1','9','13','15'));
       }
@@ -86,12 +86,12 @@ class OrdersController extends AppController
     // NOTE: for now this method is invisible from the page. May be it should stay invisible forever
     // Created: 06/02/2010, Anthony Chernikov
     function _SaveCustomer()
-    {  
-        if(!empty($this->data['Customer']['campaign_id'])) 
+    {
+        if(!empty($this->data['Customer']['campaign_id']))
         {
             $this->data['Customer']['campaign_id'] = $this->data['Customer']['campaign_id'];
         }
-        // #LOKI- Set the filter 
+        // #LOKI- Set the filter
         $this->data['Customer']['show_default'] = $this->data['Customer']['selected_button'];
         $this->data['Customer']['phone'] = $this->data['Customer']['phone']!= '' ? $this->Common->preparePhone($this->data['Customer']['phone']):'';
         $this->data['Customer']['cell_phone'] = $this->data['Customer']['cell_phone'] != '' ? $this->Common->preparePhone($this->data['Customer']['cell_phone']) : '';
@@ -137,24 +137,77 @@ class OrdersController extends AppController
                                     '".str_replace("'","`",$note)."',now(),'".$created_by."')");
         }
      $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-      $query =" update ace_rp_customers set referred_by_existing_userid='".$this->data['Customer']['referred_by_existing_userid']."' 
+      $query =" update ace_rp_customers set referred_by_existing_userid='".$this->data['Customer']['referred_by_existing_userid']."'
                    where id= '".$last_id ."'";
-       
+
    $result = $db->_execute($query);
 
         return $last_id;
     }
 
+    function saveNewCustomers() {
+
+        date_default_timezone_set("America/Vancouver");
+
+        $card_number = $_POST['card_number'];
+        $card_exp = $_POST['card_exp'];
+        $next_service = $_POST['next_service'];
+        $first_name = $_POST['first_name'];
+        $last_name = $_POST['last_name'];
+        $postal_code = $_POST['postal_code'];
+        $email = $_POST['email'];
+        $address_unit = $_POST['address_unit'];
+        $address_street_number = $_POST['address_street_number'];
+        $address_street = $_POST['address_street'];
+        $city = $_POST['city'];
+        $phone = $_POST['phone'];
+        $cell_phone = $_POST['cell_phone'];
+        $callback_date = $_POST['callback_date'];
+        $callback_notes = $_POST['callback_notes'];
+        $campaign_id = $_POST['campaign_id'];
+        $buzz = $_POST['buzz'];
+
+        $ordNum = $_POST['order_id'];
+        $cusId = $_POST['cus_id'];
+        $cardName = $_POST['cardName'];
+        $cardNum = $_POST['cardNum'];
+        $cvv = $_POST['cvv'];
+        $month = $_POST['ExpMonth'];
+        $year = $_POST['ExpYear'];
+
+
+       $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $query ="insert into ace_rp_customers (card_number,card_exp,next_service,first_name,last_name,postal_code,email,address_unit,address_street_number,address_street,phone,cell_phone,callback_date,callback_note,city,buzz,credit_card_number,card_exp_month,card_exp_year,card_cvv,credit_card_name)
+                      values ('".$card_number."','".$card_exp."','".$next_service."','".$first_name."','".$last_name."','".$postal_code."','".$email."','".$address_unit."',".$address_street_number.",'".$address_street."','".$phone."','".$cell_phone."','".$callback_date."','".$callBACK_notes."','".$city."','".$buzz."','".$cardNum."','".$month."','".$year."','".$cvv."','".$cardName."')";
+
+          $result = $db->_execute($query);
+
+          $selectquery = "SELECT id from ace_rp_customers where cell_phone='".$cell_phone."'";
+          $result2 = $db->_execute($selectquery);
+          $row = mysql_fetch_array($result2);
+
+          if($result2){
+              echo json_encode($row['id']);
+          }else {
+              echo json_encode($row['id']);
+          }
+          exit();
+      }
+
     // Method saves order's data that was recieved from the order's page.
     // Created: 06/02/2010, Anthony Chernikov
-    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null, $techOrderId=null, $send_cancalled_email = null, $showDefault=null, $jobDate = null, $invoiceImage=null)
+    function saveOrder($saveCustomer=1, $isDialer=0, $file=null, $invoiceImages=null, $photoImage1=null, $photoImage2=null, $fromTech=null, $techOrderId=null, $send_cancalled_email = null, $showDefault=null, $jobDate = null, $invoiceImage=null,$isOrderId = null, $installationOpen = null,$oldOrderId=0,$oldOrderType=0,$url=0,$rating=0,$booking_id=0,$booking_id1=0)
     {
+
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        if($booking_id==1){
+         $db->_execute("UPDATE rp_acacare_ca_booking set is_order = 1 where id=$booking_id1");
+
+        }
         if($_POST['preViewEstimate'] == 1 && $_SESSION['user']['role_id']==6){
             $this->preViewEstimate($_POST);
         }else
         {
-           
             //Prepare the date for entry into the DB
             //Set nulls into the empty selects
             $this->Common->SetNull($this->data['Order']['booking_source_id']);
@@ -217,32 +270,19 @@ class OrdersController extends AppController
             $this->data['Order']['address_street']          = $this->data['Customer']['address_street'];
             $this->data['Order']['city']                    = $this->data['Customer']['city'];
             $this->data['Order']['postal_code']             = $this->data['Customer']['postal_code'];
-        //Loki: save address details of customers
-
-        // if($this->data['Order']['address_id'] == 0 && !empty($this->data['Customer']['id']))
-        // {
-        //     $db->_execute("INSERT INTO ace_rp_customer_addresses (customer_id, address_unit, address_street_number, address_street, city, postal_code) VALUES (".$this->data['Customer']['id'].", '".$this->data['Customer']['address_unit']."', ".$this->data['Customer']['address_street_number'].", '".$this->data['Customer']['address_street']."', '".$this->data['Customer']['city']."', '".$this->data['Customer']['postal_code']."')");
-        //     $this->data['Order']['address_id'] = $db->lastInsertId();
-        //     $this->data['Customer']['address_id'] = $this->data['Order']['address_id'];
-        // } else {
-        //     $db->_execute("UPDATE ace_rp_customer_addresses set address_unit = '".$this->data['Customer']['address_unit']."', address_street_number = ".$this->data['Customer']['address_street_number'].", address_street = '".$this->data['Customer']['address_street']."', city = '".$this->data['Customer']['city']."', postal_code = '".$this->data['Customer']['postal_code']."' where id = ".$this->data['Order']['address_id']."");
-            
-        //         $this->data['Customer']['address_id'] = $this->data['Order']['address_id'];
-        // }
 
         if($this->data['Order']['address_id'] != 0 && !empty($this->data['Customer']['city']))
         {
              $db->_execute("UPDATE ace_rp_customer_addresses set address_unit = '".$this->data['Customer']['address_unit']."', address_street_number = '".$this->data['Customer']['address_street_number']."', address_street = '".$this->data['Customer']['address_street']."', city = '".$this->data['Customer']['city']."', postal_code = '".$this->data['Customer']['postal_code']."' where id = ".$this->data['Order']['address_id']."");
-            
+
                 $this->data['Customer']['address_id'] = $this->data['Order']['address_id'];
         }
             // /Added by Maxim Kudryavtsev - for booking member cards
 
-
             // Save the customer
             if ($saveCustomer==1)
                 if (!empty($this->data['Customer'])) $this->_SaveCustomer();
-           
+
             if(isset($this->data['Order']['address_id']) && $this->data['Order']['address_id'] == 0)
             {
                 $db->_execute("INSERT INTO ace_rp_customer_addresses (customer_id, address_unit, address_street_number, address_street, city, postal_code) VALUES (".$this->data['Customer']['id'].", '".$this->data['Customer']['address_unit']."', '".$this->data['Customer']['address_street_number']."', '".$this->data['Customer']['address_street']."', '".$this->data['Customer']['city']."', '".$this->data['Customer']['postal_code']."')");
@@ -258,7 +298,7 @@ class OrdersController extends AppController
                 $this->data['Order']['job_time_end_hour'] = '';
                 $this->data['Order']['job_time_end'] = '';
             }
-            
+
             // Get some customer's information into this order
             $this->data['Order']['job_postal_code'] = $this->data['Customer']['postal_code'];
             $this->data['Order']['customer_id'] = $this->data['Customer']['id'];
@@ -270,11 +310,41 @@ class OrdersController extends AppController
             $this->data['Order']['permit_applied_date'] = date("Y-m-d", strtotime($this->data['Order']['permit_applied_date']));
 
             //set beginning and ending time
-            if(isset($this->data['Order']['job_time_beg_hour'])){
+            if(isset($this->data['Order']['job_time_beg_hour']) && $this->data['Order']['order_status_id'] != 3 ){
                 $this->data['Order']['job_time_beg'] = $this->data['Order']['job_time_beg_hour'].':'.($this->data['Order']['job_time_beg_min'] ? $this->data['Order']['job_time_beg_min'] : '00');
             }
-            if(isset($this->data['Order']['job_time_end_hour'])){
+            if(isset($this->data['Order']['job_time_end_hour']) && $this->data['Order']['order_status_id'] != 3 ){
                 $this->data['Order']['job_time_end'] = $this->data['Order']['job_time_end_hour'].':'.($this->data['Order']['job_time_end_min'] ? $this->data['Order']['job_time_end_min'] : '00');
+            }
+
+            if(empty($this->data['Order']['job_time_beg_hour']) || empty($this->data['Order']['job_time_end_hour']) ){
+               $date = date('Y-m-d');
+        $query = "select id, max(job_time_end) as end_time from ace_rp_orders where job_truck='40' and job_date='{$date}'";
+        $result = $db->_execute($query);
+        $row = mysql_fetch_array($result);
+        // $id = $row['id'];
+        // $query2  ="select job_time_end from ace_rp_orders where id='{$id}'";
+        // $result2 = $db->_execute($query2);
+        // $row2 = mysql_fetch_array($result2);
+        // $job_end = $row2['job_time_end'];
+        $job_end = $row['end_time'];
+        $job_end2 = explode(':',$job_end);
+        if(empty($job_end)){
+         $job_start_new = '08';
+        }
+        else {
+         $job_start_new = $job_end2[0];
+        }
+
+                $job_end_new = $job_start_new+1;
+
+                if($this->data['Order']['order_status_id'] != 3){
+
+                $this->data['Order']['job_time_beg'] = $job_start_new.':'.($this->data['Order']['job_time_beg_min'] ? $this->data['Order']['job_time_beg_min'] : '00');
+
+                $this->data['Order']['job_time_end'] = $job_end_new.':'.($this->data['Order']['job_time_end_min'] ? $this->data['Order']['job_time_end_min'] : '00');
+                }
+
             }
             //set techs' time
             if(isset($this->data['Order']['fact_job_beg_hour'])){
@@ -288,7 +358,7 @@ class OrdersController extends AppController
         if($this->data['Note']['urgency_id'] == 4) {
             $this->data['Order']['needs_approval'] = 0;
         }
-        
+
         if ($this->data['Order']['order_status_id']!=6)
         {
             if ($this->data['Order']['id'])
@@ -317,7 +387,8 @@ class OrdersController extends AppController
             $row = mysql_fetch_array($result);
             $old_status = $row['order_status_id'];
         }
-        
+
+
         if ($this->Order->save($this->data))
         {
             //Get Order ID
@@ -332,7 +403,7 @@ class OrdersController extends AppController
                 //   $savePayment = "INSERT INTO ace_rp_payments (idorder, creator, payment_method, payment_date, paid_amount, payment_type) VALUES (".$order_id.", ".$creator.", ".$paidById.", '$date', '$itemTotal', 1)";
                 //   $db->_execute($savePayment);
                 // }
-            }   
+            }
             else {
 
               $order_id = $this->Order->getLastInsertId();
@@ -353,24 +424,25 @@ class OrdersController extends AppController
         // Clear Previous Order Items of class 'booking'
         //$this->Order->BookingItem->execute("DELETE FROM " . $this->Order->BookingItem->tablePrefix . "order_items WHERE order_id = '".$order_id."' AND class=0;");
         // Save payment image
+        //Loki commented code
         if($file !== null)
         {
             $loggedUserId = $this->Common->getLoggedUserID();
             $this->User->id = $loggedUserId;
-             
+
             $imageResult = $this->Common->commonSavePaymentImage($file, $order_id , $config = $this->User->useDbConfig);
-        }   
+        }
         if(!empty($photoImage1))
-        {    
+        {
             foreach ($photoImage1['name'] as $key => $value) {
                 if(!empty($value)){
                     $imageResult = $this->Common->uploadPhoto($value,$photoImage1['tmp_name'][$key] , $order_id , $config = $this->User->useDbConfig, 1, $this->data['Customer']['id']);
                 }
-             }  
+             }
         }
 
         if(!empty($invoiceImage['name']))
-        {    
+        {
            $path = $invoiceImage['name'];
             $name = date('Ymdhis', time()).'_'.$path;
             if ( 0 == $invoiceImage['error'] ) {
@@ -383,7 +455,7 @@ class OrdersController extends AppController
         $total = 0;
 
         /* Code for check Mail Bouncing */
-        
+
         if(isset($_REQUEST['havetoprint']) && $_REQUEST['havetoprint']==1){
 
             $cEmail = $this->data['Customer']['email'];
@@ -396,7 +468,7 @@ class OrdersController extends AppController
                 $this->data['Order']['emal_bounce_status'] = 0;
                 $emal_bounce_status = 0;
             }else{
-                $this->data['Order']['emal_bounce_status'] = 1; 
+                $this->data['Order']['emal_bounce_status'] = 1;
                 $emal_bounce_status = 1;
             }
             $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
@@ -404,6 +476,8 @@ class OrdersController extends AppController
             $result = $db->_execute($queryUpdate);
 
         }
+
+        $tdate = date('Y-m-d');
         // Save booked items
           for ($i = 0; $i < count($this->data['Order']['BookingItem']); $i++)
         {
@@ -412,19 +486,7 @@ class OrdersController extends AppController
             //$this->data['Order']['BookingItem'][$i]['class'] = 0;
             if (0+$this->data['Order']['BookingItem'][$i]['quantity']!=0)
             {
-                // if(!empty($invoiceImages['name'][$i])) 
-                // {
-                //     $fileName = time()."_".$invoiceImages['name'][$i];
-                //     $fileTmpName = $invoiceImages['tmp_name'][$i];
-                
-                //     if($invoiceImages['error'][$i] == 0)
-                //     {
-                //         $move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/purchase-invoice-images/".$fileName);
-                //         $this->data['Order']['BookingItem'][$i]['invoice_image'] =  $fileName;
-                //     }
-                    
-                // }   
-
+                // $this->data['Order']['BookingItem'][$i]['new_item'] = 1;
                 $this->Order->BookingItem->create();
                 $this->Order->BookingItem->save($this->data['Order']['BookingItem'][$i]);
 
@@ -433,9 +495,90 @@ class OrdersController extends AppController
                           $this->data['Order']['BookingItem'][$i]['discount'] +
                           $this->data['Order']['BookingItem'][$i]['addition'];
             }
+
+        }
+
+
+        //Loki: add default payment method
+        $creator = $this->Common->getLoggedUserID();
+        $payableAmount = $_POST['saleAmount'];
+        $payQuery="select * from ace_rp_payments where idorder='".$order_id."'";
+        $payResult = $db->_execute($payQuery);
+        $paidBy = $this->data['Order']['paid_by'];
+            $payRow =mysql_num_rows($payResult);
+          if($payRow == 0 || $payRow ==''){
+            $paymentQuery = "INSERT INTO ace_rp_payments
+                        (idorder, creator, payment_method, payment_date, paid_amount, payment_type)
+                      VALUES ($order_id, '$creator', '$paidBy', '$tdate', '$payableAmount', '1')";
+                $res = $db->_execute($paymentQuery);
+            } else {
+                if($payableAmount != '' && $paidBy !=''){
+                    $paymentQuery = "UPDATE  ace_rp_payments set payment_method='".$paidBy."', paid_amount = ".$payableAmount." where idorder='".$order_id."'";
+                    $res = $db->_execute($paymentQuery);
+                }
+            }
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+
+        if($isOrderId == 1) {
+        if(count($this->data['Order']['InstallationItem']) > 0 && $installationOpen == 1){
+            $this->Order->InstallationItem->execute("DELETE FROM " . $this->Order->InstallationItem->tablePrefix . "order_installation_item WHERE order_id = '".$order_id."'");
+                for ($i = 0; $i < count($this->data['Order']['InstallationItem']); $i++)
+                {
+                    $itemId = $this->data['Order']['InstallationItem'][$i]['ref_item_id'];
+                    $missQty = $this->data['Order']['InstallationItem'][$i]['missing_quantity'];
+                    $techQty = $this->data['Order']['InstallationItem'][$i]['tech_quantity'];
+                    $isDone = $this->data['Order']['InstallationItem'][$i]['is_done'];
+                    // Set ID of parent order
+                    $this->data['Order']['InstallationItem'][$i]['order_id'] = $order_id;
+                    if($techQty > 0 && $isDone == 0)
+                    {
+                        $deductQty = $techQty;
+                        $this->data['Order']['InstallationItem'][$i]['is_done'] = 1;
+                        $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = quantity - ".$deductQty." where item_id = ".$itemId." AND tech_id=231433");
+                    }
+                    if($missQty > 0 && $isDone != 2)
+                    {
+                        $this->data['Order']['InstallationItem'][$i]['is_done'] = 2;
+                        $checkExisting = $db->_execute("SELECT * FROM ace_rp_tech_inventory_item where tech_id = ".$this->data['Order']['job_technician1_id']." AND item_id =".$itemId."");
+                        $row = mysql_fetch_array($checkExisting, MYSQL_ASSOC);
+                        if(!empty($row))
+                        {
+                            $res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = quantity + ".$missQty." where item_id = ".$itemId." AND tech_id=".$this->data['Order']['job_technician1_id']);
+                        } else {
+                            $db->_execute("INSERT INTO ace_rp_tech_inventory_item (tech_id, item_id, quantity, updated_date) VALUES (".$this->data['Order']['job_technician1_id'].",".$itemId.", ".$missQty.", '".$now."')");
+                        }
+                        $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = quantity - ".$missQty." where item_id = ".$itemId." AND tech_id=231433");
+                    }
+                     $this->data['Order']['InstallationItem'][$i]['name'] = mysql_real_escape_string($this->data['Order']['InstallationItem'][$i]['name']);
+                    $this->Order->InstallationItem->create();
+                    $this->Order->InstallationItem->save($this->data['Order']['InstallationItem'][$i]);
+                }
+            }
+        }
+        else if($installationOpen == 1 && $isOrderId == 0){
+            if(count($this->data['Order']['InstallationItem']) > 0){
+                for ($i = 0; $i < count($this->data['Order']['InstallationItem']); $i++)
+                {
+                    // Set ID of parent order
+                    $this->data['Order']['InstallationItem'][$i]['order_id'] = $order_id;
+                    $this->data['Order']['InstallationItem'][$i]['name'] = mysql_real_escape_string($this->data['Order']['InstallationItem'][$i]['name']);
+                    $this->Order->InstallationItem->create();
+                    $this->Order->InstallationItem->save($this->data['Order']['InstallationItem'][$i]);
+                }
+            }
+        }
+        else if($isOrderId == 0)
+        {
+            $packageId = $this->data['Order']['installation_item_val'];
+            if($packageId > 0){
+                $data =  $this->IvItem->findAll(array('iv_sub_category_id' => $packageId));
+                foreach ($data as $key => $value) {
+                    $db->_execute("INSERT INTO ace_rp_order_installation_item (order_id, item_id,quantity,price,total,name,tech_quantity,ref_item_id) VALUES (".$order_id.", ".$value['IvItem']['id'].", ".$value['IvItem']['default_quantity'].",".$value['IvItem']['supplier_price'].",0,'".mysql_real_escape_string($value['IvItem']['name'])."',0,".$value['IvItem']['ref_item_id'].")");
+                }
+            }
         }
         // 2. Questions
-        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
         $query = "
             SELECT *
@@ -451,13 +594,16 @@ class OrdersController extends AppController
 
         if($use_template_questions == 1) {
             $template = $this->data['Template'];
-            
             foreach($template as $question_id => $row) {
                 $response_text = isset($row['response_text'])&&$row['response_text']!=""?"'".$row['response_text']."'":"NULL";
                 $response_id = isset($row['response_id'])&&$row['response_id']!=""?$row['response_id']:"NULL";
                 $suggestion_id = isset($row['suggestion_id'])&&$row['suggestion_id']!=""?$row['suggestion_id']:"NULL";
                 $decision_id = isset($row['decision_id'])&&$row['decision_id']!=""?$row['decision_id']:"NULL";
                 $reminder = isset($row['reminder'])&&$row['reminder']!=""?$row['reminder']:"NULL";
+                $text_response = isset($row['text_response'])?"'".$row['text_response']."'":"NULL";
+                $admin_response = isset($row['admin_response'])?"'".$row['admin_response']."'":"NULL";
+                $text_id = isset($row['text_id'])?"'".$row['text_id']."'":"NULL";
+                // $text_id = isset($row['text_id'])?$row['text_id']:"NULL";
 
                 $query = "
                     DELETE FROM ace_rp_orders_questions_working
@@ -468,11 +614,12 @@ class OrdersController extends AppController
                 $result = $db->_execute($query);
 
                 $query = "
-                    INSERT INTO ace_rp_orders_questions_working(order_id, question_id, response_text, response_id, suggestion_id, decision_id,reminder)
-                    VALUES($order_id, $question_id, $response_text, $response_id, $suggestion_id, $decision_id,$reminder)
+                    INSERT INTO ace_rp_orders_questions_working(order_id, question_id, response_text, response_id, suggestion_id, decision_id,reminder,text_response,admin_response,text_id)
+                    VALUES($order_id, $question_id, $response_text, $response_id, $suggestion_id, $decision_id,$reminder,$text_response,$admin_response,$text_id)
                 ";
 
                 $result = $db->_execute($query);
+
             }
 
             //save a final copy of the answers if done
@@ -511,13 +658,15 @@ class OrdersController extends AppController
             }
         }
         //Now E-Mail the customer with what we just did
-        
-    
-        if($_POST['sendMailOnEstimate']){
+
+
+
+        if($_POST['sendMailOnEstimate'])
+        {
             $mail_sent = false;
             $today = gmdate("Y-m-d\TH:i:s\Z");
             $homePhone = $this->data['Customer']['phone'];
-            $cellPhone = $this->data['Customer']['cell_phone'];
+            $cellPhone = str_replace("-","",$this->data['Customer']['cell_phone']);
             $cusId = $this->data['Customer']['id'];
             $settings = $this->Setting->find(array('title'=>'booking_sms'));
             $message = $settings['Setting']['valuetxt'];
@@ -538,7 +687,7 @@ class OrdersController extends AppController
                                 if($this->data['Order']['resendEmailVal'] == 1)
                                 {
                                     $subject = $this->emailCustomerBooking($order_id);
-                                    
+
                                     $queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$emal_send_date."' WHERE id = '".$order_id."'";
                                     $db->_execute($queryEmailDateUpdate);
                                 }
@@ -546,39 +695,39 @@ class OrdersController extends AppController
                                 {
                                     if(!empty($cellPhone))
                                     {
-                                        $response = $this->Common->sendTextMessage($cellPhone, $message); 
+                                        
+                                        $response = $this->Common->sendTextMessage($cellPhone, $message);
                                         if(!empty($response))
                                         {
                                             $message = mysql_real_escape_string($message);
                                             $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type,sender_id) VALUES (
-                                                '',".$cusId.", ".$response->id.",'".$message."','".$today."', '".$cellPhone."', 1, ".$sender_id.")";
+                                                '',".$cusId.", '".$response->id."','".$message."','".$today."', '".$cellPhone."', 1, ".$sender_id.")";
                                             $result = $db->_execute($query);
                                         }
                                     }
                                 }
                             }
                         }else if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==0){
-                            ''; 
+                            '';
                         }else{
                             if($this->data['Order']['resendEmailVal'] == 1)
                             {
-
                                 $queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$emal_send_date."' WHERE id = '".$order_id."'";
                                 $db->_execute($queryEmailDateUpdate);
                                 $subject = $this->emailCustomerBooking($order_id);
-                                
+
                             }
                             $mail_sent = true;
                             if($this->data['Order']['resendTextVal'] == 1)
                             {
                                 if(!empty($cellPhone))
                                 {
-                                    $response = $this->Common->sendTextMessage($cellPhone, $message); 
-                                    
+                                    $response = $this->Common->sendTextMessage($cellPhone, $message);
+
                                     if(!empty($response))
                                     {
                                         $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, , phone_number, sms_type, sender_id) VALUES (
-                                            '',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$cellPhone."', 1, ".$sender_id.")";
+                                            '',".$cusId.", '".$response->id."','".$message."','".$today."' , '".$cellPhone."', 1, ".$sender_id.")";
                                         $result = $db->_execute($query);
                                     }
                                 }
@@ -589,30 +738,43 @@ class OrdersController extends AppController
             }
         if($paidById != 11) {
             if(isset($_REQUEST['SendMailAgain']) && $_REQUEST['SendMailAgain']==1 && $mail_sent== false ){
-                $settings = $this->Setting->find(array('title'=>'cancel_booking_sms'));
-                $message = $settings['Setting']['valuetxt'];
-                $message = $this->Common->removeSlash($message);
-                $message = str_replace('{date}', $jobDate, $message);
-                if($this->data['Order']['resendEmailVal'] == 1)
-                {
-                    $this->emailCustomerBooking($order_id, $send_cancalled_email);
-                }
-                if($this->data['Order']['resendTextVal'] == 1)
-                {
-                    if(!empty($cellPhone))
+
+                if($this->data['Order']['order_status_id'] != 5){
+                    $settings = $this->Setting->find(array('title'=>'cancel_booking_sms'));
+                    $message = $settings['Setting']['valuetxt'];
+                    $message = $this->Common->removeSlash($message);
+                    $message = str_replace('{date}', $jobDate, $message);
+                    if($this->data['Order']['resendEmailVal'] == 1)
                     {
-                        $response = $this->Common->sendTextMessage($cellPhone, $message); 
-                        if(!empty($response))
+                        $this->emailCustomerBooking($order_id, $send_cancalled_email);
+                    }
+                    if($this->data['Order']['resendTextVal'] == 1)
+                    {
+                        if(!empty($cellPhone))
                         {
-                            $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
-                                '',".$cusId.", ".$response->id.",'".$message."','".$today."' , '".$cellPhone."', 1, ".$sender_id.")";
-                            $result = $db->_execute($query);
+                            $response = $this->Common->sendTextMessage($cellPhone, $message);
+                            if(!empty($response))
+                            {
+                                $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
+                                    '',".$cusId.", '".$response->id."','".$message."','".$today."' , '".$cellPhone."', 1, ".$sender_id.")";
+                                $result = $db->_execute($query);
+                            }
                         }
                     }
                 }
             }
         }
     }
+
+    if(($this->data['Order']['order_status_id'] == 5) && ($_POST['SendInvoiceAgain'] == 1))
+    {
+        $this->emailInvoiceReviewLinks($this->data['Order']['id'],$this->data['Customer']['email'], $this->data['Customer']['id'],$this->data['Customer']['cell_phone']);
+    if($this->data['Order']['booking_source_id'] != '231393'){
+         $textSend = $this->sendReviewText($this->data['Customer']['cell_phone'], $this->data['Customer']['email'] , '', $this->data['Customer']['id'],$this->data['Order']['id']);
+
+        }
+    }
+
     //die('Loadings...');
 
         // Trying to create a sale record for the call history
@@ -657,6 +819,10 @@ class OrdersController extends AppController
                 WHERE order_id = $order_id;
             ";
             $db->_execute($query);
+            if($rating!=0){
+               $db->_execute("UPDATE ace_rp_orders set office_rating = $rating
+                          where id = ".$this->data['Order']['id']."");
+            }
 
             $query = "
                 INSERT INTO ace_rp_order_summaries(order_id, commission_from_id, commission_type_id, commission_item_id, subtotal)
@@ -723,7 +889,7 @@ class OrdersController extends AppController
             $db->_execute($query);
             }
         // LOKI= update payment method type
-        
+            
         if($paidById)
         {
             $query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`payment_method_type` =".$paidById." WHERE arc.id=".$order_id.";";
@@ -752,8 +918,8 @@ class OrdersController extends AppController
                 $up_camp_res = $db->_execute($up_camp_data);
             }
         }
-        
-        
+
+
         //END save summary
 
         //Save Notes
@@ -778,9 +944,9 @@ class OrdersController extends AppController
 
                 $db->_execute($query);
             }
-            
-                        
-            
+
+
+
         //END Save Notes
             //sleep(3);
                 /*$resp = $this->verifyEmailUsingMailgun($subject);
@@ -789,19 +955,19 @@ class OrdersController extends AppController
             }else{
                 $emal_bounce_status = 0;
             }
-            
+
             $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
             echo $queryUpdate = "UPDATE ace_rp_orders set emal_bounce_status='".$emal_bounce_status."' WHERE id = '".$order_id."'";
             $result = $db->_execute($queryUpdate);
             */
-            
+
             //Forward user where they need to be - if this is a single action per view
             if($_POST['havetoprint'] == 0 && ($_SESSION['user']['role_id']==6 || $_SESSION['user']['role_id']==1)){
                 //REDIRECT FOR SEND ESTIMATE TEMPLATE
                 $this->orderEstimate($order_id, $this->data['Order']['BookingItem'], $fromTech, $this->data['Customer']['id'], $this->data['Order']['main_id']);
             }else{
-                
+
                 if($isDialer) {
 
                     $custId = $this->data['Customer']['id'];
@@ -811,10 +977,17 @@ class OrdersController extends AppController
                     $this->redirect('orders/editBooking?hotlist=1&customer_id='.$custId.'&is_booking=1&orderNo='.$orderNumber);
                 } else if($fromTech == 1)
                 {
-                    $this->redirect('/orders/invoiceTabletNewBooking');
+                    //added by apoorv to redirect admin from estimation
+                    if($_SESSION['user']['role_id']==6){
+                     $this->redirect('/orders/scheduleView');
+
+                    }
+                    else {
+                     $this->redirect('/orders/invoiceTabletNewBooking');
+                    }
+
                 } else if($fromTech == 2 )
                 {
-                    
                     $this->redirect('orders/invoiceTabletPayment?order_id='.$this->data['Order']['id']);
                 } else if($fromTech == 3) {
                     $techId = $_SESSION['user']['id'];
@@ -822,28 +995,53 @@ class OrdersController extends AppController
                     $url = 'action=view&order=&sort=&currentPage=1&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option=1&ffromdate='.urlencode($jobDate).'&cur_ref=';
                     $this->redirect('orders/invoiceTabletPayment?order_id='.$this->data['Order']['id']);
                     //$this->redirect('commissions/calculateCommissions?'.$url);
+                }else if($fromTech == 4){
+                    $this->redirect('orders/invoiceTablet');
+
+                }else if($fromTech == 5){
+                    // $this->redirect('orders/invoiceTablet');
+                    $this->redirect('/orders/techLastPage?order_id='.$oldOrderId.'&order_type_id='.$oldOrderType);
                 }
                 else {
-                if($_POST['havetoprint'] == 3 && $_SESSION['user']['role_id']==6)
-                    $this->redirect('/orders/scheduleView');
-                elseif (($old_status == 1)&&($this->data['Order']['order_status_id'] == 2))
-                    $this->reschedule();
-                elseif ($this->data['rurl'][0])
+                    if($_POST['havetoprint'] == 3 && $_SESSION['user']['role_id']==6){
+                        $this->redirect('/orders/scheduleView');
+                    }
+                    elseif (($old_status == 1)&&($this->data['Order']['order_status_id'] == 2)){
 
-                    $this->redirect($this->data['rurl'][0]);
-                else
-                    $this->redirect('/orders/scheduleView');
+                        $this->reschedule();
+                    }
+                    elseif ($this->data['rurl'][0]){
+                        $this->redirect($this->data['rurl'][0]);
+                    }
+                    elseif($this->Common->getLoggedUserRoleID() == 1) {
+                        $this->redirect('/orders/invoiceTablet');
+                    }
+                    else{
+                        $this->redirect('/orders/scheduleView');
+                    }
                 }
 
             }
         }
+        if ($this->data['Order']['order_status_id'] == 3)
+            {
+
+
+               $db->_execute("UPDATE ace_rp_orders set paid_by = 12,payment_method_type = 12
+                          where id = ".$this->data['Order']['id']."");
+
+
+               $db->_execute("UPDATE ace_rp_payments set payment_method = 12
+                          where idorder = ".$this->data['Order']['id']."");
+
+            }
     }
 
     function preViewEstimate($postData){
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         // Read the order's data from database
 
-        
+
 
         if(!empty($postData['data']['Order']['order_type_id'])){
             $order_type = $postData['data']['Order']['order_type_id'];
@@ -851,11 +1049,11 @@ class OrdersController extends AppController
             $order_type = 0;
         }
 
-        $templateQuery = "select * from ace_rp_estimation_template where job_type_id =".$order_type; 
+        $templateQuery = "select * from ace_rp_estimation_template where job_type_id =".$order_type;
         $result = $db->_execute($templateQuery);
         $template = mysql_fetch_array($result);
 
-        //Load current questions 
+        //Load current questions
         //$officeQuery =  $this->_showQuestions(0, 0,$orderData['Order']['order_type_id'],'');
         $condition = "for_office=1 and";
         $query = " SELECT * FROM ace_rp_questions WHERE ".$condition." order_type_id = ".$order_type." order by rank, value ";
@@ -882,34 +1080,34 @@ class OrdersController extends AppController
                         $result = $db->_execute($query);
                         $response = mysql_fetch_assoc($result);
                         $qan['response'] = $response['value'];
-                        $qan['response_text'] = $response['value']; 
+                        $qan['response_text'] = $response['value'];
                     }
                 }
-                $temp[$key]['qan'] = $qan;  
+                $temp[$key]['qan'] = $qan;
             }
         }
 
         $typeQuery = "SELECT id, name FROM ace_rp_order_types where flagactive=1" ;
         $typeResult = $db->_execute($typeQuery);
         $orderType = array();
-        
-        
-        
-        
+
+
+
+
 
         //$temp as officeQuery
         $officeQueryHTML = '<table style="border-collapse: collapse; width: 35%;" border="1">
             <tbody>
             <tr style="height: 18px;">
-                <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">#</strong></td>
-                <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Questions</strong></td>
-                <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Responses</strong></td>
+                <td style="width: 16.6667%; height: 18px; text-align: left;"><strong contenteditable="false">#</strong></td>
+                <td style="width: 16.6667%; height: 18px; text-align: left;"><strong contenteditable="false">Questions</strong></td>
+                <td style="width: 16.6667%; height: 18px; text-align: left;"><strong contenteditable="false">Responses</strong></td>
             </tr>';
-        
+
         foreach ($temp as $key => $value) {
-                
+
             $officeQueryHTML .='<tr style="height: 18px;">
-                    <td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['rank'].'</td>
+                    <td style="width: 16.6667%; height: 18px;text-align: left;">&nbsp;'. $value['rank'].'</td>
                     <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['value'].'</td>
                     <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['qan']['response_text']. '</td>
                 </tr>';
@@ -940,9 +1138,14 @@ class OrdersController extends AppController
             $subTotalPrice2 = 0;
             $classZeroExist = 0;
             $classOneExist = 0;
-
+   $profile1=array();
+   $profile2=array();
         foreach ($postData['data']['Order']['BookingItem'] as $key => $value) {
             if($value['class']==0){
+                if(!empty($link) && $link!="NULL"){
+                     $link1.="<span>Link : $link&nbsp;&nbsp;</span>";
+                    $profile1[]=$link;
+                  }
                 $classZeroExist = 1;
                 $option1 .='<tr style="height: 18px;">
                     <td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
@@ -966,44 +1169,44 @@ class OrdersController extends AppController
             }
         }
 
-        
+
         $gst1 = $subTotalPrice1*0.05;
         $total1 = $subTotalPrice1+$gst1;
 
         $gst2 = $subTotalPrice2*0.05;
-        $total2 = $subTotalPrice2+$gst2;        
+        $total2 = $subTotalPrice2+$gst2;
 
 
-        $subTotal1 = '<table style="border-collapse: collapse; width: 15.593%; height: 100px;" border="1">
+        $subTotal1 = '<table style="border-collapse: collapse; width: 15.593%; height: 100px;float:right;margin-bottom:25px;" border="1">
         <tbody>
         <tr>
-        <td style="width: 50%; text-align: right;">SubTotal:</td>
-        <td style="width: 50%; text-align: right;">'.$subTotalPrice1.'</td>
+        <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-weight: 600;">SubTotal:</td>
+        <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;">'.$subTotalPrice1.'</td>
         </tr>
         <tr>
-        <td style="width: 50%; text-align: right;">GST:</td>
-        <td style="width: 50%; text-align: right;">'.$gst1.'</td>
+        <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-weight: 600;">GST:</td>
+        <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;">'.$gst1.'</td>
         </tr>
         <tr>
-        <td style="width: 50%; text-align: right;">Total</td>
-        <td style="width: 50%; text-align: right;">'.$total1.'</td>
+        <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-weight: 600;">Total</td>
+        <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;">'.$total1.'</td>
         </tr>
         </tbody>
         </table>';
 
-        $subTotal2 = '<table style="border-collapse: collapse; width: 15.593%; height: 100px;" border="1">
+        $subTotal2 = '<table style="border-collapse: collapse; width: 15.593%; height: 100px;float:right;margin-bottom:25px;" border="1">
         <tbody>
         <tr>
-        <td style="width: 50%; text-align: right;">SubTotal:</td>
-        <td style="width: 50%; text-align: right;">'.$subTotalPrice2.'</td>
+        <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-weight: 600;">SubTotal:</td>
+        <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;">'.$subTotalPrice2.'</td>
         </tr>
         <tr>
-        <td style="width: 50%; text-align: right;">GST:</td>
-        <td style="width: 50%; text-align: right;">'.$gst2.'</td>
+        <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-weight: 600;">GST:</td>
+        <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;">'.$gst2.'</td>
         </tr>
         <tr>
-        <td style="width: 50%; text-align: right;">Total</td>
-        <td style="width: 50%; text-align: right;">'.$total2.'</td>
+        <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-weight: 600;">Total</td>
+        <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;">'.$total2.'</td>
         </tr>
         </tbody>
         </table>';
@@ -1011,9 +1214,9 @@ class OrdersController extends AppController
         $option1 .= '</tbody></table>';
         $option2 .= '</tbody></table>';
 
-        
 
-        
+
+
 
         $optionHTML = '<select name="jobType">';
         while ($row = mysql_fetch_assoc($typeResult)){
@@ -1025,18 +1228,18 @@ class OrdersController extends AppController
             $optionHTML .='<option  '.$temp.'  value="'.$row['id'].'" > '.$row['name'].' </option>';
         }
         $optionHTML .= '</select>';
-        
-        
-        
+
+
+
 
         $name = $postData['data']['Customer']['first_name'].' '.$postData['data']['Customer']['last_name'];
         $address = $postData['data']['Customer']['address_unit'].' '.$postData['data']['Customer']['address_street_number'].' '.$postData['data']['Customer']['address_street'];
         $city = $postData['data']['Customer']['city'];
         $postal = $postData['data']['Customer']['postal_code'];
-        $email= $postData['data']['Customer']['email']; 
+        $email= $postData['data']['Customer']['email'];
         $phone= $postData['data']['Customer']['phone'];
         $cellphone= $postData['data']['Customer']['cell_phone'];
-        $note = $postData['data']['Note']['message'];   
+        $note = $postData['data']['Note']['message'];
         $officeQuery=$officeQueryHTML;
         $date = $postData['data']['Order']['permit_applied_date'];
         $ref = $postData['data']['Order']['order_number'];
@@ -1063,23 +1266,23 @@ class OrdersController extends AppController
         $template['template'] = str_replace("{note}",$note ,$template['template']);
 
         $template['template'] = str_replace("{jobetype}",$jobetype ,$template['template']);
-        
+
         if($classZeroExist){
-            $template['template'] = str_replace("{option1}",$option1 ,$template['template']);   
-            $template['template'] = str_replace("{subtotal1}",$subTotal1 ,$template['template']);   
+            $template['template'] = str_replace("{option1}",$option1 ,$template['template']);
+            $template['template'] = str_replace("{subtotal1}",$subTotal1 ,$template['template']);
         }else{
-            $template['template'] = str_replace("{option1}",'' ,$template['template']); 
-            $template['template'] = str_replace("{subtotal1}",'' ,$template['template']);   
+            $template['template'] = str_replace("{option1}",'' ,$template['template']);
+            $template['template'] = str_replace("{subtotal1}",'' ,$template['template']);
         }
-        
+
         if($classOneExist){
-            $template['template'] = str_replace("{option2}",$option2 ,$template['template']);   
-            $template['template'] = str_replace("{subtotal2}",$subTotal2 ,$template['template']);   
+            $template['template'] = str_replace("{option2}",$option2 ,$template['template']);
+            $template['template'] = str_replace("{subtotal2}",$subTotal2 ,$template['template']);
         }else{
-            $template['template'] = str_replace("{option2}",'' ,$template['template']); 
-            $template['template'] = str_replace("{subtotal2}",'' ,$template['template']);   
+            $template['template'] = str_replace("{option2}",'' ,$template['template']);
+            $template['template'] = str_replace("{subtotal2}",'' ,$template['template']);
         }
-        
+
         $emptytemplate ='';
 
         $this->set( array(
@@ -1102,7 +1305,8 @@ class OrdersController extends AppController
         // Read the order's data from database
         $this->set("cusId", $cusId);
         $this->set("mainId", $mainOrderId);
-
+       $profile1=array();
+       $profile2=array();
         $first_Temp = "";
         $query = "SELECT * FROM ace_rp_order_estimation WHERE order_id=".$order_id;
         $result = $db->_execute($query);
@@ -1114,20 +1318,20 @@ class OrdersController extends AppController
 
             $this->Order->id = $order_id;
             $orderData = $this->Order->read();
-            
+
             if(empty($template)){
-                $templateQuery = "select * from ace_rp_estimation_template where job_type_id =".$this->data['Order']['order_type_id']; 
+                $templateQuery = "select * from ace_rp_estimation_template where job_type_id =".$this->data['Order']['order_type_id'];
                 $result = $db->_execute($templateQuery);
                 $template = mysql_fetch_array($result);
                 $first_Temp = "true";
             }
             else{
-                $templateQuery = "SELECT * FROM ace_rp_order_estimation WHERE order_id=".$order_id; 
+                $templateQuery = "SELECT * FROM ace_rp_order_estimation WHERE order_id=".$order_id;
                 $result = $db->_execute($templateQuery);
                 $template = mysql_fetch_array($result);
             }
 
-        //Load current questions 
+        //Load current questions
         //$officeQuery =  $this->_showQuestions(0, 0,$orderData['Order']['order_type_id'],'');
         $condition = "for_office=1 and";
         $query = " SELECT * FROM ace_rp_questions WHERE ".$condition." order_type_id = ".$orderData['Order']['order_type_id']." order by rank, value ";
@@ -1143,7 +1347,8 @@ class OrdersController extends AppController
             $query = "SELECT * FROM ace_rp_orders_questions_working WHERE question_id=".$value['id']." AND order_id=".$order_id ;
             $result = $db->_execute($query);
             $qan = mysql_fetch_assoc($result);
-
+            $qan['suggestion'] = '';
+            $qan['decision'] = '';
             if(!empty($qan['response_id'])){
                 /*ace_rp_responses*/
                 $query = "SELECT * FROM ace_rp_responses WHERE id=".$qan['response_id'];
@@ -1152,147 +1357,254 @@ class OrdersController extends AppController
                 $qan['response'] = $response['value'];
                 $qan['response_text'] = $response['value'];
             }
+            if(!empty($qan['suggestion_id'])){
+                $query = "SELECT * FROM ace_rp_suggestions WHERE id=".$qan['suggestion_id'];
+                $result = $db->_execute($query);
+                $response = mysql_fetch_assoc($result);
+                $qan['suggestion'] = $response['value'];
+            }
+            if(!empty($qan['decision_id'])){
+                $query = "SELECT * FROM ace_rp_decisions WHERE id=".$qan['decision_id'];
+                $result = $db->_execute($query);
+                $response = mysql_fetch_assoc($result);
+                $qan['decision'] = $response['value'];
+            }
             $temp[$key]['qan'] = $qan;
         }
-
         $typeQuery = "SELECT id, name FROM ace_rp_order_types where flagactive=1" ;
         $typeResult = $db->_execute($typeQuery);
         $orderType = array();
-        
-        
+
+
         $query = "SELECT message FROM ace_rp_notes WHERE order_id=".$order_id ;
         $result = $db->_execute($query);
-        $note = mysql_fetch_assoc($result);     
+        $note = mysql_fetch_assoc($result);
 
         //$temp as officeQuery
         if($first_Temp == "true")
         {
-            $officeQueryHTML = '<table class="officeQueryHTML" style="border-collapse: collapse; width: 35%;" border="1">
-                <tbody>
-                <tr style="height: 18px;">
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">#</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Questions</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Responses</strong></td>
-                </tr>';
-            
+            $officeQueryHTML = '<table class="officeQueryHTML" style="border:1px solid #c7e7f0;border-collapse: collapse; width:100%;">
+                    <thead style="background: #c7e7f0;">
+                        <tr>
+                            <th style="width: 50%; text-align: center;  padding: 5px 10px; border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">Questions</th>
+                            <th style="width: 30%; text-align: center;  padding: 5px 10px; border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">Responses</th>
+                            <th style="width: 30%; text-align: center;  padding: 5px 10px; border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">Suggestion</th>
+                            <th style="width: 30%; text-align: center;  padding: 5px 10px; border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">Decision</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
+
             foreach ($temp as $key => $value) {
-                    
-                $officeQueryHTML .='<tr style="height: 18px;">
-                        <td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['rank'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['value'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['qan']['response_text']. '</td>
+
+                $officeQueryHTML .='<tr style="border-bottom: 1px solid #f9f9f9;">
+                        <td style="text-align:center;  padding: 5px 10px; border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">
+                        '. $value['value'].'
+                        </td>
+                         <td style="text-align:center;  padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">
+                        '. $value['qan']['response_text'].'
+                        </td>
+                        <td style="text-align:center;  padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">
+                        '. $value['qan']['suggestion'].'
+                        </td>
+                        <td style="text-align:center;  padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">
+                        '. $value['qan']['decision'].'
+                        </td>
                     </tr>';
             }
-            $officeQueryHTML .= '</table>';
+            $officeQueryHTML .= '</tbody></table>';
 
 
-            $option1 = '<table class="option1_new" style="border-collapse: collapse; width: 35%;" border="1">
-                <tbody>
-                <tr style="height: 18px;">
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Brand</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Model</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
-                     <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Total</strong></td>
-                </tr>';
+            $option1 = ' <table class="option1_new" style="border:1px solid #c7e7f0; width:100%;border-collapse: collapse;">
+                    <thead style="background: #c7e7f0;">
+                        <tr>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Item</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Brand</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Model</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Warranty</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Efficiency</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">H*W*D</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Dba</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Tonnage</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Seer</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Position</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Qty</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Price</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Discount</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
 
 
-            $option2 = '<table class="option2_new" style="border-collapse: collapse; width: 35%;" border="1">
-                <tbody>
-                <tr style="height: 18px;">
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Brand</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Model</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
-                     <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Total</strong></td>
-                </tr>';
+            $option2 = ' <table class="option2_new" style="border:1px solid #c7e7f0; width:100%;border-collapse: collapse;">
+                    <thead style="background: #c7e7f0;">
+                        <tr>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Item</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Brand</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Model</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Warranty</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Efficiency</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">H*W*D</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Dba</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Tonnage</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Seer</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Position</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Qty</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Price</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Discount</th>
+                            <th style=" padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
 
                 $subTotalPrice1 = 0;
                 $subTotalPrice2 = 0;
                 $classZeroExist = 0;
                 $classOneExist = 0;
             foreach ($bookingItem as $key => $value) {
+                $item_id=$value['item_id'];
+        $warranty_sql = "select image,warranty,link,dba,seer,tonnage,position,description1,efficiency from iv_items_labeled2 where id='$item_id'";
+
+        $result11 = $db->_execute($warranty_sql);
+        while ($row11 = mysql_fetch_array($result11)){
+               $warranty=$row11['warranty'];
+               $link=$row11['link'];
+               $image=$row11['image'];
+               $itemDetail = $row11;
+        }
+        if($warranty=="NULL"){
+         $warranty="";
+        }
+
+        $images1 = $image;
+                  $year = substr($images1, 0, 4);
+        $mon = substr($images1, 4, 2);
+        $day = substr($images1, 6, 2);
+        $name = $year.'/'.$mon.'/'.$day.'/'.$images1;
+       if(empty($images1)){
+          $name="";
+
+          $src="";
+  $img="";
+        }
+        else {
+          $src=ROOT_URL.'/upload_photos/'.$name;
+
+  $img="<img class='hover_image' style='height: 100px;
+    width: 100px;' src='$src'>";
+
+        }
+        $link1='';
                 if($value['class']==0){
+                    if(!empty($link) && $link!="NULL"){
+                     $link1.="<span>Link : $link&nbsp;&nbsp;</span>";
+                  $profile1[]=$link;
+                  }
                     $classZeroExist = 1;
                     $newPrice1 = $value['price'] + ($value['addition'] / $value['quantity']);
                     $total1 = ((($value['quantity'] * $value['price'])+$value['addition']) - $value['discount']);
-                    $option1 .='<tr style="height: 18px;">
-                        <td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['brand'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['model_number'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'.$newPrice1. '</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'.$total1. '</td>
-                    </tr>';
-                    //$subTotalPrice1 = $subTotalPrice1+(($value['price']*$value['quantity'])+($value['addition'])-($value['discount']));
-                    $subTotalPrice1 = $subTotalPrice1+$total1;
+                    if(!empty($value['name'])) {
+                        $option1 .=' <tr>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['name'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">&nbsp;'. $value['brand'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['model_number'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $warranty.'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'.  $itemDetail['efficiency'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'.$itemDetail['description1'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['dba'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['tonnnage'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['seer'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['position'].'</td>    
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['quantity'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'.$newPrice1. '</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['discount']. '</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'.$total1. '</td>
+                        </tr>'.$link1;
+                        //$subTotalPrice1 = $subTotalPrice1+(($value['price']*$value['quantity'])+($value['addition'])-($value['discount']));
+                        $subTotalPrice1 = $subTotalPrice1+$total1;
+                    }
                 }
 
-
+                  $link1='';
                 if($value['class']==1){
+                    if(!empty($link) && $link!="NULL"){
+                     $link1.="<span>Link : $link&nbsp;&nbsp;</span>";
+                  $profile2[]=$link;
+                  }
                     $classOneExist = 1;
                     $total2 = ((($value['quantity'] * $value['price'])+$value['addition']) - $value['discount']);
                     $newPrice2 = $value['price'] + ($value['addition'] / $value['quantity']);
-                    $option2 .='<tr style="height: 18px;">
-                        <td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['brand'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['model_number'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $newPrice2. '</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $total2. '</td>
-                    </tr>';
-                    //$subTotalPrice2 = $subTotalPrice2+(($value['price']*$value['quantity'])+($value['addition'])-($value['discount']));
-                    $subTotalPrice2 = $subTotalPrice2+$total2;
+                    if(!empty($value['name'])) {
+                        $option2 .='<tr>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['name'].'</td>
+
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['brand'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['model_number'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $warranty.'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'.  $itemDetail['efficiency'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'.$itemDetail['description1'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['dba'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['tonnnage'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['seer'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['position'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['quantity'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $newPrice2. '</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['discount']. '</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $total2. '</td>
+                        </tr>';
+                        //$subTotalPrice2 = $subTotalPrice2+(($value['price']*$value['quantity'])+($value['addition'])-($value['discount']));
+                        $subTotalPrice2 = $subTotalPrice2+$total2;
+                    }
                 }
             }
 
-            
+
             $gst1 = $subTotalPrice1*0.05;
             $total1 = $subTotalPrice1+$gst1;
 
             $gst2 = $subTotalPrice2*0.05;
-            $total2 = $subTotalPrice2+$gst2;        
+            $total2 = $subTotalPrice2+$gst2;
 
 
-            $subTotal1 = '<table class="subTotal1" style="border-collapse: collapse; width: 15.593%; height: 100px;" border="1">
+            $subTotal1 = '<div></div>
+            <div> <table class="subtotal1" style="float: right; margin-left: auto; width: 15%; border: 1px solid #c7e7f0; border-collapse: collapse; border-top: 0;font-size:12px;margin-bottom: 20px;">
+             <tr>
+                <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">
+                    <b>SubTotal:</b>
+                </td>
+                <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">'.$subTotalPrice1.'</td>
+            </tr>
+              <tr>
+                <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">
+                    <b>GST:</b>
+                </td>
+                <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">'.$gst1.'</td>
+            </tr>
+             <tr>
+                <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">
+                    <b>Total:</b>
+                </td>
+                <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">'.$total1.'</td>
+            </tr>
+            </table></div></div>';
+
+            $subTotal2 = '<div></div>
+            <div><table class="subtotal2" style="float: right; margin-left: auto; width: 15%; border: 1px solid #c7e7f0; border-collapse: collapse; border-top: 0;font-size:12px;margin-bottom: 20px;">
             <tbody>
             <tr>
-            <td style="width: 50%; text-align: right;">SubTotal:</td>
-            <td style="width: 50%; text-align: right;">'.$subTotalPrice1.'</td>
+            <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">SubTotal:</td>
+            <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">'.$subTotalPrice2.'</td>
             </tr>
             <tr>
-            <td style="width: 50%; text-align: right;">GST:</td>
-            <td style="width: 50%; text-align: right;">'.$gst1.'</td>
+            <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">GST:</td>
+            <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">'.$gst2.'</td>
             </tr>
             <tr>
-            <td style="width: 50%; text-align: right;">Total</td>
-            <td style="width: 50%; text-align: right;">'.$total1.'</td>
+            <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">Total</td>
+            <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">'.$total2.'</td>
             </tr>
             </tbody>
-            </table>';
-
-            $subTotal2 = '<table class="subTotal2" style="border-collapse: collapse; width: 15.593%; height: 100px;" border="1">
-            <tbody>
-            <tr>
-            <td style="width: 50%; text-align: right;">SubTotal:</td>
-            <td style="width: 50%; text-align: right;">'.$subTotalPrice2.'</td>
-            </tr>
-            <tr>
-            <td style="width: 50%; text-align: right;">GST:</td>
-            <td style="width: 50%; text-align: right;">'.$gst2.'</td>
-            </tr>
-            <tr>
-            <td style="width: 50%; text-align: right;">Total</td>
-            <td style="width: 50%; text-align: right;">'.$total2.'</td>
-            </tr>
-            </tbody>
-            </table>';
+            </table></div>';
 
             $option1 .= '</tbody></table>';
             $option2 .= '</tbody></table>';
@@ -1307,7 +1619,7 @@ class OrdersController extends AppController
                 $optionHTML .='<option  '.$temp.'  value="'.$row['id'].'" > '.$row['name'].' </option>';
             }
             $optionHTML .= '</select>';
-            
+
             /*echo $jobetype; die;*/
 
 
@@ -1315,7 +1627,7 @@ class OrdersController extends AppController
             $address = "<span class='cus_address'>".$orderData['Customer']['address_unit'].' '.$orderData['Customer']['address_street_number'].' '.$orderData['Customer']['address_street']."</span>";
             $city = "<span class='cus_city'>".$orderData['Customer']['city']."</span>";
             $postal = "<span class='cus_postal'>".$orderData['Customer']['postal_code']."</span>";
-            $email= "<span class='cus_email'>".$orderData['Customer']['email']."</span>"; 
+            $email= "<span class='cus_email'>".$orderData['Customer']['email']."</span>";
             $phone= "<span class='cus_phone'>".$orderData['Customer']['phone']."</span>";
             $cellphone= "<span class='cus_cellphone'>".$orderData['Customer']['cell_phone']."</span>";
             $note = "<span class='cus_note'>".$note['message']."</span>";
@@ -1323,7 +1635,8 @@ class OrdersController extends AppController
             $date = "<span class='cus_date'>".$orderData['Order']['booking_date']."</span>";
             $reference = "<span class='cus_ref'>".$orderData['Order']['order_number']."</span>";
             $ref = $orderData['Order']['id'];
-        
+           $profile1=implode(',',$profile1);
+            $profile2=implode(',',$profile2);
             $template['template'] = str_replace("{name}",$name ,$template['template']);
             $template['template'] = str_replace("{address}",$address ,$template['template']);
             $template['template'] = str_replace("{city}",$city ,$template['template']);
@@ -1335,147 +1648,241 @@ class OrdersController extends AppController
             $template['template'] = str_replace("{date}",$date ,$template['template']);
             $template['template'] = str_replace("{reference}",$reference ,$template['template']);
             $template['template'] = str_replace("{note}",$note ,$template['template']);
+            $template['template'] = str_replace("{profile1}",$profile1 ,$template['template']);
+            $template['template'] = str_replace("{profile2}",$profile2 ,$template['template']);
 
             $template['template'] = str_replace("{jobetype}",$jobetype ,$template['template']);
-            
+
             if($classZeroExist){
-                $template['template'] = str_replace("{option1}",$option1 ,$template['template']);   
-                $template['template'] = str_replace("{subtotal1}",$subTotal1 ,$template['template']);   
+                $template['template'] = str_replace("{option1}",$option1 ,$template['template']);
+                $template['template'] = str_replace("{subtotal1}",$subTotal1 ,$template['template']);
             }else{
-                $template['template'] = str_replace("{option1}",'' ,$template['template']); 
-                $template['template'] = str_replace("{subtotal1}",'' ,$template['template']);   
+                $template['template'] = str_replace("{option1}",'' ,$template['template']);
+                $template['template'] = str_replace("{subtotal1}",'' ,$template['template']);
             }
-            
+
             // if($classOneExist){
-            $template['template'] = str_replace("{option2}",$option2 ,$template['template']);   
-            $template['template'] = str_replace("{subtotal2}",$subTotal2 ,$template['template']);   
+            $template['template'] = str_replace("{option2}",$option2 ,$template['template']);
+            $template['template'] = str_replace("{subtotal2}",$subTotal2 ,$template['template']);
             // }else{
-            //  $template['template'] = str_replace("{option2}",'' ,$template['template']); 
-            //  $template['template'] = str_replace("{subtotal2}",'' ,$template['template']);   
+            //  $template['template'] = str_replace("{option2}",'' ,$template['template']);
+            //  $template['template'] = str_replace("{subtotal2}",'' ,$template['template']);
             // }
         }
         else{
-            $officeQueryHTML = '<table class="officeQueryHTML" style="border-collapse: collapse; width: 35%;" border="1">
-                <tbody>
-                <tr style="height: 18px;">
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">#</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Questions</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Responses</strong></td>
-                </tr>';
-            
+             $officeQueryHTML = '<table class="officeQueryHTML" style="border:1px solid #c7e7f0;border-collapse: collapse; width:100%;">
+                    <thead style="background: #c7e7f0;">
+                        <tr>
+                            <th style="width: 50%; text-align: center;  padding: 5px 10px; border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">Questions</th>
+                            <th style="width: 30%; text-align: center;  padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">Responses</th>
+                            <th style="width: 30%; text-align: center;  padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">Suggestion</th>
+                            <th style="width: 30%; text-align: center;  padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">Decision</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
             foreach ($temp as $key => $value) {
-                    
-                $officeQueryHTML .='<tr style="height: 18px;">
-                        <td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['rank'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['value'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['qan']['response_text']. '</td>
+               
+                $officeQueryHTML .='<tr style="border-bottom: 1px solid #f9f9f9;">
+                        <td style="text-align:center;  padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">
+                        '. $value['value'].'
+                        </td>
+                         <td style="text-align:center;  padding: 5px 10px; border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">
+                        '. $value['qan']['response_text'].'
+                        </td>
+                        <td style="text-align:center;  padding: 5px 10px; border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">
+                        '. $value['qan']['suggestion'].'
+                        </td>
+                        <td style="text-align:center;  padding: 5px 10px; border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">
+                        '. $value['qan']['decision'].'
+                        </td>
                     </tr>';
             }
-            $officeQueryHTML .= '</table>';
+            $officeQueryHTML .= '</tbody></table>';
+              $option1 = ' <table  class="option1_new" style="border: 1px solid #c7e7f0; width: 100%; border-collapse: collapse;font-size:12px">
+                    <thead style="background: #c7e7f0;">
+                        <tr>
+                            <th style=" padding: 5px 10px;border:1px solid #000;border-collapse: collapse;font-size:12px;">Item</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Brand</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Model</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Warranty</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Efficiency</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">H*W*D</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Dba</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Tonnage</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Seer</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Position</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Qty</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Price</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Discount</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
 
-            $option1 = '<table class="option1_new" style="border-collapse: collapse; width: 35%;" border="1">
-                <tbody>
-                <tr style="height: 18px;">
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Brand</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Model</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
-                     <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Total</strong></td>
-                </tr>';
 
-
-            $option2 = '<table class="option2_new" style="border-collapse: collapse; width: 35%;" border="1">
-                <tbody>
-                <tr style="height: 18px;">
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Brand</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Model</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
-                    <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
-                     <td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Total</strong></td>
-                </tr>';
-
+            $option2 = ' <table class="option2_new" style="border: 1px solid #c7e7f0; width: 100%; border-collapse: collapse;font-size:12px">
+                    <thead style="background: #c7e7f0;">
+                        <tr>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Item</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Brand</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Model</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Warranty</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Efficiency</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">H*W*D</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Dba</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Tonnage</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Seer</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Position</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Qty</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Price</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Discount</th>
+                            <th style=" padding: 5px 10px;border:1px solid  #000;border-collapse: collapse;font-size:12px;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
                 $subTotalPrice1 = 0;
                 $subTotalPrice2 = 0;
                 $classZeroExist = 0;
                 $classOneExist = 0;
             foreach ($bookingItem as $key => $value) {
+                 $item_id=$value['item_id'];
+        $warranty_sql = "select image,warranty,link,dba,seer,tonnage,position,description1,efficiency from iv_items_labeled2 where id='$item_id'";
+
+        $result11 = $db->_execute($warranty_sql);
+        while ($row11 = mysql_fetch_array($result11)){
+               $warranty=$row11['warranty'];
+               $link=$row11['link'];
+               $image=$row11['image'];
+               $itemDetail = $row11;
+        }
+        if($warranty=="NULL"){
+         $warranty="";
+        }
+
+        $images1 = $image;
+                  $year = substr($images1, 0, 4);
+        $mon = substr($images1, 4, 2);
+        $day = substr($images1, 6, 2);
+        $name = $year.'/'.$mon.'/'.$day.'/'.$images1;
+       if(empty($images1)){
+          $name="";
+
+          $src="";
+  $img="";
+        }
+        else {
+          $src=ROOT_URL.'/upload_photos/'.$name;
+
+  $img="<img class='hover_image' style='height: 100px;
+    width: 100px;' src='$src'>";
+
+        }
+        $link1='';
                 if($value['class']==0){
+                    if(!empty($link) && $link!="NULL"){
+                     $link1.="<span>Link : $link&nbsp;&nbsp;</span>";
+                 $profile1[]=$link;
+                  }
                     $classZeroExist = 1;
                     $newPrice3 = $value['price'] + ($value['addition'] / $value['quantity']);
                     $total3 = ((($value['quantity'] * $value['price'])+$value['addition']) - $value['discount']);
-                    $option1 .='<tr style="height: 18px;">
-                        <td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
-                        <td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['brand'].'</td>
-                        <td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['model_number'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $newPrice3. '</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $total3. '</td>
-                    </tr>';
-                    //$subTotalPrice1 = $subTotalPrice1+(($value['price']*$value['quantity'])+($value['addition'])-($value['discount']));
-                    $subTotalPrice1 = $subTotalPrice1+$total3;
+                    if(!empty($value['name'])) {
+                    $option1 .='<tr>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['name'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['brand'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['model_number'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $warranty.'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'.  $itemDetail['efficiency'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'.$itemDetail['description1'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['dba'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['tonnnage'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['seer'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['position'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['quantity'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $newPrice3. '</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['discount']. '</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $total3. '</td>
+                        </tr>';
+                        //$subTotalPrice1 = $subTotalPrice1+(($value['price']*$value['quantity'])+($value['addition'])-($value['discount']));
+                        $subTotalPrice1 = $subTotalPrice1+$total3;
+                    }
                 }
 
-
+               $link1='';
                 if($value['class']==1){
+                    if(!empty($link) && $link!="NULL"){
+                     $link1.="<span>Link : $link&nbsp;&nbsp;</span>";
+                  $profile2[]=$link;
+                  }
                     $classOneExist = 1;
                     $newPrice4 = $value['price'] + ($value['addition'] / $value['quantity']);
                     $total4 = ((($value['quantity'] * $value['price'])+$value['addition']) - $value['discount']);
-                    $option2 .='<tr style="height: 18px;">
-                        <td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['name'].'</td>
-                        <td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['brand'].'</td>
-                        <td style="width: 16.6667%; height: 18px;text-align: center;">&nbsp;'. $value['model_number'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['quantity'].'</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $newPrice4. '</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'. $value['discount']. '</td>
-                        <td style="width: 16.6667%; height: 18px;">&nbsp;'.$total4. '</td>
-                    </tr>';
-                    $subTotalPrice2 = $subTotalPrice2+$total4;
+                    if(!empty($value['name'])) {
+                        $option2 .='<tr>
+                            <td style="text-align: center; padding: 5px 10px;">'. $value['name'].'</td>
+
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['brand'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['model_number'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $warranty.'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'.  $itemDetail['efficiency'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'.$itemDetail['description1'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['dba'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['tonnnage'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['seer'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['position'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $itemDetail['quantity'].'</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $newPrice4. '</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'. $value['discount']. '</td>
+                            <td style="text-align: center; padding: 5px 10px;border:1px solid #c7e7f0;border-collapse: collapse;font-size:12px;">'.$total4. '</td>
+                        </tr>';
+                        $subTotalPrice2 = $subTotalPrice2+$total4;
+                    }
                     //$subTotalPrice2 = $subTotalPrice2+(($value['price']*$value['quantity'])+($value['addition'])-($value['discount']));
                 }
             }
-            
+
             $gst1 = $subTotalPrice1*0.05;
             $total1 = $subTotalPrice1+$gst1;
 
             $gst2 = $subTotalPrice2*0.05;
-            $total2 = $subTotalPrice2+$gst2;        
+            $total2 = $subTotalPrice2+$gst2;
 
-
-            $subTotal1 = '<table class="subTotal1" style="border-collapse: collapse; width: 15.593%; height: 100px;" border="1">
-            <tbody>
-            <tr>
-            <td style="width: 50%; text-align: right;">SubTotal:</td>
-            <td style="width: 50%; text-align: right;">'.$subTotalPrice1.'</td>
+             $subTotal1 = '
+             <table class="subtotal1" style="float: right; margin-left: auto; width: 15%; border: 1px solid #c7e7f0; border-collapse: collapse; border-top: 0;font-size:12px;margin-bottom: 20px;">
+             <tr>
+                <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">
+                    <b>SubTotal:</b>
+                </td>
+                <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">'.$subTotalPrice1.'</td>
             </tr>
-            <tr>
-            <td style="width: 50%; text-align: right;">GST:</td>
-            <td style="width: 50%; text-align: right;">'.$gst1.'</td>
+              <tr>
+                <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">
+                    <b>GST:</b>
+                </td>
+                <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">'.$gst1.'</td>
             </tr>
-            <tr>
-            <td style="width: 50%; text-align: right;">Total</td>
-            <td style="width: 50%; text-align: right;">'.$total1.'</td>
+             <tr>
+                <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">
+                    <b>Total:</b>
+                </td>
+                <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">'.$total1.'</td>
             </tr>
-            </tbody>
             </table>';
 
-            $subTotal2 = '<table class="subTotal2" style="border-collapse: collapse; width: 15.593%; height: 100px;" border="1">
+            $subTotal2 = '
+            <table class="subtotal2" style="float: right; margin-left: auto; width: 15%; border: 1px solid #c7e7f0; border-collapse: collapse; border-top: 0;font-size:12px;margin-bottom: 20px;">
             <tbody>
             <tr>
-            <td style="width: 50%; text-align: right;">SubTotal:</td>
-            <td style="width: 50%; text-align: right;">'.$subTotalPrice2.'</td>
+            <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">SubTotal:</td>
+            <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">'.$subTotalPrice2.'</td>
             </tr>
             <tr>
-            <td style="width: 50%; text-align: right;">GST:</td>
-            <td style="width: 50%; text-align: right;">'.$gst2.'</td>
+            <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">GST:</td>
+            <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">'.$gst2.'</td>
             </tr>
             <tr>
-            <td style="width: 50%; text-align: right;">Total</td>
-            <td style="width: 50%; text-align: right;">'.$total2.'</td>
+            <td style="text-align: left; padding: 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">Total</td>
+            <td style="text-align: center;  padding: 5px 10px; border: 1px solid #c7e7f0; border-collapse: collapse;font-size:12px;">'.$total2.'</td>
             </tr>
             </tbody>
             </table>';
@@ -1493,21 +1900,22 @@ class OrdersController extends AppController
                 $optionHTML .='<option  '.$temp.'  value="'.$row['id'].'" > '.$row['name'].' </option>';
             }
             $optionHTML .= '</select>';
-            
+
             /*echo $jobetype; die;*/
 
             $name = "<span class='cus_name'>".$orderData['Customer']['first_name'].' '.$orderData['Customer']['last_name']."</span>";
             $address = "<span class='cus_address'>".$orderData['Customer']['address_unit'].' '.$orderData['Customer']['address_street_number'].' '.$orderData['Customer']['address_street']."</span>";
             $city = "<span class='cus_city'>".$orderData['Customer']['city']."</span>";
             $postal = "<span class='cus_postal'>".$orderData['Customer']['postal_code']."</span>";
-            $email= "<span class='cus_email'>".$orderData['Customer']['email']."</span>"; 
+            $email= "<span class='cus_email'>".$orderData['Customer']['email']."</span>";
             $phone= "<span class='cus_phone'>".$orderData['Customer']['phone']."</span>";
             $cellphone= "<span class='cus_cellphone'>".$orderData['Customer']['cell_phone']."</span>";
             $note = "<span class='cus_note'>".$note['message']."</span>";
             $date = "<span class='cus_date'>".$orderData['Order']['booking_date']."</span>";
             $reference = "<span class='cus_ref'>".$orderData['Order']['order_number']."</span>";
             $ref = $orderData['Order']['id'];
-
+            $profile1=implode(',',$profile1);
+            $profile2=implode(',',$profile2);
             $template['estimate'] = preg_replace('/<span class=\"cus_name\">.*<\/span>/',$name,$template['estimate']);
             $template['estimate'] = preg_replace('/<span class=\"cus_address\">.*<\/span>/',$address,$template['estimate']);
             $template['estimate'] = preg_replace('/<span class=\"cus_city\">.*<\/span>/',$city,$template['estimate']);
@@ -1519,31 +1927,33 @@ class OrdersController extends AppController
             $template['estimate'] = preg_replace('/<span class=\"cus_off_query\">.*<\/span>/',$officeQuery,$template['estimate']);
             $template['estimate'] = preg_replace('/<span class=\"cus_date\">.*<\/span>/',$date,$template['estimate']);
             $template['estimate'] = preg_replace('/<span class=\"cus_ref\">.*<\/span>/',$reference,$template['estimate']);
+            $template['estimate'] = preg_replace('/<span class=\"profile11\">.*<\/span>/',$profile1,$template['estimate']);
+            $template['estimate'] = preg_replace('/<span class=\"profile22\">.*<\/span>/',$profile2,$template['estimate']);
 
             $template['estimate'] =preg_replace('/<table class="officeQueryHTML" [^>]*>.*?<\/table>/si',$officeQueryHTML,$template['estimate']);
 
             $template['estimate'] = preg_replace('/<span class=\"cus_job_type\">.*<\/span>/',$jobetype,$template['estimate']);
-            
-            if($classZeroExist){ 
-                $template['estimate'] =preg_replace('/<table class="option1_new" [^>]*>.*?<\/table>/si',$option1,$template['estimate']);
-                $template['estimate'] =preg_replace('/<table class="subtotal1" [^>]*>.*?<\/table>/si',$subTotal1,$template['estimate']);
+
+            if($classZeroExist){
+                $template['estimate'] =preg_replace('/<table class="option1_new" [^>]*>.*?<\/table>/si',$option1,$template['estimate'],1);
+                $template['estimate'] =preg_replace('/<table class="subtotal1" [^>]*>.*?<\/table>/si',$subTotal1,$template['estimate'],1);
             }else{
                 $template['estimate'] =preg_replace('/<table class="option1_new" [^>]*>.*?<\/table>/si','',$template['estimate']);
                 $template['estimate'] =preg_replace('/<table class="subtotal1" [^>]*>.*?<\/table>/si','',$template['estimate']);
             }
-            
+
             if($classOneExist){
 
-                $template['estimate'] =preg_replace('/<table class="option2_new" [^>]*>.*?<\/table>/si',$option2,$template['estimate']);
-                $template['estimate'] =preg_replace('/<table class="subtotal2" [^>]*>.*?<\/table>/si',$subTotal2,$template['estimate']);
-            }else{  
+                $template['estimate'] =preg_replace('/<table class="option2_new" [^>]*>.*?<\/table>/si',$option2,$template['estimate'],1);
+                $template['estimate'] =preg_replace('/<table class="subtotal2" [^>]*>.*?<\/table>/si',$subTotal2,$template['estimate'],1);
+            }else{
                 $template['estimate'] =preg_replace('/<table class="option2_new" [^>]*>.*?<\/table>/si','',$template['estimate']);
                 $template['estimate'] =preg_replace('/<table class="subtotal2" [^>]*>.*?<\/table>/si','',$template['estimate']);
             }
 
             $template['template']=$template['estimate'];
         }
-        
+
         $emptytemplate ='';
 
         $this->set( array(
@@ -1555,7 +1965,7 @@ class OrdersController extends AppController
             'order_id' => $ref,
             'email'=>'',
             'preViewEstimate' => "false",
-            'fromTech' => $fromTech 
+            'fromTech' => $fromTech
         ));
 
         }else{
@@ -1575,7 +1985,14 @@ class OrdersController extends AppController
 
     }
 
+    // $sessionData = [];
     function saveAndSendEstimateForOrder(){
+
+        // if(!empty($sessionData)) {
+        //     $sessionData = $_SESSION;
+        // } else {
+        //     die('hey');
+        // }
 
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         if(isset($_POST['print'])){
@@ -1592,17 +2009,17 @@ class OrdersController extends AppController
 
             }
             else{
-            
+
                 $query = "
                         INSERT INTO ace_rp_order_estimation(order_id, estimate)
                         VALUES(".$_POST['order_id'].",'".$_POST['editor']."')";
             }
-            
+
             $result = $db->_execute($query);
             $this->estimateTabletPrint($_POST['order_id']);
 
         }else{
-            
+
             $query = "SELECT * FROM ace_rp_order_estimation WHERE order_id=".$_POST['order_id'];
             $result = $db->_execute($query);
 
@@ -1629,16 +2046,99 @@ class OrdersController extends AppController
             $msg = '<html><body>'.$_POST['editor'].'</body></html>';
             $msg = str_replace("\\", '' , $msg);*/
             // echo $_POST['email']."".$subject,$msg."".$headers;die;
-            /*$res = mail($_POST['email'], $subject,$msg, $headers);
-            $this->redirect('/orders/scheduleView');*/
+            /*$res = mail($_POST['email'], $subject,$msg, $headers);*/
+            // if(!empty($_SESSION)) {
+            //     $_SESSION = $sessionData;
+            // }
+            // $this->redirect('/orders/scheduleView');
             exit;
         }
     }
 
     function sendMailEstimate(){
+
         $orderId = $_POST['order_id'];
+        $fileName = null;
+        $subject = 'Ace Services : Order Estimate';
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-        $query = "SELECT oe.*, o.* FROM ace_rp_order_estimation oe INNER JOIN ace_rp_orders o ON oe.order_id = o.id   WHERE oe.order_id=".$orderId; 
+        $query = "SELECT oe.*, o.* FROM ace_rp_order_estimation oe INNER JOIN ace_rp_orders o ON oe.order_id = o.id   WHERE oe.order_id=".$orderId;
+        $result = $db->_execute($query);
+        $currentDate = date("Y-m-d");
+        while ($row = mysql_fetch_array($result)){
+            $template = $row;
+        }
+        $new = str_replace('&nbsp;', ' ', $template['estimate']);
+
+        // $message = html_entity_decode($new);
+        // $pdf = $this->Mpdf->createPdf($message, 1);
+        // $fileName = "/home/hvacproz/public_html/acesys/app/webroot/tech-invoice/". $pdf;
+       
+        $email = $_POST['email'];
+        // $res1 = $this->sendEmailUsingMailgun($email,$subject,$message,);
+        // orginal code
+        $encrypted = base64_encode($orderId.'.alihvac');
+        $url =  $this->G_URL.'/acesys/index.php/orders/viewEstimate?id='.$encrypted;
+        $message1 = '<html>
+        <head>
+        <title>Email Template</title>
+        </head>
+        <body>
+            <div style="max-width: 662px; margin: 0 auto; box-shadow: 0px 0px 10px #d9d9d9; padding: 10px 20px; height: 70%;">
+                <div style="text-align: center;">
+                    <img src="https://acecare.ca/wp-content/uploads/2020/04/cropped-Pro-Ace-Logo-new-resized.jpg" alt="logo" width="250px" />
+                </div>
+                <h2 style="font-size: 25px; color: #000;text-align: center;">Job Estimate</h2>
+                <p>Dear Client,</p>
+                <p style="margin-bottom: 50px;">
+                    Thanks for providing us the opportunity to do business with you. You will find an estimate containing each of the products/services we are proposing to complete attached with this email.
+                    We look forward to doing business together. If you have any questions, feel free to contact us.</p>
+                <p style="margin-bottom: 0;">Sincerely,</p>
+                <p style="margin: 0;">Pro Ace Team</p>
+                <p style="margin: 0;">6042933770</p>
+                <div style="padding: 10px 20px; text-transform: uppercase; background:#2196f3;max-width: 105px; cursor: pointer; margin: 30px auto;">
+                    <a href="'.$url.'" title="estimate" style=" text-decoration: none; color: #fff;">View Estimate</a>
+                </div>
+            </div>
+        </body>
+        </html>';
+        $res1 = $this->sendEmailUsingMailgun($email,$subject,$message1,null,$fileName);
+       if (strpos($res1, '@acecare') !== false)
+       {
+           $is_sent = 1;
+       } else
+       {
+           $is_sent = 0;
+       }
+
+        if($is_sent) {
+            $db->_execute("UPDATE ace_rp_orders set estimate_sent =".$is_sent." where id=".$orderId);
+            $insertLog = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id,subject) values (".$orderId.",'".$template['customer_id']."','".$template['order_type_id']."','".$currentDate."',".$is_sent.",'".$message."', '".$res1."','Estimation')";
+
+            // $tempCustomerId = $template['customer_id'];
+            // $tempOrderTypeId = $template['order_type_id'];
+
+            // $insertLog = 'INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message_id,subject) values ('.$orderId.','.$tempCustomerId.','.$tempOrderTypeId.',"'.$currentDate.'",'.$is_sent.',"'.$message.'", "'.$res1.'","Estimation")';
+
+            $insetRes = $db->_execute($insertLog);
+            if($insetRes) {
+                  $response  = array("res" => "OK");
+                  echo json_encode($response);
+            } else {
+              die('Something went wrong, plesae try again');
+            }
+            exit();
+        }
+        exit;
+    }
+
+    function viewEstimate()
+    {
+        $key = 'proaceali';
+        $orderId = $_GET['id'];
+        $orderId = explode('.',base64_decode($orderId));
+        $orgId = $orderId[0];
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $query = "SELECT oe.*, o.* FROM ace_rp_order_estimation oe INNER JOIN ace_rp_orders o ON oe.order_id = o.id   WHERE oe.order_id=". $orgId;
         $result = $db->_execute($query);
         $currentDate = date("Y-m-d");
         while ($row = mysql_fetch_array($result)){
@@ -1646,33 +2146,14 @@ class OrdersController extends AppController
         }
         $subject = 'Ace Services : Order Estimate';
         $new = str_replace('&nbsp;', ' ', $template['estimate']);
+
         $message = html_entity_decode($new);
-        $email = $_POST['email'];
-        $res1 = $this->sendEmailUsingMailgun($email,$subject,$message);     
-        if (strpos($res1, '@acecare') !== false) 
-        {
-            $is_sent = 1;
-        } else 
-        {
-            $is_sent = 0;
-        }
-        
-        if($is_sent) {
-            $db->_execute("UPDATE ace_rp_orders set estimate_sent =".$is_sent." where id=".$orderId);
-            $insertLog = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$orderId.",".$template['customer_id'].",".$template['order_type_id'].",'".$currentDate."',".$is_sent.",'".$message."', '".$res1."')";
-            $insetRes = $db->_execute($insertLog);
-
-            $response  = array("res" => "OK");
-            echo json_encode($response);
-            exit();
-        }
-        exit;
+        echo $message;
+        exit();
     }
-
-
     function sendemailTmp(){
         $tmp  = $_POST['editor'];
-        
+
         $subject = 'Ace Services : Order Estimate';
         $headers = "From: info@acecare.ca\n";
         /*$headers .="MIME-Version: 1.0";*/
@@ -1715,9 +2196,9 @@ class OrdersController extends AppController
         }
         if(!empty($template[2])){
 
-            $this->set( array(          
+            $this->set( array(
             'template'=>$template[2],
-            'emptytemplate'=>$emptytemplate,        
+            'emptytemplate'=>$emptytemplate,
             'order_id' => $_GET['order_id'],
             'email' => $_GET['email']
         ));
@@ -1729,23 +2210,23 @@ class OrdersController extends AppController
 
         $emptytemplate = "Not yet";
 
-            $this->set( array(          
+            $this->set( array(
             'emptytemplate'=>$emptytemplate
         ));
         $this->render('orderestimate');
         }
         }
-        else{           
-        
+        else{
+
         $emptytemplate = "Not yet";
-        $this->set( array(          
+        $this->set( array(
             'emptytemplate'=>$emptytemplate
         ));
         $this->render('orderestimate');
         }
 
     }
- 
+
     function saveOrderFromVici($bookingTelemarketerId, $saveCustomer=1)
     {
         //Prepare the date for entry into the DB
@@ -1852,6 +2333,8 @@ class OrdersController extends AppController
             $row = mysql_fetch_array($result);
             $old_status = $row['order_status_id'];
         }
+
+
         if ($this->Order->save($this->data))
         {
             //Get Order ID
@@ -1925,6 +2408,7 @@ class OrdersController extends AppController
                 $response_id = isset($row['response_id'])&&$row['response_id']!=""?$row['response_id']:"NULL";
                 $suggestion_id = isset($row['suggestion_id'])&&$row['suggestion_id']!=""?$row['suggestion_id']:"NULL";
                 $decision_id = isset($row['decision_id'])&&$row['decision_id']!=""?$row['decision_id']:"NULL";
+                $text_id = isset($row['text_id'])&&$row['text_id']!=""?$row['text_id']:"NULL";
 
                 $query = "
                     DELETE FROM ace_rp_orders_questions_working
@@ -1935,8 +2419,8 @@ class OrdersController extends AppController
                 $result = $db->_execute($query);
 
                 $query = "
-                    INSERT INTO ace_rp_orders_questions_working(order_id, question_id, response_text, response_id, suggestion_id, decision_id)
-                    VALUES($order_id, $question_id, $response_text, $response_id, $suggestion_id, $decision_id)
+                    INSERT INTO ace_rp_orders_questions_working(order_id, question_id, response_text, response_id, suggestion_id, decision_id,text_id)
+                    VALUES($order_id, $question_id, $response_text, $response_id, $suggestion_id, $decision_id,$text_id)
                 ";
 
                 $result = $db->_execute($query);
@@ -2147,13 +2631,13 @@ class OrdersController extends AppController
         }
         else if (!empty($this->data['User']))
         {
-        if(!empty($pitch1) || !empty($pitch2)) 
+        if(!empty($pitch1) || !empty($pitch2))
             {
                 $db =& ConnectionManager::getDataSource('default');
                 $query = "SELECT * from ace_rp_users_pitch where user_id = $id";
                 $result = $db->_execute($query);
                 if($row = mysql_fetch_array($result))
-                { 
+                {
                     $query = "UPDATE ace_rp_users_pitch SET pitch1='".$pitch1."', pitch2='".$pitch2."', pitch_type=".$pitchType."  WHERE user_id=$id";
                     $result = $db->_execute($query);
                 } else {
@@ -2167,27 +2651,68 @@ class OrdersController extends AppController
             }
         }
     }
-    
+
     // Function Name: Edit Booking
     // Hardcoded:   * User Roles
     function editBooking()
-    {   
+    {
+        //   ini_set('display_errors', 1);
+        // ini_set('display_startup_errors', 1);
+        // error_reporting(E_ALL);
         $this->layout='edit';
+        $orderTypeId = 0;
+
+        $paymenttype = isset($this->params['url']['paymenttype']) ? $this->params['url']['paymenttype'] :'';
+        $toodate = isset($this->params['url']['toodate']) ? $this->params['url']['toodate'] :'';
+        $frommdate = isset($this->params['url']['frommdate']) ? $this->params['url']['frommdate'] :'';
+        $payment_order = isset($this->params['url']['payment_order']) ? $this->params['url']['payment_order'] :'';
+        $refto = isset($this->params['url']['refto']) ? $this->params['url']['refto'] :'';
+        $reffrom = isset($this->params['url']['reffrom']) ? $this->params['url']['reffrom'] :'';
+        $orrderpayment = isset($this->params['url']['orrderpayment']) ? $this->params['url']['orrderpayment'] :'';
+        $orrdertype = isset($this->params['url']['orrdertype']) ? $this->params['url']['orrdertype'] :'';
+        $printtype = isset($this->params['url']['printtype']) ? $this->params['url']['printtype'] :'';
+        $frommdate =  date("Y-m-d", strtotime($frommdate));
+        $toodate =  date("Y-m-d", strtotime($toodate));
+
         $fromTech = isset($this->params['url']['from_tech_page']) ? $this->params['url']['from_tech_page'] :0;
+        $oldOrderId = isset($this->params['url']['old_order_id']) ? $this->params['url']['old_order_id'] :0;
+        $oldOrderType = isset($this->params['url']['old_oder_type']) ? $this->params['url']['old_oder_type'] :0;
+        $partRequest = isset($this->params['url']['part_request']) ? $this->params['url']['part_request'] : 0;
+        // $fromTech = isset($this->params['url']['from_tech_page']) ? $this->params['url']['from_tech_page'] :0;
         $techOrderId = isset($this->params['url']['techOrderId']) ? $this->params['url']['techOrderId'] :0;
 
         $hotlist = isset($this->params['url']['hotlist'])?$this->params['url']['hotlist']:0;
-        ;
         $isDialer = isset($this->params['url']['is_dialer'])?$this->params['url']['is_dialer']:0;
-
-        $is_booking = isset($this->params['url']['is_booking'])?$this->params['url']['is_booking'] : "";
+       $is_booking = isset($this->params['url']['is_booking'])?$this->params['url']['is_booking'] : "";
         $orderNo = isset($this->params['url']['orderNo'])?$this->params['url']['orderNo'] : '';
         $fromEstimate = isset($this->params['url']['fromEstimate']) ? $this->params['url']['fromEstimate'] :0;
+        $showPreview = isset($this->params['url']['show_preview']) ? $this->params['url']['show_preview'] :0;
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
+        $cur_date = date('Y-m-d');
+        $query = "select max(job_time_end) as max_end from ace_rp_orders where job_date = '".$cur_date."'";
 
-        if (!empty($this->data['Order']))
+         $result = $db->_execute($query);
+         $row = mysql_fetch_row($result);
+
+         $day_am_pm = '0';
+         $jobendtime = "";
+         $jobstarttime = "";
+         if(!empty($row)){
+            if($row[0] > '12:00:00'){
+                $day_am_pm = 2;
+            }else{
+                $day_am_pm = 1;
+            }
+            $jobendtime =  date("H",strtotime($row[0]));
+            $jobstarttime = date("H",strtotime($row[0]) - 60*60);
+
+         }
+    if (!empty($this->data['Order']))
         {
-
+            // $this->Common->printData($_POST);
+            $isOrderId = isset($_POST['is_order_id'])?$_POST['is_order_id']:0;
+            $installationOpen = isset($_POST['installation_open'])?$_POST['installation_open']:0;
             $showDefault = isset($_POST['showDefault'])?$_POST['showDefault']:0;
             //If order information is submitted - save the order
             $send_cancalled_email = isset($_POST['send_cancalled_email'])?$_POST['send_cancalled_email']
@@ -2195,7 +2720,34 @@ class OrdersController extends AppController
             $isDialer = isset($_POST['from_dialer'])?$_POST['from_dialer']
             :0;
             $fromTech = isset($_POST['from_tech']) ? $_POST['from_tech'] :0;
+            $oldOrderId = isset($_POST['oldOrderId']) ? $_POST['oldOrderId'] :0;
+            $oldOrderType = isset($_POST['oldOrderType']) ? $_POST['oldOrderType'] :0;
             $techOrderId = isset($_POST['techOrderId']) ? $_POST['techOrderId'] :0;
+
+            $paymenttype1 = isset($_POST['paymenttype']) ? $_POST['paymenttype'] :'';
+            $toodate1 = isset($_POST['toodate']) ? $_POST['toodate'] :'';
+            $frommdate1 = isset($_POST['frommdate']) ? $_POST['frommdate'] :'';
+            $payment_order1 = isset($_POST['payment_order']) ? $_POST['payment_order'] :'';
+            $refto1 = isset($_POST['refto']) ? $_POST['refto'] :'';
+            $reffrom1 = isset($_POST['reffrom']) ? $_POST['reffrom'] :'';
+            $orrderpayment1 = isset($_POST['orrderpayment']) ? $_POST['orrderpayment'] :'';
+            $orrdertype1 = isset($_POST['orrdertype']) ? $_POST['orrdertype'] :'';
+            $printtype1 = isset($_POST['printtype']) ? $_POST['printtype'] :'';
+            $url = null;
+            if(($paymenttype1 != '') || ($toodate1 != '' )||  ($frommdate1 != '') || ($payment_order1 != '') || ($refto1 != '') || ($reffrom1 != '' ) ||( $orrderpayment1 != '') || ($orrdertype1 != '') ){
+               if($toodate1 != '')
+               {
+                $toodate1 =  date("d+M+Y", strtotime($toodate1));
+               }
+               if($frommdate1 != ''){
+                $frommdate1   =  date("d+M+Y", strtotime($frommdate1));
+               }
+
+
+                $url = "?paymenttype=".$paymenttype1."&todate=".$toodate1."&fromdate=".$frommdate1."&printtype=".$printtype1."&payment_order=".$payment_order1."&refto=".$refto."&reffrom=".$reffrom."&ordertype=".$orrdertype1." ";
+
+            }
+
             $file = isset($_FILES['uploadFile'])? $_FILES['uploadFile'] : null;
             $invoiceImages = isset($_FILES['uploadInvoice'])? $_FILES['uploadInvoice'] : null;
             $photoImage1 = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
@@ -2205,11 +2757,18 @@ class OrdersController extends AppController
             {
                 $invoiceImage = $_FILES['invoice_image'];
             }
-            $this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2, $fromTech, $techOrderId, $send_cancalled_email, $showDefault,'', $invoiceImage);
+        $rating = isset($_POST['rating']) ? $_POST['rating'] :0;
+            if($_REQUEST['from_booking']==1){
+                $this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2, $fromTech, $techOrderId, $send_cancalled_email, $showDefault,'', $invoiceImage,$isOrderId,$installationOpen,$oldOrderId,$oldOrderType,$url,$rating,1,$_REQUEST['booking_id']);
+
+            }
+            else {
+             $this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2, $fromTech, $techOrderId, $send_cancalled_email, $showDefault,'', $invoiceImage,$isOrderId,$installationOpen,$oldOrderId,$oldOrderType,$url,$rating,0,0);
+            }
+
         }
         else
         {
-        
             $this->set('is_booking',$is_booking);
             $this->set('orderNo',$orderNo);
             $this->set('currentUrl', $_SERVER['REQUEST_URI']);
@@ -2222,31 +2781,36 @@ class OrdersController extends AppController
             $order_id = $this->params['url']['order_id'];
             $customer_id = $this->params['url']['customer_id'];
 
-            $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+            // $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
             if($customer_id)
             {
                 $this->Customer->id = $customer_id;
-                $cus = $this->Customer->read();   
+                $cus = $this->Customer->read();
                 $this->set('campaingId',$cus['Customer']['campaign_id']);
                 $allImages = array();
                 $allAddresses  = $cus['CustomerAddresses'];
                  foreach ($cus['PartImages'] as $key => $value) {
                      if(!empty($value['image_name']) && $value['image_name'] != null){
-                       // $allImages[] = $this->getPhotoPath($value['image_name']);
                         $allImages[$key]['id'] = $value['id'];
+                        $allImages[$key]['order_id'] = $value['order_id'];
+                        $allImages[$key]['created_at'] = $value['created_at'];
+                        $allImages[$key]['type'] = $value['type'];
                         $allImages[$key]['image_name'] = $this->getPhotoPath($value['image_name']);
+                        $allImages[$key]['extension'] = pathinfo($value['image_name'], PATHINFO_EXTENSION);
                     }
                 }
+                // print_r($allImages)die;
                 $this->data['Order']['address_id'] = $cus['Customer']['address_id'];
                 $this->set("allImages",$allImages);
                 $this->set("allAddresses",$allAddresses);
+
             }
-        
+
             $num_items = 0;
             $show_app_order='display:none';
             $show_permits = 'display:none';
 
-          
+
 
             //Remove all reserved timeslots
             $query = "
@@ -2275,13 +2839,13 @@ class OrdersController extends AppController
                 $result = $db->_execute($query);
             }
             //# Loki Retrieve all payment types
-            $query = " SELECT * from ace_rp_payment_methods";
+            $query = " SELECT * from ace_rp_payment_methods where show_method = 1";
             $result1 = $db->_execute($query);
             while($row = mysql_fetch_array($result1))
             {
                 $methods[$row['id']] = $row;
             }
-        
+
             $this->set("payment_types", $methods);
             // If order ID is submitted, prepare order's data to be displayed
             if ($order_id)
@@ -2293,40 +2857,56 @@ class OrdersController extends AppController
                 $h_tech='';
                 $allImages = array();
 
+                //Loki: For installlation item
+                $this->set("is_order_id",1);
                 // $this->Common->printData($this->data);
                 /* percent type 1 = percentage, 2 = amount */
+                if(!empty($this->data['Order']['job_technician1_id']))
+                {
+                    $this->User->id = $this->data['Order']['job_technician1_id'];
+                    $techDetails = $this->User->read();
+                }
+                else{
+                    $this->User->id = 231276;
+                    $techDetails = $this->User->read();
+                }
                 if($this->data['Order']['tech_percentage'] > 0)
                 {
                     $this->data['Order']['tech_percentage'] == $this->data['Order']['tech_percentage'];
                 } else {
-                    $this->data['Order']['tech_percentage'] = $this->data['Technician1']['commission_percentage'];
+                    $this->data['Order']['tech_percentage'] =  $techDetails['User']['commission_percentage'];
                     $this->data['Order']['tech_percentage_type'] = 1;
-                    
                 }
-
+               if($this->data['Order']['markup_percentage'] > 0)
+                {
+                    $this->data['Order']['markup_percentage'] == $this->data['Order']['markup_percentage'];
+                } else {
+                    $this->data['Order']['markup_percentage'] = $techDetails['User']['parts_commission_percentage'];
+                    $this->data['Order']['markup_percentage_type'] = 1;
+                }
                 //Loki: Get all images of orders
                 $this->Customer->id = $this->data['Customer']['id'];
-                $customerData = $this->Customer->read();   
+                $customerData = $this->Customer->read();
                 foreach ($customerData['PartImages'] as $key => $value) {
                      if(!empty($value['image_name']) && $value['image_name'] != null){
                         $allImages[$key]['id'] = $value['id'];
+                        $allImages[$key]['order_id'] = $value['order_id'];
+                        $allImages[$key]['type'] = $value['type'];
+                        $allImages[$key]['created_at'] = $value['created_at'];
                         $allImages[$key]['image_name'] = $this->getPhotoPath($value['image_name']);
+                        $allImages[$key]['extension'] = pathinfo($value['image_name'], PATHINFO_EXTENSION);
                     }
                 }
-        
                 $allAddresses  = $customerData['CustomerAddresses'];
                 $this->set("allImages",$allImages);
                 $this->set("allAddresses",$allAddresses);
                 if(!empty($this->data['Order']['city'])){
-                    $this->data['Customer']['address_unit']             = $this->data['Order']['address_unit'];
-                    $this->data['Customer']['address_street_number']    = $this->data['Order']['address_street_number'];
-                    $this->data['Customer']['address_street']           = $this->data['Order']['address_street'];
-                    $this->data['Customer']['city']                     = $this->data['Order']['city'];
-                    $this->data['Customer']['postal_code']              = $this->data['Order']['postal_code'];
+
                 }
 
                 foreach ($this->data['BookingItem'] as $oi)
                 {
+                    $oi['item_tech'] = $this->data['Order']['job_technician1_id'];
                     if ($oi['class']==0)
                     {
                         $h_booked .= '<tr id="order_'.$num_items.'" class="booked">';
@@ -2343,6 +2923,7 @@ class OrdersController extends AppController
                 }
                 foreach ($this->data['BookingCoupon'] as $oi)
                 {
+                    $oi['item_tech'] = $this->data['Order']['job_technician1_id'];
                     $oi['price'] = 0-$oi['price'];
                     $oi['quantity'] = 1;
                     $oi['name'] = 'Discount';
@@ -2355,7 +2936,7 @@ class OrdersController extends AppController
                 $this->set('tech_items', $h_tech);
 
                 /** Fetch order payment image using order id*/
-                // echo 'Order id : '.$this->data['Order']['id']; 
+                // echo 'Order id : '.$this->data['Order']['id'];
                 $queryPayment   = "select payment_image from ace_rp_orders where id='".$this->data['Order']['id']."'";
                 $resultPayment  = $db->_execute($queryPayment);
                 $rowPayment     = mysql_fetch_array($resultPayment, MYSQL_ASSOC);
@@ -2405,11 +2986,235 @@ class OrdersController extends AppController
                 if ($this->data['OrderType']['category_id']==2)
                     $show_permits = '';
 
+                /*loki tech question start*/
+                     $item_id = $this->data['Order']['order_type_id'];
+                     $customer_id = $this->data['Customer']['id'];
+
+
+                $query3="SELECT id,GROUP_CONCAT( image_name ) AS images, date_created,label, customer_id FROM `ace_rp_user_part_images` WHERE customer_id
+               IN ( ".$customer_id." ) GROUP BY (date_created)";
+
+               $result3 = $db->_execute($query3);
+               $query4="SELECT GROUP_CONCAT( CAST( id AS CHAR ) ) AS id
+               FROM `ace_rp_user_part_images`
+               WHERE customer_id
+               IN ( ".$customer_id." )
+               GROUP BY (date_created)";
+               $result4 = $db->_execute($query4);
+
+               $array_result = array();
+               while ($row3 = mysql_fetch_array($result3, MYSQL_NUM)) {
+                   $array_result[] = $row3;
+               }
+
+               $array_result11 = array();
+               while ($row4 = mysql_fetch_array($result4, MYSQL_NUM)) {
+                   $array_result11[] = $row4;
+               }
+               $this->set('new_images', $array_result);
+               $this->set('new_images_id', $array_result11);
+
+                if($item_id){
+                     $query = "
+                            SELECT *
+                            FROM ace_rp_questions
+                            WHERE order_type_id = $item_id AND for_sale = 1
+                            order by rank, value
+                        ";
+
+                    $questions = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $questions[$row['id']][$k] = $v;
+                    }
+
+                    $query = "
+                        SELECT r.*
+                        FROM ace_rp_questions q
+                        LEFT JOIN ace_rp_responses r
+                        ON q.id = r.question_id
+                        WHERE q.order_type_id = $item_id AND q.for_sale = 1
+                    ";
+
+                    $responses = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $responses[$row['question_id']][$row['id']][$k] = $v;
+                    }
+
+                    $query = "
+                        SELECT s.*
+                        FROM ace_rp_questions q
+                        LEFT JOIN ace_rp_responses r
+                        ON q.id = r.question_id
+                        LEFT JOIN ace_rp_suggestions s
+                        ON r.id = s.response_id
+                        WHERE q.order_type_id = $item_id AND q.for_sale = 1
+                    ";
+                    $suggestions = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $suggestions[$row['response_id']][$row['id']][$k] = $v;
+                    }
+
+                     $query = "
+                        SELECT s.*
+                        FROM ace_rp_questions q
+                        LEFT JOIN ace_rp_responses r
+                        ON q.id = r.question_id
+                        LEFT JOIN ace_rp_text_responses s
+                        ON r.id = s.response_id
+                        WHERE q.order_type_id = $item_id AND q.for_sale = 1
+                    ";
+                    $text_responses = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $text_responses[$row['response_id']][$row['id']][$k] = $v;
+                    }
+
+
+                    $query = "
+                        SELECT d.*
+                        FROM ace_rp_questions q
+                        LEFT JOIN ace_rp_responses r
+                        ON q.id = r.question_id
+                        LEFT JOIN ace_rp_suggestions s
+                        ON r.id = s.response_id
+                        LEFT JOIN ace_rp_decisions d
+                        ON s.id = d.suggestion_id
+                        WHERE q.order_type_id = $item_id AND q.for_sale = 1
+                    ";
+
+                    $decisions = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $decisions[$row['suggestion_id']][$row['id']][$k] = $v;
+                    }
+
+                    $query = "
+                        SELECT *
+                        FROM ace_rp_suggestion_operations
+                    ";
+
+                    $operations = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $operations[$row['id']][$k] = $v;
+                    }
+
+                    $query = "
+                        SELECT *
+                        FROM ace_rp_suggestion_which
+                    ";
+
+                    $which = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $which[$row['id']][$k] = $v;
+                    }
+
+
+                    $query = "
+                        SELECT *
+                        FROM ace_rp_orders_questions_working
+                        WHERE order_id = $order_id
+                    ";
+
+                    $working_answers = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $working_answers[$row['question_id']][$k] = $v;
+                    }
+
+                    //set carried over answers
+
+                    $query = "
+                        SELECT qw.* FROM ace_rp_orders_questions_working qw
+                        LEFT JOIN ace_rp_questions q
+                        ON qw.question_id = q.id
+                        WHERE qw.order_id = (SELECT id
+                            FROM ace_rp_orders
+                            WHERE customer_id = $customer_id
+                            AND order_status_id IN (5,3,1)
+                            ORDER BY job_date DESC, order_status_id DESC
+                            LIMIT 1)
+                    ";
+
+                    $result = $db->_execute($query);
+
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+                        foreach ($row as $k => $v)
+                          $carried_answers[$row['question_id']][$k] = $v;
+                    }
+                    $query = "
+                      SELECT tr.*
+                      FROM ace_rp_questions q
+                      LEFT JOIN ace_rp_tech_responses tr
+                      ON q.id = tr.question_id
+                      WHERE q.order_type_id = $item_id
+                    ";
+
+                    $techresponses = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                      foreach ($row as $k => $v)
+                        $techresponses[$row['question_id']][$row['id']][$k] = $v;
+                    }
+                    $this->set('carried_answers', $carried_answers);
+
+                    $this->set('questions', $questions);
+                    $this->set('responses', $responses);
+                    $this->set('techresponses', $techresponses);
+                    $this->set('text_responses', $text_responses);
+                    $this->set('suggestions', $suggestions);
+                    $this->set('decisions', $decisions);
+                    $this->set('item_id', $item_id);
+                    $this->set('operations', $operations);
+                    $this->set('which', $which);
+                    $this->set('working_answers', $working_answers);
+            }
+
+
+                /*loki tech question end*/
+
+                $query = "SELECT callback_date, call_result_id FROM ace_rp_call_history  WHERE customer_id = ".$this->data['Order']['customer_id']." and followup = 0 order by id desc limit 1";
+                $result = $db->_execute($query);
+                $row = mysql_fetch_array($result, MYSQL_ASSOC);
+                // echo "<pre>";
+                // print_r($row['callback_date']); die;
+                $this->set("cusCallbackDate", $row);
+
+                if(!empty($this->data['Payment']['payment_method'])){
+                    $payRow['name'] = '';
+                    $payRow['color'] = '';
+                    $payQuery = "SELECT name, color from ace_rp_payment_methods  WHERE id = ".$this->data['Payment']['payment_method'];
+                    $payResult = $db->_execute($payQuery);
+                    $payRow = mysql_fetch_array($payResult, MYSQL_ASSOC);
+                    $this->set("paid_status", $payRow['name']);
+                    $this->set("color_status", $payRow['color']);
+                }
                 //Techs' commissions
                 $comm = $this->requestAction('/commissions/getForOrder/'.$order_id);
                 $tech1_comm = $comm[0][1]['total_comm'];
                 $tech2_comm = $comm[0][2]['total_comm'];
-                
+
                 if ($this->data['Order']['booking_source_id']==$this->data['Order']['job_technician1_id'])
                     $tech1_comm += $comm[0][3]['total_comm'];
                 elseif ($this->data['Order']['booking_source_id']==$this->data['Order']['job_technician2_id'])
@@ -2421,14 +3226,15 @@ class OrdersController extends AppController
                 $this->set('tech1_comm', round($tech1_comm, 2));
                 $this->set('tech2_comm', round($tech2_comm, 2));
                 $this->set('tech1_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']."&ftechid=".$this->data['Order']['job_technician1_id']);
-                $this->set('tech2_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']."&ftechid=".$this->data['Order']['job_technician2_id']);  
+                $this->set('tech2_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']."&ftechid=".$this->data['Order']['job_technician2_id']);
                 $this->set("isSourceVal",'1');
             }
             else
             {
-
                 // The 'new order' situation
                 $this->set("isSourceVal",'0');
+                $this->set("is_order_id",0);
+                $this->data['Order']['estimator'] = $this->Common->getLoggedUserID();
                 $created_by = $this->Common->getLoggedUserID();
                 $created_date = date('Y-m-d H:i');
                 $modified_by = $this->Common->getLoggedUserID();
@@ -2436,18 +3242,46 @@ class OrdersController extends AppController
                 // Retrieve an additional information from the submitted parameters
                 $this->data['Order']['job_date'] = $this->params['url']['job_date'];
                 $this->data['Order']['job_time_beg'] = $this->params['url']['job_time_beg'];
-                $this->data['Order']['job_technician1_id'] = $this->params['url']['job_technician1_id'];
+                $this->data['Order']['job_time_end'] = $this->params['url']['job_time_end'];
+                // $this->data['Order']['job_technician1_id'] =$this->params['url']['job_technician1_id'];
+
+                //Loki: live default tech: 231429 / locaal: 231419
+
+                $this->data['Order']['job_technician1_id'] = !empty($this->params['url']['job_technician1_id']) ? $this->params['url']['job_technician1_id']: 231429;
                 $this->data['Order']['job_technician2_id'] = $this->params['url']['job_technician2_id'];
                 $this->data['Order']['app_ordered_date'] = date('d M Y');
                 $this->data['Order']['app_ordered_pickup_date'] = date('d M Y');
-                
+
                 if(!empty($this->params['url']['job_technician1_id']))
-                {                
+                {
                     $this->User->id = $this->params['url']['job_technician1_id'];
                     $techDetails = $this->User->read();
-                    $this->data['Order']['tech_percentage'] = $techDetails['User']['commission_percentage'];
-                    $this->data['Order']['tech_percentage_type'] = 1;
+                }else{
+                    $this->User->id = 231276;
+                    $techDetails = $this->User->read();
                 }
+                if($showPreview == 1)
+                {
+                    $this->data['Order']['payment_method_type'] = 11;
+                }
+
+
+
+                if($partRequest == 1){
+                    // live= type=81, truck=40
+                    // local= type=70, truck=23
+                    $this->data['Order']['order_type_id'] = 81;
+                    $this->data['Order']['payment_method_type'] = 11;
+                    $orderTypeId = 70;
+                }
+
+
+                 $this->data['Order']['tech_percentage'] = $techDetails['User']['commission_percentage'];
+                $this->data['Order']['tech_percentage_type'] = 1;
+                $this->data['Order']['markup_percentage'] = $techDetails['User']['parts_commission_percentage'];
+                $this->data['Order']['markup_percentage_type'] = 1;
+                // $this->Common->printData( $this->data['Order']);
+
                 // $this->data['Order']['order_campaing_id'] = 1;
                 // Orders created by the 'new callback' action are callbacks
                 if ( in_array($_GET['action_type'], array('callback','comeback','dnc') ) )//$_GET['action_type'] == 'callback')
@@ -2462,7 +3296,7 @@ class OrdersController extends AppController
                 // 1. a currently logged telemarketer or
                 // 2. empty - if the current user has another role
                 if (($this->Common->getLoggedUserRoleID() == 3)
-                  ||($this->Common->getLoggedUserRoleID() == 9))    //TELEMARKETER OR LIMITED TELEMARKETER
+                  ||($this->Common->getLoggedUserRoleID() == 9) ||($this->Common->getLoggedUserRoleID() == 1))    //TELEMARKETER OR LIMITED TELEMARKETER
                     $this->data['Order']['booking_source_id'] = $this->Common->getLoggedUserID();
 
                 // If customer ID is submitted, read the customer's data
@@ -2484,6 +3318,8 @@ class OrdersController extends AppController
         $this->set('num_items', $num_items);
         $this->set('from_dialer',$isDialer);
         $this->set('from_tech',$fromTech);
+        $this->set('oldOrderId',$oldOrderId);
+        $this->set('oldOrderType',$oldOrderType);
         $this->set('techOrderId', $techOrderId);
         // New call history records are callbacks by default
         $this->data['CallRecord']['call_result_id'] = 2;
@@ -2497,7 +3333,7 @@ class OrdersController extends AppController
         // Currently open page
         if ( in_array($this->params['url']['action_type'], array('callback','comeback','dnc') ) )
         {
-            if($this->Common->getLoggedUserRoleID() == 3 || $this->Common->getLoggedUserRoleID() == 6) 
+            if($this->Common->getLoggedUserRoleID() == 3 || $this->Common->getLoggedUserRoleID() == 6)
             {
                 $this->set('tab_num',1);
                 $this->set('tab1','tabOver ');
@@ -2505,6 +3341,8 @@ class OrdersController extends AppController
                 $this->set('tab3','tabOff');
                 $this->set('tab10','tabOff');
                 $this->set('tab11','tabOff');
+                $this->set('tab15','tabOff');
+                $this->set('tab16','tabOff');
                 // $this->set('tab12','tabOff');
                 $this->set('tab13','tabOff');
                 $this->set('page1','block');
@@ -2512,6 +3350,8 @@ class OrdersController extends AppController
                 $this->set('page7','none');
                 $this->set('page10','none');
                 $this->set('page11','none');
+                $this->set('page15','none');
+                $this->set('page16','none');
                 // $this->set('page12','none');
                 $this->set('page13','none');
             } else {
@@ -2520,6 +3360,8 @@ class OrdersController extends AppController
                 $this->set('tab7','tabOff');
                 $this->set('tab10','tabOff');
                 $this->set('tab11','tabOff');
+                $this->set('tab15','tabOff');
+                $this->set('tab16','tabOff');
                 // $this->set('tab12','tabOff');
                 $this->set('tab13','tabOff');
                 $this->set('tab3','tabOver');
@@ -2528,10 +3370,12 @@ class OrdersController extends AppController
                 $this->set('page10','none');
                 $this->set('page7','none');
                 $this->set('page11','none');
+                $this->set('page15','none');
+                $this->set('page16','none');
                 // $this->set('page12','none');
                 $this->set('page13','none');
             }
-                    
+
         }else if($hotlist){
             $this->set('tab_num',7);
             $this->set('tab1','tabOff ');
@@ -2539,6 +3383,8 @@ class OrdersController extends AppController
             $this->set('tab3','tabOff');
             $this->set('tab10','tabOff');
             $this->set('tab11','tabOff');
+            $this->set('tab15','tabOff');
+            $this->set('tab16','tabOff');
             // $this->set('tab12','tabOff');
             $this->set('tab13','tabOff');
             $this->set('page1','none');
@@ -2546,9 +3392,11 @@ class OrdersController extends AppController
             $this->set('page10','none');
             $this->set('page7','block');
             $this->set('page11','none');
+            $this->set('page15','none');
+            $this->set('page16','none');
             // $this->set('page12','none');
             $this->set('page13','none');
-        } 
+        }
         else
         {
             $this->set('tab_num',1);
@@ -2557,6 +3405,8 @@ class OrdersController extends AppController
             $this->set('tab3','tabOff');
             $this->set('tab10','tabOff');
             $this->set('tab11','tabOff');
+            $this->set('tab15','tabOff');
+            $this->set('tab16','tabOff');
             // $this->set('tab12','tabOff');
             $this->set('tab13','tabOff');
             $this->set('page1','block');
@@ -2564,6 +3414,8 @@ class OrdersController extends AppController
             $this->set('page7','none');
             $this->set('page10','none');
             $this->set('page11','none');
+            $this->set('page15','none');
+            $this->set('page16','none');
             // $this->set('page12','none');
             $this->set('page13','none');
 
@@ -2572,14 +3424,16 @@ class OrdersController extends AppController
         $recordings = array();
         if(!empty($this->data['Customer']['phone']))
         {
-            $query =  "SELECT * FROM ace_rp_call_recordings where phone_no='".$this->data['Customer']['phone']."' order by id desc";
+            $query =  "SELECT * FROM ace_rp_media where user_id='".$this->data['Customer']['id']."' order by id desc";
             // $query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
             $result = $db->_execute($query);
             while($row = mysql_fetch_array($result, MYSQL_ASSOC))
             {
                 array_push($recordings, $row);
             }
+
         }
+
         $emailLogs = array();
         $cusId = $customer_id;
         if(empty($cusId))
@@ -2617,7 +3471,7 @@ class OrdersController extends AppController
 
         //Get the received sms logs
 
-        
+
         // $receivedSmsLogs = array();
 
         // $receivedSms =  "SELECT * FROM ace_rp_sms_response where from_num = '".$this->data['Customer']['cell_phone']."' order by id desc";
@@ -2657,17 +3511,1032 @@ class OrdersController extends AppController
           $cla['camp_city'] = $row['camp_city'];
           $campListArray[] = $cla;
         }
+
+        $this->set('partRequest',$partRequest);
+        $this->set('orderTypeId',$orderTypeId);
         $this->set('job_trucks2', $items);
         $this->set('from_estimate', $fromEstimate);
+        $this->set('showPreview', $showPreview);
         $this->set('job_statuses', $this->HtmlAssist->table2array($this->OrderStatus->findAll(), 'id', 'name'));
-        $this->set('job_types', $this->HtmlAssist->table2array($this->OrderType->findAll(array("OrderType.flagactive",1)), 'id', 'name'));
+        $this->set('job_types', $this->HtmlAssist->table2array($this->OrderType->findAll(array("OrderType.flagactive"),null,"name ASC"), 'id', 'name'));
         $this->set('call_results', $this->HtmlAssist->table2array($this->CallResult->findAll(), 'id', 'name'));
         $this->set('booking_sources', $this->Lists->BookingSources());
         $this->set('admins', $this->Lists->Admins());
         $this->set('verificators', $this->Lists->Supervisors());
-        $this->set('payment_methods', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(), 'id', 'name'));
+        $this->set('payment_methods', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(array("show_method",1)), 'id', 'name'));
         $this->set('sub_status', $this->HtmlAssist->table2array($this->Order->OrderSubstatus->findAll(), 'id', 'name'));
-        $this->set('allTechnician',$this->Lists->Technicians(true));
+         $this->set('allTechnician',$this->Lists->Technicians(true));
+         $this->set('inventoryTechnician',$this->Lists->inventoryTech());
+        $this->set('allSuppliers',$this->Lists->ListTable('ace_rp_suppliers','',array('name','city')));
+        $this->set('allPermitMethods',$this->Lists->ListTable('ace_rp_apply_methods'));
+        $this->set('allPermitStates',$this->Lists->ListTable('ace_rp_permit_states'));
+        //$this->set('allCities',$this->Lists->ListTable('ace_rp_cities'));
+        $this->set('allCities',$this->Lists->ActiveCities());
+        $this->set('txt_customer_note','');
+        $this->set('show_app_order',  $show_app_order);
+        $this->set('show_permits', $show_permits);
+        $this->set('comm_roles',$this->Lists->ListTable('ace_rp_commissions_roles'));
+        $this->set('cancellationReasons', $this->Lists->CancellationReasons());
+        $this->set('campaing_list',$campListArray);
+        //$this->set('recordingFile', $recordingFile);
+
+        // Past Order View Mode
+        if ($this->data['Status']['name'] == 'Done') $this->set('ViewMode', 1);
+
+        $this->data['Coupon'] = $this->Coupon->findAll();
+
+        //Make Redo Orders List
+        //$redo_orders = $this->_getPreviousJobs($this->data['Customer']['id']);
+        if ($this->data['Order']['job_estimate_id'])
+        {
+            $past_orders = $this->Order->findAll(array('Order.id'=> $this->data['Order']['job_estimate_id']), null, "job_date DESC", null, null, 1);
+            foreach ($past_orders as $ord)
+                $job_estimate_text = 'REF# '.$ord['Order']['order_number'].' - '.date('d M Y', strtotime($ord['Order']['job_date']));
+        }
+        // Find customer's notes
+        if ($this->data['Customer']['id'])
+        {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $query = "SELECT * FROM ace_rp_users_notes WHERE user_id=".$this->data['Customer']['id']." ORDER BY note_date DESC";
+        $result = $db->_execute($query);
+        while ($row = mysql_fetch_array($result))
+            $customer_notes[$row['id']] = $row;
+        }
+        $this->set('past_orders', $past_orders);
+        $this->set('redo_orders', $redo_orders);
+        $this->set('customer_notes',$customer_notes);
+        $this->set('job_estimate_text',$job_estimate_text);
+        $this->set('yesOrNo', $this->Lists->YesOrNo());
+
+        //Set pitch for dialer page
+        $user_id = $_SESSION['user']['id'];
+        $query = "select * from ace_rp_users_pitch where user_id = $user_id ";
+        $result = $db->_execute($query);
+        $row = mysql_fetch_array($result, MYSQL_ASSOC);
+        if($row['pitch_type'] == 1)
+        {
+            $this->set('pitch', $row['pitch1']);
+        } else {
+            $this->set('pitch', $row['pitch2']);
+        }
+
+        // Prepare dates for selector
+        if ((strlen($this->data['Order']['job_date']) > 0) && ($this->data['Order']['job_date'] != "0000-00-00"))
+            $this->data['Order']['job_date'] = date("d M Y", strtotime($this->data['Order']['job_date']));
+        if ((strlen($this->data['CallRecord']['callback_date']) > 0) && ($this->data['CallRecord']['callback_date'] != "0000-00-00"))
+            $this->data['CallRecord']['callback_date'] = date("d M Y", strtotime($this->data['CallRecord']['callback_date']));
+        if ((strlen($this->data['CallRecord']['call_date']) > 0) && ($this->data['CallRecord']['call_date'] != "0000-00-00"))
+            $this->data['CallRecord']['call_date'] = date("d M Y", strtotime($this->data['CallRecord']['call_date']));
+
+        // Load created/modified Info
+        $this->User->id = $created_by;
+        $User_details = $this->User->read();
+        $created_by = $User_details['User']['first_name'].' '.$User_details['User']['last_name'];
+
+        $this->User->id = $modified_by;
+        $User_details = $this->User->read();
+        $modified_by = $User_details['User']['first_name'].' '.$User_details['User']['last_name'];
+
+        $this->set('created_date',$created_date);
+        $this->set('modified_by',$modified_by);
+        $this->set('created_by',$created_by);
+        $this->set('modified_date',$modified_date);
+
+        $query = "
+            SELECT REPLACE(name, ' ', '_') name, internal_id
+            FROM ace_rp_cities
+        ";
+
+        $result = $db->_execute($query);
+        while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+            $cities_with_id[$row['internal_id']]['name']= $row['name'];
+        }
+
+        if(!empty($order_id)) {
+            $query = "
+                SELECT n.*, nt.name note_type_name,
+                    ur.name urgency_name,
+                    CONCAT(u.first_name, ' ', u.last_name) author_name,
+                    ur.image_file
+                FROM ace_rp_notes n
+                LEFT JOIN ace_rp_note_types nt
+                ON n.note_type_id = nt.id
+                LEFT JOIN ace_rp_urgencies ur
+                ON n.urgency_id = ur.id
+                LEFT JOIN ace_rp_customers u
+                ON n.user_id = u.id
+                WHERE n.order_id = $order_id
+                ORDER BY n.note_date ASC
+            ";
+
+            $result = $db->_execute($query);
+            $i = 0;
+            while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+                $notes[$row['id']]['message'] = $row['message'];
+                $notes[$row['id']]['note_type_id'] = $row['note_type_id'];
+                $notes[$row['id']]['order_id'] = $row['order_id'];
+                $notes[$row['id']]['user_id'] = $row['user_id'];
+                $notes[$row['id']]['urgency_id'] = $row['urgency_id'];
+                $notes[$row['id']]['note_date'] = $row['note_date'];
+                $notes[$row['id']]['note_type_name'] = $row['note_type_name'];
+                $notes[$row['id']]['urgency_name'] = $row['urgency_name'];
+                $notes[$row['id']]['urgency_image'] = $row['image_file'];
+                $notes[$row['id']]['author_name'] = $row['author_name'];
+                $notes[$row['id']]['row_class'] = $i++%2==0?"even_row":"odd_row";
+            }
+
+            $this->set('notes',$notes);
+        } //END retrieve notes
+
+        $this->set('paymenttype',$paymenttype);
+        $this->set('refto',$refto);
+        $this->set('reffrom',$reffrom);
+        $this->set('orrderpayment',$orrderpayment);
+        $this->set('orrdertype',$orrdertype);
+        $this->set('frommdate',$frommdate);
+        $this->set('toodate',$toodate);
+        $this->set('printtype',$printtype);
+
+        $this->set('cities_with_id',$cities_with_id);
+
+        $query = "
+            SELECT *
+            FROM ace_rp_settings
+            WHERE id IN(21)
+        ";
+
+        $result = $db->_execute($query);
+
+        while($row = mysql_fetch_array($result)) {
+            $use_template_questions = $row['valuetxt'];
+        }
+        $this->data['Order']['day_am_pm'] =  $day_am_pm;
+        $this->data['Order']['jobendtime'] = $jobendtime;
+        $this->data['Order']['jobstarttime'] = $jobstarttime;
+        $this->set('use_template_questions',$use_template_questions);
+        if(!empty($order_id)) {
+            $query = "SELECT photo_1, photo_2 FROM ace_rp_orders WHERE id = ".$order_id;
+            $result = $db->_execute($query);
+            while($row = mysql_fetch_array($result)) {
+                    $this->data['Order']['photo_1'] = $this->getPhotoPath($row['photo_1']);
+                    $this->data['Order']['photo_2'] = $this->getPhotoPath($row['photo_2']);
+            }
+        }
+        if(isset($_GET['estimate'])){
+
+         $date = date('Y-m-d');
+
+        $query = "select id,max(job_time_end) as id2 from ace_rp_orders where job_truck='23' and job_date='{$date}'";
+
+
+        $result = $db->_execute($query);
+        $row = mysql_fetch_array($result);
+
+        $job_end = $row['id2'];
+        $job_end2 = explode(':',$job_end);
+        if(empty($job_end)){
+         $job_start_new = '08';
+        }
+        else {
+         $job_start_new = $job_end2[0];
+        }
+
+                $job_end_new = $job_start_new+1;
+
+
+
+        $this->set('job_start_new',$job_start_new);
+        $this->set('job_end_new',$job_end_new);
+
+     }
+
+     $this->set('check_tele',0);
+     if($this->Common->getLoggedUserRoleID()==3 && $_REQUEST['from_tele']!=1){
+      $this->set('check_tele',1);
+     }
+
+    $this->set('allTypes', $this->Lists->ListTable('ace_rp_route_types'));
+    $curr_user_id = $this->Common->getLoggedUserID();
+    $get_query = "select max_time,max_km from ace_rp_users  where id=$curr_user_id";
+    $result1 = $db->_execute($get_query);
+    $row1 = mysql_fetch_array($result1);
+
+    $this->set('max_time',$row1['max_time']);
+    $this->set('max_km',$row1['max_km']);
+    $users123=array();
+    $query11 = "select * from ace_rp_route_types";
+	$totalRes = $db->_execute($query11);
+	  while($row = mysql_fetch_array($totalRes, MYSQL_ASSOC)){
+
+
+			$users123[] = $row;
+
+
+		 }
+		 $this->set("users123", $users123);
+
+    }
+
+    function editBooking_7_jan_2021()
+    {
+
+
+
+        $this->layout='edit';
+        $orderTypeId = 0;
+        $fromTech = isset($this->params['url']['from_tech_page']) ? $this->params['url']['from_tech_page'] :0;
+        $oldOrderId = isset($this->params['url']['old_order_id']) ? $this->params['url']['old_order_id'] :0;
+        $oldOrderType = isset($this->params['url']['old_oder_type']) ? $this->params['url']['old_oder_type'] :0;
+        $partRequest = isset($this->params['url']['part_request']) ? $this->params['url']['part_request'] : 0;
+        // $fromTech = isset($this->params['url']['from_tech_page']) ? $this->params['url']['from_tech_page'] :0;
+        $techOrderId = isset($this->params['url']['techOrderId']) ? $this->params['url']['techOrderId'] :0;
+
+        $hotlist = isset($this->params['url']['hotlist'])?$this->params['url']['hotlist']:0;
+        ;
+        $isDialer = isset($this->params['url']['is_dialer'])?$this->params['url']['is_dialer']:0;
+
+        $is_booking = isset($this->params['url']['is_booking'])?$this->params['url']['is_booking'] : "";
+        $orderNo = isset($this->params['url']['orderNo'])?$this->params['url']['orderNo'] : '';
+        $fromEstimate = isset($this->params['url']['fromEstimate']) ? $this->params['url']['fromEstimate'] :0;
+        $showPreview = isset($this->params['url']['show_preview']) ? $this->params['url']['show_preview'] :0;
+
+        if (!empty($this->data['Order']))
+        {
+            // $this->Common->printData($_POST);
+            $isOrderId = isset($_POST['is_order_id'])?$_POST['is_order_id']:0;
+            $installationOpen = isset($_POST['installation_open'])?$_POST['installation_open']:0;
+            $showDefault = isset($_POST['showDefault'])?$_POST['showDefault']:0;
+            //If order information is submitted - save the order
+            $send_cancalled_email = isset($_POST['send_cancalled_email'])?$_POST['send_cancalled_email']
+            :0;
+            $isDialer = isset($_POST['from_dialer'])?$_POST['from_dialer']
+            :0;
+            $fromTech = isset($_POST['from_tech']) ? $_POST['from_tech'] :0;
+            $oldOrderId = isset($_POST['oldOrderId']) ? $_POST['oldOrderId'] :0;
+            $oldOrderType = isset($_POST['oldOrderType']) ? $_POST['oldOrderType'] :0;
+            $techOrderId = isset($_POST['techOrderId']) ? $_POST['techOrderId'] :0;
+            $file = isset($_FILES['uploadFile'])? $_FILES['uploadFile'] : null;
+            $invoiceImages = isset($_FILES['uploadInvoice'])? $_FILES['uploadInvoice'] : null;
+            $photoImage1 = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
+           // $photoImage2 = isset($_FILES['sortpic2'])? $_FILES['sortpic2'] : null;
+            $invoiceImage = '';
+            if(empty($_POST['orderInvoiceImage']) && $_FILES['invoice_image']['size'] > 0)
+            {
+                $invoiceImage = $_FILES['invoice_image'];
+            }
+
+            $this->saveOrder(1, $isDialer, $file, $invoiceImages, $photoImage1, $photoImage2, $fromTech, $techOrderId, $send_cancalled_email, $showDefault,'', $invoiceImage,$isOrderId,$installationOpen,$oldOrderId,$oldOrderType);
+        }
+        else
+        {
+            $this->set('is_booking',$is_booking);
+            $this->set('orderNo',$orderNo);
+            $this->set('currentUrl', $_SERVER['REQUEST_URI']);
+
+            // If no order data is submitted, we'll have one of the following situations:
+            // 1. we are being asked to display an existing order's data ($order_id!='')
+            // 2. we are being asked to create a new order for an existing customer ($order_id=='', $customer_id!='')
+            // 3. we are being asked to create a completely new customer ($order_id=='', $customer_id=='')
+            // Check submitted data for any special parameters to be set
+            $order_id = $this->params['url']['order_id'];
+            $customer_id = $this->params['url']['customer_id'];
+
+            $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+            if($customer_id)
+            {
+                $this->Customer->id = $customer_id;
+                $cus = $this->Customer->read();
+                $this->set('campaingId',$cus['Customer']['campaign_id']);
+                $allImages = array();
+                $allAddresses  = $cus['CustomerAddresses'];
+                 foreach ($cus['PartImages'] as $key => $value) {
+                     if(!empty($value['image_name']) && $value['image_name'] != null){
+                        $allImages[$key]['id'] = $value['id'];
+                        $allImages[$key]['image_name'] = $this->getPhotoPath($value['image_name']);
+                        $allImages[$key]['extension'] = pathinfo($value['image_name'], PATHINFO_EXTENSION);
+                    }
+                }
+                $this->data['Order']['address_id'] = $cus['Customer']['address_id'];
+                $this->set("allImages",$allImages);
+                $this->set("allAddresses",$allAddresses);
+            }
+
+            $num_items = 0;
+            $show_app_order='display:none';
+            $show_permits = 'display:none';
+
+
+
+            //Remove all reserved timeslots
+            $query = "
+                DELETE FROM ace_rp_pending_timeslots
+                WHERE user_id = ".$_SESSION['user']['id']."
+            ";
+
+            $result = $db->_execute($query);
+
+            if($_SESSION['user']['role_id'] == 6 && $_REQUEST['admin_select'] == 1){
+                $query = "UPDATE ace_rp_customers SET selected_customer_from_search = NULL WHERE selected_customer_from_search = ".$_SESSION['user']['id'];
+
+                $result = $db->_execute($query);
+
+                $query = "UPDATE ace_rp_customers SET selected_customer_from_search = ".$_SESSION['user']['id']." WHERE id = $customer_id";
+
+                $result = $db->_execute($query);
+            }
+            elseif ($_SESSION['user']['role_id'] == 3 && $_REQUEST['agent_select'] == 1) {
+                $query = "UPDATE ace_rp_customers SET selected_customer_from_search_agent = NULL WHERE selected_customer_from_search_agent = ".$_SESSION['user']['id'];
+
+                $result = $db->_execute($query);
+
+                $query = "UPDATE ace_rp_customers SET selected_customer_from_search_agent = ".$_SESSION['user']['id']." WHERE id = $customer_id";
+
+                $result = $db->_execute($query);
+            }
+            //# Loki Retrieve all payment types
+            $query = " SELECT * from ace_rp_payment_methods where show_method = 1";
+            $result1 = $db->_execute($query);
+            while($row = mysql_fetch_array($result1))
+            {
+                $methods[$row['id']] = $row;
+            }
+
+            $this->set("payment_types", $methods);
+            // If order ID is submitted, prepare order's data to be displayed
+            if ($order_id)
+            {
+                // Read the order's data from database
+                $this->Order->id = $order_id;
+                $this->data = $this->Order->read();
+                $h_booked='';
+                $h_tech='';
+                $allImages = array();
+
+                //Loki: For installlation item
+                $this->set("is_order_id",1);
+                // $this->Common->printData($this->data);
+                /* percent type 1 = percentage, 2 = amount */
+                if(!empty($this->data['Order']['job_technician1_id']))
+                {
+                    $this->User->id = $this->data['Order']['job_technician1_id'];
+                    $techDetails = $this->User->read();
+                }
+                else{
+                    $this->User->id = 231276;
+                    $techDetails = $this->User->read();
+                }
+                if($this->data['Order']['tech_percentage'] > 0)
+                {
+                    $this->data['Order']['tech_percentage'] == $this->data['Order']['tech_percentage'];
+                } else {
+                    $this->data['Order']['tech_percentage'] =  $techDetails['User']['commission_percentage'];
+                    $this->data['Order']['tech_percentage_type'] = 1;
+                }
+               if($this->data['Order']['markup_percentage'] > 0)
+                {
+                    $this->data['Order']['markup_percentage'] == $this->data['Order']['markup_percentage'];
+                } else {
+                    $this->data['Order']['markup_percentage'] = $techDetails['User']['parts_commission_percentage'];
+                    $this->data['Order']['markup_percentage_type'] = 1;
+                }
+                //Loki: Get all images of orders
+                $this->Customer->id = $this->data['Customer']['id'];
+                $customerData = $this->Customer->read();
+                foreach ($customerData['PartImages'] as $key => $value) {
+                     if(!empty($value['image_name']) && $value['image_name'] != null){
+                        $allImages[$key]['id'] = $value['id'];
+                        $allImages[$key]['image_name'] = $this->getPhotoPath($value['image_name']);
+                        $allImages[$key]['extension'] = pathinfo($value['image_name'], PATHINFO_EXTENSION);
+                    }
+                }
+                $allAddresses  = $customerData['CustomerAddresses'];
+                $this->set("allImages",$allImages);
+                $this->set("allAddresses",$allAddresses);
+                if(!empty($this->data['Order']['city'])){
+                    $this->data['Customer']['address_unit']             = $this->data['Order']['address_unit'];
+                    $this->data['Customer']['address_street_number']    = $this->data['Order']['address_street_number'];
+                    $this->data['Customer']['address_street']           = $this->data['Order']['address_street'];
+                    $this->data['Customer']['city']                     = $this->data['Order']['city'];
+                    $this->data['Customer']['postal_code']              = $this->data['Order']['postal_code'];
+                }
+
+                foreach ($this->data['BookingItem'] as $oi)
+                {
+                    $oi['item_tech'] = $this->data['Order']['job_technician1_id'];
+                    if ($oi['class']==0)
+                    {
+                        $h_booked .= '<tr id="order_'.$num_items.'" class="booked">';
+                        $h_booked .= $this->_itemHTML($num_items, $oi, true);
+                        $h_booked .= '</tr>';
+                    }
+                    else
+                    {
+                        $h_tech .= '<tr id="order_'.$num_items.'" class="extra">';
+                        $h_tech .= $this->_itemHTML($num_items, $oi, true);
+                        $h_tech .= '</tr>';
+                    }
+                    $num_items++;
+                }
+                foreach ($this->data['BookingCoupon'] as $oi)
+                {
+                    $oi['item_tech'] = $this->data['Order']['job_technician1_id'];
+                    $oi['price'] = 0-$oi['price'];
+                    $oi['quantity'] = 1;
+                    $oi['name'] = 'Discount';
+                    $h_booked .= '<tr id="order_'.$num_items.'" class="booked">';
+                    $h_booked .= $this->_itemHTML($num_items, $oi, true);
+                    $h_booked .= '</tr>';
+                    $num_items++;
+                }
+                $this->set('booked_items', $h_booked);
+                $this->set('tech_items', $h_tech);
+
+                /** Fetch order payment image using order id*/
+                // echo 'Order id : '.$this->data['Order']['id'];
+                $queryPayment   = "select payment_image from ace_rp_orders where id='".$this->data['Order']['id']."'";
+                $resultPayment  = $db->_execute($queryPayment);
+                $rowPayment     = mysql_fetch_array($resultPayment, MYSQL_ASSOC);
+                if($rowPayment){
+                    $this->set('invoice_image_path', $rowPayment['payment_image']);
+                }
+                /* closed */
+
+                //Check the job type category
+                $query = "select category_id from ace_rp_order_types where id='".$this->data['Order']['order_type_id']."'";
+                $result = $db->_execute($query);
+                $row = mysql_fetch_array($result, MYSQL_ASSOC);
+                if (($row['category_id']=='2')||($this->data['Order']['order_type_id']==10)||($this->data['Order']['order_type_id']==31)) $show_app_order='';
+
+                if (!$this->data['Order']['app_ordered_pickup_date'])
+                    $this->data['Order']['app_ordered_pickup_date'] = date('d M Y');
+                else
+                    $this->data['Order']['app_ordered_pickup_date'] = date('d M Y', strtotime($this->data['Order']['app_ordered_pickup_date']));
+
+                if (!$this->data['Order']['app_ordered_date'])
+                    $this->data['Order']['app_ordered_date'] = date('d M Y');
+                else
+                    $this->data['Order']['app_ordered_date'] = date('d M Y', strtotime($this->data['Order']['app_ordered_date']));
+
+                //Load current questions
+                $this->set('CurrentQuestionsTextOffice', $this->_showQuestions($order_id, 0));
+                $this->set('CurrentQuestionsTextTech', $this->_showQuestions($order_id, 1));
+
+                //Load Created By
+                $created_by = $this->data['Order']['created_by'];
+                if($this->data['Order']['created_date'] != '')
+                    $created_date = date('d M Y (H:i:s)', strtotime($this->data['Order']['created_date']));
+                else
+                    $created_date = '';
+
+                //Load Modified By
+                $modified_by = $this->data['Order']['modified_by'];
+                if($this->data['Order']['modified_date'] != '')
+                    $modified_date = date('d M Y (H:i:s)', strtotime($this->data['Order']['modified_date']));
+                else
+                    $modified_date = '';
+
+                //Permits and so on
+                $this->OrderType->id = $this->data['Order']['order_type_id'];
+                $aa = $this->OrderType->read();
+                $this->data['OrderType'] = $aa['OrderType'];
+                if ($this->data['OrderType']['category_id']==2)
+                    $show_permits = '';
+
+                /*loki tech question start*/
+                     $item_id = $this->data['Order']['order_type_id'];
+                     $customer_id = $this->data['Customer']['id'];
+                     $query3="SELECT id,GROUP_CONCAT( image_name ) AS images, date_created,label, customer_id FROM `ace_rp_user_part_images` WHERE customer_id
+               IN ( ".$customer_id." ) GROUP BY (date_created)";
+
+               $result3 = $db->_execute($query3);
+               $query4="SELECT GROUP_CONCAT( CAST( id AS CHAR ) ) AS id
+               FROM `ace_rp_user_part_images`
+               WHERE customer_id
+               IN ( ".$customer_id." )
+               GROUP BY (date_created)";
+               $result4 = $db->_execute($query4);
+
+               $array_result = array();
+               while ($row3 = mysql_fetch_array($result3, MYSQL_NUM)) {
+                   $array_result[] = $row3;
+               }
+
+               $array_result11 = array();
+               while ($row4 = mysql_fetch_array($result4, MYSQL_NUM)) {
+                   $array_result11[] = $row4;
+               }
+               $this->set('new_images', $array_result);
+               $this->set('new_images_id', $array_result11);
+                if($item_id){
+                     $query = "
+                            SELECT *
+                            FROM ace_rp_questions
+                            WHERE order_type_id = $item_id AND for_sale = 1
+                            order by rank, value
+                        ";
+
+                    $questions = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $questions[$row['id']][$k] = $v;
+                    }
+
+                    $query = "
+                        SELECT r.*
+                        FROM ace_rp_questions q
+                        LEFT JOIN ace_rp_responses r
+                        ON q.id = r.question_id
+                        WHERE q.order_type_id = $item_id AND q.for_sale = 1
+                    ";
+
+                    $responses = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $responses[$row['question_id']][$row['id']][$k] = $v;
+                    }
+
+                    $query = "
+                        SELECT s.*
+                        FROM ace_rp_questions q
+                        LEFT JOIN ace_rp_responses r
+                        ON q.id = r.question_id
+                        LEFT JOIN ace_rp_suggestions s
+                        ON r.id = s.response_id
+                        WHERE q.order_type_id = $item_id AND q.for_sale = 1
+                    ";
+                    $suggestions = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $suggestions[$row['response_id']][$row['id']][$k] = $v;
+                    }
+
+                     $query = "
+                        SELECT s.*
+                        FROM ace_rp_questions q
+                        LEFT JOIN ace_rp_responses r
+                        ON q.id = r.question_id
+                        LEFT JOIN ace_rp_text_responses s
+                        ON r.id = s.response_id
+                        WHERE q.order_type_id = $item_id AND q.for_sale = 1
+                    ";
+                    $text_responses = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $text_responses[$row['response_id']][$row['id']][$k] = $v;
+                    }
+
+
+                    $query = "
+                        SELECT d.*
+                        FROM ace_rp_questions q
+                        LEFT JOIN ace_rp_responses r
+                        ON q.id = r.question_id
+                        LEFT JOIN ace_rp_suggestions s
+                        ON r.id = s.response_id
+                        LEFT JOIN ace_rp_decisions d
+                        ON s.id = d.suggestion_id
+                        WHERE q.order_type_id = $item_id AND q.for_sale = 1
+                    ";
+
+                    $decisions = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $decisions[$row['suggestion_id']][$row['id']][$k] = $v;
+                    }
+
+                    $query = "
+                        SELECT *
+                        FROM ace_rp_suggestion_operations
+                    ";
+
+                    $operations = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $operations[$row['id']][$k] = $v;
+                    }
+
+                    $query = "
+                        SELECT *
+                        FROM ace_rp_suggestion_which
+                    ";
+
+                    $which = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $which[$row['id']][$k] = $v;
+                    }
+
+
+                    $query = "
+                        SELECT *
+                        FROM ace_rp_orders_questions_working
+                        WHERE order_id = $order_id
+                    ";
+
+                    $working_answers = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                        foreach ($row as $k => $v)
+                          $working_answers[$row['question_id']][$k] = $v;
+                    }
+
+                    //set carried over answers
+
+                    $query = "
+                        SELECT qw.* FROM ace_rp_orders_questions_working qw
+                        LEFT JOIN ace_rp_questions q
+                        ON qw.question_id = q.id
+                        WHERE qw.order_id = (SELECT id
+                            FROM ace_rp_orders
+                            WHERE customer_id = $customer_id
+                            AND order_status_id IN (5,3,1)
+                            ORDER BY job_date DESC, order_status_id DESC
+                            LIMIT 1)
+                    ";
+
+                    $result = $db->_execute($query);
+
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+                        foreach ($row as $k => $v)
+                          $carried_answers[$row['question_id']][$k] = $v;
+                    }
+                    $query = "
+                      SELECT tr.*
+                      FROM ace_rp_questions q
+                      LEFT JOIN ace_rp_tech_responses tr
+                      ON q.id = tr.question_id
+                      WHERE q.order_type_id = $item_id
+                    ";
+
+                    $techresponses = array();
+                    $result = $db->_execute($query);
+                    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+                    {
+                      foreach ($row as $k => $v)
+                        $techresponses[$row['question_id']][$row['id']][$k] = $v;
+                    }
+                    $this->set('carried_answers', $carried_answers);
+
+                    $this->set('questions', $questions);
+                    $this->set('responses', $responses);
+                    $this->set('techresponses', $techresponses);
+                    $this->set('text_responses', $text_responses);
+                    $this->set('suggestions', $suggestions);
+                    $this->set('decisions', $decisions);
+                    $this->set('item_id', $item_id);
+                    $this->set('operations', $operations);
+                    $this->set('which', $which);
+                    $this->set('working_answers', $working_answers);
+            }
+
+
+                /*loki tech question end*/
+
+                $query = "SELECT callback_date, call_result_id FROM ace_rp_call_history  WHERE customer_id = ".$this->data['Order']['customer_id']." and followup = 0 order by id desc limit 1";
+                $result = $db->_execute($query);
+                $row = mysql_fetch_array($result, MYSQL_ASSOC);
+                // echo "<pre>";
+                // print_r($row['callback_date']); die;
+                $this->set("cusCallbackDate", $row);
+
+                if(!empty($this->data['Payment']['payment_method'])){
+                    $payRow['name'] = '';
+                    $payRow['color'] = '';
+                    $payQuery = "SELECT name, color from ace_rp_payment_methods  WHERE id = ".$this->data['Payment']['payment_method'];
+                    $payResult = $db->_execute($payQuery);
+                    $payRow = mysql_fetch_array($payResult, MYSQL_ASSOC);
+                    $this->set("paid_status", $payRow['name']);
+                    $this->set("color_status", $payRow['color']);
+                }
+                //Techs' commissions
+                $comm = $this->requestAction('/commissions/getForOrder/'.$order_id);
+                $tech1_comm = $comm[0][1]['total_comm'];
+                $tech2_comm = $comm[0][2]['total_comm'];
+
+                if ($this->data['Order']['booking_source_id']==$this->data['Order']['job_technician1_id'])
+                    $tech1_comm += $comm[0][3]['total_comm'];
+                elseif ($this->data['Order']['booking_source_id']==$this->data['Order']['job_technician2_id'])
+                    $tech2_comm += $comm[0][3]['total_comm'];
+                elseif ($this->data['Order']['booking_source2_id']==$this->data['Order']['job_technician1_id'])
+                    $tech1_comm += $comm[0][4]['total_comm'];
+                elseif ($this->data['Order']['booking_source2_id']==$this->data['Order']['job_technician2_id'])
+                    $tech2_comm += $comm[0][4]['total_comm'];
+                $this->set('tech1_comm', round($tech1_comm, 2));
+                $this->set('tech2_comm', round($tech2_comm, 2));
+                $this->set('tech1_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']."&ftechid=".$this->data['Order']['job_technician1_id']);
+                $this->set('tech2_comm_link', BASE_URL."/commissions/calculateCommissions?cur_ref=".$this->data['Order']['order_number']."&ftechid=".$this->data['Order']['job_technician2_id']);
+                $this->set("isSourceVal",'1');
+            }
+            else
+            {
+                // The 'new order' situation
+                $this->set("isSourceVal",'0');
+                $this->set("is_order_id",0);
+                $this->data['Order']['estimator'] = $this->Common->getLoggedUserID();
+                $created_by = $this->Common->getLoggedUserID();
+                $created_date = date('Y-m-d H:i');
+                $modified_by = $this->Common->getLoggedUserID();
+                $modified_date = date('Y-m-d H:i');
+                // Retrieve an additional information from the submitted parameters
+                $this->data['Order']['job_date'] = $this->params['url']['job_date'];
+                $this->data['Order']['job_time_beg'] = $this->params['url']['job_time_beg'];
+                // $this->data['Order']['job_technician1_id'] =$this->params['url']['job_technician1_id'];
+
+                //Loki: live default tech: 231429 / locaal: 231419
+
+                $this->data['Order']['job_technician1_id'] = !empty($this->params['url']['job_technician1_id']) ? $this->params['url']['job_technician1_id']: 231429;
+                $this->data['Order']['job_technician2_id'] = $this->params['url']['job_technician2_id'];
+                $this->data['Order']['app_ordered_date'] = date('d M Y');
+                $this->data['Order']['app_ordered_pickup_date'] = date('d M Y');
+
+                if(!empty($this->params['url']['job_technician1_id']))
+                {
+                    $this->User->id = $this->params['url']['job_technician1_id'];
+                    $techDetails = $this->User->read();
+                }else{
+                    $this->User->id = 231276;
+                    $techDetails = $this->User->read();
+                }
+                if($showPreview == 1)
+                {
+                    $this->data['Order']['payment_method_type'] = 11;
+                }
+                if($partRequest == 1){
+                    // live= type=81, truck=40
+                    // local= type=70, truck=23
+                    $this->data['Order']['order_type_id'] = 81;
+                    $this->data['Order']['payment_method_type'] = 11;
+                    $orderTypeId = 70;
+                }
+
+
+                 $this->data['Order']['tech_percentage'] = $techDetails['User']['commission_percentage'];
+                $this->data['Order']['tech_percentage_type'] = 1;
+                $this->data['Order']['markup_percentage'] = $techDetails['User']['parts_commission_percentage'];
+                $this->data['Order']['markup_percentage_type'] = 1;
+                // $this->Common->printData( $this->data['Order']);
+
+                // $this->data['Order']['order_campaing_id'] = 1;
+                // Orders created by the 'new callback' action are callbacks
+                if ( in_array($_GET['action_type'], array('callback','comeback','dnc') ) )//$_GET['action_type'] == 'callback')
+                    $this->data['Order']['order_status_id'] = 7;
+                else
+                    $this->data['Order']['order_status_id'] = 1;
+
+                // Default sub-status: Not confirmed (1)
+                $this->data['Order']['order_substatus_id'] = 1;
+
+                // Default source for the new order is:
+                // 1. a currently logged telemarketer or
+                // 2. empty - if the current user has another role
+                if (($this->Common->getLoggedUserRoleID() == 3)
+                  ||($this->Common->getLoggedUserRoleID() == 9) ||($this->Common->getLoggedUserRoleID() == 1))    //TELEMARKETER OR LIMITED TELEMARKETER
+                    $this->data['Order']['booking_source_id'] = $this->Common->getLoggedUserID();
+
+                // If customer ID is submitted, read the customer's data
+                if ($customer_id)
+                {
+                    $this->Order->Customer->id = $customer_id;
+                    $aa = $this->Order->Customer->read();
+                    $this->data['Customer'] = $aa['Customer'];
+                }
+
+                // Generating new invoice number
+                $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+                $query = "SELECT max(order_number) num FROM ace_rp_orders";
+                $result = $db->_execute($query);
+                $row = mysql_fetch_array($result);
+                $this->data['Order']['order_number'] = 1+$row['num'];
+            }
+        }
+        $this->set('num_items', $num_items);
+        $this->set('from_dialer',$isDialer);
+        $this->set('from_tech',$fromTech);
+        $this->set('oldOrderId',$oldOrderId);
+        $this->set('oldOrderType',$oldOrderType);
+        $this->set('techOrderId', $techOrderId);
+        // New call history records are callbacks by default
+        $this->data['CallRecord']['call_result_id'] = 2;
+        $this->data['CallRecord']['call_date'] = date("d M Y");
+        $this->data['CallRecord']['call_user_id'] = $this->Common->getLoggedUserID();
+        $this->data['CallRecord']['callback_user_id'] = $this->Common->getLoggedUserID();
+
+        if ( $_GET['action_type'] == 'dnc') $this->data['CallRecord']['call_result_id'] = 3;
+        if ( $_GET['action_type'] == 'comeback') $this->data['CallRecord']['call_result_id'] = 10;
+
+        // Currently open page
+        if ( in_array($this->params['url']['action_type'], array('callback','comeback','dnc') ) )
+        {
+            if($this->Common->getLoggedUserRoleID() == 3 || $this->Common->getLoggedUserRoleID() == 6)
+            {
+                $this->set('tab_num',1);
+                $this->set('tab1','tabOver ');
+                $this->set('tab7','tabOff');
+                $this->set('tab3','tabOff');
+                $this->set('tab10','tabOff');
+                $this->set('tab11','tabOff');
+                $this->set('tab15','tabOff');
+                $this->set('tab16','tabOff');
+                // $this->set('tab12','tabOff');
+                $this->set('tab13','tabOff');
+                $this->set('page1','block');
+                $this->set('page3','none');
+                $this->set('page7','none');
+                $this->set('page10','none');
+                $this->set('page11','none');
+                $this->set('page15','none');
+                $this->set('page16','none');
+                // $this->set('page12','none');
+                $this->set('page13','none');
+            } else {
+                $this->set('tab_num',3);
+                $this->set('tab1','tabOff');
+                $this->set('tab7','tabOff');
+                $this->set('tab10','tabOff');
+                $this->set('tab11','tabOff');
+                $this->set('tab15','tabOff');
+                $this->set('tab16','tabOff');
+                // $this->set('tab12','tabOff');
+                $this->set('tab13','tabOff');
+                $this->set('tab3','tabOver');
+                $this->set('page1','none');
+                $this->set('page3','block');
+                $this->set('page10','none');
+                $this->set('page7','none');
+                $this->set('page11','none');
+                $this->set('page15','none');
+                $this->set('page16','none');
+                // $this->set('page12','none');
+                $this->set('page13','none');
+            }
+
+        }else if($hotlist){
+            $this->set('tab_num',7);
+            $this->set('tab1','tabOff ');
+            $this->set('tab7','tabOver');
+            $this->set('tab3','tabOff');
+            $this->set('tab10','tabOff');
+            $this->set('tab11','tabOff');
+            $this->set('tab15','tabOff');
+            $this->set('tab16','tabOff');
+            // $this->set('tab12','tabOff');
+            $this->set('tab13','tabOff');
+            $this->set('page1','none');
+            $this->set('page3','none');
+            $this->set('page10','none');
+            $this->set('page7','block');
+            $this->set('page11','none');
+            $this->set('page15','none');
+            $this->set('page16','none');
+            // $this->set('page12','none');
+            $this->set('page13','none');
+        }
+        else
+        {
+            $this->set('tab_num',1);
+            $this->set('tab1','tabOver ');
+            $this->set('tab7','tabOff');
+            $this->set('tab3','tabOff');
+            $this->set('tab10','tabOff');
+            $this->set('tab11','tabOff');
+            $this->set('tab15','tabOff');
+            $this->set('tab16','tabOff');
+            // $this->set('tab12','tabOff');
+            $this->set('tab13','tabOff');
+            $this->set('page1','block');
+            $this->set('page3','none');
+            $this->set('page7','none');
+            $this->set('page10','none');
+            $this->set('page11','none');
+            $this->set('page15','none');
+            $this->set('page16','none');
+            // $this->set('page12','none');
+            $this->set('page13','none');
+
+        }
+        // Get call recordings 1 800 394 1980
+        $recordings = array();
+        if(!empty($this->data['Customer']['phone']))
+        {
+            //$query =  "SELECT * FROM ace_rp_media where user_id='".$this->data['Customer']['id']."' order by id desc";
+            // $query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
+            $query =  "SELECT * FROM ace_rp_media where user_id='".$this->data['Customer']['id']."' order by id desc";
+            $result = $db->_execute($query);
+            while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+            {
+                array_push($recordings, $row);
+            }
+
+        }
+
+        $emailLogs = array();
+        $cusId = $customer_id;
+        if(empty($cusId))
+        {
+            $cusId = $this->data['Order']['customer_id'];
+        }
+        $query =  "SELECT el.*, ot.name as job_type_name FROM ace_rp_reminder_email_log el LEFT JOIN ace_rp_order_types ot ON el.job_type = ot.id where el.customer_id='".$cusId."' and el.is_show = 1 order by id desc";
+            // $query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            array_push($emailLogs, $row);
+        }
+        $receivedLogs = array();
+        //$receivedEmails =  "SELECT * FROM ace_rp_customer_mail_response where customer_id = ".$cusId." order by id desc";
+        $receivedEmails =  "SELECT * FROM ace_rp_customer_mail_response where email = '".$this->data['Customer']['email']."' order by id desc";
+        $emailResult = $db->_execute($receivedEmails);
+        while($row = mysql_fetch_array($emailResult, MYSQL_ASSOC))
+        {
+            array_push($receivedLogs, $row);
+        }
+        $this->set('receivedLogs', $receivedLogs);
+        $this->set('emailLogs',$emailLogs);
+        $this->set('callRecordings',$recordings);
+
+        //Get the sms logs
+        $smsLogs = array();
+        $smsLog =  "SELECT * FROM ace_rp_sms_log where customer_id='".$cusId."' order by id desc";
+        $result = $db->_execute($smsLog);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            array_push($smsLogs, $row);
+        }
+        $this->set("smsLogs", $smsLogs);
+
+        //Get the received sms logs
+
+
+        // $receivedSmsLogs = array();
+
+        // $receivedSms =  "SELECT * FROM ace_rp_sms_response where from_num = '".$this->data['Customer']['cell_phone']."' order by id desc";
+        // $smsResult = $db->_execute($receivedSms);
+        // while($row = mysql_fetch_array($smsResult, MYSQL_ASSOC))
+        // {
+        //     array_push($receivedSmsLogs, $row);
+        // }
+        // $this->set("receivedSmsLogs", $receivedSmsLogs);
+        // PREPARE DATA FOR UI
+        // Get Associated Options
+        if (!$this->data['Order']['permit_applied_date'])
+            $this->data['Order']['permit_applied_date'] = date('d M Y');
+        else
+            $this->data['Order']['permit_applied_date'] = date('d M Y', strtotime($this->data['Order']['permit_applied_date']));
+
+        $this->set('job_trucks', $this->HtmlAssist->table2array($this->InventoryLocation->findAll(array('type' => '2','flagactive' => '0'), null,"order by order_id", null, 1, 0), 'id', 'name'));
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+        $query =  "SELECT id, CONCAT(name, REPLACE(REPLACE(flagactive, 0, ' [INACTIVE]'), 1, '')) AS truck FROM ace_rp_inventory_locations order by order_id";
+
+        $items = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $items[$row['id']][$k] = $v;
+        }
+
+        $query =  "SELECT id, campaign_name, camp_city FROM ace_rp_reference_campaigns";
+        $campListArray = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+          $cla['id'] = $row['id'];
+          $cla['camp_name'] = $row['campaign_name'];
+          $cla['camp_city'] = $row['camp_city'];
+          $campListArray[] = $cla;
+        }
+
+        $this->set('partRequest',$partRequest);
+        $this->set('orderTypeId',$orderTypeId);
+        $this->set('job_trucks2', $items);
+        $this->set('from_estimate', $fromEstimate);
+        $this->set('showPreview', $showPreview);
+        $this->set('job_statuses', $this->HtmlAssist->table2array($this->OrderStatus->findAll(), 'id', 'name'));
+        $this->set('job_types', $this->HtmlAssist->table2array($this->OrderType->findAll(array("OrderType.flagactive"),null,"name ASC"), 'id', 'name'));
+        $this->set('call_results', $this->HtmlAssist->table2array($this->CallResult->findAll(), 'id', 'name'));
+        $this->set('booking_sources', $this->Lists->BookingSources());
+        $this->set('admins', $this->Lists->Admins());
+        $this->set('verificators', $this->Lists->Supervisors());
+        $this->set('payment_methods', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(array("show_method",1)), 'id', 'name'));
+        $this->set('sub_status', $this->HtmlAssist->table2array($this->Order->OrderSubstatus->findAll(), 'id', 'name'));
+         $this->set('allTechnician',$this->Lists->Technicians(true));
+         $this->set('inventoryTechnician',$this->Lists->inventoryTech());
         $this->set('allSuppliers',$this->Lists->ListTable('ace_rp_suppliers','',array('name','city')));
         $this->set('allPermitMethods',$this->Lists->ListTable('ace_rp_apply_methods'));
         $this->set('allPermitStates',$this->Lists->ListTable('ace_rp_permit_states'));
@@ -2812,6 +4681,33 @@ class OrdersController extends AppController
                     $this->data['Order']['photo_2'] = $this->getPhotoPath($row['photo_2']);
             }
         }
+        if(isset($_GET['estimate'])){
+         $date = date('Y-m-d');
+        $query = "select id, max(job_time_end) as end_time from ace_rp_orders where job_truck='40' and job_date='{$date}'";
+        $result = $db->_execute($query);
+        $row = mysql_fetch_array($result);
+        // $id = $row['id'];
+        // $query2  ="select job_time_end from ace_rp_orders where id='{$id}'";
+        // $result2 = $db->_execute($query2);
+        // $row2 = mysql_fetch_array($result2);
+        // $job_end = $row2['job_time_end'];
+        $job_end = $row['end_time'];
+        $job_end2 = explode(':',$job_end);
+        if(empty($job_end)){
+         $job_start_new = '08';
+        }
+        else {
+         $job_start_new = $job_end2[0];
+        }
+
+                $job_end_new = $job_start_new+1;
+
+
+
+        $this->set('job_start_new',$job_start_new);
+        $this->set('job_end_new',$job_end_new);
+
+     }
     }
 
     function getPhotoPath($name)
@@ -2832,6 +4728,16 @@ class OrdersController extends AppController
         $this->layout='edit';
         if (!empty($this->data['Order']))
         {
+            if(!isset($this->data['Order']['app_ordered_date']))
+            {
+                $this->data['Order']['app_ordered_date'] = date('d M Y');
+            }
+            if(!isset( $this->data['Order']['app_ordered_pickup_date']))
+            {
+                $this->data['Order']['app_ordered_pickup_date'] = date('d M Y');
+            }
+            $isOrderId = isset($_POST['is_order_id'])?$_POST['is_order_id']:0;
+
             $file = isset($_FILES['uploadFile1'])? $_FILES['uploadFile1'] : null;
             $invoiceImages  =   isset($_FILES['uploadInvoice']) ? $_FILES['uploadInvoice']:null;
             $photoImage1 = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
@@ -2839,7 +4745,7 @@ class OrdersController extends AppController
             $fromTech = !empty($_POST['fromTech']) ? $_POST['fromTech'] : 3;
             $jobDate = !empty($_POST['jobDate']) ? $_POST['jobDate'] : '';
             //If order information is submitted - save the order
-            $this->saveOrder(0,'',$file, $invoiceImages, $photoImage1, $photoImage2, $fromTech,'','','',$jobDate);
+            $this->saveOrder(0,'',$file, $invoiceImages, $photoImage1, $photoImage2, $fromTech,'','','',$jobDate,'',$isOrderId);
         }
         else
         {
@@ -2860,25 +4766,15 @@ class OrdersController extends AppController
             if($customer_id)
             {
                 $this->Customer->id = $customer_id;
-                $cus = $this->Customer->read();  
+                $cus = $this->Customer->read();
                 $this->set('campaingId',$cus['Customer']['campaign_id']);
                 $allImages = array();
                 //Loki: Get all images of orders
-                // $query = "SELECT photo_1, photo_2 FROM ace_rp_orders where customer_id = ".$customer_id."";
-                // $result = $db->_execute($query);
-                // while($row = mysql_fetch_array($result))
-                // {
-                //     if(!empty($row['photo_1']) && $row['photo_1'] != null){
-                //         $allImages[] = $this->getPhotoPath($row['photo_1']);
-                //     }
-                //     if(!empty($row['photo_2']) && $row['photo_2'] != null)
-                //     {
-                //         $allImages[] = $this->getPhotoPath($row['photo_2']);
-                //     }
-                // }
+
                 foreach ($cus['PartImages'] as $key => $value) {
                      if(!empty($value['image_name']) && $value['image_name'] != null){
-                        $allImages[] = $this->getPhotoPath($value['image_name']);
+                        $allImages[$key]['image_name'] = $this->getPhotoPath($value['image_name']);
+                        $allImages[$key]['extension'] = pathinfo($value['image_name'], PATHINFO_EXTENSION);
                     }
                 }
                 $this->set("allImages",$allImages);
@@ -2895,15 +4791,45 @@ class OrdersController extends AppController
                 $mainId = isset($this->params['url']['main_id']) ? $this->params['url']['main_id'] : 0;
                 $this->set('fromTechPay', $fromTechPay);
                 $allImages = array();
+                 //Loki: For installlation item
+                $this->set("is_order_id",1);
                 //Loki: Get all images of orders
-                //$query = "SELECT photo_1, photo_2 FROM ace_rp_orders where customer_id = ". $this->data['Customer']['id']."";
-                 $query = "SELECT image_name FROM ace_rp_user_part_images where customer_id = ". $this->data['Customer']['id']."";
-                $result = $db->_execute($query);
-                while($row = mysql_fetch_array($result))
-                {
-                    $allImages[] = $this->getPhotoPath($row['image_name']);
+
+                $this->Customer->id = $this->data['Customer']['id'];
+                $customerData = $this->Customer->read();
+                foreach ($customerData['PartImages'] as $key => $value) {
+                     if(!empty($value['image_name']) && $value['image_name'] != null){
+                        $allImages[$key]['id'] = $value['id'];
+                        $allImages[$key]['image_name'] = $this->getPhotoPath($value['image_name']);
+                        $allImages[$key]['extension'] = pathinfo($value['image_name'], PATHINFO_EXTENSION);
+                    }
                 }
                 $this->set("allImages",$allImages);
+
+                 if(!empty($this->data['Order']['job_technician1_id']))
+                {
+                    $this->User->id = $this->data['Order']['job_technician1_id'];
+                    $techDetails = $this->User->read();
+                }
+                else{
+                    $this->User->id = 231276;
+                    $techDetails = $this->User->read();
+                }
+                if($this->data['Order']['tech_percentage'] > 0)
+                {
+                    $this->data['Order']['tech_percentage'] == $this->data['Order']['tech_percentage'];
+                } else {
+                    $this->data['Order']['tech_percentage'] =  $techDetails['User']['commission_percentage'];
+                    $this->data['Order']['tech_percentage_type'] = 1;
+                }
+               if($this->data['Order']['markup_percentage'] > 0)
+                {
+                    $this->data['Order']['markup_percentage'] == $this->data['Order']['markup_percentage'];
+                } else {
+                    $this->data['Order']['markup_percentage'] = $techDetails['User']['parts_commission_percentage'];
+                    $this->data['Order']['markup_percentage_type'] = 1;
+                }
+
                 $h_booked='';
                 $h_tech='';
                 $b_actions = false;
@@ -2971,17 +4897,30 @@ class OrdersController extends AppController
                 // Retrieve an additional information from the submitted parameters
                 $this->data['Order']['job_date'] = $this->params['url']['job_date'];
                 $this->data['Order']['job_time_beg'] = $this->params['url']['job_time_beg'];
-                $this->data['Order']['job_technician1_id'] = $this->params['url']['job_technician1_id'];
+                $this->data['Order']['job_technician1_id'] = !empty($this->params['url']['job_technician1_id']) ? $this->params['url']['job_technician1_id']: 231429;
+                // $this->data['Order']['job_technician1_id'] = $this->params['url']['job_technician1_id'];
                 $this->data['Order']['job_technician2_id'] = $this->params['url']['job_technician2_id'];
                 $forEstimate = isset($this->params['url']['forEstimate']) ? $this->params['url']['forEstimate'] : 0;
                 $partRequest = isset($this->params['url']['part_request']) ? $this->params['url']['part_request'] : 0;
                 $fromTechPay = isset($this->params['url']['fromTechPay']) ? $this->params['url']['fromTechPay'] : 0;
                 $mainId = isset($this->params['url']['main_id']) ? $this->params['url']['main_id'] : 0;
                 $this->data['Order']['order_status_id'] = 1;
+                $this->set("is_order_id",0);
+                if(!empty($this->params['url']['job_technician1_id']))
+                {
+                    $this->User->id = $this->params['url']['job_technician1_id'];
+                    $techDetails = $this->User->read();
+                }else{
+                    $this->User->id = 231276;
+                    $techDetails = $this->User->read();
+                }
+                 $this->data['Order']['tech_percentage'] = $techDetails['User']['commission_percentage'];
+                $this->data['Order']['tech_percentage_type'] = 1;
+                $this->data['Order']['markup_percentage'] = $techDetails['User']['parts_commission_percentage'];
+                $this->data['Order']['markup_percentage_type'] = 1;
 
                 // Default sub-status: Not confirmed (1)
                 $this->data['Order']['order_substatus_id'] = 1;
-
                 if($partRequest == 1){
                     // live= type=81, truck=40
                     // local= type=70, truck=23
@@ -3026,9 +4965,11 @@ class OrdersController extends AppController
         $this->set('booking_sources', $this->Lists->BookingSources());
         $this->set('admins', $this->Lists->Admins());
         $this->set('verificators', $this->Lists->Supervisors());
-        $this->set('payment_methods', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(), 'id', 'name'));
+        $this->set('payment_methods', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(array("show_method",1)), 'id', 'name'));
         $this->set('sub_status', $this->HtmlAssist->table2array($this->Order->OrderSubstatus->findAll(), 'id', 'name'));
         $this->set('allTechnician',$this->Lists->Technicians(true));
+        $this->set('inventoryTechnician',$this->Lists->inventoryTech());
+
         $this->set('txt_customer_note','');
 
         // Past Order View Mode
@@ -3060,6 +5001,7 @@ class OrdersController extends AppController
         $this->set('job_estimate_text',$job_estimate_text);
         $this->set('yesOrNo', $this->Lists->YesOrNo());
         $this->set('feedbackRatings', $this->Lists->FeedbackRatings());
+        $this->set('comm_roles',$this->Lists->ListTable('ace_rp_commissions_roles'));
 
         // Prepare dates for selector
         if ((strlen($this->data['Order']['job_date']) > 0) && ($this->data['Order']['job_date'] != "0000-00-00"))
@@ -3069,6 +5011,7 @@ class OrdersController extends AppController
             SELECT REPLACE(name, ' ', '_') name, internal_id
             FROM ace_rp_cities
         ";
+
 
         if(isset($order_id)) {
             $query = "
@@ -3232,7 +5175,7 @@ class OrdersController extends AppController
                 // Default sub-status: Not confirmed (1)
                 $this->data['Order']['order_substatus_id'] = 1;
 
-                
+
             $this->data['Order']['booking_source_id'] = $this->Common->getLoggedUserID();
 
                 // If customer ID is submitted, read the customer's data
@@ -3262,11 +5205,11 @@ class OrdersController extends AppController
         $this->set('booking_sources', $this->Lists->BookingSources());
         $this->set('admins', $this->Lists->Admins());
         $this->set('verificators', $this->Lists->Supervisors());
-        $this->set('payment_methods', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(), 'id', 'name'));
+        $this->set('payment_methods', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(array("show_method",1)), 'id', 'name'));
         $this->set('sub_status', $this->HtmlAssist->table2array($this->Order->OrderSubstatus->findAll(), 'id', 'name'));
         $this->set('allTechnician',$this->Lists->Technicians(true));
         $this->set('txt_customer_note','');
-        
+
 
         // Past Order View Mode
         if ($this->data['Status']['name'] == 'Done') $this->set('ViewMode', 1);
@@ -3322,7 +5265,7 @@ class OrdersController extends AppController
         if ($customer_id) $query = "select * from ace_rp_call_history where ".$ans." customer_id='".$customer_id."'";
 //      else if ($phone) $query = "select * from ace_rp_call_history where ".$ans." customer_id in (select id from ace_rp_users where phone='".$phone."')";
         else if ($phone) $query = "select * from ace_rp_call_history where ".$ans." phone='".$phone."'";
- 
+
         $query .= " order by call_date desc, call_time desc";
 
         $r = 1;
@@ -3331,15 +5274,15 @@ class OrdersController extends AppController
         $loopstart=1;
         $cb_date = "";
         while ($row = mysql_fetch_array($result,MYSQL_ASSOC))
-        {   
+        {
             if(!empty($row['call_result_id'])){
-                $but_value = $call_results[$row['call_result_id']]; 
+                $but_value = $call_results[$row['call_result_id']];
             }else{
                 $but_value = 'Call Back';
             }
-            
+
             $call_sttaus = $call_results[$row['call_result_id']];
-            $cb_date = date('d-m-Y',strtotime($row['callback_date'])); 
+            $cb_date = date('d-m-Y',strtotime($row['callback_date']));
             break;
         }
 
@@ -3356,7 +5299,7 @@ class OrdersController extends AppController
 
     // Method renders call history into the table
     function getCallHistory()
-    {   
+    {
         session_write_close(); // It added to remove delay in ajax response
         $customer_id = $_GET['customer_id'];
         $phone = $_GET['phone'];
@@ -3387,7 +5330,7 @@ class OrdersController extends AppController
 
         if ($customer_id) $query = "select * from ace_rp_call_history where ".$ans." customer_id='".$customer_id."'";
 //      else if ($phone) $query = "select * from ace_rp_call_history where ".$ans." customer_id in (select id from ace_rp_users where phone='".$phone."')";
-        else if ($phone) $query = "select * from ace_rp_call_history where ".$ans." phone='".$phone."'";
+        else if ($phone) $query = "select * from ace_rp_call_history where ".$ans." cell_phone='".$phone."'";
 
         if($isDialer == 1)
         {
@@ -3395,7 +5338,7 @@ class OrdersController extends AppController
         } else {
             $query .= " order by call_date desc, call_time desc";
         }
-        
+
         $r = 1;
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         $result = $db->_execute($query);
@@ -3403,7 +5346,7 @@ class OrdersController extends AppController
                 while ($row = mysql_fetch_array($result,MYSQL_ASSOC))
         {
             if($loopstart ==1)$class='';else $class="showcallhistory";
-            
+
             echo "<tr id='" .$row['id'] ."' class='" ."cell".(++$r%2) ." ".$class."'>";
             echo "<td>" .date('d-m-Y',strtotime($row['call_date'])) ."</td>";
             echo "<td>" .$users[$row['call_user_id']] ."</td>";
@@ -3448,7 +5391,7 @@ class OrdersController extends AppController
 
     //AJAX. Method shows the list of previous orders with a posibility to choose one
       function getPreviousJobs()
-    {  
+    {
         $customer_id = $_GET['customer_id'];
         $phone = $_GET['phone'];
         $phone = preg_replace("/[- \.]/", "", $phone);
@@ -3639,8 +5582,13 @@ class OrdersController extends AppController
         }
     }
 
-        $sql =  "select *, os.name as order_status_id, ot.name as order_type_id, CONCAT(bs1.first_name , ' ', bs1.last_name)  as booking_source_id, CONCAT(bs2.first_name , ' ', bs2.last_name)  as booking_source2_id, CONCAT(ct1.first_name , ' ', ct1.last_name)  as job_technician1_id, CONCAT(ct2.first_name , ' ', ct2.last_name)  as job_technician2_id , osub.name as order_substatus_id from ace_rp_orders_log ol LEFT JOIN ace_rp_order_statuses os on os.id = ol.order_status_id LEFT JOIN ace_rp_order_types ot on ot.id = ol.order_type_id
-                LEFT JOIN ace_rp_users bs1 on bs1.id = ol.booking_source_id  LEFT JOIN ace_rp_users bs2 on bs2.id = ol.booking_source2_id LEFT JOIN ace_rp_users ct1 on ct1.id = ol.job_technician1_id LEFT JOIN ace_rp_users ct2 on ct2.id = ol.job_technician2_id  LEFT JOIN ace_rp_order_substatuses osub on osub.id = ol.order_substatus_id where ol.id='" .$order_id ."'
+        $sql =  "select *, os.name as order_status_id, ot.name as order_type_id, CONCAT(bs1.first_name , ' ', bs1.last_name)  as booking_source_id, CONCAT(bs2.first_name , ' ', bs2.last_name)  as booking_source2_id, CONCAT(ct1.first_name , ' ', ct1.last_name)  as job_technician1_id, CONCAT(ct2.first_name , ' ', ct2.last_name)  as job_technician2_id , osub.name as order_substatus_id, CONCAT(est.first_name , ' ', est.last_name) as estimator, pay.name as payment_method_type, CONCAT(ver.first_name , ' ', ver.last_name) as verified_by_id,il.name as job_truck from ace_rp_orders_log ol LEFT JOIN ace_rp_order_statuses os on os.id = ol.order_status_id LEFT JOIN ace_rp_order_types ot on ot.id = ol.order_type_id
+                LEFT JOIN ace_rp_users bs1 on bs1.id = ol.booking_source_id  LEFT JOIN ace_rp_users bs2 on bs2.id = ol.booking_source2_id LEFT JOIN ace_rp_users ct1 on ct1.id = ol.job_technician1_id LEFT JOIN ace_rp_users ct2 on ct2.id = ol.job_technician2_id  LEFT JOIN ace_rp_order_substatuses osub on osub.id = ol.order_substatus_id
+                    LEFT JOIN ace_rp_users est on est.id = ol.estimator
+                    LEFT JOIN ace_rp_users ver on ver.id = ol.verified_by_id
+                    LEFT JOIN ace_rp_payment_methods pay on pay.id = ol.payment_method_type
+                    LEFT JOIN ace_rp_inventory_locations il on il.id = ol.job_truck
+                    where ol.id='" .$order_id ."'
                     and change_user_id='".$change_user_id."'
                     and change_date='".$change_date."'
                     and change_time='".$change_time."'";
@@ -3651,7 +5599,11 @@ class OrdersController extends AppController
         // print_r($prev_row); die;
     if (!empty($prev_row))
     {
-        $sql =  "select *,os.name as order_status_id, ot.name as order_type_id, CONCAT(bs1.first_name , ' ', bs1.last_name)  as booking_source_id, CONCAT(bs2.first_name , ' ', bs2.last_name)  as booking_source2_id, CONCAT(ct1.first_name , ' ', ct1.last_name)  as job_technician1_id, CONCAT(ct2.first_name , ' ', ct2.last_name)  as job_technician2_id, osub.name as order_substatus_id  from ace_rp_orders_log ol LEFT JOIN ace_rp_order_statuses os on os.id = ol.order_status_id LEFT JOIN ace_rp_order_types ot on ot.id = ol.order_type_id  LEFT JOIN ace_rp_users bs1 on bs1.id = ol.booking_source_id LEFT JOIN ace_rp_users bs2 on bs2.id = ol.booking_source2_id LEFT JOIN ace_rp_users ct1 on ct1.id = ol.job_technician1_id LEFT JOIN ace_rp_users ct2 on ct2.id = ol.job_technician2_id LEFT JOIN ace_rp_order_substatuses osub on osub.id = ol.order_substatus_id
+        $sql =  "select *,os.name as order_status_id, ot.name as order_type_id, CONCAT(bs1.first_name , ' ', bs1.last_name)  as booking_source_id, CONCAT(bs2.first_name , ' ', bs2.last_name)  as booking_source2_id, CONCAT(ct1.first_name , ' ', ct1.last_name)  as job_technician1_id, CONCAT(ct2.first_name , ' ', ct2.last_name)  as job_technician2_id, osub.name as order_substatus_id,CONCAT(est.first_name , ' ', est.last_name) as estimator,pay.name as payment_method_type, CONCAT(ver.first_name , ' ', ver.last_name) as verified_by_id, il.name as job_truck  from ace_rp_orders_log ol LEFT JOIN ace_rp_order_statuses os on os.id = ol.order_status_id LEFT JOIN ace_rp_order_types ot on ot.id = ol.order_type_id  LEFT JOIN ace_rp_users bs1 on bs1.id = ol.booking_source_id LEFT JOIN ace_rp_users bs2 on bs2.id = ol.booking_source2_id LEFT JOIN ace_rp_users ct1 on ct1.id = ol.job_technician1_id LEFT JOIN ace_rp_users ct2 on ct2.id = ol.job_technician2_id LEFT JOIN ace_rp_order_substatuses osub on osub.id = ol.order_substatus_id
+            LEFT JOIN ace_rp_users est on est.id = ol.estimator
+            LEFT JOIN ace_rp_users ver on ver.id = ol.verified_by_id
+            LEFT JOIN ace_rp_inventory_locations il on il.id = ol.job_truck
+            LEFT JOIN ace_rp_payment_methods pay on pay.id = ol.payment_method_type
                       where ol.id='" .$order_id ."'
                         and ol.change_user_id='".$change_user_id."'
                         and (ol.change_date>'".$change_date."'
@@ -3663,17 +5615,38 @@ class OrdersController extends AppController
         $result = $db->_execute($sql);
         if (!$row = mysql_fetch_array($result, MYSQL_ASSOC))
         {
-            $sql =  "select *,  os.name as order_status_id, ot.name as order_type_id, CONCAT(bs1.first_name , ' ', bs1.last_name)  as booking_source_id, CONCAT(bs2.first_name , ' ', bs2.last_name)  as booking_source2_id, CONCAT(ct1.first_name , ' ', ct1.last_name)  as job_technician1_id, CONCAT(ct2.first_name , ' ', ct2.last_name)  as job_technician2_id, osub.name as order_substatus_id  from ace_rp_orders ol LEFT JOIN ace_rp_order_statuses os on os.id = ol.order_status_id LEFT JOIN ace_rp_order_types ot on ot.id = ol.order_type_id  LEFT JOIN ace_rp_users bs1 on bs1.id = ol.booking_source_id LEFT JOIN ace_rp_users bs2 on bs2.id = ol.booking_source2_id LEFT JOIN ace_rp_users ct1 on ct1.id = ol.job_technician1_id LEFT JOIN ace_rp_users ct2 on ct2.id = ol.job_technician2_id LEFT JOIN ace_rp_order_substatuses osub on osub.id = ol.order_substatus_id where ol.id='" .$order_id ."'";
+            $sql =  "select *,  os.name as order_status_id, ot.name as order_type_id, CONCAT(bs1.first_name , ' ', bs1.last_name)  as booking_source_id, CONCAT(bs2.first_name , ' ', bs2.last_name)  as booking_source2_id, CONCAT(ct1.first_name , ' ', ct1.last_name)  as job_technician1_id, CONCAT(ct2.first_name , ' ', ct2.last_name)  as job_technician2_id, osub.name as order_substatus_id,CONCAT(est.first_name , ' ', est.last_name) as estimator,pay.name as payment_method_type, CONCAT(ver.first_name , ' ', ver.last_name) as verified_by_id, il.name as job_truck  from ace_rp_orders ol LEFT JOIN ace_rp_order_statuses os on os.id = ol.order_status_id LEFT JOIN ace_rp_order_types ot on ot.id = ol.order_type_id  LEFT JOIN ace_rp_users bs1 on bs1.id = ol.booking_source_id LEFT JOIN ace_rp_users bs2 on bs2.id = ol.booking_source2_id LEFT JOIN ace_rp_users ct1 on ct1.id = ol.job_technician1_id LEFT JOIN ace_rp_users ct2 on ct2.id = ol.job_technician2_id LEFT JOIN ace_rp_order_substatuses osub on osub.id = ol.order_substatus_id
+                LEFT JOIN ace_rp_users est on est.id = ol.estimator
+                LEFT JOIN ace_rp_users ver on ver.id = ol.verified_by_id
+                LEFT JOIN ace_rp_payment_methods pay on pay.id = ol.payment_method_type
+                LEFT JOIN ace_rp_inventory_locations il on il.id = ol.job_truck
+                where ol.id='" .$order_id ."'";
             $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
             $result = $db->_execute($sql);
             $row = mysql_fetch_array($result, MYSQL_ASSOC);
         }
+        // foreach ($row as $f_nam => $f_val)
+        // {
+        //     if (($f_nam!='created')&&($f_nam!='modified')&&($f_nam!='created_by')
+        //       &&($f_nam!='created_date')&&($f_nam!='modified_by')&&($f_nam!='modified_date')
+        //       &&($f_nam!='change_user_id')&&($f_nam!='change_date')
+        //       &&($f_nam!='change_time')&&($f_nam!='opercode'))
+        //         if ($prev_row[$f_nam]!=$f_val)
+        //         {
+        //         echo "<tr class='cell0'>";
+        //         echo "<td>" .$f_nam ."</td>";
+        //         echo "<td>" .$prev_row[$f_nam] ."</td>";
+        //         echo "<td>" .$f_val ."</td>";
+        //         echo "</tr>";
+        //         }
+        // }
+
         foreach ($row as $f_nam => $f_val)
         {
-            if (($f_nam!='created')&&($f_nam!='modified')&&($f_nam!='created_by')
-              &&($f_nam!='created_date')&&($f_nam!='modified_by')&&($f_nam!='modified_date')
-              &&($f_nam!='change_user_id')&&($f_nam!='change_date')
-              &&($f_nam!='change_time')&&($f_nam!='opercode'))
+            if (($f_nam=='job_date')||($f_nam=='order_type_id')||($f_nam=='job_truck')
+              ||($f_nam=='order_type_id')||($f_nam=='job_time_beg')||($f_nam=='job_time_end')
+              ||($f_nam=='estimator')||($f_nam=='booking_source_id')
+              ||($f_nam=='verified_by_id')||($f_nam=='order_substatus_id') || ($f_nam=='payment_method_type') || ($f_nam=='job_technician1_id'))
                 if ($prev_row[$f_nam]!=$f_val)
                 {
                 echo "<tr class='cell0'>";
@@ -3888,7 +5861,7 @@ class OrdersController extends AppController
         $name = date('Ymdhis', time()).$order_id.'.'.$ext;
 
         if ( 0 < $_FILES['image']['error'] ) {
-            // echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
+            // echo 'Error: ' . $_FILES['image']['error'] . '<br>';
         } else {
             move_uploaded_file($_FILES['image']['tmp_name'], 'upload_photos/'.$day.'/'.$name);
         }
@@ -3964,28 +5937,40 @@ class OrdersController extends AppController
                     }
                 }
             } else {
-                $callWhere .= " AND o.reminder_date = '".$sq_str."'";
+                $isDate = str_replace('-', '', $sq_str);
+                // $isDate = explode('-', $sq_str);
+                $strCount = strlen($isDate);
+                // print_r($isDate); die;
+                // if( !empty($isDate[1]))
+                if($strCount == 8)
+                {
+                    $callWhere .= " AND o.reminder_date = '".$sq_str."'";
+
+                } else if($strCount == 10){
+
+                    $callWhere .= " AND c.cell_phone = '".$isDate."'";
+                }
             }
 
-            $countSql = "SELECT count(DISTINCT o.id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere;
-            
+            $countSql = "SELECT count(DISTINCT o.id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL and o.order_status_id = 5 ".$callWhere;
+
             $countResult = $db->_execute($countSql);
 
             $row = mysql_fetch_array($countResult, MYSQL_ASSOC);
-            $totalCus = $row ['total']; 
+            $totalCus = $row ['total'];
             $this->set('totalCus', $totalCus);
             $totalPages = ceil($totalCus / 500);
             $this->set('totalPages', $totalPages);
 
-            $sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
-                LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere." group by o.id limit ".$limit;
+            $sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC
+                LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL and o.order_status_id = 5 ".$callWhere." group by o.id limit ".$limit;
             $result = $db->_execute($sql);
             $cust = array();
             $i=0;
             $cust_temp = array();
             while ($row = mysql_fetch_array($result, MYSQL_BOTH))
             {
-                
+
                 foreach ($row as $k => $v)
                 $cust_temp['User'][$k] = $v;
                 $cust_temp['User']['telemarketer_id']= $row['telemarketer_id'];
@@ -4008,28 +5993,28 @@ class OrdersController extends AppController
                 $total_dates = '';
             } else {
                     $dates = explode('_', str_replace("/","-",$_GET['sq_dates']));
-                                    
+
                     $today_date = date("Y-m-d");
 
                     if($dates[0] == '' && $dates[1] == ''){
                         $total_dates = " AND o.booking_date < '$today_date' ";
                     }
                     elseif ($dates[0] != '' && $dates[1] == '') {
-                        $date1 = strtotime($dates[0]); 
-                        $fdates = date("Y-m-d", $date1); 
+                        $date1 = strtotime($dates[0]);
+                        $fdates = date("Y-m-d", $date1);
                         $total_dates = " AND o.booking_date BETWEEN '$fdates' AND '$today_date' ";
                     }
                     elseif ($dates[0] == '' && $dates[1] != '') {
-                        $date2 = strtotime($dates[1]); 
-                        $tdates = date("Y-m-d", $date2); 
+                        $date2 = strtotime($dates[1]);
+                        $tdates = date("Y-m-d", $date2);
                         $total_dates = " AND o.booking_date < '$tdates' ";
                     }
                     else{
 
-                        $date1 = strtotime($dates[0]); 
-                        $fdates = date("Y-m-d", $date1); 
-                        $date2 = strtotime($dates[1]); 
-                        $tdates = date("Y-m-d", $date2); 
+                        $date1 = strtotime($dates[0]);
+                        $fdates = date("Y-m-d", $date1);
+                        $date2 = strtotime($dates[1]);
+                        $tdates = date("Y-m-d", $date2);
                         $total_dates = " AND o.booking_date BETWEEN '$fdates' AND '$tdates' ";
                     }
                 }
@@ -4055,7 +6040,7 @@ class OrdersController extends AppController
                    case "city":
                         $orderBy = " ORDER BY c.city ".$sortType;
                         break;
-                }      
+                }
             }
 
             if(!empty($sortType))
@@ -4076,12 +6061,12 @@ class OrdersController extends AppController
             $countResult = $db->_execute($countSql);
 
             $row = mysql_fetch_array($countResult, MYSQL_ASSOC);
-            $totalCus = $row ['total']; 
+            $totalCus = $row ['total'];
             $this->set('totalCus', $totalCus);
             $totalPages = ceil($totalCus / 500);
             $this->set('totalPages', $totalPages);
 
-            $sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
+            $sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC
                 LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.customer_id IS NOT NULL ".$callWhere.$total_dates." group by o.customer_id ".$orderBy." limit ".$limit;
             $result = $db->_execute($sql);
             $cust = array();
@@ -4089,7 +6074,7 @@ class OrdersController extends AppController
             $cust_temp = array();
             while ($row = mysql_fetch_array($result, MYSQL_BOTH))
             {
-                
+
                 foreach ($row as $k => $v)
                 $cust_temp['User'][$k] = $v;
                 $cust_temp['User']['telemarketer_id']= $row['telemarketer_id'];
@@ -4100,7 +6085,7 @@ class OrdersController extends AppController
         }
         else if ($_GET['sq_crit'] == 'phone')
         {
-            if($this->Common->getLoggedUserRoleID() != 6) {
+            if($this->Common->getLoggedUserRoleID() != 6 && $this->Common->getLoggedUserRoleID() != 3) {
                 $allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
                 $arrayString = implode(',', $allCampList);
                 $telem_clause = " AND c.campaign_id IN ('".$arrayString."') AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = c.id AND order_status_id IN(1,3,5))";
@@ -4110,7 +6095,7 @@ class OrdersController extends AppController
                         c.phone, c.cell_phone, c.created, c.modified,
                         c.telemarketer_id, '' callback_note, c.callresult,
                         c.callback_date, CAST(c.callback_time AS TIME) callback_time,
-                        c.lastcall_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name, (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
+                        c.lastcall_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name, (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC
                             LIMIT 0 , 1) as is_sent
                     FROM ace_rp_customers as c
                         left join ace_rp_users u on u.id=c.telemarketer_id
@@ -4132,14 +6117,14 @@ class OrdersController extends AppController
             $isCampaing = 1;
             $callResult = $_GET['is_call_result'];
             $is_search = $_GET['is_search'];
-            
+
             $this->set('is_search', $is_search);
             $this->set('is_campaing', $isCampaing);
             $data = explode('-', $_GET['sq_str']);
             if($_GET['sq_str'] == 0)
             {
                 $this->set('campId', 0);
-                if($this->Common->getLoggedUserRoleID() == 6) 
+                if($this->Common->getLoggedUserRoleID() == 6)
                 {
                     $allCampList = $this->Lists->allCampaingList();
                     $arrayString = implode(',', $allCampList);
@@ -4150,15 +6135,15 @@ class OrdersController extends AppController
             else{
                 if($_GET['sq_str'] != ''){
                     $id = $_GET['sq_str'];
-                    
+
                     $this->set('campId', $id);
-                    $callWhere = ' AND ec.last_inserted_id ='.$id.''; 
-                }   
+                    $callWhere = ' AND ec.last_inserted_id ='.$id.'';
+                }
             }
             if(!empty($callResult))
             {
                 // $callWhere .= " AND ec.show_default > 0";
-                if($callResult == 1) 
+                if($callResult == 1)
                 {
                     $callWhere .= " AND u2.callresult IN (1,2)";
                 } else if($callResult == 2) {
@@ -4167,11 +6152,11 @@ class OrdersController extends AppController
             } else {
                 $callWhere .= " AND ec.show_default = 0";
             }
-            if(!empty($seletedStr)) 
+            if(!empty($seletedStr))
             {
                 if($seletedStr == 'today')
                 {
-                    $callWhere .= " AND u2.callback_date = CURDATE()"; 
+                    $callWhere .= " AND u2.callback_date = CURDATE()";
                 } else if ($seletedStr == 'missed-call-date') {
                      $fdate1 = date_create($fromDate);
                    $fromDate = date_format($fdate1,"Y-m-d");
@@ -4203,7 +6188,7 @@ class OrdersController extends AppController
                    case "city":
                         $orderBy = " ORDER BY u2.city ".$sortType;
                         break;
-                   
+
                 }
 
                 // if($sortBy == "call-result")
@@ -4230,11 +6215,11 @@ class OrdersController extends AppController
                     $result = $db->_execute($countSql);
 
             $row = mysql_fetch_array($result, MYSQL_ASSOC);
-            $totalCus = $row ['total']; 
+            $totalCus = $row ['total'];
             $this->set('totalCus', $totalCus);
             $totalPages = ceil($totalCus / 500);
             $this->set('totalPages', $totalPages);
-            $sql = "SELECT o . * , ec . * , u2 . * , u2.id AS uid, (SELECT delivery_status FROM ace_rp_reminder_email_log rel WHERE customer_id = uid ORDER BY id DESC 
+            $sql = "SELECT o . * , ec . * , u2 . * , u2.id AS uid, (SELECT delivery_status FROM ace_rp_reminder_email_log rel WHERE customer_id = uid ORDER BY id DESC
                 LIMIT 0 , 1) AS is_sent, ord.reminder_date FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id LEFT JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id LEFT JOIN ace_rp_reminder_email_log rel ON rel.customer_id = ec.call_history_ids INNER JOIN ace_rp_orders ord ON ord.customer_id = u2.id WHERE u2.campaign_id IS NOT NULL ".$callWhere." group by uid ".$orderBy." limit ".$limit;
                     $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
                     $result = $db->_execute($sql);
@@ -4255,7 +6240,7 @@ class OrdersController extends AppController
 
         else if ($_GET['sq_crit'] == 'REF')
         {
-            if($this->Common->getLoggedUserRoleID() != 6) {
+            if($this->Common->getLoggedUserRoleID() != 6 && $this->Common->getLoggedUserRoleID() != 3) {
                 $allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
                 $arrayString = implode(',', $allCampList);
                 // $telem_clause = ' AND o.booking_source_id='.$this->Common->getLoggedUserID();
@@ -4268,7 +6253,7 @@ class OrdersController extends AppController
                         c.phone, c.cell_phone, c.created, c.modified,
                         c.telemarketer_id, '' callback_note,c.callresult,
                         c.callback_date, CAST(c.callback_time AS TIME) callback_time,
-                        c.lastcall_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name, (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
+                        c.lastcall_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name, (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC
                             LIMIT 0 , 1) as is_sent
                     FROM ace_rp_customers as c
                         join ace_rp_orders o on c.id=o.customer_id
@@ -4321,7 +6306,7 @@ class OrdersController extends AppController
                    case "city":
                         $orderBy = " ORDER BY c.city ".$sortType;
                         break;
-                   
+
                 }
             }
 
@@ -4334,8 +6319,8 @@ class OrdersController extends AppController
                     $this->set('sortTypeImg', '^');
                 }
             }
-            if ($_GET['sq_str'] == 'all_missed_callback' || $_GET['sq_str'] == 'btw_missed_callback'){
-
+            if ($_GET['sq_str'] == 'all_missed_callback' || $_GET['sq_str'] == 'btw_missed_callback')
+            {
                 if($this->Common->getLoggedUserRoleID() != 6) {
                     $telem_clause = ' AND h.callback_user_id='.$this->Common->getLoggedUserID();
                     $telem_clause1 = ' AND y.call_user_id='.$this->Common->getLoggedUserID();
@@ -4346,28 +6331,36 @@ class OrdersController extends AppController
                     $total_dates = " AND h.callback_date < $today_date ";
                 }
                 else{
-                    $dates = explode('_', str_replace("/","-",$_GET['sq_dates']));
+                    //$dates = explode('_', str_replace("/","-",$_GET['sq_dates']));
+                    $dates = explode('_', $_GET['sq_dates']);
+
                     $today_date = date("Y-m-d");
 
                     if($dates[0] == '' && $dates[1] == ''){
+
                         $total_dates = " AND h.callback_date < $today_date ";
                     }
                     elseif ($dates[0] != '' && $dates[1] == '') {
-                        $date1 = strtotime($dates[0]); 
-                        $fdates = date("Y-m-d", $date1); 
-                        $total_dates = " AND h.callback_date BETWEEN $fdates AND $today_date ";
+                        // $date1 = strtotime($dates[0]);
+                        // $fdates = date("Y-m-d", $date1);
+                        $fdates = $this->Common->formateDate($dates[0]);
+                        $total_dates = " AND h.callback_date BETWEEN '$fdates' AND '$today_date' ";
                     }
                     elseif ($dates[0] == '' && $dates[1] != '') {
-                        $date2 = strtotime($dates[1]); 
-                        $tdates = date("Y-m-d", $date2); 
+                        $date2 = strtotime($dates[1]);
+                        // $tdates = date("Y-m-d", $date2);
+                        $tdates = $this->Common->formateDate($dates[1]);
                         $total_dates = " AND h.callback_date < $tdates ";
                     }
                     else{
-                        $date1 = strtotime($dates[0]); 
-                        $fdates = date("Y-m-d", $date1); 
-                        $date2 = strtotime($dates[1]); 
-                        $tdates = date("Y-m-d", $date2); 
-                        $total_dates = " AND h.callback_date BETWEEN $fdates AND $tdates ";
+                        // $date1 = strtotime($dates[0]);
+                        $fdates = $this->Common->formateDate($dates[0]);
+                        // $fdates = date("Y-m-d", $date1);
+
+                        // $date2 = strtotime($dates[1]);
+                        // $tdates = date("Y-m-d", $date2);
+                        $tdates = $this->Common->formateDate($dates[1]);;
+                        $total_dates = " AND h.callback_date BETWEEN '$fdates' AND '$tdates' ";
                     }
                 }
 
@@ -4384,7 +6377,7 @@ class OrdersController extends AppController
                         left join ace_rp_orders arc on c.id = arc.customer_id
                     WHERE
                         c.id=h.customer_id and
-                        (h.call_result_id in (0,1,2,4,8,9)) 
+                        (h.call_result_id in (0,1,2,4,8,9))
                         ".$total_dates."
                         AND h.call_date <= h.callback_date
                         ".$telem_clause."
@@ -4393,6 +6386,8 @@ class OrdersController extends AppController
                                 where y.customer_id=h.customer_id ".$telem_clause1."
                                     and (y.call_date>h.call_date
                                     or y.call_date=h.call_date and y.call_time>h.call_time)) ".$orderBy." LIMIT ".$limit;
+
+                // print_r($sql);  die;
             }
             else
             {
@@ -4402,6 +6397,15 @@ class OrdersController extends AppController
                 }
 
                 $sent_date = $_GET['sq_str'];
+                $isDate = str_replace('-', '', $sent_date);
+                $strCount = strlen($isDate);
+                if($strCount == 8)
+                {
+                  $callWhere =   "AND h.callback_date LIKE '%".$sent_date."%'";
+                } else if($strCount == 10){
+
+                    $callWhere = " AND c.cell_phone = '".$isDate."'";
+                }
 
                 $sql = "SELECT distinct
                         c.id, c.card_number, c.first_name, c.last_name,
@@ -4418,7 +6422,7 @@ class OrdersController extends AppController
                     WHERE
                         c.id=h.customer_id and
                         (h.call_result_id in (0,1,2,4,8,9) or h.call_result_id is null)
-                        AND h.callback_date LIKE '%".$sent_date."%'
+                        ".$callWhere."
                         AND h.call_date <= h.callback_date
                         ".$telem_clause."
                         and not exists
@@ -4428,7 +6432,191 @@ class OrdersController extends AppController
                                     or y.call_date=h.call_date and y.call_time>h.call_time))
                                     ".$orderBy."    LIMIT ".$limit;
             }
-            
+
+            $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+            $result = $db->_execute($sql);
+
+            $jType = $this->HtmlAssist->table2array($this->OrderType->findAll(), 'id', 'name');
+
+            while ($row = mysql_fetch_array($result, MYSQL_ASSOC))
+            {   //var_dump($row);
+                foreach ($row as $k => $v)
+                    $cust_temp['User'][$k] = $v;
+
+                $cust_temp['User']['telemarketer_id']= $row['call_user_id'];
+                $cust_temp['User']['job_type']= $jType[$row['job_type']];
+                $cust_temp['User']['last_job_done_date']= $row['last_job_done_date'];
+                $cust_temp['User']['customer_row_color']= $row['customer_row_color'];
+                $cust_temp['User']['customer_row_color_agent']= $row['customer_row_color_agent'];
+                $cust_temp['User']['callback_note']= str_replace("'","`",str_replace("\"","`",$row['call_note']));
+                $cust_temp['User']['callresult']= $row['call_result_id'];
+                $cust_temp['u']['telemarketer_first_name']= $row['telemarketer_first_name'];
+                $cust_temp['u']['telemarketer_last_name']= $row['telemarketer_last_name'];
+
+                $cust_temp['User']['callback_time']= date("H:i", strtotime($row['callback_time']));
+                $cust_temp['User']['callback_time']= date("H:i", strtotime($row['callback_time']));
+
+                $cust_temp['check_callback'] = 'yes';
+
+                $cust[$row['id']] = $cust_temp;
+            }
+        }
+        else if($_GET['sq_crit'] == 'followup')
+        {
+            $telem_clause = '';
+            $telem_clause1 = '';
+            $callback_search_head = 'yes';
+            $today_date = date("Y-m-d");
+            $sortBy = $_GET['sortBy'];
+            $sortType = $_GET['sortType'];
+            $orderBy ='ORDER BY reminder_flag desc, h.callback_date, h.callback_time asc';
+            if(!empty($sortBy))
+            {
+                $this->set('sort_by', $sortBy);
+
+                switch ($sortBy) {
+                    case "call-result":
+                        $orderBy = " ORDER BY h.call_result_id ".$sortType;
+                        break;
+                    case "call-back":
+                       $orderBy = " ORDER BY h.callback_date ".$sortType;
+                        break;
+                    case "last-call":
+                        $orderBy = " ORDER BY c.lastcall_date ".$sortType;
+                        break;
+                    case "email":
+                        $orderBy = " ORDER BY c.email ".$sortType;
+                        break;
+                   case "city":
+                        $orderBy = " ORDER BY c.city ".$sortType;
+                        break;
+
+                }
+            }
+
+            if(!empty($sortType))
+            {
+                if($sortType == 'desc')
+                {
+                    $this->set('sortTypeImg', 'v');
+                } else {
+                    $this->set('sortTypeImg', '^');
+                }
+            }
+            if ($_GET['sq_str'] == 'all_missed_callback' || $_GET['sq_str'] == 'btw_missed_callback')
+            {
+                if($this->Common->getLoggedUserRoleID() != 6) {
+                    $telem_clause = ' AND h.callback_user_id='.$this->Common->getLoggedUserID();
+                    $telem_clause1 = ' AND y.call_user_id='.$this->Common->getLoggedUserID();
+                }
+
+                if($_GET['sq_str'] == 'all_missed_callback'){
+                    $today_date = date("Y-m-d");
+                    $total_dates = " AND h.callback_date < $today_date ";
+                }
+                else{
+                    //$dates = explode('_', str_replace("/","-",$_GET['sq_dates']));
+                    $dates = explode('_', $_GET['sq_dates']);
+
+                    $today_date = date("Y-m-d");
+
+                    if($dates[0] == '' && $dates[1] == ''){
+
+                        $total_dates = " AND h.callback_date < $today_date ";
+                    }
+                    elseif ($dates[0] != '' && $dates[1] == '') {
+                        // $date1 = strtotime($dates[0]);
+                        // $fdates = date("Y-m-d", $date1);
+                        $fdates = $this->Common->formateDate($dates[0]);
+                        $total_dates = " AND h.callback_date BETWEEN '$fdates' AND '$today_date' ";
+                    }
+                    elseif ($dates[0] == '' && $dates[1] != '') {
+                        $date2 = strtotime($dates[1]);
+                        // $tdates = date("Y-m-d", $date2);
+                        $tdates = $this->Common->formateDate($dates[1]);
+                        $total_dates = " AND h.callback_date < $tdates ";
+                    }
+                    else{
+                        // $date1 = strtotime($dates[0]);
+                        $fdates = $this->Common->formateDate($dates[0]);
+                        // $fdates = date("Y-m-d", $date1);
+
+                        // $date2 = strtotime($dates[1]);
+                        // $tdates = date("Y-m-d", $date2);
+                        $tdates = $this->Common->formateDate($dates[1]);;
+                        $total_dates = " AND h.callback_date BETWEEN '$fdates' AND '$tdates' ";
+                    }
+                }
+
+                $sql = "SELECT distinct
+                        c.id, c.card_number, c.first_name, c.last_name,
+                        c.postal_code, c.email, c.address_unit, c.address_street_number, c.address_street, c.city, c.lastcall_date, c.phone, c.cell_phone,c.selected_customer_from_search as customer_row_color,c.selected_customer_from_search_agent as customer_row_color_agent,
+                        h.call_user_id, h.call_note, h.call_result_id, arc.order_type_id as job_type,arc.job_date as last_job_done_date,
+                        h.callback_date, h.callback_time,
+                        if((h.callback_date=current_date())&&(TIME_TO_SEC(CAST(now() AS TIME))>= TIME_TO_SEC(CAST(h.callback_time AS TIME))-300),1,0) reminder_flag,
+                        h.call_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name
+                    FROM ace_rp_customers AS c
+                        join ace_rp_call_history h
+                        left join ace_rp_users u on u.id=h.call_user_id
+                        left join ace_rp_orders arc on c.id = arc.customer_id
+                    WHERE
+                        c.id=h.customer_id and
+                        (h.call_result_id in (0,1,2,4,8,9))
+                        ".$total_dates."
+                        AND h.call_date <= h.callback_date
+                        ".$telem_clause."
+                        and not exists
+                            (select * from ace_rp_call_history y
+                                where y.customer_id=h.customer_id ".$telem_clause1."
+                                    and (y.call_date>h.call_date
+                                    or y.call_date=h.call_date and y.call_time>h.call_time)) ".$orderBy." LIMIT ".$limit;
+
+                // print_r($sql);  die;
+            }
+            else
+            {
+                if($this->Common->getLoggedUserRoleID() != 6) {
+                    $telem_clause = ' AND h.callback_user_id='.$this->Common->getLoggedUserID();
+                    $telem_clause1 = ' AND y.call_user_id='.$this->Common->getLoggedUserID();
+                }
+
+                $sent_date = $_GET['sq_str'];
+                $isDate = str_replace('-', '', $sent_date);
+                $strCount = strlen($isDate);
+                if($strCount == 8)
+                {
+                  $callWhere =   "AND h.callback_date LIKE '%".$sent_date."%'";
+                } else if($strCount == 10){
+
+                    $callWhere = " AND c.cell_phone = '".$isDate."'";
+                }
+
+                $sql = "SELECT distinct
+                        c.id, c.card_number, c.first_name, c.last_name,
+                        c.postal_code, c.email, c.address_unit, c.address_street_number, c.address_street, c.city,
+                        c.phone, c.cell_phone,c.selected_customer_from_search as customer_row_color,c.selected_customer_from_search_agent as customer_row_color_agent,
+                        h.call_user_id, h.call_note, h.call_result_id, arc.order_type_id as job_type,arc.job_date as last_job_done_date,
+                        h.callback_date, h.callback_time,
+                        if((h.callback_date=current_date())&&(TIME_TO_SEC(CAST(now() AS TIME))>= TIME_TO_SEC(CAST(h.callback_time AS TIME))-300),1,0) reminder_flag,
+                        h.call_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name
+                    FROM ace_rp_customers AS c
+                        join ace_rp_call_history h
+                        left join ace_rp_users u on u.id=h.call_user_id
+                        left join ace_rp_orders arc on c.id = arc.customer_id
+                    WHERE
+                        c.id=h.customer_id and
+                        (h.call_result_id in (0,1,2,4,8,9) or h.call_result_id is null)
+                        ".$callWhere."
+                        AND h.call_date <= h.callback_date
+                        ".$telem_clause."
+                        and not exists
+                            (select * from ace_rp_call_history y
+                                where y.customer_id=h.customer_id ".$telem_clause1."
+                                    and (y.call_date>h.call_date
+                                    or y.call_date=h.call_date and y.call_time>h.call_time))
+                                    ".$orderBy."    LIMIT ".$limit;
+            }
+
             $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
             $result = $db->_execute($sql);
 
@@ -4545,11 +6733,11 @@ class OrdersController extends AppController
                     $cust_temp['User']['callback_time']= date("H:i", strtotime($row['callback_time']));
 
                     $cust[$row['id']] = $cust_temp;
-                 
-                
+
+
             }
         }
-        
+
         else if ($_GET['sq_crit'] == 'address_street')
         {
             //$cust = $this->User->findAll($conditions, null, $sort, $limit);
@@ -4576,6 +6764,8 @@ class OrdersController extends AppController
         }
         else if (($_GET['sq_crit'] != 'booking_source_id') && ($_GET['sq_crit'] != 'order_type_id') && ($_GET['sq_crit'] != 'callback_date'))
         {
+
+
             $sortBy = $_GET['sortBy'];
             $sortType = $_GET['sortType'];
 
@@ -4600,7 +6790,7 @@ class OrdersController extends AppController
                    case "city":
                         $orderBy = " ORDER BY c.city ".$sortType;
                         break;
-                }      
+                }
             }
 
             if(!empty($sortType))
@@ -4613,11 +6803,11 @@ class OrdersController extends AppController
                 }
             }
             //$cust = $this->User->findAll($conditions, null, $sort, $limit);
-            if($this->Common->getLoggedUserRoleID() != 6) {
+            if($this->Common->getLoggedUserRoleID() != 6 && $this->Common->getLoggedUserRoleID() != 3) {
                 $allCampList = $this->Lists->AgentAllCampaingList($_SESSION['user']['id']);
                 $arrayString = implode(',', $allCampList);
                 // $telem_clause = " AND c.campaign_id IN ('".$arrayString."') AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = u.id AND order_status_id IN(1,3,5) AND booking_source_id = ".$this->Common->getLoggedUserID().")";
-                
+
                 $telem_clause = " AND c.campaign_id IN (".$arrayString.") AND EXISTS(SELECT * FROM ace_rp_orders WHERE customer_id = u.id AND order_status_id IN(1,3,5))";
             }
 
@@ -4629,7 +6819,7 @@ class OrdersController extends AppController
                         c.phone, c.cell_phone, c.created, c.modified,c.selected_customer_from_search as customer_row_color,c.selected_customer_from_search_agent as customer_row_color_agent,
                         c.telemarketer_id, '' callback_note, c.callresult, arc.order_type_id as job_type,
                         c.callback_date, CAST(c.callback_time AS TIME) callback_time,
-                        c.lastcall_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name, (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
+                        c.lastcall_date, u.first_name as telemarketer_first_name, u.last_name as telemarketer_last_name, (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC
                             LIMIT 0 , 1) as is_sent
                     FROM ace_rp_customers as c
                         left join ace_rp_users u on u.id=c.telemarketer_id
@@ -4654,7 +6844,7 @@ class OrdersController extends AppController
                 $cust[$row['id']] = $cust_temp;
             }
         }
-        else if($_GET['sq_crit'] == 'booking_source_id') 
+        else if($_GET['sq_crit'] == 'booking_source_id')
         {
             $searchStr  =   $_GET['search_by_date'];
             $sortBy     =   $_GET['sortBy'];
@@ -4666,28 +6856,28 @@ class OrdersController extends AppController
             } else {
 
                     $dates = explode('_', str_replace("/","-",$_GET['sq_dates']));
-                    
+
                     $today_date = date("Y-m-d");
 
                     if($dates[0] == '' && $dates[1] == ''){
                         $total_dates = " AND o.booking_date < '$today_date' ";
                     }
                     elseif ($dates[0] != '' && $dates[1] == '') {
-                        $date1 = strtotime($dates[0]); 
-                        $fdates = date("Y-m-d", $date1); 
+                        $date1 = strtotime($dates[0]);
+                        $fdates = date("Y-m-d", $date1);
                         $total_dates = " AND o.booking_date BETWEEN '$fdates' AND '$today_date' ";
                     }
                     elseif ($dates[0] == '' && $dates[1] != '') {
-                        $date2 = strtotime($dates[1]); 
-                        $tdates = date("Y-m-d", $date2); 
+                        $date2 = strtotime($dates[1]);
+                        $tdates = date("Y-m-d", $date2);
                         $total_dates = " AND o.booking_date < '$tdates' ";
                     }
                     else{
 
-                        $date1 = strtotime($dates[0]); 
-                        $fdates = date("Y-m-d", $date1); 
-                        $date2 = strtotime($dates[1]); 
-                        $tdates = date("Y-m-d", $date2); 
+                        $date1 = strtotime($dates[0]);
+                        $fdates = date("Y-m-d", $date1);
+                        $date2 = strtotime($dates[1]);
+                        $tdates = date("Y-m-d", $date2);
                         $total_dates = " AND o.booking_date BETWEEN '$fdates' AND '$tdates' ";
                     }
                 }
@@ -4711,7 +6901,7 @@ class OrdersController extends AppController
                    case "city":
                         $orderBy = " ORDER BY c.city ".$sortType;
                         break;
-                   
+
                 }
             }
 
@@ -4733,7 +6923,7 @@ class OrdersController extends AppController
             $totalPages = ceil($total / 500);
             $this->set('totalPages', $totalPages);
 
-            $sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
+            $sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC
                 LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id WHERE o.booking_source_id = ".$_GET['sq_str'].$total_dates." ".$orderBy." limit ".$limit;
             $result = $db->_execute($sql);
             $cust = array();
@@ -4741,7 +6931,7 @@ class OrdersController extends AppController
             $cust_temp = array();
             while ($row = mysql_fetch_array($result, MYSQL_BOTH))
             {
-                
+
                 foreach ($row as $k => $v)
                 $cust_temp['User'][$k] = $v;
                 $cust_temp['User']['telemarketer_id']= $row['telemarketer_id'];
@@ -5340,6 +7530,24 @@ class OrdersController extends AppController
 
         $pre_o =  $this->Order->findAll($conditions,'',$sqlOrder,$this->itemsToShow,$_GET['currentPage']+1,0);
 
+        $cities=  array();
+
+        foreach($pre_o as $obj){
+            $city = $obj['Customer']['city'];
+            if($city=="VANCOUVER"){
+                $city="VANCOUVER WEST";
+
+            }
+           $city_query = "select link1 from ace_rp_cities where name='$city'";
+            $result = $db->_execute($city_query);
+            while ($row11 = mysql_fetch_array($result)) {
+             if(empty($row11)){
+               $cities[]="";
+             }
+             $cities[] =  $row11['link1'];
+            }
+
+        }
         //Calculate totals for: current tech (if selected), booking amount, (sale amount)
         $total_comm = 0;
         $total_booking = 0;
@@ -5438,7 +7646,7 @@ class OrdersController extends AppController
             $subtotal[$row['order_id']]['booking'] = $row['booking'];
             $subtotal[$row['order_id']]['sales'] = $row['sales'];
         }
-
+         $this->set('cities', $cities);
         $this->set('total_comm', $total_comm);
         $this->set('total_booking', $total_booking);
         $this->set('total_sales', $total_sales);
@@ -5565,10 +7773,10 @@ class OrdersController extends AppController
             $route_type = isset($_REQUEST['route_type'])?$_REQUEST['route_type']:"";
 
            header("Location: http://hvacproz.ca/acesys/index.php/orders/mapSchedule?p_code=".$_REQUEST['p_code']."&city=".$_REQUEST['city']."&route_type=".$route_type);
-           
-           //header("Location: http://localhost/acesys/index.php/orders/mapSchedule?p_code=".$_REQUEST['p_code']."&city=".$_REQUEST['city']."&route_type=".$route_type);
+
+           // header("Location: http://localhost/acesys/index.php/orders/mapSchedule?p_code=".$_REQUEST['p_code']."&city=".$_REQUEST['city']."&route_type=".$route_type);
         }
-        $this->layout='edit';
+        $this->layout='edit_home';
         $p_code = strtoupper(substr($_REQUEST['p_code'],0,3));
         $city = $_REQUEST['city'];
         $neighbours = array();
@@ -5608,15 +7816,18 @@ class OrdersController extends AppController
             elseif (($this->Common->getLoggedUserRoleID()!=6))
                 $route_type = '1';
 
-        $cond = '';
-        if ($route_type) $cond = 'and route_type='.$route_type;
+       $cond = '';
+        if (isset($_REQUEST['route_type']) && $_REQUEST['route_type']!="" ) {$cond = 'and route_type='.$_REQUEST['route_type'];}
         $userId=$this->Common->getLoggedUserID();
-        if($this->Common->getLoggedUserRoleID()==3){
-            $query = "select ace_rp_inventory_locations.* from ace_rp_inventory_locations inner join ace_rp_truck_maps as artm on ace_rp_inventory_locations.id=artm.truck_id where flagactive = 0 and type=2 and artm.user_id=".$userId." $cond order by ace_rp_inventory_locations.order_id asc"; 
+        if($this->Common->getLoggedUserRoleID()==3 && $_REQUEST['from_tele']!=1){
+            $query = "select ace_rp_inventory_locations.* from ace_rp_inventory_locations inner join ace_rp_truck_maps as artm on ace_rp_inventory_locations.id=artm.truck_id where flagactive = 0 and type=2 and artm.user_id=".$userId." and ace_rp_inventory_locations.id NOT IN (40) $cond order by ace_rp_inventory_locations.order_id asc";
         }else{
-            $query = "select * from ace_rp_inventory_locations where flagactive = 0 and type=2 $cond order by ace_rp_inventory_locations.order_id asc";
+            $query = "select * from ace_rp_inventory_locations where flagactive = 0 and type=2 and id NOT IN (40) $cond order by ace_rp_inventory_locations.order_id asc";
         }
-        
+
+
+
+
         $result = $db->_execute($query);
         while($row = mysql_fetch_array($result)) {
             $trucks[$row['id']] = $row['name'];
@@ -5626,12 +7837,15 @@ class OrdersController extends AppController
             for ($i=8; $i<18; $i++)
                 $map_reverse[$row['id']][$i][] = 'ALL';
         }
-       
+
         //Prepare Technician Names
         if ($this->Common->getLoggedUserRoleID() != "1") $method = "editBooking"; else $method = "techBooking";
         $this->set('method',$method);
         $this->set('allTechnician',$this->Lists->Technicians(true));
+        $this->set('allTechnicianPostalCode',$this->Lists->getTechPostal(1));
 
+        // echo "<pre>";
+        // print_r($this->Lists->getTechPostal(1)); die;
         //Prepare substatus/confirmation names
         $substatuses = $this->Lists->ListTable('ace_rp_order_substatuses');
 
@@ -5644,7 +7858,7 @@ class OrdersController extends AppController
 
         //Pick today's date if no date
         $fdate = ($this->params['url']['ffromdate'] != '' ? $this->params['url']['ffromdate']: date("Y-m-d") ) ;
-       
+
         //$weekday = date('w',strtotime($fdate));
 
         //Prepare default techs' names
@@ -5685,31 +7899,35 @@ class OrdersController extends AppController
         if ($this->Common->getLoggedUserRoleID() == "3"||$this->Common->getLoggedUserRoleID() == "9")
             $status_condition = ' and order_status_id!=3 ';
 
-        $query = "SELECT a.id, a.order_status_id,a.emal_bounce_status, a.order_substatus_id, a.job_truck,
-                         a.sale_amount, a.job_timeslot_id, a.job_time_beg, a.job_time_end,
+               $query = "SELECT a.id, a.order_status_id,a.emal_bounce_status, a.order_substatus_id, a.job_truck,
+                         a.sale_amount,a.send_estimate,a.order_part,a.job_notes, a.job_timeslot_id,a.customer_id, a.job_time_beg, a.job_time_end,a.fact_job_beg,a.fact_job_end,
                          a.job_date, a.job_technician1_id, a.job_technician2_id, a.order_type_id,
                          a.sCancelReason, c.city as zone_city, c.postal_code as postal_code1,
-                         c.color as color, a.booking_source_id as booking_source_id, s.first_name as booking_source_fn, booking_source2_id,
+                         ct.color as color, a.booking_source_id as booking_source_id,a.job_time_beg,a.job_time_end, s.first_name as booking_source_fn, booking_source2_id,
                          s.last_name as booking_source_ln, c.zone_name as zone_name, u.postal_code as postal_code,
                          CONCAT(u.address_unit,', ',u.address_street_number,', ',u.address_street) as address,
                          'BC' as state, u.phone as customer_phone,
-                         concat(u.first_name,' ',u.last_name) as customer_name, u.city as user_city, u.email, 
+                         concat(u.first_name,' ',u.last_name) as customer_name, u.city as user_city, u.email,
                          jt.name job_type_name, a.verified_by_id, rr.role_id, jt.category_id,
                          a.app_ordered_by, a.permit_result, a.order_number, CONCAT(ur.name, ' - ', cr.name) dCancelReason,
-                         a.tech_visible,a.tech_visible_agent, a.city as order_city, a.address_unit as order_address_unit, a.address_street as order_address_street,a.postal_code as order_postal_code,
-                         a.address_street_number as order_address_street_number
+                         a.tech_visible,a.tech_visible_agent,a.call_to_book, a.city as order_city, a.address_unit as order_address_unit, a.address_street as order_address_street,a.postal_code as order_postal_code,
+                         a.address_street_number as order_address_street_number, pa.paid_amount,pm.name as payment_method_name,pm.color as method_color,cp.payment_status, tn.first_name as tech_name, a.stop_duration, a.job_tech_notes
                     FROM `ace_rp_orders` as a
                     LEFT JOIN `ace_rp_order_types` as jt on ( a.order_type_id = jt.id )
                     LEFT JOIN `ace_rp_customers` as u on ( a.customer_id = u.id )
                     LEFT JOIN `ace_rp_users` as s on ( a.booking_source_id = s.id )
                     LEFT JOIN `ace_rp_users` as t on ( a.booking_telemarketer_id = t.id )
+                    LEFT JOIN `ace_rp_users` as tn on ( a.job_technician1_id = tn.id )
                     LEFT JOIN `ace_rp_users_roles` as rr on ( rr.user_id = t.id )
                     -- LEFT JOIN `ace_rp_zones` as c on ( (LCASE(LEFT(a.job_postal_code,3)) = LCASE(LEFT(c.postal_code,3))) or (LCASE(c.city) LIKE LCASE(u.city)) )
+                    LEFT JOIN `ace_rp_cities` as ct on (LCASE(ct.name) LIKE LCASE(u.city))
                     LEFT JOIN `ace_rp_zones` as c on ( (LCASE(LEFT(a.job_postal_code,3)) = LCASE(LEFT(c.postal_code,3))) or (LCASE(c.city) LIKE LCASE(u.city)) )
                     LEFT JOIN ace_rp_cancellation_reasons cr ON a.cancellation_reason = cr.id
                     LEFT JOIN ace_rp_roles ur ON ur.id = cr.role_id
-                   WHERE order_status_id < 6 $status_condition $sqlConditions order by a.id asc";
-
+                    LEFT JOIN ace_rp_payments pa ON pa.idorder = a.id
+                    LEFT JOIN ace_rp_payment_methods pm ON pm.id = pa.payment_method
+                    LEFT JOIN ace_rp_creditcard_payment_details cp ON cp.order_id = a.id AND cp.id = (SELECT MAX(id) FROM ace_rp_creditcard_payment_details where order_id = a.id)
+                   WHERE order_status_id < 6 $status_condition $sqlConditions and a.job_truck != 40 order by a.id asc";
         $redo = array();
         $followup = array();
         $install = array();
@@ -5717,13 +7935,24 @@ class OrdersController extends AppController
         $result = $db->_execute($query);
         while($row = mysql_fetch_array($result))
         {
+
+            $check_audio = "select id from ace_rp_media where user_id='".$row['customer_id']."'";
+            $result1 = $db->_execute($check_audio);
+            $row1 = mysql_fetch_array($result1);
+            if(empty($row1[id])){
+               $orders[$row['id']]['audio'] = 'no';
+
+            }
+            else {
+               $orders[$row['id']]['audio'] = 'yes';
+            }
             if(!empty($row['order_city']))
             {
                $row['address'] = $row['order_address_unit'].' , '.$row['order_address_street_number'].' , '.$row['order_address_street'];
                $row['postal_code'] = $row['order_postal_code'];
                $row['user_city'] = $row['order_city'];
             }
-         
+
             $orders[$row['id']]['is_gmail'] = 0 ;
             $explodEmail = explode("@",$row['email']);
             if($explodEmail[1] == "gmail.com")
@@ -5771,6 +8000,9 @@ class OrdersController extends AppController
 
 
         }
+
+        // echo "<pre>";
+        // print_r($orders); die;
         //Determine if all trucks use same techs
         foreach ($trucks as $truck_k => $truck_v)
         {
@@ -5955,6 +8187,7 @@ class OrdersController extends AppController
         $this->set('routeVisibility', $routeVisibility);
         $this->set('routeUsers', $routeUsers);
         $this->set('telemarketers', $telemarketers);
+        $this->set('daily', $daily);
 
         $redo = array('booked' => count($redo[1]),'done' => count($redo[5]),'canceled' => count($redo[3]));
         $followup = array('booked' => count($followup[1]),'done' => count($followup[5]),'canceled' => count($followup[3]));
@@ -5976,8 +8209,25 @@ class OrdersController extends AppController
         }
 
         $this->set("ismobile", $this->Session->read("ismobile"));
-        if($this->Common->getLoggedUserRoleID() == 3 && $daily != 1){
-             $this->redirect("/orders/weeklySchedule?p_code=".$p_code."&city=".$city."&route_type=".$_REQUEST['route_type']);
+       if($this->Common->getLoggedUserRoleID() == 3 && $daily != 1 && $_REQUEST['from_tele']!=1){
+             $this->redirect("/orders/weeklySchedule?p_code=".$p_code."&city=".$city."&route_type=".$_REQUEST['route_type']."&daily=".$daily);
+        }
+        $this->set('admin_per', 0);
+         $user_id=$this->Common->getLoggedUserID();
+       $user_query = "select admin_per from ace_rp_users where id=$user_id";
+        $result11 = $db->_execute($user_query);
+        while($row = mysql_fetch_array($result11)) {
+            $this->set('admin_per', $row['admin_per']);
+
+        }
+        $user_query1 = "select * from ace_rp_time_setting";
+        $result12 = $db->_execute($user_query1);
+
+        while($row1 = mysql_fetch_array($result12)) {
+
+
+            $this->set($row1['name'], $row1['value']);
+
         }
 
     }
@@ -6130,8 +8380,8 @@ class OrdersController extends AppController
             $settings = $this->Setting->find(array('title'=>'email_template_cancelbookingnotification'));
             $template = $settings['Setting']['valuetxt'];
 
-            $settings = $this->Setting->find(array('title'=>'email_template_canceljobnotification_subject'));  
-            $template_subject = $settings['Setting']['valuetxt']; 
+            $settings = $this->Setting->find(array('title'=>'email_template_canceljobnotification_subject'));
+            $template_subject = $settings['Setting']['valuetxt'];
         } else if($forTimeConfirm) {
             $settings = $this->Setting->find(array('title'=>'email_template_booking_time_cofirmation'));
             $template = $settings['Setting']['valuetxt'];
@@ -6237,43 +8487,148 @@ class OrdersController extends AppController
         //$email = $this->data['Customer']['email'];
 
         $res = $this->sendEmailUsingMailgun($email,$template_subject,$msg,$id);
-       
+
         $message = mysql_real_escape_string($msg);
         if(!empty($res))
-        {   
-            if (strpos($res, '@acecare') !== false) 
+        {
+            if (strpos($res, '@acecare') !== false)
             {
                 $is_sent = 1;
             } else {
                 $is_sent = 0;
-            }       
-            $query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$id.",".$cusId.",".$orderTypeId.",'".$currentDate."',".$is_sent.", '".$message."', '".$res."')";
+            }
+            $query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id,subject) values (".$id.",".$cusId.",".$orderTypeId.",'".$currentDate."',".$is_sent.", '".$message."', '".$res."','Booking Confirmation')";
             $result1 = $db->_execute($query1);
         }
         return $template_subject;
         //$res = mail($email, $template_subject, $msg, $headers);
     }
     function sendEmailUsingMailgun($to,$subject,$body,$order_id = null, $imagePath =null){
+
+        // $imagePath = '/home/hvacproz/public_html/acesys/app/webroot/tech-invoice/tech_invoice_10000099481632514693.pdf';
+
+      // set up curl to point to your requested URL
+        $ch = curl_init("http://hvacproz.ca/acesystem2018/mailcheck.php");
+        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, "TO=".$to."&SUBJECT=".$subject."&BODY=".urlencode($body)."&imagePath=".$imagePath);
+        // execute the request, I'm assuming you don't care about the result content
+         $msgid =  curl_exec($ch);
+
+       // if (curl_errno($ch)) {
+       //     // this would be your first hint that something went wrong
+       //     die('Couldn\'t send request: ' . curl_error($ch));
+       // } else {
+       //     // check the HTTP status code of the request
+       //     $resultStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+       //     if ($resultStatus == 200) {
+       //         // everything went better than expected
+       //       die('everything went better than expected');
+       //     } else {
+       //         // the request did not complete as expected. common errors are 4xx
+       //         // (not found, bad request, etc.) and 5xx (usually concerning
+       //         // errors/exceptions in the remote script execution)
+
+       //         die('Request failed: HTTP status code: ' . $resultStatus);
+       //     }
+       // }
+
+        curl_close($ch);
+        return $msgid;
+
+            // $ch = curl_init();
+            // curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/mailcheck.php");
+            // curl_setopt($ch, CURLOPT_POST, 1);
+            // curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".urlencode($body)."&imagePath=".$imagePath);
+            // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            // $msgid = curl_exec ($ch);//exit;
+            // $output = curl_close ($ch);
+
+
+
+            //$this->manageMailgunEmailLogs($msgid, $subject, $order_id);
+            //return $msgid;
+        //var_export($response);
+        //$this->verifyEmailUsingMailgun($to,$subject,$order_id,$msgid);
+    }
+
+    function sendNewEmailMailgun($to,$subject,$body,$order_id = null, $imagePath =null){
+      // set up curl to point to your requested URL
+        // $ch = curl_init("http://hvacproz.ca/acesystem2018/new_mailgun.php");
+        $ch = curl_init("http://hvacproz.ca/acesystem2018/new/mailgun.php");
+        
+        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, "TO=".$to."&SUBJECT=".$subject."&BODY=".urlencode($body)."&imagePath=".$imagePath);
+        // execute the request, I'm assuming you don't care about the result content
+         $msgid =  curl_exec($ch);
+
+        curl_close($ch);
+        return $msgid;
+
+    }
+
+     function sendMultipleAttachement($to,$subject,$body,$order_id = null, $imagePath =null){
             $ch = curl_init();
-            //curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
-            curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailcheck.php");
+            curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/send_multiple_attachment.php");
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".urlencode($body)."&imagePath=".$imagePath);
             // receive server response ...
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $msgid = curl_exec ($ch);//exit;
+            // print_r($msgid); die;
             curl_close ($ch);
-            //$this->manageMailgunEmailLogs($msgid, $subject, $order_id);
             return $msgid;
-        //var_export($response);
-        //$this->verifyEmailUsingMailgun($to,$subject,$order_id,$msgid);
     }
 
+    function sendAttachmentmail($to,$subject,$body,$order_id = null, $imagePath =null) 
+    {
+        // $filePath='@Wealth_AC_AMF.pdf';
+        $imagePath =  isset($imagePath) ? json_decode($imagePath) : null;
+        foreach ($imagePath as $name) {
+            $attachments['attachment'][] = '@' .$name;
+        }
+        // print_r($imagePath); die;
+        // $attacArray = array();
+        // foreach ($imagePath as $attach)
+        // {
+        //     $attacArray['attachment['.$i.']']=curl_file_create($attach);
+        //     $i++;
+        // }
+       
+        $curl_post_data=array(
+            'from'    => 'permit@acecare.ca',
+            'to'      => $to,
+            'subject' => $subject,
+            'text'    => 'Your mail do not support HTML',
+            'html'    => $body,
+            'attachment' => $imagePath
+        );
+        $headers_arr = array("Content-Type:multipart/form-data");
+        $service_url = 'https://api.mailgun.net/v3/acecare.ca/messages';
+        $curl = curl_init($service_url);
+        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_setopt($curl, CURLOPT_USERPWD, "api:key-d0b892f98309d183705bb3e633eaff45"); 
+        curl_setopt($ch, CURLOPT_HEADER, $headers_arr);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $curl_post_data);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); 
+
+
+        $curl_response = curl_exec($curl);  
+        print_r($curl_response);die();
+        $response = json_decode($curl_response);
+        curl_close($curl);
+
+        var_dump($response);
+    }
     function manageMailgunEmailLogs($msgid, $subject, $order_id){
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
         $query = "SELECT COUNT(*) cnt
-                FROM ace_mailgun_elog               
+                FROM ace_mailgun_elog
                 WHERE order_id = '".$order_id."'";
         $resultR = $db->_execute($query);
         $rows = mysql_fetch_array($resultR);
@@ -6281,9 +8636,9 @@ class OrdersController extends AppController
         if($tCount>0){
             //$queryUpdate = "UPDATE ace_mailgun_elog set msgid='".$msgid."',msgsub='".$subject."' where order_id = '".$order_id."'";
         }else{
-            //$queryUpdate = "INSERT INTO ace_mailgun_elog(order_id,msgid,msgsub) VALUES($order_id,'".$msgid."','".$subject."')";           
+            //$queryUpdate = "INSERT INTO ace_mailgun_elog(order_id,msgid,msgsub) VALUES($order_id,'".$msgid."','".$subject."')";
         }
-        
+
         return true;//$result = $db->_execute($queryUpdate);
     }
 
@@ -6291,8 +8646,8 @@ class OrdersController extends AppController
     function verifyEmailUsingMailgun($subject){
         //echo '<br>MSGID ='.$msgid = trim($msgid);
         $ch = curl_init();
-        //curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailgun_response.php");
-        curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailgun_response.php");
+        curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailgun_response.php");
+        // curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailgun_response.php");
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS,"subject=".$subject);
         // receive server response ...
@@ -6659,12 +9014,12 @@ class OrdersController extends AppController
 
         //count the number of schedules on the current date and timeslot; if it is 0, then it is valid
 
-        $query = "select count(*) cnt from ace_rp_orders
+       $query = "select count(*) cnt from ace_rp_orders
             where job_date = '".date("Y-m-d", strtotime($job_date))."'
             and job_truck  = '".$job_truck."'
             and ((job_time_beg >= '".$job_from.":00' and job_time_beg < '".$job_to.":00')
                 or (job_time_end > '".(1+$job_from).":00' and job_time_end <= '".$job_to.":00'))
-            AND order_status_id in (1,5) and id != '".$order_id."'";
+            AND order_status_id in (1,5) and id != '".$order_id."' and job_truck not in(40)";
 
             // print_r($query); die;
         //$query = "select count(*) cnt from ace_rp_orders
@@ -6689,7 +9044,7 @@ class OrdersController extends AppController
             AND i.id =".$job_truck." ORDER BY i.order_id ASC ";
         $result = $db->_execute($query);
         while($row = mysql_fetch_array($result)) {
-            if (($job_from >= $row['t1_start_time']) && ( $job_to <= $row['t1_end_time'])) {
+            if (($job_from >= $row['t1_start_time']) && ( $job_to <= $row['t1_end_time']) && $_GET['estimate']!=="estimate_booking" ) {
                 echo "Technician is not available for this time.";
                 exit;
             }
@@ -6729,8 +9084,8 @@ class OrdersController extends AppController
             and job_truck  = '".$job_truck."'
             and ((job_time_beg >= '".$job_from.":00' and job_time_beg < '".$job_to.":00')
                 or (job_time_end > '".(1+$job_from).":00' and job_time_end <= '".$job_to.":00'))
-            AND order_status_id in (1,5) and id != '".$order_id."'";
-        
+            AND order_status_id in (1,5) and id != '".$order_id."' and job_truck not in(40)";
+
         $result = $db->_execute($query);
         $row = mysql_fetch_array($result);
         $bookedTrucks = $row['cnt'];
@@ -6747,7 +9102,7 @@ class OrdersController extends AppController
             AND i.id =".$job_truck." ORDER BY i.order_id ASC ";
         $result = $db->_execute($query);
         while($row = mysql_fetch_array($result)) {
-            if (($job_from >= $row['t1_start_time']) && ( $job_to <= $row['t1_end_time'])) {
+            if (($job_from >= $row['t1_start_time']) && ( $job_to <= $row['t1_end_time']) && $_GET['estimate']!=="estimate_booking" ) {
                 echo "Technicin is not available for this time.";
                 exit;
             }
@@ -7088,7 +9443,7 @@ class OrdersController extends AppController
             $orders[$row['id']]['tech1_name'] = $allTechnicians[$row['job_technician1_id']];
             $orders[$row['id']]['tech2_name'] = $allTechnicians[$row['job_technician2_id']];
             $orders[$row['id']]['job_type'] = $allJobTypes[$row['order_type_id']];
-            
+
 
             if(!empty($row['feedback_review_star']))
             {
@@ -7103,14 +9458,14 @@ class OrdersController extends AppController
             foreach ($this->data['BookingItem'] as $key => $value) {
                 $subtotal += ($value['price'] * $value['quantity']) - $value['discount'];
             }
-            $tax = round($subtotal*0.05,2);                
+            $tax = round($subtotal*0.05,2);
             $totals = $subtotal + $tax;
 
             // $totals = $this->Common->getOrderTotal($row['id']);
             $orders[$row['id']]['total'] = $totals;
             $orders[$row['id']]['paid_amount'] = $this->data['Payment']['paid_amount'];
         }
-      
+
         $this->set("previousPage",$previousPage);
         $this->set("nextPage",$nextPage);
         $this->set("orders", $orders);
@@ -7185,7 +9540,7 @@ class OrdersController extends AppController
             if($this->data['Order']['feedback_review_star'] == 1){
                 $this->Order->id = $this->data['id'];
                 $orderDetails = $this->Order->read();
-                $sendMsg = $this->sendReviewText($orderDetails['Customer']['cell_phone'], $orderDetails['Customer']['email'],null, $orderDetails['Customer']['id']);
+                $sendMsg = $this->sendReviewText($orderDetails['Customer']['cell_phone'], $orderDetails['Customer']['email'],null, $orderDetails['Customer']['id'],$this->Order->id);
                 $sendEmail = $this->sendReviewEmail($orderDetails['Customer']['cell_phone'], $orderDetails['Customer']['id'], $orderDetails['Customer']['email']);
             }
             //$this->data['Order']['feedback_callback_date'] = date("Y-m-d", strtotime($_POST['callback_date'] ));
@@ -7334,7 +9689,7 @@ class OrdersController extends AppController
                 foreach ($this->data['BookingItem'] as $key => $value) {
                     $subtotal += ($value['price'] * $value['quantity']) - $value['discount'];
                 }
-                $tax = round($subtotal*0.05,2);    
+                $tax = round($subtotal*0.05,2);
 
 
                 $total = $subtotal + $tax;
@@ -7349,8 +9704,6 @@ class OrdersController extends AppController
                 $job_date->modify('+1 year');
                 $this->set('callback_date_12',$job_date->format("d M Y"));
                 $this->set('callback_date_dnc','');
-
-
             }
 
             else {
@@ -7394,7 +9747,7 @@ class OrdersController extends AppController
             // } else {
             //  $query = "select * from ace_rp_orders where customer_phone regexp '$sq_str' order by job_date DESC";
             // }
-            
+
             if($fromDialer > 0)
             {
                 $query = "select * from ace_rp_orders where customer_id =".$customer_id." order by job_date DESC limit 1";
@@ -7453,7 +9806,7 @@ class OrdersController extends AppController
                         $items_text .= '</tr>';
                     }
                 }
-                
+
                 foreach ($p_order['BookingCoupon'] as $oi)
                 {
                     $str_sum = 0-$oi['price'];
@@ -7484,7 +9837,7 @@ class OrdersController extends AppController
                 }
 
             if($loopstart==1)$class='';else $class = 'showjobhistory';
-    
+
               echo "<tr class='orderline  ".$class."' valign='top' ".$add."  loopstart='".$loopstart."'>";
               echo "<td rowspan=1>".date('d-m-Y', strtotime($p_order['Order']['job_date']))."<br>REF#".$p_order['Order']['order_number']."</td>";
               echo "<td rowspan=1>".$this->HtmlAssist->prPrice($total_booked)."</td>";
@@ -7529,16 +9882,31 @@ class OrdersController extends AppController
     $result = $db->_execute($query);
     $row = mysql_fetch_array($result);
     $orderStatus = ($item['order_status'] == 1) ? 'checked' : '';
+    $techCheck = ($item['tech_purchase_check'] == 1) ? 'checked' : '';
+    //Loki: sub cate live = 100, local=27
+    $disableService = ($item['sub_category_id'] == 100 || $this->Common->getLoggedUserRoleID() == 1 ) ? 'readonly' : '';
     $h = '';
-    $techItem = $this->TechInventoryItem->query("SELECT quantity FROM ace_rp_tech_inventory_item Where item_id = ".$item['item_id']." and tech_id = 0");
-            
-    $item['count'] = $techItem[0]['ace_rp_tech_inventory_item']['quantity'];
+    $item['count'] = 0;
+     $warehouseItem = $this->TechInventoryItem->query("SELECT quantity FROM ace_rp_tech_inventory_item Where item_id = ".$item['item_id']." and tech_id =231433");
+        $item['warehouse_count'] = $warehouseItem[0]['ace_rp_tech_inventory_item']['quantity'];
+    // die($disableSe rvice);
+    if(!empty($item['item_tech'])){
+        $techItem = $this->TechInventoryItem->query("SELECT quantity FROM ace_rp_tech_inventory_item Where item_id = ".$item['item_id']." and tech_id =".$item['item_tech']);
+        $item['count'] = $techItem[0]['ace_rp_tech_inventory_item']['quantity'];
+    }
+
 
     //Class==0 means that this item is from the original booking
     //Class==1 - the item was sold by technitian (extra sale)
+    if($item['invoiceId'] > 0){
+        $h .= '<td style="width:100%;" onclick="openInvoice('.$item['invoiceId'].')">';
+    }else {
+      $h .= '<td style="width:100%;">';
+    }
 
-    $h .= '<td><input type="hidden" id="data[Order][BookingItem]['.$index.'][class]" name="data[Order][BookingItem]['.$index.'][class]" value="'.$item['class'].'"/>';
-    $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][item_id]" name="data[Order][BookingItem]['.$index.'][item_id]" value="'.$item['item_id'].'"/>';
+    $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][invoiceId]" name="data[Order][BookingItem]['.$index.'][invoiceId]" value="'.$item['invoiceId'].'"/>';
+    $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][class]" name="data[Order][BookingItem]['.$index.'][class]" value="'.$item['class'].'"/>';
+    $h .= '<input type="hidden" class="book_item_id" id="data[Order][BookingItem]['.$index.'][item_id]" name="data[Order][BookingItem]['.$index.'][item_id]" value="'.$item['item_id'].'"/>';
     $h .='<input type="hidden" id="data[Order][BookingItem]['.$index.'][model_number]" name="data[Order][BookingItem]['.$index.'][model_number]" value="'.$item['model_number'].'"/>';
     $h .='<input type="hidden" id="data[Order][BookingItem]['.$index.'][brand]" name="data[Order][BookingItem]['.$index.'][brand]" value="'.$item['brand'].'"/>';
     $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][item_category_id]" name="data[Order][BookingItem]['.$index.'][item_category_id]" value="'.$item['item_category_id'].'"/>';
@@ -7546,26 +9914,40 @@ class OrdersController extends AppController
     $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][serial_number]" name="data[Order][BookingItem]['.$index.'][serial_number]" value="'.$item['serial_number'].'"/>';
     $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][order_status]" name="data[Order][BookingItem]['.$index.'][order_status]" value="'.$item['order_status'].'"/>';
     $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][sub_category_id]" name="data[Order][BookingItem]['.$index.'][sub_category_id]" value="'.$item['sub_category_id'].'"/>';
+    $h .= '<input type="hidden" class="item_cat_id" name="data[Order][BookingItem]['.$index.'][item_category_id]" value="'.$item['item_category_id'].'"/>';
+    $h .= '<input type="hidden" class="item_updated" name="data[Order][BookingItem]['.$index.'][item_updated]" value="'.$item['item_updated'].'"/>';
+
+    $h .= '<input type="hidden" class="item_tech_percent" name="data[Order][BookingItem]['.$index.'][item_tech_percent]" value="'.(($item["item_tech_percent"] >= 0) ? $item["item_tech_percent"] : $this->data["Order"]["tech_percentage"] ).'"/>';
+
+    $h .= '<input type="hidden" class="item_tech_percent_type" name="data[Order][BookingItem]['.$index.'][item_tech_percent_type]" value="'.(($item["item_tech_percent_type"] > 0) ? $item["item_tech_percent_type"] : $this->data["Order"]["tech_percentage_type"] ).'"/>';
+
+    $h .= '<input type="hidden" class="item_markup_percent_type" name="data[Order][BookingItem]['.$index.'][item_markup_percent_type]" value="'.(($item["item_markup_percent_type"] > 0) ? $item["item_markup_percent_type"] : $this->data["Order"]["markup_percentage_type"] ).'"/>';
+
+    $h .= '<input type="hidden" class="item_markup_percent" name="data[Order][BookingItem]['.$index.'][item_markup_percent]" value="'.(($item["item_markup_percent"] >= 0) ? $item["item_markup_percent"] : $this->data["Order"]["markup_percentage"] ).'"/>';
+
+    $h .= '<input type="hidden" class="new_item" name="data[Order][BookingItem]['.$index.'][new_item]" value="'.$item['new_item'].'"/>';
+
+    $h .= '<input type="hidden" class="old_qty" name="data[Order][BookingItem]['.$index.'][old_qty]" value="'.$item['quantity'].'"/>';
 
     if ($item['name']=='-custom part-')
-        $h .= '<input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value=""/>';
+        $h .= '<input type="text" class="input-box" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value=""/>';
       elseif ($item['name']=='-custom service-')
-        $h .= '<input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value=""/>';
+        $h .= '<input type="text" class="input-box" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value=""/>';
     elseif ($item['name']=='-custom item-') {
-        $h .= '<input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value=""/>';
+        $h .= '<input type="text" class="input-box" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value=""/>';
     } elseif ($item['name']=='Coupon Promotion')
-        $h .= '<input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value="Coupon REF"/>';
+        $h .= '<input type="text" class="input-box" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value="Coupon REF"/>';
 
     elseif ($item['item_id']==$this->member_card1_item_id || $item['item_id']==$this->member_card2_item_id) { // Added by Maxim Kudryavtsev - member card booking
         if (strpos($item['name'],'Ace Member')===0) $item['name']='enter number';
-        $h .= 'Member Card <input type="text" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value="'.$item['name'].'" onfocus="if (value==\'enter number\') value=\'\';"/><br />';
+        $h .= 'Member Card <input type="text" class="input-box" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value="'.$item['name'].'" onfocus="if (value==\'enter number\') value=\'\';"/><br />';
         $h .= 'Next Service Date <input type="text" id="data[Order][BookingItem]['.$index.'][next_service]" name="data[Order][BookingItem]['.$index.'][next_service]" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="'.( $item['part_number'] ? $item['part_number'] : date('d M Y', strtotime('+11 months') ) ).'">';
     }
 
     elseif($item['item_id']==1218) {
         if(!empty($item['invoice_image']))
         {
-            $imgPath =  '/acesys/app/webroot/purchase-invoice-images/'.$item['invoice_image']; 
+            $imgPath =  '/acesys/app/webroot/purchase-invoice-images/'.$item['invoice_image'];
             $h.='<img class="invoice-openImg" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">';
             $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][invoice_image]" name="data[Order][BookingItem]['.$index.'][invoice_image]" value="'.$item['invoice_image'].'"/>';
         } else
@@ -7584,7 +9966,7 @@ class OrdersController extends AppController
     elseif($item['item_id']==1227) {
         if(!empty($item['invoice_image']))
         {
-            $imgPath =  '/acesys/app/webroot/purchase-invoice-images/'.$item['invoice_image']; 
+            $imgPath =  '/acesys/app/webroot/purchase-invoice-images/'.$item['invoice_image'];
             $h.='<img class="invoice-openImg" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">';
             $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][invoice_image]" name="data[Order][BookingItem]['.$index.'][invoice_image]" value="'.$item['invoice_image'].'"/>';
         } else
@@ -7598,44 +9980,16 @@ class OrdersController extends AppController
         $h .= '<div>SKU</div><input type="text" id="data[Order][BookingItem]['.$index.'][serial_number]" name="data[Order][BookingItem]['.$index.'][serial_number]" value="'.$item['serial_number'].'"/>';
         $h .= '<div>Supplier</div><input type="text" class="search_supplier" id="data_Order_BookingItem_'.$index.'_supplier" name="data[Order][BookingItem]['.$index.'][supplier]" value="'.$item['supplier'].'" data-item-index="'.$index.'"/>';
         $h .= '<input type="hidden" id="data_Order_BookingItem_'.$index.'_supplier_id" name="data[Order][BookingItem]['.$index.'][supplier_id]" value="" data-item-index="'.$index.'"/>';
-       
-       // $h .= '<table id="ajax_supplier_results_'.$index.'" class="supplier_result" style="display:none">
-       //                      <thead>
-       //                          <tr>
-       //                              <th>id</th>
-       //                              <th>name</th>
-       //                              <th>phone</th>
-       //                              <th>city</th>
-       //                          </tr>
-       //                      </thead>
-       //                      <tbody>
-       //                          <tr id="ajax_supplier_result_template_'.$index.'">
-       //                              <td class="id"></td>
-       //                              <td class="name"></td>
-       //                              <td class="phone"></td>
-       //                              <td class="city"></td>
-       //                          </tr>           
-       //                      </tbody>
-       //                  </table>';
+
         $h .= '<div>Supplier Invoice#</div><input type="text" id="data[Order][BookingItem]['.$index.'][invoice]" name="data[Order][BookingItem]['.$index.'][invoice]" value="'.$item['invoice'].'"/>';
 
     }
     else
-        $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value="'.$item['name'].'"/>'.$item['name'];
-
-
-
- //    if (($item['item_category_id']==2 || $item['item_category_id']==3 || $item['item_category_id']==4 || $item['item_category_id']==5 || $item['item_category_id']==6 || $item['item_category_id']==7 || $item['item_category_id']==8 || $item['item_category_id']==10 ) &&(($this->Common->getLoggedUserRoleID() == 6)||($this->Common->getLoggedUserRoleID() == 1))) 
-    // {
-    //  $h .= '&nbsp;<select id="data[Order][BookingItem]['.$index.'][installed]" class="is_installed" name="data[Order][BookingItem]['.$index.'][installed]">';
-    //  $h .= '<option value=0 '.($item['installed']==0?'selected':'').'>-Choose-</option>';
-    //  $h .= '<option value=2 '.($item['installed']==2?'selected':'').'>Not installed</option>';
-    //  $h .= '<option value=1 '.($item['installed']==1?'selected':'').'>Installed</option>';
-
-    //  $h .= '</select>';
-    // }
+        $h .= '<input type="hidden" class="item_name" id="data[Order][BookingItem]['.$index.'][name]" name="data[Order][BookingItem]['.$index.'][name]" value="'.htmlentities(stripslashes($item['name']), ENT_QUOTES).'"/><span class="org_item_name">'.stripslashes($item['name']).'</span>';
 
     $h .= '</td>';
+    $h .= '<td class = "order_warehoue_count" style="width:22px;"><span>'. $item['warehouse_count'].'</span></td>';
+    $h .= '<td class = "order_warehoue_count" style="width:22px;"><span>'.$item['count'].'</span></td>';
     $h .= '<td class="part_number"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][part_number]" name="data[Order][BookingItem]['.$index.'][part_number]" value="'.$item['part_number'].'"/></td>';
 
     if (($item['item_id']=='0'))
@@ -7650,7 +10004,7 @@ class OrdersController extends AppController
     if ((($item['item_id']=='1000')||($item['item_id']=='1024')||($item['item_id']=='1218')||($item['item_id']=='1227'))&&$actions)
         $h .= '<td class="price"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price]" name="data[Order][BookingItem]['.$index.'][price]" value="'.$item['price'].'" onkeyup="TotalCalculation()"/></td>';
     else if($item['name']=='-custom part-')
-        $h .= '<td class="price"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price]" name="data[Order][BookingItem]['.$index.'][price]" value="'.$item['price'].'" onkeyup="TotalCalculation()"/></td>'; 
+        $h .= '<td class="price"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price]" name="data[Order][BookingItem]['.$index.'][price]" value="'.$item['price'].'" onkeyup="TotalCalculation()"/></td>';
     else if($item['name']=='-custom service-')
         $h .= '<td class="price"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price]" name="data[Order][BookingItem]['.$index.'][price]" value="'.$item['price'].'" onkeyup="TotalCalculation()"/></td>';
     else
@@ -7681,47 +10035,56 @@ class OrdersController extends AppController
             } else {
                 $h .='<td></td>';
             }
-        } 
+        }
         else if($item['name'] == '-custom service-'){
             if($item['show_purchase'] == 1 || $item['show_purchase'] == '' || $item['show_purchase'] == NULL)
             {
-                $h .= '<td class="purchase"><input  style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'" onkeyup="TotalCalculation()"/></td>';
+                $h .= '<td class="purchase"><input '.$disableService.' style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'" onkeyup="TotalCalculation()"/></td>';
             } else {
                 $h .='<td></td>';
             }
-        } 
+        }
     else {
-        if(($this->Common->getLoggedUserRoleID() == 6)) {
+        if(($this->Common->getLoggedUserRoleID() == 6) || ($this->Common->getLoggedUserRoleID() == 1)) {
             if($item['show_purchase'] == 1 || $item['show_purchase'] == '' || $item['show_purchase'] == NULL){
-                $h .= '<td class="purchase"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'" onkeyup="TotalCalculation()"/></td>';
+                $h .= '<td class="purchase"><input style="width:50px" type="text" '.$disableService.' id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'" onkeyup="TotalCalculation()"/></td>';
             } else {
                 $h .='<td></td>';
             }
         }
         else {
             if($item['show_purchase'] == 1 || $item['show_purchase'] == '' || $item['show_purchase'] == NULL) {
-                $h .= '<td class="purchase"><input style="width:50px" type="hidden" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'" onkeyup="TotalCalculation()"/>&nbsp;</td>';
+                $h .= '<td class="purchase"><input style="width:50px;"  '.$disableService.'  type="hidden" id="data[Order][BookingItem]['.$index.'][price_purchase]" name="data[Order][BookingItem]['.$index.'][price_purchase]" value="'.$item['price_purchase'].'" onkeyup="TotalCalculation()"/>&nbsp;</td>';
             } else {
                 $h .='<td></td>';
             }
         }
     }
-    if($this->Common->getLoggedUserRoleID() == 6 && $item['class'] == 0)
-    {
-        $h .= '<td class="tech_purchase"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][tech_purchase_price]" name="data[Order][BookingItem]['.$index.'][tech_purchase_price]" value="'.$item['tech_purchase_price'].'"/>&nbsp;</td>';
-    }
-    
-    $h .= '<td class="amount" id="data[Order][BookingItem]['.$index.'][amount]">'.$this->HtmlAssist->prPrice(round($item['quantity']*$item['price']-$item['discount']+$item['addition'],2)).'</td>';
-    if($item['class'] == 0){
+     $h .= '<td class="amount" id="data[Order][BookingItem]['.$index.'][amount]">'.$this->HtmlAssist->prPrice(round($item['quantity']*$item['price']-$item['discount']+$item['addition'],2)).'</td>';
 
-        $h .= '<td class = "order_status_val" style="width:22px;"><input type="checkbox" name = "data[Order][BookingItem]['.$index.'][order_status]" value="1" '.$orderStatus.' onchange="TotalCalculation();" /></td>';
-    }
-    $h .= '<td style="width:22px"><img onclick="removeItem('.$index.')" src="'.ROOT_URL.'/app/webroot/img/icon-vsm-delete.png"/></td>';
-    if($item['class'] == 0)
+     if($item['item_category_id'] != 1 && $item['item_category_id'] !=37 ){
+            $h .= '<td class = "order_status_val" style="width:22px;"><input type="checkbox" name = "data[Order][BookingItem]['.$index.'][order_status]" class="purchaseItems" itemIndex="'.$index.'" itemClass="'.$item['class'].'" value="1" onchange="TotalCalculation();" /></td>';
+        } else {
+            $h .="<td></td>";
+        }
+
+    $h .= '<td style="width:22px"><img style="max-width: 15px;" onclick="removeItem('.$index.','.$item['item_id'].')" src="'.ROOT_URL.'/app/webroot/img/icon-vsm-delete.png"/></td>';
+    if($this->Common->getLoggedUserRoleID() == 6 || $this->Common->getLoggedUserRoleID() == 1)
     {
-        $h .= '<td class = "order_warehoue_count" style="width:22px;"><span>'.$item['count'].'</span></td>';
+
+           //Loki: Show only for parts:
+            // if($item['item_category_id'] == 8 || $item['item_category_id'] == 36){
+            if($item['item_category_id'] != 1 && $item['item_category_id'] !=37 ){
+                $h .= '<td class="tech_purchase"><input style="width:50px" '.$disableService.' type="text" id="data[Order][BookingItem]['.$index.'][tech_purchase_price]" name="data[Order][BookingItem]['.$index.'][tech_purchase_price]" value="'.$item['tech_purchase_price'].'"/></td>';
+                $h .= '<td class = "tech_purchase_check" style="width:22px;"><input type="checkbox" name = "data[Order][BookingItem]['.$index.'][tech_purchase_check]" value="1" '.$techCheck.'" /></td>';
+            }else{
+               $h .="<td></td>";
+               $h .="<td></td>";
+            }
     }
-    
+
+
+
     return $h;
   }
 
@@ -7731,6 +10094,8 @@ class OrdersController extends AppController
   {
     $index=$_GET['index'];
     $actions=$_GET['actions'];
+    $item['item_tech']=$_GET['itemTech'];
+    $item['invoiceId']=$_GET['invoiceId'];
     $item['item_id']=$_GET['item_id'];
     $item['name']=$_GET['name'];
     $item['price']=$_GET['price'];
@@ -7748,6 +10113,12 @@ class OrdersController extends AppController
     $item['serial_number']= $_GET['sku'];
     $item['part_number']= $_GET['sku'];
     $item['sub_category_id']= $_GET['sub_category_id'];
+    $item['new_item']= 0;
+    $item['old_qty']= $_GET['quantity'];
+    $item['item_markup_percent']= $_GET['markupPercent'];
+    $item['item_tech_percent']= $_GET['techPercent'];
+    $item['item_tech_percent_type']= 1;
+    $item['item_markup_percent_type']= 1;
     echo $this->_itemHTML($index, $item, $actions);
     exit;
   }
@@ -8173,9 +10544,9 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
 
                 $this->set('carried_answers', $carried_answers);
             }
-           
+
            $query = "
-            SELECT m.* 
+            SELECT m.*
             FROM ace_rp_questions q
             LEFT JOIN ace_rp_responses r
             ON q.id = r.question_id
@@ -8187,7 +10558,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             ON d.id = m.decision_id
             WHERE q.order_type_id = $item_id
         ";
-        
+
         $reminders = array();
         $result = $db->_execute($query);
         while($row = mysql_fetch_array($result, MYSQL_ASSOC))
@@ -8560,6 +10931,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         {
             $this->data['Customer']['id'] = $customer_id;
         }
+
         $selected_button    = isset($_GET['selected_button']) ? $_GET['selected_button'] : 0;
 
         $this->data['Customer']['campaign_id']              = isset($_GET['customer_campaing_id']) ? $_GET['customer_campaing_id'] : '';
@@ -8582,10 +10954,10 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         $this->data['Customer']['referred_by_existing_userid'] = $_GET['call_user'];
         $this->data['Customer']['lastcall_date']                = $_GET['call_date'];
         $this->data['Customer']['next_service']                     = $_GET['customer_next_service'];
-        
+
         $this->data['txt_customer_note'][]                          = $_GET['txt_customer_note'];
         // echo json_encode($this->data['Customer']);die;
-        $this->_SaveCustomer();
+        //$this->_SaveCustomer();
         if (!$customer_id)
         {
             $customer_id = $this->data['Customer']['id'];
@@ -8607,9 +10979,9 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         //      $db->_execute($query);
         //     }
         // }
-       
+
         if($_GET['savedata']==0) {
-              $this->AddCallToHistory(
+            $this->AddCallToHistory(
             $customer_id,
             $_GET['call_user'],
             $_GET['callresult'],
@@ -8618,11 +10990,13 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $_GET['callback_time'],
             $_GET['call_id'],
             $_GET['dialer_id'],
-            $_GET['callback_user']
+            $_GET['callback_user'],
+            '',
+            $_GET['fromFollowup']
         );
-        
+
         }
-      
+
         if($_GET['savedata']==1) {
         $this->Addquestions(
             $customer_id,
@@ -8634,7 +11008,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $_GET['call_id'],
             $_GET['dialer_id'],
             $_GET['callback_user']
-            
+
         );
       }
         echo $customer_id;
@@ -8674,10 +11048,10 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
     }
 
   function Addquestions($customer_id,$call_user,$callresult,$call_note,$callback_date,$questionsids,$callback_time='', $call_id='',$dialer_id='',$callback_user='',$record_id=''){
-    
+
             if (!$call_user) $call_user = $this->Common->getLoggedUserID();
-        
-        
+
+
          $getcallbackdate = count($callback_date);
         // echo $customer_id;
         //echo $call_user;
@@ -8692,29 +11066,29 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                   //echo $date;
                   $converttotime = strtotime($date);
                   $datestore[] = date( 'Y-m-d', $converttotime );
-             
-             }             
-        
-     for ($i=0; $i < $getcallbackdate; $i++) { 
-     
-        
-        
+
+             }
+
+     for ($i=0; $i < $getcallbackdate; $i++) {
+
+
+
     $query = "INSERT INTO ace_rp_call_history (customer_id,call_id, dialer_id,
                call_date, call_time, call_user_id,call_result_id,call_note,
                callback_date,questions_id,callback_time,callback_user_id,phone,cell_phone)
             VALUES (".$customer_id.",'" .$call_id ."','web',current_date(),current_time(), '".$call_user."','2', '" .$call_note[$i]."','".$datestore[$i]."','".$questionsids[$i]."', " .$callback_time .", '".$callback_user."','".$phone."', '".$cell_phone."')";
-            
+
                 $db->_execute($query);
                   }
-    
+
       }
 
 
     // Method adds a new record to the client's calls history table
-    function AddCallToHistory($customer_id, $call_user, $callresult, $call_note, $callback_date, $callback_time, $call_id='', $dialer_id='', $callback_user='', $record_id='')
+    function AddCallToHistory($customer_id, $call_user, $callresult, $call_note, $callback_date, $callback_time, $call_id='', $dialer_id='', $callback_user='', $record_id='',$followup=0)
     {
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-
+        $followup = isset($followup) ? $followup : 0;
         // If caller is not mentioned - set the current user as a caller
         if (!$call_user) $call_user = $this->Common->getLoggedUserID();
         if ($callback_user == '') $callback_user = $call_user;
@@ -8760,7 +11134,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                      if($this->Common->getLoggedUserRoleID() != 3){
                         $callback_user = 57145; //ACE
                     }
-                
+
                 }
             }
             elseif ($callresult == 8) // call result : NOT INTERESTED (6 month)
@@ -8780,7 +11154,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                     if($this->Common->getLoggedUserRoleID() != 3){
                         $callback_user = 57145; //ACE
                     }
-                
+
                 }
             }
             elseif ($callresult == 9) // call result : NOT INTERESTED (9 month)
@@ -8793,15 +11167,15 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                 if($this->Common->getLoggedUserRoleID() != 3){
                     $callback_user = 57145; //ACE
                 }
-                }else { 
+                }else {
                 $scheduled_date = 'now() + INTERVAL 9 MONTH';
                 $scheduled_time = 'current_time()';
                 $callback_reason = 'Not interested. Call back in 9 months';
                 if($this->Common->getLoggedUserRoleID() != 3){
                     $callback_user = 57145; //ACE
                 }
-            }           
-            
+            }
+
             }
             elseif ($callresult == 3) // call result : DO NOT CALL
             {
@@ -8831,7 +11205,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                 $callback_reason = 'Busy. Call back in 1 day';
                 $callback_user = 57145; //ACE
             }
-            
+
         }elseif($callresult == 5 || $callresult == 31 || $callresult == 32 || $callresult == 33 || $callresult == 34) // call result : SALE
             {
               if($_GET['callback_reason']!="") {
@@ -8845,8 +11219,8 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                 $scheduled_time = 'current_time()';
                 $callback_reason = 'Sale. Callback in 6 months';
                 $callback_user = 57145; //ACE
-              
-              } 
+
+              }
             }elseif ($callresult == 6) // call result : Busy 1 DAY
             {
                 // Set the date to now
@@ -8868,7 +11242,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                     $scheduled_time = 'current_time()';
                     $callback_reason = 'Not In Service';
                     $callback_user = 57145; //ACE
-                }   
+                }
             }
             elseif($callresult == 11){
                 if($_GET['callback_reason']!="") {
@@ -8882,9 +11256,9 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                     $scheduled_time = 'current_time()';
                     $callback_reason = 'Busy';
                     $callback_user = 57145; //ACE
-                }   
+                }
             }
-            
+
 
         // We do not need to multiply calls that are already in the history.
     // So, we remove previous versions of them first
@@ -8918,12 +11292,12 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                call_date, call_time, call_user_id,
                call_result_id, call_note,
                callback_date, callback_time, callback_user_id,
-         phone, cell_phone)
+         phone, cell_phone,followup)
         VALUES (".$customer_id.", '" .$call_id ."', '" .$dialer_id ."',
                 current_date(), current_time(), '".$call_user."',
                 '" .$callresult ."', '" .$callback_reason."',
                 " .$scheduled_date .", " .$scheduled_time .", '".$callback_user."',
-        '".$phone."', '".$cell_phone."')";
+        '".$phone."', '".$cell_phone."',".$followup.")";
 
         $db->_execute($query);
 
@@ -9201,27 +11575,36 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $res = $db->_execute($query);
             $post_arr = array();
             $newPostArr = array();
-            while ($row = mysql_fetch_array($res)) 
+            while ($row = mysql_fetch_array($res))
             {
                 $post_arr[] = strtoupper(substr($row['postal_code'],0,3)).' , '.$row['city'];
             }
-            
+
             $finalpost = str_replace(" ", "%20",(implode("|", $post_arr))) ;
             $sourcePostCode = str_replace(" ", "%20",$p_code) ;
             $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$sourcePostCode."&destinations=".$finalpost."&mode=driving&language=en-EN&sensor=false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw";
+
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/distance_calculation.php");
             curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_POSTFIELDS,"");
+            curl_setopt($ch, CURLOPT_POSTFIELDS,"URL=".urlencode($url));
+            // receive server response ...
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            $response = curl_exec($ch);
+            $response = curl_exec ($ch);//exit;
+            // $ch = curl_init();
+            // curl_setopt($ch, CURLOPT_URL, $url);
+            // curl_setopt($ch, CURLOPT_POST, 1);
+            // curl_setopt($ch, CURLOPT_HEADER, 0);
+            // curl_setopt($ch, CURLOPT_POSTFIELDS,"");
+            // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            // curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            // $response = curl_exec($ch);
             $result = json_decode($response, true);
             $err = curl_error($ch);
             curl_close($ch);
             $combine = array_combine($post_arr, $result['rows'][0]['elements']);
-           
+
             foreach ($combine as $key => $value) {
                 if( !empty($value['distance']['text']) && $value['distance']['text'] <= 15)
                 {
@@ -9242,7 +11625,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $result = $db->_execute("select * from ace_rp_map where city='$city'");
             while($row = mysql_fetch_array($result))
                 $neighbours[] = $row['p_code'];
-            
+
         }
 
         //Prepare Truck Names
@@ -9261,12 +11644,13 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         if ($route_type) $cond = 'and route_type='.$route_type;
 
         $userId=$this->Common->getLoggedUserID();
-        if($this->Common->getLoggedUserRoleID()==3){
-            $query = "select ace_rp_inventory_locations.* from ace_rp_inventory_locations inner join ace_rp_truck_maps as artm on ace_rp_inventory_locations.id=artm.truck_id where flagactive = 0 and type=2 and artm.user_id=".$userId." $cond order by order_id asc";    
+        if($this->Common->getLoggedUserRoleID()==3 && $_REQUEST['from_tele']!=1){
+            $query = "select ace_rp_inventory_locations.* from ace_rp_inventory_locations inner join ace_rp_truck_maps as artm on ace_rp_inventory_locations.id=artm.truck_id where flagactive = 0 and type=2 and artm.user_id=".$userId." $cond order by order_id asc";
         }else{
 
             $query = "select * from ace_rp_inventory_locations where flagactive = 0 and type=2 $cond order by order_id asc";
         }
+
 
         //$query = "select * from ace_rp_inventory_locations where type=2 $cond order by id asc";
         $result = $db->_execute($query);
@@ -9331,7 +11715,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $default_techs[$row['id']][$row['date']]['tech1_state'] = $row['t1_state'];
             $default_techs[$row['id']][$row['date']]['tech1_start_time'] = $row['t1_start_time'];
             $default_techs[$row['id']][$row['date']]['tech1_end_time'] = $row['t1_end_time'];
-        } 
+        }
         // Reverce the map
         $map = array();
         if ($city||$p_code)
@@ -9615,8 +11999,8 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         $source_Data = $this->Lists->BookingSources();
 
         $query = "SELECT `arc`.`id` as `id` , `ec`.`source_from` as `pre_agent_id`
-                FROM ace_rp_customers arc 
-                LEFT JOIN ace_rp_reference_campaigns ec ON arc.campaign_id = ec.id  
+                FROM ace_rp_customers arc
+                LEFT JOIN ace_rp_reference_campaigns ec ON arc.campaign_id = ec.id
                 WHERE arc.campaign_id = $camp_id";
         $result = $db->_execute($query);
 
@@ -9644,7 +12028,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         $campaign_id = $_REQUEST['campaign_id'];
 
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-        $query = "SELECT `arc`.`transfer_call_jobs_flag` as `flag` , `u1`.`call_history_ids` as `cust_id` FROM ace_rp_reference_campaigns arc 
+        $query = "SELECT `arc`.`transfer_call_jobs_flag` as `flag` , `u1`.`call_history_ids` as `cust_id` FROM ace_rp_reference_campaigns arc
                 LEFT JOIN ace_rp_all_campaigns u1 ON arc.id = u1.last_inserted_id
                 WHERE arc.id = $campaign_id";
 
@@ -10156,7 +12540,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         $this->set('booking_sources', $this->Lists->BookingSources());
         $this->set('admins', $this->Lists->Admins());
         $this->set('verificators', $this->Lists->Supervisors());
-        $this->set('payment_methods', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(), 'id', 'name'));
+        $this->set('payment_methods', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(array("show_method",1)), 'id', 'name'));
         $this->set('sub_status', $this->HtmlAssist->table2array($this->Order->OrderSubstatus->findAll(), 'id', 'name'));
         $this->set('allTechnician',$this->Lists->Technicians(true));
         $this->set('allSuppliers',$this->Lists->ListTable('ace_rp_suppliers','',array('name','phone')));
@@ -11434,15 +13818,18 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
     }
 
     function invoiceTablet() {
+        date_default_timezone_set("America/Vancouver");
+        $todayDate = date("Y-m-d");
+
         if($this->Common->getLoggedUserRoleID() == 6){
              $this->redirect(BASE_PATH."pages/main");exit;
         }
         else{
          $todayDate = date('Y-m-d') ;
-         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);         
+         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
          $techId = $_SESSION['user']['id'];
          $query = "SELECT MAX(job_date) as max_job_date from ace_rp_orders where (booking_source_id=".$techId." OR booking_source2_id=".$techId." OR job_technician1_id=".$techId." OR job_technician2_id=".$techId.") AND tech_visible = 1 AND order_status_id != 3";
-         
+
          $result = $db->_execute($query);
          $getCommDate = mysql_fetch_array($result, MYSQL_ASSOC);
 
@@ -11451,18 +13838,18 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         if(($commDate1 == $todayDate) || ($commDate1 > $todayDate)) {
             $commDate1 = $this->checkJobAssigned($techId, $todayDate);
             //'2019-03-29'
-         } 
+         }
 
          if(!empty($commDate1) || $commDate1 != '' )
          {
              $query = "SELECT comm_date from ace_rp_tech_done_comm where comm_date='".$commDate1."' AND tech_id=".$techId;
              $result = $db->_execute($query);
-             $row = mysql_fetch_array($result, MYSQL_ASSOC);         
+             $row = mysql_fetch_array($result, MYSQL_ASSOC);
              $commDate = $row['comm_date'];
              // if((empty($commDate) || $commDate == '') && ($todayDate != $commDate1))
              if((empty($commDate) || $commDate == ''))
              {
-                $urlEncode = 'action=view&order=&sort=&currentPage=&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option=1&ffromdate='.date('d M Y',strtotime($commDate1)).'&cur_ref=';
+                $urlEncode = 'action=view&order=&sort=&currentPage=&comm_oper=&ftechid='.$techId.'&selected_job=&selected_commission_type=&job_option=1&ffromdate='.date('d M Y',strtotime($commDate1)).'&cur_ref=&fromTech=1';
                 $this->set('isShow','1');
 
                 $this->set('URL', $urlEncode);
@@ -11471,14 +13858,32 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
 
             $this->layout = "blank";
 
-            $this->set('jobs', $this->Order->findAll(array(
-                "Order.job_date" => date("Y-m-d"),  
+            $get_order = $this->Order->findAll(array(
+                "Order.job_date" => $todayDate,
                 "OR" => array("Order.booking_source_id" => $this->Common->getLoggedUserID(),
                     "Order.booking_source2_id" => $this->Common->getLoggedUserID(),
                     "Order.job_technician1_id" => $this->Common->getLoggedUserID(),
                     "Order.job_technician2_id" => $this->Common->getLoggedUserID()
                 ))
-            , null, "Order.job_time_beg ASC"));
+            , null, "Order.job_time_beg ASC");
+
+            $this->set('jobs',$get_order );
+
+               $source11  = array();
+
+            foreach($get_order as $get_orders){
+               $source22 = $get_orders['Order']['booking_source_id'];
+                   $query1="select first_name,last_name from ace_rp_users where id='$source22'";
+       $result1 = $db->_execute($query1);
+       while ($row1 = mysql_fetch_array($result1, MYSQL_ASSOC)) {
+
+         $source11[]=$row1['first_name']." ".$row1['last_name'];
+       }
+
+            }
+
+
+       $this->set('source1', $source11);
 
             $order_id = $_GET['id'];
 
@@ -11492,7 +13897,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
 
     function invoiceTabletOverview() {
         $this->layout = "blank";
-
+        $timein = date('h:i A');
         $order_id = $_GET['order_id'];
         $orderDetails = $this->Order->findById($order_id);
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
@@ -11502,7 +13907,19 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         $this->set('recordingName', $row['recording_name']);
         $this->set('order', $orderDetails);
         $this->set('invoice', $this->Invoice->findByOrderId($order_id));
+        $recordings = array();
 
+            $query =  "SELECT * FROM ace_rp_media where user_id='".$orderDetails['Order']['customer_id']."' order by id desc";
+
+            // $query =  "SELECT * FROM ace_rp_call_recordings where phone_no='1 800 394 1980' order by id desc";
+            $result = $db->_execute($query);
+            while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+            {
+                array_push($recordings, $row);
+            }
+
+
+        $this->set('callRecordings', $recordings);
         $this->set('jobs', $this->Order->findAll(array(
             "Order.job_date" => date("Y-m-d"),  "Order.tech_visible" => 1,
             "OR" => array("Order.booking_source_id" => $this->Common->getLoggedUserID(),
@@ -11554,12 +13971,16 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $cus = $this->Customer->read();
             $allImages = array();
             foreach ($cus['PartImages'] as $key => $value) {
-                 if(!empty($value['image_name']) && $value['image_name'] != null){
-                    $allImages[] = $this->getPhotoPath($value['image_name']);
+                  if(!empty($value['image_name']) && $value['image_name'] != null){
+                    $allImages[$key]['image_name'] = $this->getPhotoPath($value['image_name']);
+                    $allImages[$key]['date'] = $value['date_created'];
+                    $allImages[$key]['label'] = $value['label'];
+                    $allImages[$key]['extension'] = pathinfo($value['image_name'], PATHINFO_EXTENSION);
                 }
             }
             //$this->data['Order']['address_id'] = $cus['Customer']['address_id'];
             $this->set("allImages",$allImages);
+            $this->set("timein",$timein);
     }
 
     function invoiceTabletOverviewSave() {
@@ -11568,7 +13989,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
 
         //save time in
         $this->Order->id = $order_id;
-        if($this->data['Order']['fact_job_beg'] == '00:00:00')
+        // if($this->data['Order']['fact_job_beg'] == '00:00:00')
             $this->Order->saveField('fact_job_beg', date("H:i:s"));
 
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
@@ -11792,7 +14213,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         if(isset($_GET['new_entry'])){
             $new_entry = $_GET['new_entry'];
         }
-        
+
         $this->set('this_job', $this->Order->findById($order_id));
 
         /*if($this->_needsApproval($order_id))
@@ -11804,9 +14225,21 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $this->Order->delete($order_id);
         }
 
+        $this->User->id = $this->Common->getLoggedUserID();
+        $techDetails = $this->User->read();
+
+        $this->data['commision']['tech_percentage'] = $techDetails['User']['commission_percentage'];
+        $this->data['commision']['tech_percentage_type'] = 1;
+        $this->data['commision']['markup_percentage'] = $techDetails['User']['parts_commission_percentage'];
+        $this->data['commision']['markup_percentage_type'] = 1;
+
         $order = $this->Order->findById($order_id);
-    
+
         $city = $order['Customer']['city'];
+
+
+        $items =  $this->OrderInstallationItem->findAll(array('order_id' => $order_id));
+        $this->set('items',$items);
         // $h_booked='';
         // $h_tech='';
         // $num_items = 0;
@@ -11839,7 +14272,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         // $this->set('booked_items', $h_booked);
         // $this->set('tech_items', $h_tech);
         // $this->set('num_items', $num_items);
-        
+
         $this->set('order', $order);
         $this->set('last_order', $this->Order->findByJobEstimateId($order_id));
         $this->set('invoice', $this->Invoice->findByOrderId($order_id));
@@ -11893,33 +14326,36 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $db->_execute($query);
         }
         $allTechnicians = $this->Lists->Technicians();
+        $techArr = $this->Lists->inventoryTech();
+        $this->set('inventoryTechnician', $techArr);
         $this->set('allTechnicians', $allTechnicians);
         $this->set('job_type_id', $job_type_id);
         $this->set('city_id', $city_id);
         $this->set('order_id', $order_id);
         $this->set('job_types',$this->Lists->OrderTypes());
-        $this->set('payment_methods', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(), 'id', 'name'));
+        $this->set('payment_methods', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(array("show_method",1)), 'id', 'name'));
     }
 
     function getCustomerEmailAdd($order_id){
         if($order_id!=''){
             $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
             $query = "SELECT email
-                FROM ace_rp_customers           
+                FROM ace_rp_customers
                 WHERE id = $order_id";
-            $result = $db->_execute($query);            
+            $result = $db->_execute($query);
             $row = mysql_fetch_array($result);
             //echo 'Email =><pre>';print_r($row);exit;
             return $row['email'];
-        }           
+        }
     }
     function saveInvoiceTabletItems() {
+
         $fromTech = isset($_GET['fromTech']) ? $_GET['fromTech'] : 0;
         if(isset($_REQUEST['order_id'])){
-            $order_id = $_REQUEST['order_id'];  
+            $order_id = $_REQUEST['order_id'];
         }else{
             $order_id = $this->data['Invoice']['order_id'];
-        }   
+        }
         $cphone = $this->data['Invoice']['cell_phone'];
         $order_type_id = $this->data['Invoice']['order_type_id'];
         $order_status_id = $this->data['Invoice']['order_status_id'];
@@ -11928,8 +14364,10 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         $saved_booking = $this->data['saved_booking'];
         $customer_deposit = $this->data['Order']['deposit'];
         $invoiceImages  =   isset($_FILES['uploadInvoice1']) ? $_FILES['uploadInvoice1']:null;
-        
-        $newEmail   = isset($_POST['newEmail']) && !empty($_POST['newEmail']) ? filter_var($_POST['newEmail'], FILTER_SANITIZE_EMAIL) : null;       
+        $loggedUser = $this->Common->getLoggedUserID();
+        $orderNum = $this->data['Invoice']['order_num'];
+        $tdate = date('Y-m-d');
+        $newEmail   = isset($_POST['newEmail']) && !empty($_POST['newEmail']) ? filter_var($_POST['newEmail'], FILTER_SANITIZE_EMAIL) : null;
 
         $cemail     = $newEmail ? $newEmail : $this->getCustomerEmailAdd($this->data['Invoice']['customer_id']);
 
@@ -11937,7 +14375,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         $attachPaymentImage = isset($_POST['attachPaymentImage']) ? $_POST['attachPaymentImage'] :0;
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         $isValid = $this->validateEmailAddress($cemail);
-        if($isValid==1){            
+        if($isValid==1){
             $invoice_mail_status = 1;
         }else{
             $invoice_mail_status = 0;
@@ -11945,14 +14383,14 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
 
         if(!empty($cemail)){
             $query = "UPDATE ace_rp_customers SET email = '".$cemail."' WHERE id = ".$current_customer_id."";
-            $result = $db->_execute($query);            
+            $result = $db->_execute($query);
         }
 
         if(!empty($order_id)){
             $query = "UPDATE ace_rp_orders SET customer_deposit = $customer_deposit WHERE id = $order_id";
             $result = $db->_execute($query);
-            
-        
+
+
             $query = "
                 DELETE FROM ace_rp_order_items
                 WHERE order_id = $order_id
@@ -11962,6 +14400,9 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         }
         $supplier_index = 0;
         $supplier_item = array();
+
+
+
         foreach($this->data['BookingItem'] as $item_index => $item) {
             $class = 1;
             $item_id = $item['item_id'];
@@ -11970,11 +14411,12 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $quantity = $item['quantity'];
             $item_category_id = $item['item_category_id'];
             $price_purchase = $item['price_purchase'];
+            $tech_purchase_price = $item['tech_purchase_price'];
             $discount = $item['discount'];
             $addition = $item['addition'];
             $installed = 1;
             $fileName = isset($item['invoice_image']) ? $item['invoice_image'] : null;
-            if(!empty($invoiceImages['name'][$item_index])) 
+            if(!empty($invoiceImages['name'][$item_index]))
             {
                 $fileName = time()."_".$invoiceImages['name'][$item_index];
                 $fileTmpName = $invoiceImages['tmp_name'][$item_index];
@@ -11984,6 +14426,14 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                     $move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/purchase-invoice-images/".$fileName);
                 }
             }
+
+            // if($item_category_id == 8 || $item_category_id == 26 || $item_category_id == 36)
+            // {
+            //     $res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = quantity - ".$quantity." where item_id = ".$item_id." AND tech_id=".$loggedUser);
+
+            //     $history = $db->_execute("INSERT INTO ace_iv_invoice_item_history (quantity,item_id,purchase_price,selling_price,sold_by,item_date,status,job_ref_num) VALUES (".$quantity.",".$item_id.",". $price_purchase.",".$price.",".$loggedUser.",'".$tdate."',2,".$orderNum.")");
+            // }
+
             //echo "<div>$order_id, $item_id, $class, $name, $price, $quantity, $item_category_id, $price_purchase, $discount, $addition, $installed</div>";
 
             if($item_id == 1218) {
@@ -11994,16 +14444,16 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                 $supplier_item[$supplier_index]['part_supplier'] = $item['part_supplier'];
                 $supplier_index++;
             }
-
             $query = "
-                INSERT INTO ace_rp_order_items (order_id, item_id, class, name, price, quantity, item_category_id, price_purchase, discount, addition, installed, print_it, model_number, brand, supplier, invoice_image)
-                VALUES ($order_id, '$item_id', $class, '$name', $price, $quantity, $item_category_id, $price_purchase, $discount, $addition, $installed, 'on', '".$item['part_model']."', '".$item['part_brand']."', '".$item['part_supplier']."', '".$fileName."')
+                INSERT INTO ace_rp_order_items (order_id, item_id, class, name, price, quantity, item_category_id, price_purchase, discount, addition, installed, print_it, model_number, brand, supplier, invoice_image, tech_purchase_price,item_tech_percent,item_tech_percent_type,item_markup_percent_type,item_markup_percent)
+                VALUES ($order_id, '$item_id', $class, '$name', $price, $quantity, $item_category_id, $price_purchase, $discount, $addition, $installed, 'on', '".$item['part_model']."', '".$item['part_brand']."', '".$item['part_supplier']."', '".$fileName."', '".$tech_purchase_price."',".$item['item_tech_percent'].",".$item['item_tech_percent_type'].",".$item['item_markup_percent_type'].",".$item['item_markup_percent'].")
             ";
 
             $result = $db->_execute($query);
         }
 
-        if($supplier_index > 0) { //create a new unconfirmed booking
+        if($supplier_index > 0) {
+         //create a new unconfirmed booking
             $customer_id = $this->data['Invoice']['customer_id'];
             $customer_phone = $this->data['Invoice']['phone'];
 
@@ -12103,15 +14553,15 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                          exit;
                     }
                 }
-                
+
             } else {
                 $this->redirect('orders/invoiceTabletPayment?order_id='.$order_id.'&payment_image_error=Please add payment!');
                          exit;
             }
-        } 
+        }
         if(isset($_REQUEST['review'])){
             //echo 'OID='.$order_id.' == ='.$cemail;exit;
-            $textSend = $this->sendReviewText($cphone, $cemail , $cusMessage = '', $current_customer_id);
+            $textSend = $this->sendReviewText($cphone, $cemail , $cusMessage = '', $current_customer_id,$order_id);
             $return = $this->emailInvoiceReviewLinks($order_id,$cemail, $current_customer_id, $cphone, $attachPaymentImage);
                         if($this->Common->getLoggedUserRoleID() == 6){
                              //$this->redirect("orders/invoiceTabletPrint?order_id=$order_id&type=$type");exit;
@@ -12119,11 +14569,11 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                         }
             $this->redirect("orders/invoiceTablet?order_id=$order_id");exit;
         }
-        
+
         if(isset($_POST['newEmail'])){
             if(isset($_REQUEST['invoice'])){
                 //die('M IN Invoice');
-                $return = $this->invoiceTabletEprint($order_id,$cemail, $current_customer_id);  
+                $return = $this->invoiceTabletEprint($order_id,$cemail, $current_customer_id);
                 $this->redirect("orders/invoiceTablet?order_id=$order_id");exit;
             }
         }
@@ -12142,7 +14592,11 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             if($order_status_id == 8) {
                 $this->redirect("orders/invoiceTabletNewDate?order_id=$order_id");
             } else {
-                $this->redirect("orders/invoiceTabletFeedback?order_id=$order_id");
+               //added by cis to redirect to different page
+                $status_order  = $this->data['Invoice']['order_type_id'];
+               $this->redirect("orders/techLastPage?order_id=$order_id&order_type_id=$status_order");
+                //$this->redirect("orders/invoiceTabletPayment?order_id=$order_id&sendText=1");
+                // $this->redirect("orders/invoiceTabletFeedback?order_id=$order_id");
             }
         }
     }
@@ -12244,7 +14698,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
 
 
         $msg = "<div style='padding-top:25px;'><a href='http://acecare.ca/acesys/index.php/calls/invoiceprint?order_id=".$order_id."' target='_blank' style='color:black;text-decoration:underline;font-size:20px;'>Please open attachment to see your invoice</a></div>";
- 
+
                 $msg .= "<div style='padding-top:25px;'><p><b>We would a take moment to thank you for choosing our company.</b></p></div>";
                 $msg .= "<div style='padding-top:25px;'><p><b>Can you please write a review about your experience with our company.</b></p></div>";
                 $msg .= "<div style='padding-top:25px;'><br><p><b>Choose one of following links to give us your review on our service.</b></p></div>";
@@ -12280,7 +14734,8 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
 
         /*$this->redirect("http://acesys.ace1.ca/digitalsign?order_id=$order_id&email=$email");
         */
-        $this->redirect("orders/invoiceTabletPrint?order_id=$order_id");
+        // $this->redirect("orders/invoiceTabletPrint?order_id=$order_id");
+        $this->redirect("orders/invoiceTabletPayment?order_id=$order_id&sendText=1");
     }
 
     function invoiceTabletSignature() {
@@ -12288,13 +14743,12 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
     }
 
     function invoiceTabletPrint() {
-
         $this->layout = "blank";
 
         $order_id = $_GET['order_id'];
-
+        $tdate = date("Y-m-d");
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-
+        $orderDetails = $this->Order->findAll(array('Order.id'=> $order_id), null, array("job_truck ASC", "job_time_beg ASC"), null, null, 1);
         if(isset($_GET['type']) && $_GET['type'] == 'office') {
             //do nothing
         } else {
@@ -12353,6 +14807,26 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         //$orders = $this->Order->findAll($conditions, null, "job_truck ASC", null, null, 1);
         $orders = $this->Order->findAll($conditions, null, array("job_truck ASC", "job_time_beg ASC"), null, null, 1);
 
+       // if($orderDetails[0]['Order']['order_status_id'] != 5){
+
+            $orderItems =  $orderDetails[0]['BookingItem'];
+            foreach ($orderItems as $key => $value) {
+                    /*Loki: item sold
+                        local default tecch:231419 live = 231429
+                    */
+                        // if($orderDetails[0]['Order']['job_technician1_id'] != 231429)
+                        // {
+                            /*if(($value['item_category_id'] != 1 && $value['item_category_id'] !=37) && ($value['order_status'] != 1))*/
+                                if(($value['item_category_id'] != 1 && $value['item_category_id'] !=37) && ($value['order_status'] != 1))
+                            {
+                                    $res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = quantity - ".$value['quantity']." where item_id = ".$value['item_id']." AND tech_id=".$orderDetails[0]['Order']['job_technician1_id']);
+
+                                    $history = $db->_execute("INSERT INTO ace_iv_invoice_item_history (quantity,item_id,purchase_price,selling_price,sold_by,item_date,status,job_ref_num) VALUES (".$value['quantity'].",".$value['item_id'].",".$value['price_purchase'].",".$value['price'].",".$orderDetails[0]['Order']['job_technician1_id'].",'".$tdate."',2,".$orderDetails[0]['Order']['order_number'].")");
+
+                            }
+                        // }
+                }
+    // }
         // Customer's history for followup or complaints
         $num = 0;
 
@@ -12524,11 +14998,11 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             ON qw.suggestion_id = s.id
             LEFT JOIN ace_rp_decisions d
             ON qw.decision_id = d.id
-            WHERE 
+            WHERE
             qw.order_id = $order_id
             ORDER BY q.rank
         ";
-        //q.for_print = 1 AND 
+        //q.for_print = 1 AND
 
         $result = $db->_execute($query);
 
@@ -12542,8 +15016,6 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         }
 
         $this->set('working_answers', $working_answers);
-
-
 
         $this->set('order_id', $order_id);
         //$this->set('questions', $questions);
@@ -12851,8 +15323,10 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
     function invoiceTabletPayment() {
         $this->layout = "blank";
 
+        $db =& ConnectionManager::getDataSource('default');
         $order_id = $_GET['order_id'];
-
+        $sendText = isset($_GET['sendText']) ? $_GET['sendText'] :0;
+        $now = date('Y-m-d');
         if($this->_needsApproval($order_id))
             $this->redirect("orders/invoiceTabletStandby?order_id=$order_id");
 
@@ -12864,6 +15338,13 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
 
         $order = $this->Order->findById($order_id);
         $city = $order['Customer']['city'];
+        // if($sendText == 1){
+        //     if(strpos($order['Customer']['email'], 'gmail.com') !== false){
+        //         $sendMsg = $this->sendReviewText($order['Customer']['cell_phone'], $order['Customer']['email'],null, $order['Customer']['id']);
+        //     }
+        // }
+        $items =  $this->OrderInstallationItem->findAll(array('order_id' => $order_id));
+        $this->set('items',$items);
         $partImages = $this->UserPartImages->findAll(array('conditions' => array('UserPartImages.customer_id' => $order['Customer']['id'], 'UserPartImages.from_tech' => 1)));
          foreach ($partImages as $key => $value) {
                      if(!empty($value['UserPartImages']['image_name']) && $value['UserPartImages']['image_name'] != null){
@@ -12871,12 +15352,23 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                         $allImages[$key]['image_name'] = $this->getPhotoPath($value['UserPartImages']['image_name']);
                     }
                 }
+
+        /*Loki: set reminder date
+            For airduct = 23 months and rest of the jobs = 11 months
+        */
+        if($order['Order']['order_type_id'] == 3)
+        {
+            $reminderDate = date('Y-m-d', strtotime("+23months", strtotime($now)));
+            $db->_execute("UPDATE ace_rp_orders set reminder_date='".$reminderDate."', reminder_type =0,reminder_email=1, reminder_sms=1, reminder_month=23 where id = ".$order['Order']['id']);
+        } else {
+             $reminderDate = date('Y-m-d', strtotime("+11months", strtotime($now)));
+            $db->_execute("UPDATE ace_rp_orders set reminder_date='".$reminderDate."', reminder_type =0,reminder_email=1, reminder_sms=1, reminder_month=11 where id = ".$order['Order']['id']);
+        }
         $this->set('order', $order);
         $this->set('last_order', $this->Order->findByJobEstimateId($order_id));
         $this->set('invoice', $this->Invoice->findByOrderId($order_id));
 
         /** Fetch order payment image using order id*/
-        $db =& ConnectionManager::getDataSource('default');
         $queryPayment   = "select payment_image from ace_rp_orders where id='".$order_id."'";
         $resultPayment  = $db->_execute($queryPayment);
         $rowPayment     = mysql_fetch_array($resultPayment, MYSQL_ASSOC);
@@ -12884,7 +15376,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $this->set('invoice_payment_photo', $rowPayment['payment_image']);
         }
         /* closed */
-        
+
         $this->set('jobs', $this->Order->findAll(array(
             "Order.job_date" => date("Y-m-d"),  "Order.tech_visible" => 1,
             "OR" => array("Order.booking_source_id" => $this->Common->getLoggedUserID(),
@@ -12913,19 +15405,30 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $city_id = $row['internal_id'];
         }
         $methods = array();
-        $query = " SELECT * from ace_rp_payment_methods";
+        $query = " SELECT * from ace_rp_payment_methods where show_tech_method = 2";
         $result1 = $db->_execute($query);
         while($row = mysql_fetch_array($result1))
         {
             $methods[$row['id']] = $row;
         }
-       
+        $payRow['name'] = '';
+        $payRow['color'] = '';
+     if(!empty($order['Payment']['payment_method'])){
+            $payRow['name'] = '';
+            $payRow['color'] = '';
+            $payQuery = "SELECT name, color from ace_rp_payment_methods  WHERE id = ".$order['Payment']['payment_method'];
+            $payResult = $db->_execute($payQuery);
+            $payRow = mysql_fetch_array($payResult, MYSQL_ASSOC);
+            $this->set("paid_status", $payRow['name']);
+            $this->set("color_status", $payRow['color']);
+        }
         $this->set('allImages', $allImages);
         $this->set('city_id', $city_id);
         $this->set('order_id', $order_id);
         $this->set('job_types',$this->Lists->OrderTypes());
         // $this->set('payment_method', $this->HtmlAssist->table2array($this->Order->PaymentMethod->findAll(), 'id', 'name', 'show_picture'));
         $this->set('payment_methods', $methods);
+        $this->set('loggedUserId', $this->Common->getLoggedUserID());
     }
 
     function saveInvoiceTabletPayment() {
@@ -13910,9 +16413,9 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
 
         foreach($template as $question_id => $row) {
             $response_text = isset($row['response_text'])?"'".$row['response_text']."'":"NULL";
-            $response_id = isset($row['response_id'])?$row['response_id']:"NULL";
-            $suggestion_id = isset($row['suggestion_id'])?$row['suggestion_id']:"NULL";
-            $decision_id = isset($row['decision_id'])?$row['decision_id']:"NULL";
+            $response_id = isset($row['response_id'])?"'".$row['response_id']."'":"NULL";
+            $suggestion_id = isset($row['suggestion_id'])?"'".$row['suggestion_id']."'":"NULL";
+            $decision_id = isset($row['decision_id'])?"'".$row['decision_id']."'":"NULL";
 
             $query = "
                 DELETE FROM ace_rp_orders_questions_working
@@ -13923,8 +16426,8 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $result = $db->_execute($query);
 
             $query = "
-                INSERT INTO ace_rp_orders_questions_working(order_id, question_id, response_text, response_id, suggestion_id, decision_id)
-                VALUES($order_id, $question_id, $response_text, $response_id, $suggestion_id, $decision_id)
+                INSERT INTO ace_rp_orders_questions_working(order_id, question_id, response_text, response_id)
+                VALUES($order_id, $question_id, $response_text, $response_id)
             ";
 
             $result = $db->_execute($query);
@@ -14458,16 +16961,16 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         $fileUrl ="http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
 
         // $fileUrl =BASE_PATH."orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
-        
+
         set_time_limit(300);
         $subject = 'Ace Services Ltd';
         $settings = $this->Setting->find(array('title'=>'email_template_custom1'));
         $template = $settings['Setting']['valuetxt'];
         $template = $this->Common->removeSlash($template);
         $msg = $template;
-    
+
         $msg = str_replace('{file_url}', $fileUrl, $msg);
-        
+
         // $invoice = file_get_contents(BASE_PATH."orders/invoiceTabletPrint?order_id=$order_id&type=office");
         // $invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
         // $boundary = md5(time());
@@ -14493,20 +16996,20 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             WHERE id = $order_id
         ";
         $db->_execute($query);
-        
+
         if($fromBooking !=1)
         {
             $message = mysql_real_escape_string($msg);
             $res = $this->sendEmailUsingMailgun($email,$subject,$msg);
             $currentDate = date('Y-m-d');
-            if (strpos($res, '@acecare') !== false) 
+            if (strpos($res, '@acecare') !== false)
             {
                 $is_sent = 1;
-            } else 
+            } else
             {
                 $is_sent = 0;
             }
-            $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$orderid.",".$cus_id.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
+            $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id,subject) values (".$orderid.",".$cus_id.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."','Invoice')";
             $result = $db->_execute($query);
             // $res = mail($email, $subject, $output, $header);
         }
@@ -14560,27 +17063,59 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
             $order_id = $_GET['order_id'];
         }
 
+
         if(isset($email) && $email!=''){
             $email = $email;
         }else{
             $email = $_GET['email'];
         }
-            
+        $orderDetails = $this->Common->getOrderDetails($order_id, $this->User->useDbConfig);
+
         $fileUrl = "http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=".$order_id."&type=office";
-        $url = $this->G_URL.BASE_URL."/pages/showUserReview?email=".$email."&phone_number=".$cphone;
-        $link = '<a href='\.urlencode($url).\' target="_blank">No</a>';
+        $url = $this->G_URL.BASE_URL."/pages/showUserReview?email=".$email."&phone_number=".$cphone."&order_id=".$orderid;
+        $link = '<a href='.urlencode($url).' target="_blank">No</a>';
         set_time_limit(300);
         $subject = 'Ace Services Ltd';
-        $settings = $this->Setting->find(array('title'=>'email_template_custom'));
+        if($orderDetails['booking_source_id']=='231393'){
+          $settings = $this->Setting->find(array('title'=>'gls_invoice_temp'));
+        }
+
+        else {
+          $settings = $this->Setting->find(array('title'=>'email_template_custom'));
+
+        }
         $template = $settings['Setting']['valuetxt'];
         $template = $this->Common->removeSlash($template);
         $msg = $template;
+        $rating = '<div class="rating" style="direction: rtl;text-align: left;">
+
+        <a class="divbox" lang="x-divbox" style="text-decoration: none;
+	color: #FDD017;display: inline-block;
+	position: relative;font-siz:24px;" href="'.$url.'&s=5" title="5">★</a>
+        <a "divbox" lang="x-divbox" style="text-decoration: none;
+	color: #FDD017;display: inline-block;
+	position: relative;font-siz:24px;" href="'.$url.'&s=4" title="4">★</a>
+        <a "divbox" lang="x-divbox"  style="text-decoration: none;
+	color: #FDD017;display: inline-block;
+	position: relative;font-siz:24px;" href="'.$url.'?&s=3" title="3">★</a>
+        <a "divbox" lang="x-divbox" style="text-decoration: none;
+	color: #FDD017;display: inline-block;
+	position: relative;font-siz:24px;" href="'.$url.'&s=2" title="2">★</a>
+        <a "divbox" lang="x-divbox" style="text-decoration: none;
+	color: #FDD017;display: inline-block;
+	position: relative;font-siz:24px;" href="'.$url.'?s=1" title="1">★</a>
+   <span style="font-size:16px;">Show On My Invoice</span>
+           </div>';
+
+           $msg = str_replace('{rating}', $rating, $msg);
+
+
         $msg = str_replace('{file_url}', $fileUrl, $msg);
         $msg = str_replace('{NO}', $link, $msg);
         $orgFile = null;
         if($sendAttchment == 1){
             // $orgFile = "http://hvacproz.ca/acesys/app/webroot/payment-images/1569459237_F0DB8B1F-5AE8-4716-B59F-7717D0DF14C1.jpeg";
-            $orderDetails = $this->Common->getOrderDetails($order_id, $this->User->useDbConfig);
+
             $paymentMethodArray = array(2,3,4,5);
             if(in_array($orderDetails['payment_method_type'], $paymentMethodArray))
             {
@@ -14589,7 +17124,12 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
                     $orgFile = $this->G_URL."/acesys/app/webroot/payment-images/".$orderDetails['payment_image'];
                 }
             }
+        } else {
+            $fileName = $this->getBookingInvoicePdf($orderid);
+            $orgFile = "/home/hvacproz/public_html/acesys/app/webroot/tech-invoice/".$fileName;
         }
+
+
         // $invoice = file_get_contents("http://hvacproz.ca/acesys/index.php/orders/invoiceTabletPrint?order_id=$order_id&type=office");
         // $boundary = md5(time());
         // $header = "From: info@acecare.ca \r\n";
@@ -14617,14 +17157,14 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         $message = mysql_real_escape_string($msg);
         $res = $this->sendEmailUsingMailgun($email,$subject,$msg,null,$orgFile);
         $currentDate = date('Y-m-d');
-        if (strpos($res, '@acecare') !== false) 
+        if (strpos($res, '@acecare') !== false)
         {
             $is_sent = 1;
-        } else 
+        } else
         {
             $is_sent = 0;
         }
-        $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$orderid.",".$cus_id.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
+        $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id,subject) values (".$orderid.",".$cus_id.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."','Invoice Review')";
         $result = $db->_execute($query);
         if($result)
         {
@@ -14638,7 +17178,14 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
     function noInvoiceReviewLinks(){
         //END Save Notes
         $order_id = $_GET['order_id'];
-
+        $this->Order->id = $order_id;
+        $ordersDetails = $this->Order->read();
+        $email = $ordersDetails['Customer']['email'];
+        $cusPhone = $ordersDetails['Customer']['cell_phone'];
+        $cusId = $ordersDetails['Customer']['id'];
+        if(strpos($email, 'gmail.com') !== false){
+            $textSend = $this->sendReviewText($cusPhone, $email , '', $cusId,$order_id);
+        }
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
         $query = "
@@ -14659,8 +17206,8 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
         return $arr->is_valid;*/
         return true;
     }
-    
-    
+
+
     function referrals(){
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         //$this->layout='referrals';
@@ -14679,7 +17226,7 @@ function _showQuestions($order_id,$question_type,$job_type,$strStyle)
        //echo '<pre>';print_r($ref);echo 'ppppppp';
         $this->set('referral', $ref);
     }
-    
+
 /*************************jackhutson *************/
 function phone_calltype(){
      $calltype = $_REQUEST['calltype'];
@@ -14687,8 +17234,8 @@ function phone_calltype(){
      echo $_SESSION['calltype'];
      exit;
 }
-  
- 
+
+
 /******************************savequestionget************************************/
 
     function showTemplateQuestionsDefault() {
@@ -14739,13 +17286,13 @@ function phone_calltype(){
                 $search_in_questions
                 order by rank, value
             ";
-            
+
 
             $questions = array();
             $result = $db->_execute($query);
-            
-            
-             
+
+
+
             while($row = mysql_fetch_array($result, MYSQL_ASSOC))
             {
                 foreach ($row as $k => $v)
@@ -14859,9 +17406,9 @@ function phone_calltype(){
 
                 $this->set('carried_answers', $carried_answers);
             }
-           
+
            $query = "
-            SELECT m.* 
+            SELECT m.*
             FROM ace_rp_questions q
             LEFT JOIN ace_rp_responses r
             ON q.id = r.question_id
@@ -14873,7 +17420,7 @@ function phone_calltype(){
             ON d.id = m.decision_id
             WHERE q.for_service = 1
         ";
-        
+
         $reminders = array();
         $result = $db->_execute($query);
         while($row = mysql_fetch_array($result, MYSQL_ASSOC))
@@ -14891,7 +17438,7 @@ function phone_calltype(){
             $this->set('reminders', $reminders);
             $this->set('mode', 0);
         }
-    } 
+    }
 
 function SearchQuestions(){
 $this->layout = "blank";
@@ -14904,7 +17451,7 @@ $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
     /*foreach ($row as $val){ */
          $sers[] = $row;
    /*  }*/
-    
+
  }
    $this->set('sers', $sers);
 }
@@ -14914,6 +17461,8 @@ function weeklySchedule(){
         $this->layout='edit';
         $p_code = strtoupper(substr($_REQUEST['p_code'],0,3));
         $city = strtoupper($_REQUEST['city']);
+        $daily = isset($_REQUEST['daily']) ? $_REQUEST['daily'] : 0;
+
 
         if ($this->params['url']['date_from'] != '')
             $date_from = date("Y-m-d", strtotime($this->params['url']['date_from']));
@@ -14921,14 +17470,24 @@ function weeklySchedule(){
             $date_from = date("Y-m-d");
 
         $date_to = date("Y-m-d", strtotime("$date_from +2 week"));
+        if($daily == 1)
+        {
+            $this->redirect("orders/scheduleView/?ffromdate=".$date_from."&daily=".$daily);
+        }
 
+        //get users trucks
 
-        //get users trucks 
-        
         $map_reverse = array();
         $map_all = array();
         $trucks = array();
+        $userId=$this->Common->getLoggedUserID();
+        $get_trucks = "select truck_id from ace_rp_truck_maps where user_id=$userId";
+        $result_truck = $db->_execute($get_trucks);
+        $truck_ids = array();
+        while($row_truck = mysql_fetch_array($result_route, MYSQL_ASSOC)){
+				$truck_ids[]=$row_truck['truck_id'];
 
+			}
         $route_type = $_REQUEST['route_type'];
         if (!$route_type)
             if (($this->Common->getLoggedUserRoleID()==1))
@@ -14937,14 +17496,17 @@ function weeklySchedule(){
                 $route_type = '1';
 
         $cond = '';
-        if ($route_type) $cond = 'and route_type='.$route_type;
+        if (isset($_REQUEST['route_type']) && $_REQUEST['route_type']!="" ){
+         $cond = 'and route_type='.$route_type;
+         }
 
-        $userId=$this->Common->getLoggedUserID();
-        if($this->Common->getLoggedUserRoleID()==3){
-            $query = "select ace_rp_inventory_locations.* from ace_rp_inventory_locations inner join ace_rp_truck_maps as artm on ace_rp_inventory_locations.id=artm.truck_id where type=2 and artm.user_id=".$userId." $cond order by id asc"; 
+
+        if($this->Common->getLoggedUserRoleID()==3 && $_REQUEST['from_tele']!=1){
+            $query = "select ace_rp_inventory_locations.* from ace_rp_inventory_locations inner join ace_rp_truck_maps as artm on ace_rp_inventory_locations.id=artm.truck_id where type=2 and artm.user_id=".$userId." $cond order by id asc";
         }else{
             $query = "select * from ace_rp_inventory_locations where type=2 $cond order by id asc";
         }
+
 
         $result = $db->_execute($query);
         while ($row = mysql_fetch_array($result)) {
@@ -14961,7 +17523,7 @@ function weeklySchedule(){
                 for ($i=8; $i<18; $i++)
                     $map_reverse[$row['id']][$j][$i][] = 'ALL';
             }
-            
+
         }
 
         $dates = array();
@@ -14975,8 +17537,8 @@ function weeklySchedule(){
             $dates[$dateStr]['date'] = date("Y-m-d", $dateStr);
             $days++;
         }
-        
-        
+
+
 
 
         $sqlConditions = " AND a.job_date between '$date_from' and '$date_to'"; //$this->params['url']['ffromdate']
@@ -14993,7 +17555,7 @@ function weeklySchedule(){
                          a.sale_amount, a.job_timeslot_id, a.job_time_beg, a.job_time_end,
                          a.job_date, a.job_technician1_id, a.job_technician2_id, a.order_type_id,
                          a.sCancelReason, c.city as zone_city, c.postal_code as postal_code1,
-                         c.color as color, a.booking_source_id as booking_source_id, s.first_name as booking_source_fn,a.booking_source2_id,
+                         ct.color as color, a.booking_source_id as booking_source_id, s.first_name as booking_source_fn,a.booking_source2_id,
                          s.last_name as booking_source_ln, c.zone_name as zone_name, u.postal_code as postal_code,
                          CONCAT(u.address_unit,', ',u.address_street_number,', ',u.address_street) as address,
                          'BC' as state, u.phone as customer_phone,
@@ -15007,6 +17569,7 @@ function weeklySchedule(){
                     LEFT JOIN `ace_rp_users` as s on ( a.booking_source_id = s.id )
                     LEFT JOIN `ace_rp_users` as t on ( a.booking_telemarketer_id = t.id )
                     LEFT JOIN `ace_rp_users_roles` as rr on ( rr.user_id = t.id )
+                    LEFT JOIN `ace_rp_cities` as ct on  (LCASE(ct.name) LIKE LCASE(u.city))
                     LEFT JOIN `ace_rp_zones` as c on ( (LCASE(LEFT(a.job_postal_code,3)) = LCASE(LEFT(c.postal_code,3))) or (LCASE(c.city) LIKE LCASE(u.city)) )
                     LEFT JOIN ace_rp_cancellation_reasons cr ON a.cancellation_reason = cr.id
                     LEFT JOIN ace_rp_roles ur ON ur.id = cr.role_id
@@ -15018,7 +17581,7 @@ function weeklySchedule(){
         $other = array();
         $result = $db->_execute($query);
 
-        
+
         while($row = mysql_fetch_array($result))
         {
             foreach ($row as $k => $v)
@@ -15117,7 +17680,7 @@ function weeklySchedule(){
             $routeVisibility[$row['route_id']]['show'] = 1;
         }
 
-        
+
         //Find Max and Min time
         $query = "SELECT MAX(`to`) as end, MIN(`from`) as beg FROM ace_rp_timeslots";
         $result = $db->_execute($query);
@@ -15129,9 +17692,9 @@ function weeklySchedule(){
         $substatuses = $this->Lists->ListTable('ace_rp_order_substatuses');
 
         if ($this->Common->getLoggedUserRoleID() != "1") $method = "editBooking"; else $method = "techBooking";
-        
 
-        
+
+
         //Prepare job types
         $jobtypes = $this->Lists->ListTable('ace_rp_order_types');
         $date_from=date("d M Y", strtotime($date_from));
@@ -15142,10 +17705,10 @@ function weeklySchedule(){
 
         $this->set('allTypes', $this->Lists->ListTable('ace_rp_route_types'));
         
-        
-    } 
+        $this->set('daily', $daily);
+    }
 
-function deleteUserFromCampaign() 
+function deleteUserFromCampaign()
 {
     $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
     $customer_id = $_POST['customer_id'];
@@ -15154,7 +17717,7 @@ function deleteUserFromCampaign()
     if($result)
     {
         $query = "UPDATE ace_rp_customers set campaign_id = '' where id = $customer_id";
-        $result = $db->_execute($query);        
+        $result = $db->_execute($query);
     }
     echo "hi";
     exit();
@@ -15192,7 +17755,7 @@ function deleteUserFromCampaign()
     //  // $fp = fopen("$d.JPG", "w");
     //  //  while ($data = fread($putdata, 1024))
  //  //   fwrite($fp, $data);
- 
+
  //  // /* Close the streams */
  //  // fclose($fp);
  //  // fclose($putdata);
@@ -15228,11 +17791,11 @@ function deleteUserFromCampaign()
             $filename = ROOT.'/app/webroot/payment-images/'.$row['payment_image'];
             $query = "UPDATE ace_rp_orders set payment_image = '' where order_number =".$orderId."";
             $result = $db->_execute($query);
-                if (file_exists($filename)) 
+                if (file_exists($filename))
                 {
                     unlink($filename);
                     echo 'File '.$filename.' has been deleted';
-                } 
+                }
         }
     }
     $this->redirect('/orders/showPaymentImages');
@@ -15245,7 +17808,7 @@ function deleteUserFromCampaign()
     $commDate = date("Y-m-d", strtotime("-1 days", strtotime($commDate)));
     $techId = $techId;
     $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-    $query = "SELECT job_date as max_job_date from ace_rp_orders where job_date ='".$commDate."' AND ( booking_source_id=".$techId." OR booking_source2_id=".$techId." OR job_technician1_id=".$techId." OR job_technician2_id=".$techId.") AND tech_visible = 1 AND order_status_id != 3 limit 1";     
+    $query = "SELECT job_date as max_job_date from ace_rp_orders where job_date ='".$commDate."' AND ( booking_source_id=".$techId." OR booking_source2_id=".$techId." OR job_technician1_id=".$techId." OR job_technician2_id=".$techId.") AND tech_visible = 1 AND order_status_id != 3 limit 1";
     $result = $db->_execute($query);
     $getCommDate = mysql_fetch_array($result, MYSQL_ASSOC);
 
@@ -15319,10 +17882,15 @@ function deleteUserFromCampaign()
     function sendReminderEmail()
     {
         // error_reporting(E_ALL);
-        $maildate = date('Y-m-d', strtotime("+7 days"));
+
+        $maildate = date('Y-m-d', strtotime("+3 days"));
         $db       =& ConnectionManager::getDataSource($this->User->useDbConfig);
-        $query    = "SELECT DISTINCT o.id, o.job_time_beg,o.job_date, o.job_time_end ,o.customer_id, o.order_type_id, o.reminder_type , o.reminder_date, o.job_date, o.reminder_month, o.order_number,c.email, c.first_name, c.last_name, ot.name as job_type, rel.is_sent, c.phone, c.cell_phone from ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_order_types ot ON ot.id= o.order_type_id LEFT JOIN ace_rp_reminder_email_log rel ON rel.order_id = o.id  WHERE o.reminder_date='".$maildate."'";
+        $query    = "SELECT DISTINCT o.id, o.job_time_beg,o.job_date, o.job_time_end ,o.customer_id, o.order_type_id, o.reminder_type , o.reminder_date, o.job_date, o.reminder_month, o.order_number,o.order_status_id,c.email, c.first_name, c.last_name, ot.name as job_type, rel.is_sent, c.phone, c.cell_phone from ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_order_types ot ON ot.id= o.order_type_id LEFT JOIN ace_rp_reminder_email_log rel ON rel.order_id = o.id  WHERE o.reminder_date='".$maildate."' and o.order_status_id = 5 and o.reminderMail = 0";
+
+        // $query    = "SELECT * FROM user_reminder_data WHERE call_result_id NOT IN (7,3) and callback_date='".$maildate."'";
+
         $result = $db->_execute($query);
+
         $settings = $this->Setting->find(array('title'=>'email_template_jobnotification'));
         $template = $settings['Setting']['valuetxt'];
         $template = $this->Common->removeSlash($template);
@@ -15333,52 +17901,84 @@ function deleteUserFromCampaign()
         $today = gmdate("Y-m-d\TH:i:s\Z");
         $settings = $this->Setting->find(array('title'=>'reminder_text'));
         $textMessage = $settings['Setting']['valuetxt'];
+        $textMessage = $this->Common->removeSlash($textMessage);
         $sender_id = $this->Common->getLoggedUserID();
 
-        while($row = mysql_fetch_array($result, MYSQL_BOTH)) {
-                $url = $this->G_URL.BASE_URL."/pages/showReminderBookingPage?oid=".$row['id']."&cid=".$row['customer_id']."&otype=".$row['order_type_id']."&rdate=".$row['reminder_date']."&onum=".$row['order_number'];
 
-                $link = '<a href='\.urlencode($url).\'>Book Now</a>';
-                $msg = $template;
-                $msg = str_replace('{first_name}', $row['first_name'], $msg);
-                $msg = str_replace('{last_name}', $row['last_name'], $msg);
-                $msg = str_replace('{job_type}','<b>'. $row['job_type'].'</b>', $msg);
-                $msg = str_replace('{last_date}', date("d-M-Y",strtotime($row['job_date'])), $msg);
-                $msg = str_replace('{url_confirm}', $link, $msg);
-                $msg = str_replace("&nbsp;", nl2br("\n"), $msg);
-                $textMessage = str_replace('{first_name}', $row['first_name'], $textMessage);
-                $textMessage = str_replace('{last_name}', $row['last_name'], $textMessage);
-                $textMessage = str_replace('{job_type}','<b>'. $row['job_type'].'</b>', $textMessage);
-                $textMessage = str_replace("&nbsp;", nl2br("\n"), $textMessage);
-            if($row['reminder_type'] != 3) 
-            {
-                $res = $this->sendEmailUsingMailgun($row['email'],$template_subject,$msg);
-                if (strpos($res, '@acecare') !== false) {
-                    $is_sent = 1;
-                } else {
-                    $is_sent = 0;
-                }
-                $message = mysql_real_escape_string($msg);
-                $query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$row['id'].",". $row['customer_id'].",".$row['order_type_id'].",'".$currentDate."',".$is_sent.", '".$message."', '".$res."')";
-                $result1 = $db->_execute($query1);
-
-                $setLastReminder = "UPDATE ace_rp_customers set last_reminder_date = '".$currentDate."' where id =". $row['customer_id'];
-                $db->_execute($setLastReminder);
-
-                if(!empty($row['cell_phone']))
-                {
-                    $response = $this->Common->sendTextMessage($row['cell_phone'], $textMessage);
-                    if(!empty($response))
-                    {
-                        $textMessage = mysql_real_escape_string($textMessage);
-                        $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id) VALUES (
-                            '',".$row['customer_id'].", ".$response->id.",'".$textMessage."','".$today."', '".$row['cell_phone']."', 1, ".$sender_id.")";
-                        $result = $db->_execute($query);
-                    }
-                }
-            }
+        $checkquery = "SELECT * FROM check_send_reminder WHERE today_date ='".$currentDate."'";
+        $result2 = $db->_execute($checkquery);
+        $i = 0;
+        while($row2 = mysql_fetch_array($result2)) {
+            $i++;
         }
-        
+        if($i==0) {
+            $trunkquery = "TRUNCATE TABLE check_send_reminder";
+            $result3 = $db->_execute($trunkquery);
+        }
+        while($row = mysql_fetch_array($result)) {
+                // echo '<pre>';
+                // print_r($row);
+                // echo '<br>';
+                if($i==0) {
+
+                    $url = $this->G_URL.BASE_URL."/pages/showReminderBookingPage?oid=".$row['id']."&cid=".$row['customer_id']."&otype=".$row['order_type_id']."&rdate=".$row['reminder_date']."&onum=".$row['order_number'];
+                    $link = '<a href='\.urlencode($url).\'>Book Now</a>';
+                    $msg = $template;
+
+                    $msg = str_replace('{first_name}', $row['first_name'], $msg);
+                    $msg = str_replace('{last_name}', $row['last_name'], $msg);
+                    $msg = str_replace('{job_type}','<b>'. $row['job_type'].'</b>', $msg);
+                    $msg = str_replace('{last_date}', date("d-M-Y",strtotime($row['job_date'])), $msg);
+                    $msg = str_replace('{url_confirm}', $link, $msg);
+                    $msg = str_replace("&nbsp;", nl2br("\n"), $msg);
+
+                    $Message1 = $textMessage;
+                    $Message1 = str_replace('{first_name}', $row['first_name'], $Message1);
+                    $Message1 = str_replace('{last_name}', $row['last_name'], $Message1);
+                    $Message1 = str_replace('{job_type}','<b>'. $row['job_type'].'</b>', $Message1);
+
+                    // $Message1 = str_replace("&nbsp;", nl2br("\n"), $Message1);
+                if($row['reminder_type'] != 3)
+                {
+                    $res = $this->sendEmailUsingMailgun($row['email'],$template_subject,$msg);
+                    if (strpos($res, '@acecare') !== false) {
+                        $is_sent = 1;
+                    } else {
+                        $is_sent = 0;
+                    }
+                    $message = mysql_real_escape_string($msg);
+                    $query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id, email_type,subject) values (".$row['id'].",". $row['customer_id'].",".$row['order_type_id'].",'".$currentDate."',".$is_sent.", '".$message."', '".$res."',2,'Service Reminder')";
+                    $result1 = $db->_execute($query1);
+                    $setLastReminder = "UPDATE ace_rp_customers set last_reminder_date = '".$currentDate."' where id =". $row['customer_id'];
+                    $db->_execute($setLastReminder);
+
+                    if(!empty($row['cell_phone']))
+                    {
+                        $response = $this->Common->sendTextMessage($row['cell_phone'], $Message1);
+                        if(!empty($response))
+                        {
+                            if(!empty($response->id)){
+                                $is_sent = 1;
+                                $responseId = $response->id;
+                            } else {
+                                $is_sent = 0;
+                                $responseId = 0;
+                            }
+                            $cellphone1 = str_replace("-","",$row['cell_phone']);
+                            //$Message2 = mysql_real_escape_string($Message1);
+                            $query2 = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id,text_type,is_sent) VALUES (".$row['id'].",".$row['customer_id'].", '".$responseId."','".$Message1."','".$today."', '".$cellphone1."', 1, ".$sender_id.",2,". $is_sent.")";
+                            $result2 = $db->_execute($query2);
+                        }
+                   }
+                }
+                    $insertcheckreminderquery = "INSERT INTO check_send_reminder (order_id, created_date, is_sent, today_date) VALUES (".$row['id'].",'".$currentDate."',1,'".$currentDate."')";
+                    $result4 = $db->_execute($insertcheckreminderquery);
+                    $msgresult =  "Reminders sent";
+                } else {
+                    $msgresult = "Today's reminder are already sent";
+                }
+        } 
+        echo $msgresult;
         exit();
     }
 
@@ -15398,10 +17998,10 @@ function deleteUserFromCampaign()
         if($campId > 0)
         {
             $this->set('campId', $campId);
-            $callWhere = ' AND ec.last_inserted_id ='.$campId.''; 
+            $callWhere = ' AND ec.last_inserted_id ='.$campId.'';
             $emptyEmailWhere = ' AND ec.last_inserted_id ='.$campId.'';
         } else {
-            if($this->Common->getLoggedUserRoleID() == 6) 
+            if($this->Common->getLoggedUserRoleID() == 6)
             {
                 $allCampList = $this->Lists->allCampaingList();
                 $arrayString = implode(',', $allCampList);
@@ -15413,7 +18013,7 @@ function deleteUserFromCampaign()
 
                 if(!empty($allCampList)) {
                     $arrayString = implode(',', $allCampList);
-                
+
                     $callWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
                     $emptyEmailWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
                 }
@@ -15422,26 +18022,26 @@ function deleteUserFromCampaign()
 
         if($currentSelected == 1 || $currentSelected == 2)
         {
-            if(!empty($selectedStr)) 
+            if(!empty($selectedStr))
             {
-                
+
                 if($selectedStr == 'today')
                 {
-                    $callWhere .= " AND rel.sent_date = CURDATE()"; 
+                    $callWhere .= " AND rel.sent_date = CURDATE()";
                 } else {
                     $callWhere .= '';
                 }
             } else {
                     $callWhere .= ' AND rel.sent_date IS NOT NULL ';
             }
-            
+
             if($currentSelected == 1) {
                 $compare = 1;
             } elseif($currentSelected == 2) {
                 $compare = 0;
             }
-            // $sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
-            //  LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC 
+            // $sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC
+            //  LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC
             //  LIMIT 0 , 1) =".$compare." ".$callWhere." limit ".$limit;
 
             $sql = "SELECT rel . *, o . * , c . * , c.id AS cid, (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE  customer_id = c.id ORDER BY id DESC LIMIT 0 , 1) AS is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids LEFT JOIN ace_rp_reminder_email_log rel ON o.customer_id = rel.customer_id
@@ -15449,17 +18049,17 @@ function deleteUserFromCampaign()
                 ORDER BY id DESC LIMIT 0 , 1 ) =".$compare." ".$callWhere." group by c.id limit ".$limit;
 
             $result = $db->_execute($sql);
-            
+
             $countSql = "SELECT count(DISTINCT c.id) as total FROM ace_rp_reminder_email_log o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids LEFT JOIN ace_rp_reminder_email_log rel ON o.customer_id = rel.customer_id WHERE o.sent_date IS NOT NULL AND (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = c.id ORDER BY id DESC LIMIT 0 , 1) =".$compare." ".$callWhere;
             $resultTotal = $db->_execute($countSql);
             $rowTotal = mysql_fetch_array($resultTotal);
         } else if($currentSelected == 3 ) {
-            if(!empty($selectedStr)) 
+            if(!empty($selectedStr))
             {
-                
+
                 if($selectedStr == 'today')
                 {
-                    $callWhere .= " AND o.reminder_date = CURDATE()"; 
+                    $callWhere .= " AND o.reminder_date = CURDATE()";
                 } else {
                     $callWhere .= '';
                 }
@@ -15469,19 +18069,19 @@ function deleteUserFromCampaign()
             $countSql = "SELECT count(DISTINCT c.id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere;
             $resultTotal = $db->_execute($countSql);
             $rowTotal = mysql_fetch_array($resultTotal);
-            
-            $sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC 
+
+            $sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT delivery_status FROM ace_rp_reminder_email_log WHERE customer_id = cid ORDER BY id DESC
                 LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere." group by c.id limit ".$limit;
             $result = $db->_execute($sql);
         } else {
             $countSql = "SELECT count(*) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE c.email= ''".$emptyEmailWhere;
             $resultTotal = $db->_execute($countSql);
             $rowTotal = mysql_fetch_array($resultTotal, MYSQL_ASSOC);
-            $sql = "SELECT o.*, o.id as order_id , c.* FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE c.email= ''".$emptyEmailWhere." limit ".$limit; 
+            $sql = "SELECT o.*, o.id as order_id , c.* FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE c.email= ''".$emptyEmailWhere." limit ".$limit;
             $result = $db->_execute($sql);
         }
-        
-        $totalCus = $rowTotal['total']; 
+
+        $totalCus = $rowTotal['total'];
         $this->set('totalCus', $totalCus);
         $totalPages = ceil($totalCus / 500);
         $this->set('totalPages', $totalPages);
@@ -15490,7 +18090,7 @@ function deleteUserFromCampaign()
         $cust_temp = array();
         while ($row = mysql_fetch_array($result, MYSQL_BOTH))
         {
-            
+
             foreach ($row as $k => $v)
             $cust_temp['User'][$k] = $v;
             $cust_temp['User']['telemarketer_id']= $row['telemarketer_id'];
@@ -15520,10 +18120,10 @@ function deleteUserFromCampaign()
         if($campId > 0)
         {
             $this->set('campId', $campId);
-            $callWhere = ' AND ec.last_inserted_id ='.$campId.''; 
+            $callWhere = ' AND ec.last_inserted_id ='.$campId.'';
             $emptyEmailWhere = ' AND ec.last_inserted_id ='.$campId.'';
         } else {
-            if($this->Common->getLoggedUserRoleID() == 6) 
+            if($this->Common->getLoggedUserRoleID() == 6)
             {
                 $allCampList = $this->Lists->allCampaingList();
                 $arrayString = implode(',', $allCampList);
@@ -15534,47 +18134,47 @@ function deleteUserFromCampaign()
 
                 if(!empty($allCampList)) {
                     $arrayString = implode(',', $allCampList);
-                
+
                     $callWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
                     $emptyEmailWhere = ' AND ec.last_inserted_id IN ('.$arrayString.')';
                 }
             }
         }
-        
+
         if($currentSelected == 1 || $currentSelected == 2)
         {
-            if(!empty($selectedStr)) 
+            if(!empty($selectedStr))
             {
                 if($selectedStr == 'today')
                 {
-                    $callWhere .= " AND rel.sms_date = CURDATE()"; 
+                    $callWhere .= " AND rel.sms_date = CURDATE()";
                 } else {
                     $callWhere .= '';
                 }
             } else {
                 $callWhere .= ' AND rel.sms_date IS NOT NULL ';
             }
-            
+
             if($currentSelected == 1) {
                 $compare = 1;
             } elseif($currentSelected == 2) {
                 $compare = 0;
             }
-            $sql = "SELECT rel.*, o.*, c.*, c.id AS cid,  (SELECT is_sent FROM ace_rp_sms_log WHERE customer_id = c.id ORDER BY id DESC 
-                LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids LEFT JOIN ace_rp_sms_log rel ON o.customer_id = rel.customer_id WHERE (SELECT is_sent FROM ace_rp_sms_log WHERE customer_id = c.id ORDER BY id DESC 
+            $sql = "SELECT rel.*, o.*, c.*, c.id AS cid,  (SELECT is_sent FROM ace_rp_sms_log WHERE customer_id = c.id ORDER BY id DESC
+                LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids LEFT JOIN ace_rp_sms_log rel ON o.customer_id = rel.customer_id WHERE (SELECT is_sent FROM ace_rp_sms_log WHERE customer_id = c.id ORDER BY id DESC
                 LIMIT 0 , 1) =".$compare." ".$callWhere." group by c.id limit ".$limit;
 
             $result = $db->_execute($sql);
-            
+
             $countSql = "SELECT count(DISTINCT c.id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids LEFT JOIN ace_rp_sms_log rel ON o.customer_id = rel.customer_id WHERE rel.sms_date IS NOT NULL AND (SELECT is_sent FROM ace_rp_sms_log WHERE customer_id = c.id ORDER BY id DESC LIMIT 0 , 1) =".$compare." ".$callWhere;
             $resultTotal = $db->_execute($countSql);
             $rowTotal = mysql_fetch_array($resultTotal);
         } else if($currentSelected == 3 ) {
-            if(!empty($selectedStr)) 
+            if(!empty($selectedStr))
             {
                 if($selectedStr == 'today')
                 {
-                    $callWhere .= " AND o.reminder_date = CURDATE()"; 
+                    $callWhere .= " AND o.reminder_date = CURDATE()";
                 } else {
                     $callWhere .= '';
                 }
@@ -15584,19 +18184,19 @@ function deleteUserFromCampaign()
             $countSql = "SELECT count(DISTINCT c.id) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere;
             $resultTotal = $db->_execute($countSql);
             $rowTotal = mysql_fetch_array($resultTotal);
-            
-            $sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT is_sent FROM ace_rp_sms_log WHERE customer_id = cid ORDER BY id DESC 
+
+            $sql = "SELECT o.*, c.*, c.id AS cid,  (SELECT is_sent FROM ace_rp_sms_log WHERE customer_id = cid ORDER BY id DESC
                 LIMIT 0 , 1) as is_sent FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE o.reminder_date IS NOT NULL ".$callWhere." group by c.id limit ".$limit;
             $result = $db->_execute($sql);
         } else {
             $countSql = "SELECT count(*) as total FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE c.email= ''".$emptyEmailWhere;
             $resultTotal = $db->_execute($countSql);
             $rowTotal = mysql_fetch_array($resultTotal, MYSQL_ASSOC);
-            $sql = "SELECT o.*, o.id as order_id , c.* FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE c.email= ''".$emptyEmailWhere." limit ".$limit; 
+            $sql = "SELECT o.*, o.id as order_id , c.* FROM ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id LEFT JOIN ace_rp_all_campaigns ec ON o.customer_id = ec.call_history_ids WHERE c.email= ''".$emptyEmailWhere." limit ".$limit;
             $result = $db->_execute($sql);
         }
-        
-        $totalCus = $rowTotal['total']; 
+
+        $totalCus = $rowTotal['total'];
         $this->set('totalCus', $totalCus);
         $totalPages = ceil($totalCus / 500);
         $this->set('totalPages', $totalPages);
@@ -15605,7 +18205,7 @@ function deleteUserFromCampaign()
         $cust_temp = array();
         while ($row = mysql_fetch_array($result, MYSQL_BOTH))
         {
-            
+
             foreach ($row as $k => $v)
             $cust_temp['User'][$k] = $v;
             $cust_temp['User']['telemarketer_id']= $row['telemarketer_id'];
@@ -15634,7 +18234,26 @@ function deleteUserFromCampaign()
             echo json_encode($response);
             exit();
         }
-        exit();     
+        exit();
+    }
+
+    //Loki: Remove payment image
+
+    function removeCreditPaymentImage()
+    {
+        $orderId = $_POST['oid'];
+        $imgPath = $_POST['imgPath'];
+        $rootPath = getcwd();
+        unlink($rootPath.'/app/webroot/payment-images/'.$imgPath);
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $query = "UPDATE ace_rp_orders set credit_payment_image = NULL where id=".$orderId;
+        $res = $db->_execute($query);
+        if ($res) {
+            $response  = array("res" => "OK");
+            echo json_encode($response);
+            exit();
+        }
+        exit();
     }
 
     function removePurchaseImage()
@@ -15651,7 +18270,7 @@ function deleteUserFromCampaign()
             echo json_encode($response);
             exit();
         }
-        exit();     
+        exit();
     }
 
     //Loki: remove purhcse invoice image
@@ -15669,27 +18288,26 @@ function deleteUserFromCampaign()
             echo json_encode($response);
             exit();
         }
-        exit();     
+        exit();
     }
     //Loki: Send text message
     function SendSms()
     {
-        // error_reporting(E_ALL);
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-        $phone_number = $_POST['phone'];
+        $phone_number = str_replace("-","",$_POST['phone']);
         $cusId = $_POST['cusId'];
         $message = mysql_real_escape_string($_POST['message']);
         $today = gmdate("Y-m-d\TH:i:s\Z");
         $sender_id = $this->Common->getLoggedUserID();
         if(!empty($phone_number))
         {
-            $response = $this->Common->sendTextMessage($phone_number, $message); 
+            $response = $this->Common->sendTextMessage($phone_number, $message);
             if(!empty($response))
             {
                 $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id) VALUES (
-                    '',".$cusId.", ".$response->id.",'".$message."','".$today."', '".$phone_number."',1, ".$sender_id.")";
+                    '',".$cusId.", '".$response->id."','".$message."','".$today."', '".$phone_number."',1, ".$sender_id.")";
                 $result = $db->_execute($query);
-                
+
                 if($result)
                 {
                     $data  = array("res" => "OK");
@@ -15716,18 +18334,19 @@ function deleteUserFromCampaign()
         }
         $db      =& ConnectionManager::getDataSource($this->User->useDbConfig);
         $res = $this->sendEmailUsingMailgun($email,$subject,$message);
+
         $currentDate = date('Y-m-d');
-        if (strpos($res, '@acecare') !== false) 
+        if (strpos($res, '@acecare') !== false)
         {
             $is_sent = 1;
-        } else 
+        } else
         {
             $is_sent = 0;
         }
         if($from_schedule != 1)
         {
             if(!empty($cusId)) {
-                $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$cusId.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
+                $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id,subject) values ('',".$cusId.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."','Custom Email')";
                 $result = $db->_execute($query);
                 if ($result) {
                     $response  = array("res" => "OK");
@@ -15739,7 +18358,7 @@ function deleteUserFromCampaign()
                 $userEmailRes = $db->_execute($getUserByEmail);
                 while ($row = mysql_fetch_array($userEmailRes, MYSQL_BOTH))
                 {
-                    $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$row['id'].",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
+                    $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id,subject) values ('',".$row['id'].",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."','Custom Email')";
                     $result = $db->_execute($query);
                 }
                 if ($result) {
@@ -15747,7 +18366,7 @@ function deleteUserFromCampaign()
                     echo json_encode($response);
                     exit();
                 }
-            }           
+            }
         }
         exit();
     }
@@ -15763,7 +18382,7 @@ function deleteUserFromCampaign()
                 echo json_encode($response);
                 exit();
             }
-        exit(); 
+        exit();
     }
 
     // Loki: Set campId for sending Text
@@ -15778,12 +18397,12 @@ function deleteUserFromCampaign()
                 echo json_encode($response);
                 exit();
             }
-        exit(); 
+        exit();
     }
 
     /* LOki: send Text to all campaign users
-     status 0 = not complete, 1 = queue, 2 = complete 
-     */     
+     status 0 = not complete, 1 = queue, 2 = complete
+     */
     function sendTextToAll()
     {
         $db             =& ConnectionManager::getDataSource($this->User->useDbConfig);
@@ -15796,8 +18415,8 @@ function deleteUserFromCampaign()
 
             $updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_sms set status=1 where id=".$campId['id']."");
             $today = date('Y-m-d');
-            
-            $sql = "SELECT u2.cell_phone,u2.phone,u2.first_name,u2.last_name, u2.id AS cid,ord.job_date, ort.name as job_type ,(SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids INNER JOIN ace_rp_order_types ort ON ord.order_type_id = ort.id WHERE 
+
+            $sql = "SELECT u2.cell_phone,u2.phone,u2.first_name,u2.last_name, u2.id AS cid,ord.job_date, ort.name as job_type ,(SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids INNER JOIN ace_rp_order_types ort ON ord.order_type_id = ort.id WHERE
                 u2.campaign_id IS NOT NULL AND ec.last_inserted_id = ".$campId['camp_id']." AND ec.show_default =0 AND u2.callresult NOT IN ( 7, 3 ) AND ord.id = (SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) GROUP BY ord.customer_id";
             $res = $db->_execute($sql);
             while ($row = mysql_fetch_array($res, MYSQL_ASSOC))
@@ -15805,7 +18424,7 @@ function deleteUserFromCampaign()
                 $settings = $this->Setting->find(array('title'=>'bulk_sms'));
                 $message = $settings['Setting']['valuetxt'];
                 $message = $this->Common->removeSlash($message);
-                $phone_number = $row['cell_phone'];
+                $phone_number = str_replace("-","",$row['cell_phone']);
                 $landline_number = $row['phone'];
                 $cusId = $row['cid'];
                 $message = str_replace('{first_name}', $row['first_name'], $message);
@@ -15814,15 +18433,15 @@ function deleteUserFromCampaign()
 
                 if(!empty($phone_number))
                 {
-                    $response = $this->Common->sendTextMessage($phone_number, $message); 
+                    $response = $this->Common->sendTextMessage($phone_number, $message);
                     if(!empty($response))
                     {
                         $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
-                            ".$row['order_Id'].",".$cusId.", ".$response->id.",'".$message."','".$today."', '".$phone_number."', 1, ".$sender_id.")";
+                            ".$row['order_Id'].",".$cusId.", '".$response->id."','".$message."','".$today."', '".$phone_number."', 1, ".$sender_id.")";
                         $result = $db->_execute($query);
                     }
                 }
-            }       
+            }
             $updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_sms set status=2 where id=".$campId['id']."");
             echo "done";
         }
@@ -15830,11 +18449,11 @@ function deleteUserFromCampaign()
     }
 
     /* LOki: send mail to all campaign users
-     status 0 = not complete, 1 = queue, 2 = complete 
-     */     
+     status 0 = not complete, 1 = queue, 2 = complete
+     */
     function sendMailToAll()
     {
-        error_reporting(E_ALL);
+        // error_reporting(E_ALL);
         $db             =& ConnectionManager::getDataSource($this->User->useDbConfig);
         $getCampIdSql   = "SELECT camp_id,id from ace_rp_camp_email where status=0 limit 1";
         $result         = $db->_execute($getCampIdSql);
@@ -15845,7 +18464,7 @@ function deleteUserFromCampaign()
             {
                 $updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_email set status=1 where id=".$campId['id']."");
                 $currentDate = date('Y-m-d');
-                $sql = "SELECT u2.email,u2.first_name, u2.last_name, u2.id AS cid, ort.name as job_type,ord.job_date,ord.order_type_id, ord.order_number,(SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids      ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN                      ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids INNER JOIN ace_rp_order_types ort ON ord.order_type_id = ort.id WHERE 
+                $sql = "SELECT u2.email,u2.first_name, u2.last_name, u2.id AS cid, ort.name as job_type,ord.job_date,ord.order_type_id, ord.order_number,(SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids      ORDER BY id DESC LIMIT 0 , 1 ) AS order_Id FROM ace_rp_reference_campaigns o LEFT JOIN                      ace_rp_all_campaigns ec ON o.id = ec.last_inserted_id INNER JOIN ace_rp_customers u2 ON ec.call_history_ids = u2.id INNER JOIN ace_rp_orders ord ON ord.customer_id = ec.call_history_ids INNER JOIN ace_rp_order_types ort ON ord.order_type_id = ort.id WHERE
                     u2.campaign_id IS NOT NULL AND ec.last_inserted_id = ".$campId['camp_id']." AND ec.show_default =0 AND u2.callresult NOT IN ( 7, 3 ) AND ord.id = (SELECT id FROM ace_rp_orders WHERE customer_id = ec.call_history_ids ORDER BY id DESC LIMIT 0 , 1 ) GROUP BY ord.customer_id";
                 $res = $db->_execute($sql);
                 while ($row = mysql_fetch_array($res, MYSQL_ASSOC))
@@ -15856,28 +18475,28 @@ function deleteUserFromCampaign()
                     $subject = $settings['Setting']['subject'];
                     $url = $this->G_URL.BASE_URL."/pages/showReminderBookingPage?oid=".$row['order_Id']."&cid=".$row['cid']."&otype=".$row['order_type_id']."&rdate=&onum=".$row['order_number'];
                     $link = '<a href='\.urlencode($url).\'>Book Now</a>';
-                    
+
                     $message = str_replace('{first_name}', $row['first_name'], $message);
                     $message = str_replace('{last_name}', $row['last_name'], $message);
                     $message = str_replace('{job_type}', $row['job_type'], $message);
                     $message = str_replace('{url_confirm}', $link, $message);
                     $message = str_replace('{last_date}', $row['job_date'], $message);
-                    
+
                     if(!empty($row['email']))
                     {
                         $res1 = $this->sendEmailUsingMailgun($row['email'],$subject,$message);
-                    
-                        if (strpos($res1, '@acecare') !== false) 
+
+                        if (strpos($res1, '@acecare') !== false)
                         {
                             $is_sent = 1;
-                        } else 
+                        } else
                         {
                             $is_sent = 0;
                         }
-                        $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$row['cid'].",'','".$currentDate."',".$is_sent.",'".$message."', '".$res1."')";
+                        $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id,subject) values ('',".$row['cid'].",'','".$currentDate."',".$is_sent.",'".$message."', '".$res1."','Bulk Email')";
                         $result = $db->_execute($query);
                     }
-                    
+
                 }
                 $updateStatusRunning = $db->_execute("UPDATE ace_rp_camp_email set status=2 where id=".$campId['id']."");
                 echo "done";
@@ -15901,21 +18520,21 @@ function deleteUserFromCampaign()
         {
             $link = $row['link'];
         }
-
         $ch = curl_init();
-        //curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailgun_status.php");
-        curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailgun_status.php");
+        curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/mailgun_status.php");
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS,"link=".$link);
         // receive server response ...
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $res =  curl_exec ($ch);//exit;
-        curl_close ($ch);       
+        curl_close ($ch);
         $data = json_decode($res);
         $nextLink = $data->paging->next;
         $explodeLink = explode("events/",$nextLink);
+        $now = date("Y-m-d");
         foreach ($data->items  as $key => $value) {
             $msgConstant = 'message-id';
+            $mailStatus = $value->event;
             $toEmail = $value->message->headers->to;
             $subject = $value->message->headers->subject;
             $messageId = $value->message->headers->$msgConstant;
@@ -15926,20 +18545,29 @@ function deleteUserFromCampaign()
                 $message = mysql_real_escape_string($value->$delivery_status->description);
             }
 
+            $finalStatus = 0;
+            if($mailStatus == 'failed' || $mailStatus == 'rejected')
+            {
+                $finalStatus = 0;
+            }else if($mailStatus == 'delivered')
+            {
+                $finalStatus = 1;
+            }
+
             $matchUserEmail = "SELECT email from ace_rp_customers where email ='".$toEmail."'";
             $matchResult = $db->_execute($matchUserEmail);
             $row = mysql_fetch_array($matchResult, MYSQL_ASSOC);
             if(!empty($row))
             {
-                $query = "INSERT INTO ace_rp_failed_email (email, subject, reason,message_id) VALUES ('".$toEmail."', '".$subject."', '".$message."', '".$messageId."')";
+                $query = "INSERT INTO ace_rp_failed_email (email, subject, reason,message_id,status_date,status) VALUES ('".$toEmail."', '".$subject."', '".$message."', '".$messageId."','". $now."',".$finalStatus.")";
                 $res = $db->_execute($query);
             }
         }
-        
-        if((!empty($link) || $link != '') && (!empty($explodeLink[1]) && $explodeLink[1] != ''))    
+
+        if((!empty($link) || $link != '') && (!empty($explodeLink[1]) && $explodeLink[1] != ''))
         {
             $insertLink = "UPDATE ace_rp_mail_link set link='".$explodeLink[1]."' where log_date='".$logDate."'";
-            
+
         } else {
             if(!empty($explodeLink[1]) && ($explodeLink[1] != ''))
             {
@@ -15947,17 +18575,22 @@ function deleteUserFromCampaign()
             }
         }
         $response = $db->_execute($insertLink);
-        exit();
+        // echo 'chlo';
+        // exit();
     }
 
     function showFailedEmail()
     {
+        $status = isset($this->params['url']['status']) ?$this->params['url']['status']: 0 ;
         $no_of_records_per_page = 25;
         $pageNo = isset($this->params['url']['page_no']) ?$this->params['url']['page_no']: 1;
         $offset = ($pageNo-1) * $no_of_records_per_page;
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         // $query = "SELECT fe.*, cus.first_name, cus.last_name from ace_rp_failed_email fe LEFT JOIN ace_rp_customers cus ON fe.email = cus.email where fe.status = 0 LIMIT ".$offset.", ". $no_of_records_per_page."";
-        $query = "SELECT fe.*, cus.first_name, cus.last_name from ace_rp_failed_email fe LEFT JOIN ace_rp_reminder_email_log rel ON rel.message_id = fe.message_id LEFT JOIN ace_rp_customers cus ON rel.customer_id = cus.id where fe.status = 0 order by fe.id desc LIMIT ".$offset.", ". $no_of_records_per_page."";
+        $condition = " fe.status =".$status;
+        $query = "SELECT fe.*,fe.id as email_id,ord.id as order_id,ord.order_number,cus.id, cus.first_name, cus.last_name from ace_rp_failed_email fe LEFT JOIN ace_rp_reminder_email_log rel ON rel.message_id = fe.message_id LEFT JOIN ace_rp_customers cus ON rel.customer_id = cus.id
+            LEFT JOIN ace_rp_orders ord ON ord.id = rel.order_id
+            where ".$condition." order by fe.id desc LIMIT ".$offset.", ". $no_of_records_per_page."";
         $res = $db->_execute($query);
         $emails = array();
         // $totalQuery = "SELECT count(*) as total from ace_rp_failed_email fe LEFT JOIN ace_rp_customers cus ON fe.email = cus.email where fe.status = 0";
@@ -15968,10 +18601,12 @@ function deleteUserFromCampaign()
         {
             $emails[] = $row;
         }
+
         $totalPages = ($row1['total'] / $no_of_records_per_page);
         $this->set("emails", $emails);
         $this->set("totalPages", ceil($totalPages));
         $this->set("pageNo", $pageNo);
+        $this->set("status", $status);
     }
     // Loki: Delete the email log
     function deleteEmailEntry()
@@ -15997,6 +18632,11 @@ function deleteUserFromCampaign()
         $workTime       = $_POST['workTime'];
         $Notes          = $_POST["Notes"];
         $contactInfo    = $_POST['contactInfo'];
+
+        // $orderId        = 111;
+        // $customerId     = 11;
+        // $order_num      = 22;
+
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         $query = "INSERT INTO ace_rp_user_booking_response (order_id, customer_id, order_num, work_date, work_time, notes, contactInfo) VALUES (".$orderId.", ".$customerId.", ".$order_num.", '".$workDate."','".$workTime."','".$Notes."',".$contactInfo.")";
         $result = $db->_execute($query);
@@ -16009,7 +18649,7 @@ function deleteUserFromCampaign()
         $pageNo = isset($this->params['url']['page_no']) ?$this->params['url']['page_no']: 1;
         $offset = ($pageNo-1) * $no_of_records_per_page;
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-        $query = "SELECT ur.*, cus.first_name, cus.last_name, cus.email from ace_rp_user_booking_response ur LEFT JOIN ace_rp_customers cus ON ur.customer_id = cus.id group by ur.order_id LIMIT ".$offset.", ". $no_of_records_per_page." ";
+        $query = "SELECT ur.*, cus.first_name, cus.last_name, cus.email from ace_rp_user_booking_response ur LEFT JOIN ace_rp_customers cus ON ur.customer_id = cus.id group by ur.order_id ORDER BY id ASC LIMIT ".$offset.", ". $no_of_records_per_page." ";
         $res = $db->_execute($query);
         $users = array();
         $totalQuery = "SELECT count(DISTINCT ur.order_id) as total from ace_rp_user_booking_response ur LEFT JOIN ace_rp_customers cus ON ur.customer_id = cus.id ";
@@ -16017,7 +18657,6 @@ function deleteUserFromCampaign()
         $row1 = mysql_fetch_array($totalRes, MYSQL_ASSOC);
         while ($row = mysql_fetch_array($res, MYSQL_ASSOC))
         {
-            
             switch ($row['contactInfo']) {
                 case '1':
                     $row['contactInfo'] = 'Email';
@@ -16031,7 +18670,7 @@ function deleteUserFromCampaign()
             }
             $users[] = $row;
         }
-        
+
         $totalPages = ( $row1['total'] / $no_of_records_per_page);
         $this->set("users", $users);
         $this->set("totalPages", ceil($totalPages));
@@ -16041,9 +18680,10 @@ function deleteUserFromCampaign()
     // Loki: Delete the User booking response
     function deleteUserResponse()
     {
+
         $ids = $_POST['id'];
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-        $deleteQuery = "DELETE from  ace_rp_user_booking_response where id IN (".$ids.")";
+        $deleteQuery = "DELETE from ace_rp_user_booking_response where id IN (".$ids.")";
         $res = $db->_execute($deleteQuery);
         if ($res) {
                 $response  = array("res" => "OK");
@@ -16057,22 +18697,24 @@ function deleteUserFromCampaign()
     {
         // error_reporting(E_ALL);
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-        $getMessageId = "SELECT * from ace_rp_reminder_email_log where is_done =0 limit 50";
+        $getMessageId = "SELECT * from ace_rp_reminder_email_log where is_done = 0 order by id desc limit 50";
         $result = $db->_execute($getMessageId);
-        
+
         while ($row = mysql_fetch_array($result, MYSQL_ASSOC))
         {
             $messageId = $row['message_id'];
             $ch = curl_init();
-            //curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailgun_message_data.php");
-            curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailgun_message_data.php");
+
+            curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/mailgun_message_data.php");
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS,"message_id=".$messageId);
             // receive server response ...
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $res =  curl_exec ($ch);//exit;
-            curl_close ($ch);       
+            curl_close ($ch);
             $data = json_decode($res);
+            echo 'Data';
+            print_r($data);
             if(!empty($data))
             {
                 $eventStatus = $data->items[0]->event;
@@ -16105,6 +18747,16 @@ function deleteUserFromCampaign()
             $mailData = "INSERT INTO ace_rp_customer_mail_response (email, subject, body, flag, mail_date) VALUES ('".$fromEmail."', '".$subject."', '".$body."', 0, '".$receive_date."')";
             $result = $db->_execute($mailData);
         }
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"https://crm.api.acecare.ca/emails/get");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $_POST);
+        // receive server response ...
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec ($ch);//exit;
+        $result = json_decode($response, true);
+        $err = curl_error($ch);
+        curl_close($ch);
         exit();
     }
 
@@ -16132,7 +18784,7 @@ function deleteUserFromCampaign()
             $msg = str_replace('{card_number}', $row['card_number'], $msg);
             $msg = str_replace('{card_exp}', $row['card_exp'], $msg);
             $msg = str_replace('{url_confirm}', $link, $msg);
-            
+
             $res = $this->sendEmailUsingMailgun($row['email'],$template_subject,$msg);
 
             if (strpos($res, '@acecare') !== false) {
@@ -16141,9 +18793,9 @@ function deleteUserFromCampaign()
                 $is_sent = 0;
             }
             $message = mysql_real_escape_string($msg);
-            $query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$row['id'].",'','".$currentDate."',".$is_sent.", '".$message."', '".$res."')";
-            $result1 = $db->_execute($query1);  
-        }   
+            $query1 = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id,subject) values ('',".$row['id'].",'','".$currentDate."',".$is_sent.", '".$message."', '".$res."','Membership Reminder')";
+            $result1 = $db->_execute($query1);
+        }
         exit();
     }
 
@@ -16201,7 +18853,7 @@ function deleteUserFromCampaign()
                 <p><strong>Amount</strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;: {amount}&nbsp;</p>
                 <p><strong>One Year&nbsp;</strong> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;: {one_year}</p>
                 <p>&nbsp;</p>";
-                
+
         $msg = str_replace('{cus_name}', $_POST['cus_name'], $msg);
         $msg = str_replace('{address}', $_POST['address'], $msg);
         $msg = str_replace('{city}', $_POST['city'], $msg);
@@ -16217,16 +18869,20 @@ function deleteUserFromCampaign()
         exit();
     }
 
-    //Loki: This function is used to receive sms and save into database. 
+    //Loki: This function is used to receive sms and save into database.
     function receivedSms()
     {
+        $fWrite = fopen("log.txt","a");
+        $wrote = fwrite($fWrite, file_get_contents('php://input'));
+        fclose($fWrite);
 
-        // error_reporting(E_ALL); 
+
+        // error_reporting(E_ALL);
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         $data = file_get_contents('php://input');
         $data = json_decode($data);
         $today = $data->message->created_at;
-        $sender = $data->message->sender_phone;
+        $sender = str_replace("-","",$data->message->sender_phone);
         $message = mysql_real_escape_string($data->message->content);
         if($sender != '+18338132221')
         {
@@ -16240,7 +18896,7 @@ function deleteUserFromCampaign()
                     '','','','".$message."','".$today."', '".$searchStr."',2,'')";
                 // $insertLog = "INSERT INTO ace_rp_sms_response (from_num, message, received_date) VALUES ('".$searchStr."', '".$message."', '".$today."')";
                 $response = $db->_execute($insertLog);
-            } 
+            }
             else {
                 $query = "SELECT id from ace_rp_customers where phone = '".$searchStr."'";
                 $result = $db->_execute($query);
@@ -16248,12 +18904,12 @@ function deleteUserFromCampaign()
                 if(!empty($row))
                 {
                     $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id) VALUES (
-                    '','', '','".$message."','".$today."', '".$searchStr."',2,'')";
+                    '','', '','".$message."','".$today."', '".$searchStr."','2','')";
                     // $insertLog = "INSERT INTO ace_rp_sms_response (from_num, message, received_date) VALUES ('".$searchStr."', '".$message."', '".$today."')";
                     $response = $db->_execute($insertLog);
-                } 
+                }
             }
-            
+
         }
         exit();
 
@@ -16274,37 +18930,99 @@ function deleteUserFromCampaign()
             {
                 $updateStatus = "UPDATE ace_rp_sms_log set is_sent = 1 where log_id =".$row['log_id'];
                 $updateResult = $db->_execute($updateStatus);
-            }       
+            }
         }
         exit();
     }
 
     function saveUserReviewResponse()
-    {   
+    {
+
+        $db =& ConnectionManager::getDataSource("default");
+        $order_id = $_REQUEST['order_id'];
+        $email2 = $_REQUEST['email'];
+        $query = "select city from ace_rp_orders where id=$order_id";
+
+        $result = $db->_execute($query);
+
+        $row = mysql_fetch_array($result);
+        $city = $row['city'];
+
+        $get_url="select link from ace_rp_cities where name='$city'";
+
+        $result1 = $db->_execute($get_url);
+
+        $row = mysql_fetch_array($result1);
+        $link = $row['link'];
+        if(empty($link)){
+         $link="https://www.google.com/localservices/review/proaceheatingac";
+        }
+
+
         // $email                  = "review@acecare.ca";
         $email                  = "acecare88@gmail.com";
         $phone_number           = "833-813-2221";
-        $customerEmail          = $_POST['email'];
-        $customerPhoneNumber    = $_POST['phone_num'];
+        $customerEmail          = $_REQUEST['email'];
+        $customerPhoneNumber    = $_REQUEST['phone_num'];
         $message                = $this->Common->removeSlash($_POST['Notes']);
-        $rating                 = $_POST['rating'];
+        $rating                 = $_REQUEST['rating'];
         $message                = "Hi Admin, <br> Please find the customers feedback. <br><br><label>Email:</label> ".$customerEmail." <br><br><label> Cell Phone:</label> ".$customerPhoneNumber." <br><br> <label> Rating:</label>".$rating ." <br><br><label> Feedback:</label> ".$message;
-        
+       if($rating && order_id){
+           $db->_execute("UPDATE ace_rp_orders set office_rating = $rating where id = '$order_id'");
         $subject = "Customer review";
         $res = $this->sendEmailUsingMailgun($email,$subject,$message);
-        $response = $this->Common->sendTextMessage($phone_number, $message); 
+        $response = $this->Common->sendTextMessage($phone_number, $message);
+        $fileName = $this->getBookingInvoicePdf($order_id);
+        $orgFile = $this->G_URL."/acesys/app/webroot/tech-invoice/".$fileName;
+        $message1="<h3>Hi thank you for your business please find the attached invoice</h3>";
+        $subject1 = "New Invoice";
+        $res1 = $this->sendEmailUsingMailgun($_REQUEST['email'],$subject1,$message1,null,$orgFile);
+        if($rating==5){
+         echo "<script>window.location.href='".$link."'</script>";
+       }
+       else {
         $this->redirect('/pages/thankYouPage');
+       }
+       }
+       else {
+            $this->redirect('/pages/thankYouPage');
+       }
+
         exit;
     }
 
     //Loki: Send Review text
-    function sendReviewText($cusPhone = NULL, $cusEmail = NULL, $cusMessage = NUll, $cusId = NUll)
+    function sendReviewText($cusPhone = NULL, $cusEmail = NULL, $cusMessage = NUll, $cusId = NUll,$orderId= NUll)
     {
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         $phone_number = !empty($cusPhone) ? $cusPhone : $_POST['phone'];
         $cusId = !empty($cusId) ? $cusId : $_POST['cusId'];
         $email = !empty($cusEmail) ? $cusEmail : $_POST['email'];
-        $textMessage =  !empty($cusMessage) ? $cusMessage : $_POST['message'];  
+        $textMessage =  !empty($cusMessage) ? $cusMessage : $_POST['message'];
+        $query11 = "select city from ace_rp_orders where id=$orderId";
+
+        $result11 = $db->_execute($query11);
+
+        $row11 = mysql_fetch_array($result11);
+        $city = $row11['city'];
+
+        if(empty($city)){
+         $link="https://search.google.com/local/writereview?placeid=ChIJSRBjmi93hlQRWDtY6I6n1Ao";
+        }
+        else {
+         $get_url="select link2 from ace_rp_cities where name='$city'";
+
+        $result1 = $db->_execute($get_url);
+
+        $row = mysql_fetch_array($result1);
+        $link = $row['link2'];
+
+        }
+
+        if(empty($link)){
+         $link="https://search.google.com/local/writereview?placeid=ChIJSRBjmi93hlQRWDtY6I6n1Ao";
+        }
+
         if(!empty($textMessage))
         {
             $message = mysql_real_escape_string($_POST['message']);
@@ -16320,13 +19038,15 @@ function deleteUserFromCampaign()
             $url = $this->G_URL.BASE_URL."/pages/showUserReview?email=".$email."&phone_number=".$phone_number;
             // $link = '<a href='\.urlencode($url).\'>No</a>';
             $message = str_replace('{No}', $url, $message);
-            $response = $this->Common->sendTextMessage($phone_number, $message); 
+            $message = str_replace('{yes}', $link, $message);
+            $response = $this->Common->sendTextMessage($phone_number, $message);
             if(!empty($response))
             {
-                $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id) VALUES (
-                    '',".$cusId.", ".$response->id.",'".$message."','".$today."', '".$phone_number."',1, ".$sender_id.")";
+                $phone_number1 =  str_replace("-","",$phone_number);
+                $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id,text_type) VALUES (
+                    '',".$cusId.", '".$response->id."','".$message."','".$today."', '".$phone_number1."',1, ".$sender_id.",1)";
                 $result = $db->_execute($query);
-                
+
                 if($result && empty($cusPhone))
                 {
                     $data  = array("res" => "OK");
@@ -16363,22 +19083,22 @@ function deleteUserFromCampaign()
             $message  = $template;
         }
         if(!empty($email))
-        {   
-            
+        {
+
             $yesLink = '<a href='\.urlencode("https://search.google.com/local/writereview?placeid=ChIJSRBjmi93hlQRWDtY6I6n1Ao").\'>Yes</a>';
             $noUrl = $this->G_URL.BASE_URL."/pages/showUserReview?email=".$email."&phone_number=".$phone_number;
             $noLink = '<a href='\.urlencode($noUrl).\'>NO</a>';
             $message = str_replace('{No}', $noLink, $message);
             $message = str_replace('https://search.google.com/local/writereview?placeid=ChIJSRBjmi93hlQRWDtY6I6n1Ao', $yesLink, $message);
             $res = $this->sendEmailUsingMailgun($email, $template_subject,$message);
-            if (strpos($res, '@acecare') !== false) 
+            if (strpos($res, '@acecare') !== false)
             {
                 $is_sent = 1;
             } else {
                 $is_sent = 0;
             }
             $message = mysql_real_escape_string($message);
-            $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values ('',".$cusId.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."')";
+            $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id,email_type,subject) values ('',".$cusId.",'','".$currentDate."',".$is_sent.",'".$message."', '".$res."',1,'Job Review')";
             $result = $db->_execute($query);
             if ($result && empty($phone)) {
                 $response  = array("res" => "OK");
@@ -16405,7 +19125,11 @@ function deleteUserFromCampaign()
         $cusPhone = $_POST['cell_phone'];
         $cusId = $_POST['cus_id'];
         $orderId = $_POST['order_id'];
-        $textSend = $this->sendReviewText($cusPhone, $email , '', $cusId);
+        $orderDetails = $this->Common->getOrderDetails($orderId, $this->User->useDbConfig);
+        if($orderDetails['booking_source_id']!='231393'){
+            $textSend = $this->sendReviewText($cusPhone, $email , '', $cusId,$orderId);
+        }
+
         $result = $this->emailInvoiceReviewLinks($orderId,$email, $cusId, $cusPhone);
         if($result)
         {
@@ -16420,26 +19144,27 @@ function deleteUserFromCampaign()
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
         $order_id = $_POST['orderId'];
         $email = $_POST['email'];
+        $CustomerId = $_POST['CustomerId'];
         $orgFile = null;
         $currentDate = date('Y-m-d');
         $subject = "Payment Receipt";
         $msg = '<p>Hi!</p><p>Please find attached payment receipt.</p>';
         $orderDetails = $this->Common->getOrderDetails($order_id, $this->User->useDbConfig);
-        if(!empty($orderDetails['payment_image']) || $orderDetails['payment_image'] != '')
+        if(!empty($orderDetails['payment_image']) || ($orderDetails['payment_image'] != ''))
         {
-            
+
             $orgFile = $this->G_URL."/acesys/app/webroot/payment-images/".$orderDetails['payment_image'];
             // $orgFile = $this->G_URL."/acesys/app/webroot/payment-images/1570119825_image.jpg";
-            $res = $this->Common->sendEmailMailgun($email,$subject,$msg,null,$orgFile);
-            if (strpos($res, '@acecare') !== false) 
+            $res = $this->sendEmailUsingMailgun($email,$subject,$msg, $order_id, $orgFile);
+            if (strpos($res, '@acecare') !== false)
             {
                 $is_sent = 1;
-            } else 
+            } else
             {
                 $is_sent = 0;
             }
-            $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$order_id.",'','','".$currentDate."',".$is_sent.",'".$msg."', '".$res."')";
-            $result = $db->_execute($query);    
+            $query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id,subject) values (".$order_id.",".$CustomerId.",'','".$currentDate."',".$is_sent.",'".$msg."', '".$res."','Payment Receipt')";
+            $result = $db->_execute($query);
             if($is_sent){
                 $response  = array("res" => "OK");
                 echo json_encode($response);
@@ -16455,7 +19180,7 @@ function deleteUserFromCampaign()
         $origin = $_GET['postal_code'];
         $start_time = $_GET['start_time'].":00:00";
         $today_date = date("Y-m-d");
-        $sourcePostCode = $this->Order->query("SELECT postal_code, id FROM ace_rp_customers WHERE id = ( 
+        $sourcePostCode = $this->Order->query("SELECT postal_code, id FROM ace_rp_customers WHERE id = (
                     SELECT customer_id FROM ace_rp_orders WHERE job_truck =".$job_truck." AND job_date = '".$today_date."' AND job_time_beg < '".$start_time."' ORDER BY job_time_beg DESC LIMIT 1)");
 
         if(!empty($sourcePostCode))
@@ -16464,7 +19189,7 @@ function deleteUserFromCampaign()
             $origin = str_replace(" ", "%20", $origin);
             $distance = $this->Common->getPostaCodeDistance($origin, $sourcePostCode[0]['ace_rp_customers']['postal_code'] );
             $actualDistance = $distance['rows'][0]['elements'][0]['distance']['text'];
-            
+
             if($actualDistance <= 15)
             {
                 $response  = array("res" => "1");
@@ -16482,44 +19207,72 @@ function deleteUserFromCampaign()
         }
 
     }
+
+    // public function getPostalDistance()
+    // {
+    //         $response  = array("res" => "1");
+    //             echo json_encode($response);
+    //             exit();
+    // }
     // Get multple postal code distance from origin point for schedule page.
+
     public function getFinaldistance()
     {
-        $postalArr = $_POST['postalArray'];
-        $firstKey = key($postalArr);
-        $originPostal = $postalArr[$firstKey];
-        unset($postalArr[$firstKey]);
-        $finalpost = str_replace(" ", "%20",(implode("|",  $postalArr))) ;
+        $destinationCode = $_POST['destinationCode'];
+        $postalArr = $_POST['postalArray'][0];
+        $resArrKeys = array_keys($postalArr);
+        if(!empty($destinationCode))
+        {
+            $originPostal = $destinationCode;
+        } else {
+            $firstKey = key($postalArr);
+            $originPostal = $postalArr[$firstKey];
+            unset($postalArr[$firstKey]);
+        }
+        $finalpost = str_replace(" ", "%20",(implode("|",  $postalArr)));
         $sourcePostCode = str_replace(" ", "%20", $originPostal);
+
         $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$sourcePostCode."&destinations=".$finalpost."&mode=driving&language=en-EN&sensor=false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw";
+
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/distance_calculation.php");
         curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_POSTFIELDS,"");
+        curl_setopt($ch, CURLOPT_POSTFIELDS,"URL=".urlencode($url));
+        // receive server response ...
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        $response = curl_exec($ch);
+        $response = curl_exec ($ch);//exit;
         $result = json_decode($response, true);
         $err = curl_error($ch);
         curl_close($ch);
         $resArrKeys = array_keys($postalArr);
         $resArrValues = array_values($result['rows'][0]['elements']);
         $combine = array_combine($resArrKeys, $resArrValues);
-        $resultTable = "<table>";
+        $newDistArr = array();
+        $newCityArr = array();
+        $resultTable = "<table class='sort_array_tbl'><tr><th>City</th><th>Ref</th><th>KM</th><th>Minute</th></tr>";
         foreach ($combine as $key => $value) {
             if(!empty($value['distance']['text']))
             {
+               $city = explode(',', $postalArr[$key]);
                $resultTable .= "<tr>
-               <td>Ref: ".str_replace("\'", "", $key)."</td>
-               <td>KM: ".$value['distance']['text']."</td>
-               <td>Min: ".$value['duration']['text']."</td>
+               <td>".$city[1]."</td>
+               <td>".$key."</td>
+               <td>".$value['distance']['text']."</td>
+               <td>".$value['duration']['text']."</td>
                ";
+               $newDistArr[$key] =  (float) str_replace(' km','',$value['duration']['text']) ;
+               $newCityArr[$key] =  str_replace(' ',',',$city[1]);
             }
         }
-        $resultTable .= "</table>";
+
+        $citySerialize = serialize($newCityArr);
+         $resultTable .= "</tr><tr></tr></table><div><p><b>Ending: ".$originPostal."</b><input type='button' value='Accending' class='sort_distance' code='1'><input type='button' value='Descending' class='sort_distance' code='2'></p></div>
+        <input type='hidden' id='zipcode_array' value = ".serialize($newDistArr).">
+        <input type='hidden' id='city_array' value = ".$citySerialize.">
+        <div id='new_sort_arr'><div>
+        ";
         $response  = array("res" => $resultTable);
-        echo json_encode($response); 
+        echo json_encode($response);
         exit();
     }
 
@@ -16536,7 +19289,7 @@ function deleteUserFromCampaign()
                 $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
                 $cellPhone = $value['cs']['cell_phone'];
                 $cusId     = $value['cs']['cusId'];
-                $subject = $this->emailCustomerBooking($value['o']['id'],'',1);  
+                $subject = $this->emailCustomerBooking($value['o']['id'],'',1);
                 $queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$emal_send_date."' WHERE id = '".$value['o']['id']."'";
                 $db->_execute($queryEmailDateUpdate);
                 if(!empty($cellPhone))
@@ -16550,23 +19303,24 @@ function deleteUserFromCampaign()
                     $message = str_replace('{time}', $jobTime, $message);
                     $message = str_replace('{date}', $jobDate, $message);
 
-                    $response = $this->Common->sendTextMessage($cellPhone, $message); 
+                    $response = $this->Common->sendTextMessage($cellPhone, $message);
                     if(!empty($response->id))
                     {
+                        $cellPhone1 = str_replace("-","",$cellPhone);
                         $message = mysql_real_escape_string($message);
                         $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date , phone_number, sms_type,sender_id) VALUES (
-                            '',".$cusId.", ".$response->id.",'".$message."','".$today."', '".$cellPhone."', 1, ".$sender_id.")";
+                            '',".$cusId.", '".$response->id."','".$message."','".$today."', '".$cellPhone1."', 1, ".$sender_id.")";
                         $result = $db->_execute($query);
                     }
                 }
-                
+
             }
             $response  = array("res" => "1");
             echo json_encode($response);exit();
         } else {
             $response  = array("res" => "0");
             echo json_encode($response);exit();
-        }   
+        }
         exit();
     }
 
@@ -16589,6 +19343,35 @@ function deleteUserFromCampaign()
         }
         exit();
     }
+
+     public function checkCCPassword()
+    {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $passsword = md5($_GET['password']);
+        $ordId = isset($_GET['ordId']) ? $_GET['ordId'] : 0;
+        $cusId = $_GET['cusId'];
+        if(!empty($passsword))
+        {
+            $query = "SELECT * from ace_rp_cc_password where cc_password = '".$passsword."'";
+            $result = $db->_execute($query);
+            $row = mysql_fetch_array($result);
+
+            if(!empty($row)){
+                if($ordId > 0){
+                    $db->_execute("UPDATE ace_rp_orders set show_card = 1 where id = '".$ordId."'");
+                }
+                $query1 = $db->_execute("SELECT credit_card_number from ace_rp_customers where id = '".$cusId."'");
+                $cardNum = mysql_fetch_array($query1);
+                $response  = array("res" => "1",'cardNum' => $cardNum['credit_card_number']);
+                echo json_encode($response);exit();
+            } else {
+                $response  = array("res" => "0");
+                echo json_encode($response);exit();
+            }
+        }
+        exit();
+    }
+
     // Loki: save tech recommendations in feedback
     function addTechRecommendation()
     {
@@ -16622,7 +19405,7 @@ function deleteUserFromCampaign()
         $currenUser = $this->Common->getLoggedUserID();
         //$anchor = '<a href="'.BASE_URL.'/orders/feedbacks_add?id='. $id.'&rurl=orders%2FscheduleView%3F" target="_blank">'. $orderNum.'</a>';
         $txt = 'Please add paymnet for order '.$orderNum .'<br>'.$msg;
-        
+
             $officeList = $this->Lists->UsersByRoles(6);
             foreach ($officeList as $key => $value) {
            $result =  $db->_execute("INSERT INTO `ace_rp_messages` (`to_date`,`to_user`,`txt`,`from_date`,`from_user`) VALUES ('".$toDate."',".$key.", '".$txt."','".$toDate."',".$currenUser.")");
@@ -16652,14 +19435,14 @@ function deleteUserFromCampaign()
                 $this->Order->BookingItem->save($orderItems[$i]);
             }
         }*/
-        
+
         // $this->Common->printData($orderItems);
         foreach ($orderItems as $oi)
         {
             $techItem = $this->TechInventoryItem->query("SELECT quantity FROM ace_rp_tech_inventory_item Where item_id = ".$oi['item_id']." and tech_id = 0");
-            
+
             $oi['count'] = $techItem[0]['ace_rp_tech_inventory_item']['quantity'];
-         
+
             if ($oi['class']==0)
             {
                 $h_booked .= '<tr id="order_'.$num_items.'" class="booked">';
@@ -16714,7 +19497,7 @@ function deleteUserFromCampaign()
         elseif($item['item_id']==1218) {
             if(!empty($item['invoice_image']))
             {
-                $imgPath =  '/acesys/app/webroot/purchase-invoice-images/'.$item['invoice_image']; 
+                $imgPath =  '/acesys/app/webroot/purchase-invoice-images/'.$item['invoice_image'];
                 $h.='<img class="invoice-openImg" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">';
                 $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][invoice_image]" name="data[Order][BookingItem]['.$index.'][invoice_image]" value="'.$item['invoice_image'].'"/>';
             } else
@@ -16733,7 +19516,7 @@ function deleteUserFromCampaign()
         elseif($item['item_id']==1227) {
             if(!empty($item['invoice_image']))
             {
-                $imgPath =  '/acesys/app/webroot/purchase-invoice-images/'.$item['invoice_image']; 
+                $imgPath =  '/acesys/app/webroot/purchase-invoice-images/'.$item['invoice_image'];
                 $h.='<img class="invoice-openImg" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">';
                 $h .= '<input type="hidden" id="data[Order][BookingItem]['.$index.'][invoice_image]" name="data[Order][BookingItem]['.$index.'][invoice_image]" value="'.$item['invoice_image'].'"/>';
             } else
@@ -16747,7 +19530,7 @@ function deleteUserFromCampaign()
             $h .= '<div>SKU</div><input type="text" id="data[Order][BookingItem]['.$index.'][serial_number]" name="data[Order][BookingItem]['.$index.'][serial_number]" value="'.$item['serial_number'].'"/>';
             $h .= '<div>Supplier</div><input type="text" class="search_supplier" id="data_Order_BookingItem_'.$index.'_supplier" name="data[Order][BookingItem]['.$index.'][supplier]" value="'.$item['supplier'].'" data-item-index="'.$index.'"/>';
             $h .= '<input type="hidden" id="data_Order_BookingItem_'.$index.'_supplier_id" name="data[Order][BookingItem]['.$index.'][supplier_id]" value="" data-item-index="'.$index.'"/>';
-        
+
             $h .= '<div>Supplier Invoice#</div><input type="text" id="data[Order][BookingItem]['.$index.'][invoice]" name="data[Order][BookingItem]['.$index.'][invoice]" value="'.$item['invoice'].'"/>';
 
         }
@@ -16766,7 +19549,7 @@ function deleteUserFromCampaign()
         if ((($item['item_id']=='1000')||($item['item_id']=='1024')||($item['item_id']=='1218')||($item['item_id']=='1227'))&&$actions)
             $h .= '<td class="price"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price]" name="data[Order][BookingItem]['.$index.'][price]" value="'.$item['price'].'" onkeyup="NewTotalCalculation();"/></td>';
         else if($item['name']=='-custom part-')
-            $h .= '<td class="price"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price]" name="data[Order][BookingItem]['.$index.'][price]" value="'.$item['price'].'" onkeyup="NewTotalCalculation()"/></td>'; 
+            $h .= '<td class="price"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price]" name="data[Order][BookingItem]['.$index.'][price]" value="'.$item['price'].'" onkeyup="NewTotalCalculation()"/></td>';
         else if($item['name']=='-custom service-')
             $h .= '<td class="price"><input style="width:50px" type="text" id="data[Order][BookingItem]['.$index.'][price]" name="data[Order][BookingItem]['.$index.'][price]" value="'.$item['price'].'" onkeyup="NewTotalCalculation()"/></td>';
         else
@@ -16797,7 +19580,7 @@ function deleteUserFromCampaign()
                 } else {
                     $h .='<td></td>';
                 }
-            } 
+            }
             else if($item['name'] == '-custom service-'){
                 if($item['show_purchase'] == 1 || $item['show_purchase'] == '' || $item['show_purchase'] == NULL)
                 {
@@ -16805,7 +19588,7 @@ function deleteUserFromCampaign()
                 } else {
                     $h .='<td></td>';
                 }
-            } 
+            }
         else {
             if(($this->Common->getLoggedUserRoleID() == 6)) {
                 if($item['show_purchase'] == 1 || $item['show_purchase'] == '' || $item['show_purchase'] == NULL){
@@ -16824,10 +19607,10 @@ function deleteUserFromCampaign()
         }
         $h .= '<td class="amount" id="data[Order][BookingItem]['.$index.'][amount]">'.$this->HtmlAssist->prPrice(round($item['quantity']*$item['price']-$item['discount']+$item['addition'],2)).'</td>';
 
-     
+
         $h .= '<td style="width:22px"><img onclick="removeItem('.$index.')" src="'.ROOT_URL.'/app/webroot/img/icon-vsm-delete.png"/></td>';
         $h .= '<td class = "order_warehoue_count" style="width:22px;"><span>'.$item['count'].'</span></td>';
-        
+
         $h .= '<td class = "order_status_val" style="width:22px;"><input type="checkbox" name = "data[Order][BookingItem]['.$index.'][order_status]" value="1" '.$orderStatus.' /></td>';
         return $h;
   }
@@ -16835,7 +19618,7 @@ function deleteUserFromCampaign()
   // Loki: Save order image and supplier details
   function saveOrderPurchase()
   {
-    // $this->Common->printData($_POST['orderInvoiceImage']);
+    // $this->Common->printData($_POST);
     $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
     $orderId = $_POST['data']['Order']['id'];
     $invoiceImage = $_FILES['invoice_image'];
@@ -16860,8 +19643,8 @@ function deleteUserFromCampaign()
                 $this->Order->BookingItem->id =  $_POST['data']['Order']['BookingItem'][$i]['order_item_id'];
                 $this->Order->BookingItem->save($_POST['data']['Order']['BookingItem'][$i]);
             }
-        }    
-   
+        }
+
         if(!empty($invoiceImage['name']))
         {
             $path = $invoiceImage['name'];
@@ -16890,22 +19673,22 @@ function deleteUserFromCampaign()
     // function saveUploadImage(){
     //     $img = $_POST['image'];
     //     $folderPath = "upload_photos/";
-      
+
     //     $image_parts = explode(";base64,", $img);
     //     $image_type_aux = explode("image/", $image_parts[0]);
     //     $image_type = $image_type_aux[1];
-      
+
     //     $image_base64 = base64_decode($image_parts[1]);
     //     $fileName = uniqid() . '.png';
-      
+
     //     $file = $folderPath . $fileName;
     //     file_put_contents($file, $image_base64);
-      
+
     //     print_r($fileName);
     // }
 
     // function testUser2()
-    // {   
+    // {
     //     $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
     //     $phn = '6048415774';
     //     $query = "SELECT id FROM `ace_rp_customers` WHERE phone=".$phn;
@@ -16953,5 +19736,2829 @@ function deleteUserFromCampaign()
   //   exit();
 
   // }
+  function testPdf()
+  {
+
+  }
+  function pdfGenerate()
+  {
+    $email = $_POST['email'];
+    $contract = $_POST['contract'];
+    $firstName = $_POST['firstName'];
+    $subject = 'Pro Ace Contract';
+    $msg = '<p>Dear '.$firstName.' ,</p>
+                                <p>Please find the attached contract.</p>
+                                <p>&nbsp;</p>
+                                <p>Thank you,</p>
+                                <p>Pro Ace Heating &amp; Air Conditioning Ltd<br />Tel: 604-293-3770<br />&nbsp;<a href="https://www.acecare.ca"><img src="https://www.acecare.ca/wp-content/uploads/2018/08/newacelogooptimized.png" alt="" width="461" height="81" /></a></p>
+                                <p>&nbsp;</p>
+                                <p>&nbsp;</p>';
+
+    $res = $this->Tcpdf->createPdf($contract);
+    $orgFile = $this->G_URL."acesys/app/webroot/contract/".$res;
+    $email = "hitesh.a@cisinlabs.com";
+    if($res != ''){
+        $response = $this->sendEmailUsingMailgun($email,$subject,$msg,'', $orgFile);
+    }
+
+    if($response)
+    {
+        $response  = array("res" => "OK");
+        echo json_encode($response);
+    }
+    exit();
+  }
+
+  function testPdfGenerate()
+  {
+    $contract = $_POST['pdf_data'];
+    $this->Tpdf->createPdf($contract);
+    // $this->Mpdf->createPdf($contract);
+    exit();
+  }
+
+  function orderPackageItems()  {
+    $packageId = $_POST['packageId'];
+    $orderId = !empty($_POST['orderId']) ? $_POST['orderId'] : 0;
+
+    $data =  $this->OrderInstallationItem->findAll(array('order_id' => $orderId));
+    if(!empty($data))
+    {
+        foreach ($data as $key => $value) {
+            // $this->Common->printData($value);
+            $techItem = $this->TechInventoryItem->query("SELECT quantity FROM ace_rp_tech_inventory_item Where item_id = ".$value['OrderInstallationItem']['ref_item_id']." and tech_id =231433");
+            $item['count'] = $techItem[0]['ace_rp_tech_inventory_item']['quantity'];
+            $remaining = $value['OrderInstallationItem']['quantity'] - $value['OrderInstallationItem']['tech_quantity'];
+            $h .= '<tr class="booked">';
+            $h .= '<input  type="hidden" id="data[Order][InstallationItem]['.$key.'][ref_item_id]" name="data[Order][InstallationItem]['.$key.'][ref_item_id]" value="'.$value['OrderInstallationItem']['ref_item_id'].'"/>';
+            $h .= '<input  type="hidden" id="data[Order][InstallationItem]['.$key.'][item_id]" name="data[Order][InstallationItem]['.$key.'][item_id]" value="'.$value['OrderInstallationItem']['item_id'].'"/>';
+            $h .= '<input  type="hidden" id="data[Order][InstallationItem]['.$key.'][is_done]" name="data[Order][InstallationItem]['.$key.'][is_done]" value="'.$value['OrderInstallationItem']['is_done'].'"/>';
+            $h .= '<input type="hidden" class="t-input" id="data[Order][InstallationItem]['.$key.'][name]" name="data[Order][InstallationItem]['.$key.'][name]" value="'.$value['OrderInstallationItem']['name'].'"/>';
+            $h .= '<td class="name">'.$value['OrderInstallationItem']['name'].'</td>';
+            $h .= '<td class="warehouse_quantity"><input type="text" disabled class="t-input" id="data[Order][InstallationItem]['.$key.'][warehouse_quantity]" name="data[Order][InstallationItem]['.$key.'][warehouse_quantity]" value="'.$item['count'].'"/></td>';
+            $h .= '<td class="quantity"><input type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][quantity]" name="data[Order][InstallationItem]['.$key.'][quantity]" value="'.$value['OrderInstallationItem']['quantity'].'"/></td>';
+            $h .= '<td class="tech_quantity"><input type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][tech_quantity]" name="data[Order][InstallationItem]['.$key.'][tech_quantity]" value="'.$value['OrderInstallationItem']['tech_quantity'].'" onkeyup="InstallationCalculation()"/></td>';
+            $h .= '<td class="remaining_quantity"><input type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][remaining_quantity]" name="data[Order][InstallationItem]['.$key.'][remaining_quantity]" value="'.$remaining.'"/></td>';
+            $h .= '<td class="price"><input type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][price]" name="data[Order][InstallationItem]['.$key.'][price]" value="'.$value['OrderInstallationItem']['price'].'" onkeyup="InstallationCalculation()"/></td>';
+             $h .= '<td class="missing_quantity"><input type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][missing_quantity]" name="data[Order][InstallationItem]['.$key.'][missing_quantity]" value="'.$value['OrderInstallationItem']['missing_quantity'].'"/></td>';
+            $h .= '<td class="total"><input type="text" class="t-input" disabled id="data[Order][InstallationItem]['.$key.'][total]" name="data[Order][InstallationItem]['.$key.'][total]" value="'.($value['OrderInstallationItem']['price'] * $value['OrderInstallationItem']['tech_quantity'] ).'"/></td>';
+            $h .= '</tr>';
+        }
+    } else {
+        $data =  $this->IvItem->findAll(array('iv_sub_category_id' => $packageId));
+        foreach ($data as $key => $value) {
+             $techItem = $this->TechInventoryItem->query("SELECT quantity FROM ace_rp_tech_inventory_item Where item_id = ".$value['IvItem']['ref_item_id']." and tech_id =231433");
+            $item['count'] = $techItem[0]['ace_rp_tech_inventory_item']['quantity'];
+            $remaining = $value['OrderInstallationItem']['quantity'] - $value['OrderInstallationItem']['tech_quantity'];
+            $h .= '<tr class="booked">';
+                 $h .= '<input  type="hidden" id="data[Order][InstallationItem]['.$key.'][ref_item_id]" name="data[Order][InstallationItem]['.$key.'][ref_item_id]" value="'.$value['IvItem']['ref_item_id'].'"/>';
+                $h .= '<input type="hidden" id="data[Order][InstallationItem]['.$key.'][item_id]" name="data[Order][InstallationItem]['.$key.'][item_id]" value="'.$value['IvItem']['id'].'"/>';
+                $h .= '<input  type="hidden" id="data[Order][InstallationItem]['.$key.'][is_done]" name="data[Order][InstallationItem]['.$key.'][is_done]" value="'.$value['OrderInstallationItem']['is_done'].'"/>';
+                $h .= '<input type="hidden" class="t-input" id="data[Order][InstallationItem]['.$key.'][name]" name="data[Order][InstallationItem]['.$key.'][name]" value="'.$value['IvItem']['name'].'"/>';
+                $h .= '<td class="name">'.$value['IvItem']['name'].'</td>';
+                $h .= '<td class="warehouse_quantity"><input type="text" disabled class="t-input" id="data[Order][InstallationItem]['.$key.'][warehouse_quantity]" name="data[Order][InstallationItem]['.$key.'][warehouse_quantity]" value="'.$item['count'].'"/></td>';
+                $h .= '<td class="quantity"><input type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][quantity]" name="data[Order][InstallationItem]['.$key.'][quantity]" value="'.$value['IvItem']['default_quantity'].'"/></td>';
+                $h .= '<td class="tech_quantity"><input type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][tech_quantity]" name="data[Order][InstallationItem]['.$key.'][tech_quantity]" value="0" onkeyup="InstallationCalculation()"/></td>';
+               $h .= '<td class="remaining_quantity"><input type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][remaining_quantity]" name="data[Order][InstallationItem]['.$key.'][remaining_quantity]" value="'.$remaining.'"/></td>';
+                $h .= '<td class="price"><input type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][price]" name="data[Order][InstallationItem]['.$key.'][price]" value="'.$value['IvItem']['supplier_price'].'" onkeyup="InstallationCalculation()"/></td>';
+                $h .= '<td class="missing_quantity"><input type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][missing_quantity]" name="data[Order][InstallationItem]['.$key.'][missing_quantity]" value="'.$value['OrderInstallationItem']['missing_quantity'].'"/></td>';
+                $h .= '<td class="total"><input  type="text" class="t-input" disabled id="data[Order][InstallationItem]['.$key.'][total]" name="data[Order][InstallationItem]['.$key.'][total]" value="'.($value['IvItem']['supplier_price'] * 0 ).'"/></td>';
+            $h .= '</tr>';
+        }
+    }
+    echo $h;
+    exit();
+  }
+
+function saveTechInstallation()
+{
+    // $this->Common->printData($this->data['Order']);
+    $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+    $orderId = $this->data['Order']['order_id'];
+    $installationNotes = !empty($this->data['Order']['installation_notes']) ? $this->data['Order']['installation_notes'] : '';
+    if(count($this->data['Order']['InstallationItem']) > 0){
+        for ($i = 0; $i < count($this->data['Order']['InstallationItem']); $i++)
+        {
+            // Set ID of parent order
+            $this->data['Order']['InstallationItem'][$i]['order_id'] = $orderId;
+            $this->Order->InstallationItem->id = $this->data['Order']['InstallationItem'][$i]['id'];
+            $this->Order->InstallationItem->save($this->data['Order']['InstallationItem'][$i]);
+        }
+    }
+    $res = $db->_execute("UPDATE  ace_rp_orders set installation_notes = '".$installationNotes."' WHERE id = '".$orderId."'");
+    if($res)
+    {
+        $response  = array("res" => "1");
+        echo json_encode($response);
+    }
+    exit();
+}
+
+// function setDate(){
+//     $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+//     //$now = date('Y-m-d');
+//         $query = "SELECT * FROM `ace_rp_orders` WHERE `job_date` BETWEEN '2019-06-30' and '2020-05-31' and order_status_id = 5";
+//         $result = $db->_execute($query);
+
+//         while ( $row = mysql_fetch_array($result)) {
+
+//         if($row['order_type_id'] == 3)
+//             {
+//                 $reminderDate = date('Y-m-d', strtotime("+23months", strtotime($row['job_date'])));
+//                 $db->_execute("UPDATE ace_rp_orders set reminder_date='".$reminderDate."', reminder_type =0,reminder_email=1, reminder_sms=1, reminder_month=23 where id = ".$row['id']);
+//             } else {
+//                  $reminderDate = date('Y-m-d', strtotime("+11months", strtotime($row['job_date'])));
+//                 $db->_execute("UPDATE ace_rp_orders set reminder_date='".$reminderDate."', reminder_type =0,reminder_email=1, reminder_sms=1, reminder_month=11 where id = ".$row['id']);
+//             }
+//         }
+//         exit();
+//     }
+
+    function deleteInventoryItem()
+    {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $orderNum = $_GET['order_num'];
+        $itemId = $_GET['item_id'];
+        $db->_execute("DELETE FROM ace_iv_invoice_item_history WHERE job_ref_num=".$orderNum." AND item_id=".$itemId." AND status=2");
+        exit();
+    }
+    function getInventoryTechQty($item_id,$tech_id)
+    {
+       $techItem = $this->TechInventoryItem->query("SELECT quantity FROM ace_rp_tech_inventory_item Where item_id = ".$item_id." and tech_id =".$tech_id);
+
+        $item['count'] = $techItem[0]['ace_rp_tech_inventory_item']['quantity'];
+        return  $item['count'];
+    }
+    function checkItemQuantity()
+    {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+        $techId = !empty($_POST['techId']) ? $_POST['techId'] : 0;
+        $orderId = $_POST['data']['Order']['id'];
+        $orderItems = $_POST['data']['Order']['BookingItem'];
+        $items = array();
+        $res = 2;
+        // if($techId != 231419)
+        if($techId != 231429)
+        {
+            foreach ($orderItems as $key => $value) {
+                    if($value['item_category_id'] != 1 && $value['item_category_id'] != 37 && $value['sub_category_id'] != 16 ){
+                        $qty = $this->getInventoryTechQty($value['item_id'], $techId);
+                        if($qty < $value['quantity'] ){
+                            $items[] = $value['name'];
+                            $res = 1;
+                        }
+                    }
+                }
+            $response  = array("res" => $res, "itemArray" => $items );
+            echo json_encode($response);
+            exit();
+        } else {
+             $response  = array("res" => "2");
+              echo json_encode($response);
+              exit();
+        }
+     }
+
+     /* AM = 1, PM = 2 */
+     function chekcTruckTime()
+     {
+        $jobDate = date('Y-m-d',strtotime($_POST['order_date']));
+        $truck = $_POST['truck'];
+        $shift = $_POST['shift'];
+        $timing = array();
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $condition = "";
+        if($shift == 1){
+            $condition = " AND job_time_beg >= CAST('08:00:00' as TIME) AND job_time_beg < CAST('12:00:00' as TIME)";
+        }else if($shift == 2){
+            $condition = "AND (job_time_beg  >= CAST('12:00:00' as TIME) AND job_time_beg <= CAST('18:00:00' as TIME)  OR job_time_end >= CAST('12:00:00' as TIME) AND job_time_end <= CAST('18:00:00' as TIME))";
+
+        }
+        // $details = $this->Order->query("SELECT * FROM ace_rp_orders WHERE job_truck =".$truck." AND job_date = '".$jobDate."' and order_status_id !=3 ".$condition." order by id desc limit 1");
+
+        $details = $this->Order->query("SELECT * FROM ace_rp_orders WHERE job_truck =".$truck." AND job_date = '".$jobDate."' and order_status_id !=3 ".$condition."");
+
+        if($shift == 1){
+            $shiftarray = array("08","09","10","11");
+        } else if($shift == 2){
+            $shiftarray = array("12","13","14","15","16","17","18");
+        }
+
+        foreach ($details as &$value) {
+            $start_time = date('H', strtotime($value['ace_rp_orders']['job_time_beg']));
+            $end_time = date('H', strtotime($value['ace_rp_orders']['job_time_end']));
+            for ($i = $start_time; $i < $end_time; $i++) {
+                if (($key = array_search($i, $shiftarray)) !== false)
+                 unset($shiftarray[$key]);
+            }
+        }
+
+        // print_r($newarr);
+        // $response = $details[0]['ace_rp_orders'];
+        // if(empty($response))
+        // {
+        //     $timing['start_time'] = "08";
+        //         $timing['end_time'] = "09";
+        //     $result  = array("res" => "1","timing" =>$timing);
+
+        // } else {
+        //     $start_time = explode(':', $response['job_time_end']);
+        //     // $end_time = explode(':', $response['job_time_end']);
+        //     $timing['start_time'] = $start_time[0];
+
+        //     $timing['end_time'] = $start_time[0]+"1";
+        //     $result  = array("res" => "1","timing" =>$timing);
+        // }
+
+        $table = '<h3>Available Booking Slots</h3> <br><table style="width:100%;text-align:center;">';
+        $table .= '<th>Start Time</th><th>End Time</th>';
+
+        foreach ($shiftarray as $key => $value) {
+            $date1 = new DateTime($value.":00:00");
+            $date2 = new DateTime(($value+1).":00:00");
+            $table .= '<tr>
+                        <td>'.$date1->format('h a').'</td>
+                        <td>'.$date2->format('h a').'</td>
+                    </tr>';
+        }
+        $table .= '</table> <br><input type="button" id="close_timing_box" value="close" style="padding:1px;">';
+
+        // echo $table;
+        $result  = array("res" => "1","timing" => $table);
+        echo json_encode($result);
+            exit();
+     }
+
+    //    public function getTechFinaldistance()
+    // {
+    //     $postalArr = $_POST['postalArray'];
+    //     $sourcePoint = $_POST['sourcePoint'];
+    //     if(!empty( $sourcePoint))
+    //     {
+    //         $sourcePostCode = str_replace(" ", "%20", $sourcePoint);
+    //     } else {
+    //         $firstKey = key($postalArr);
+    //         $originPostal = $postalArr[$firstKey];
+    //         unset($postalArr[$firstKey]);
+    //         $sourcePostCode = str_replace(" ", "%20", $originPostal);
+    //     }
+    //     $finalpost = str_replace(" ", "%20",(implode("|",  $postalArr))) ;
+    //     $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$sourcePostCode."&destinations=".$finalpost."&mode=driving&language=en-EN&sensor=false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw";
+    //     $ch = curl_init();
+    //     curl_setopt($ch, CURLOPT_URL, $url);
+    //     curl_setopt($ch, CURLOPT_POST, 1);
+    //     curl_setopt($ch, CURLOPT_HEADER, 0);
+    //     curl_setopt($ch, CURLOPT_POSTFIELDS,"");
+    //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    //     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    //     $response = curl_exec($ch);
+    //     $result = json_decode($response, true);
+    //     $err = curl_error($ch);
+    //     curl_close($ch);
+    //     $resArrKeys = array_keys($postalArr);
+    //     $resArrValues = array_values($result['rows'][0]['elements']);
+    //     $combine = array_combine($resArrKeys, $resArrValues);
+    //     $resultTable = "<table>";
+    //     foreach ($combine as $key => $value) {
+    //         if(!empty($value['distance']['text']))
+    //         {
+    //            $resultTable .= "<tr>
+    //            <td>Ref: ".str_replace("\'", "", $key)."</td>
+    //            <td>KM: ".$value['distance']['text']."</td>
+    //            <td>Min: ".$value['duration']['text']."</td>
+    //            ";
+    //            // $mins = explode(' ',$value['duration']['text']);
+    //            // array_push($arr, array($key => $mins[0]));
+    //            // $arr[$key] = $mins[0];
+
+    //         }
+    //     }
+    //     // $sortedArr = asort($arr);
+    //     // print_r($arr); die;
+    //     $resultTable .= "</table>";
+    //     $response  = array("res" => $resultTable);
+    //     echo json_encode($response);
+    //     exit();
+    // }
+
+    public function getTechFinaldistance()
+    {
+        $postalArr = $_POST['postalArray'];
+        $sourcePoint = $_POST['sourcePoint'];
+
+        if(!empty( $sourcePoint))
+        {
+            $sourcePostCode = str_replace(" ", "%20", $sourcePoint);
+        } else {
+            $firstKey = key($postalArr);
+            $originPostal = $postalArr[$firstKey];
+            unset($postalArr[$firstKey]);
+            $sourcePostCode = str_replace(" ", "%20", $originPostal);
+
+        }
+        $finalpost = str_replace(" ", "%20",(implode("|",  $postalArr))) ;
+        $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$sourcePostCode."&destinations=".$finalpost."&mode=driving&language=en-EN&sensor=false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw";
+         $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/distance_calculation.php");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,"URL=".urlencode($url));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $response = curl_exec ($ch);//exit;
+        $result = json_decode($response,true);
+        $err = curl_error($ch);
+        curl_close($ch);
+
+
+
+        // print_r($response);
+
+        // $ch = curl_init();
+        // curl_setopt($ch, CURLOPT_URL, $url);
+        // curl_setopt($ch, CURLOPT_POST, 1);
+        // curl_setopt($ch, CURLOPT_HEADER, 0);
+        // curl_setopt($ch, CURLOPT_POSTFIELDS,"");
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        // $response = curl_exec($ch);
+        // $result = json_decode($response, true);
+        // $err = curl_error($ch);
+        // curl_close($ch);
+        $resArrKeys = array_keys($postalArr);
+        $resArrValues = array_values($result['rows'][0]['elements']);
+        $combine = array_combine($resArrKeys, $resArrValues);
+
+
+        $resultTable = "Good Day! Technician will be arriving approximately in {time}. Please ensure that you have received the invoice(emailed) before our tech leaves. Pro Ace Heating & Air Conditioning .604-2933770";
+        foreach ($combine as $key => $value) {
+            if(!empty($value['distance']['text']))
+            {
+                $text = str_replace("{time}",$value['duration']['text'],$resultTable);
+               // $resultTable .= "<tr>
+               // <td>Ref: ".str_replace("\'", "", $key)."</td>
+               // <td>KM: ".$value['distance']['text']."</td>
+               // <td>Min: ".$value['duration']['text']."</td>
+               // ";
+
+               $oId = str_replace("\'", "", $key);
+               $reachTime = $value['duration']['text'];
+               // $mins = explode(' ',$value['duration']['text']);
+               // array_push($arr, array($key => $mins[0]));
+               // $arr[$key] = $mins[0];
+
+            }
+        }
+
+        $resultTable .= "</table>";
+        $response  = array("res" => $text,"oid" => $oId,"reachTime" => $reachTime);
+        echo json_encode($response);
+        exit();
+    }
+    function getfailedEmailCount()
+    {
+        $this->getStatusMailgun();
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $query = "SELECT count(*) as total from ace_rp_failed_email where status = 0";
+
+        $result = $db->_execute($query);
+
+        $row = mysql_fetch_array($result);
+        $total = $row['total'];
+        $data=array('total'=>$total);
+        echo json_encode($data);
+        exit();
+    }
+
+    function getBookingEmailCount()
+    {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        // $query = "SELECT count(*) as total from ace_rp_user_booking_response";
+        $query = "SELECT count(DISTINCT ur.order_id) as total from ace_rp_user_booking_response ur";
+
+        $result = $db->_execute($query);
+
+        $row = mysql_fetch_array($result);
+        $total = $row['total'];
+        $data=array('total'=>$total);
+        echo json_encode($data);
+        exit();
+    }
+
+    function getOrderJobTypes()
+    {
+        $typeId = $_POST['typeId'];
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $query = "SELECT id,name from ace_rp_order_types where category_id =".$typeId." and flagactive = 1 order by name";
+
+        $result = $db->_execute($query);
+        $res = '';
+        while ($row = mysql_fetch_array($result)) {
+           $res .= '<option value="'.$row['id'].'">'.$row['name'].'</option>';
+        }
+
+        echo $res;
+        exit();
+    }
+
+    function getCityPostal()
+    {
+        $id = $_GET['city_id'];
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $query1 = "SELECT postal_code  FROM ace_rp_cities where internal_id =".$id;
+        $result = $db->_execute($query1);
+        $row = mysql_fetch_array($result);
+        // print_r($row); die;
+        echo $row['postal_code'];
+        exit();
+    }
+
+    function getPostalCode()
+    {
+        $city = $_GET['city'];
+        $streetNum = $_GET['streetNum'];
+        $streetName = $_GET['streetName'];
+        $address = $streetNum.','.$streetName.','.$city;
+        $formattedAddr = str_replace(' ','+',$address);
+
+        $url = 'https://maps.googleapis.com/maps/api/geocode/json?address='.$formattedAddr.'&sensor=true_or_false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw';
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/distance_calculation.php");
+        // curl_setopt($ch, CURLOPT_URL,$url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,"URL=".urlencode($url));
+        // receive server response ...
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $response = curl_exec ($ch);//exit;
+        $result = json_decode($response,true);
+        $err = curl_error($ch);
+        curl_close($ch);
+
+        if(!empty($result)){
+            $addressComponents = $result['results'][0]['address_components'];
+            foreach($addressComponents as $addrComp){
+                if($addrComp['types'][0] == 'postal_code'){
+                    $new_str = str_replace(' ', '',$addrComp['long_name']);
+                    // echo $addrComp['long_name'];
+                    echo $new_str;
+                }
+            }
+        }
+        // $latitude  = $result['results'][0] ['geometry']['location']['lat'];
+        // $longitude  = $result['results'][0] ['geometry']['location']['lng'];
+
+        // $url1 = 'https://maps.googleapis.com/maps/api/geocode/json?latlng='.$latitude.','.$longitude.'&sensor=true_or_false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw';
+
+        // $ch1 = curl_init();
+        // // curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/distance_calculation.php");
+        // curl_setopt($ch1, CURLOPT_URL,$url);
+        // curl_setopt($ch1, CURLOPT_POST, 1);
+        // curl_setopt($ch1, CURLOPT_POSTFIELDS,"URL=".urlencode($url));
+        // // receive server response ...
+        // curl_setopt($ch1, CURLOPT_RETURNTRANSFER, true);
+        //  curl_setopt($ch1, CURLOPT_RETURNTRANSFER, true);
+        // curl_setopt($ch1, CURLOPT_SSL_VERIFYPEER, false);
+        // $response1 = curl_exec ($ch1);//exit;
+        // $result1 = json_decode($response1,true);
+        // $err1 = curl_error($ch1);
+        // curl_close($ch1);
+        // if(!empty($result1)){
+        //     $addressComponents = $result1['results'][0]['address_components'];
+        //     foreach($addressComponents as $addrComp){
+        //         if($addrComp['types'][0] == 'postal_code'){
+        //             //Return the zipcode
+        //             return $addrComp['long_name'];
+        //         }
+        //     }
+        // }
+
+        exit();
+    }
+
+    function getSortedArray()
+    {
+        $oldArr = unserialize($_POST['arr']);
+        $cityArr = unserialize(stripcslashes($_POST['cityArr']));
+        $code = $_POST['code'];
+
+        if($code == 1)
+        {
+            asort($oldArr);
+        } else{
+            arsort($oldArr);
+        }
+
+        $resultTable = "<p style='font-weight:bolder'>Sorted Order:</p>";
+        $resultTable .= "<table class='new_sort_array_tbl'><tr><th>Ref</th><th>City</th><th>Time</th></tr>";
+        foreach ($oldArr as $key => $value) {
+             $resultTable .= "<tr>
+               <td>".$key."</td>
+               <td>".str_replace(',', ' ', $cityArr[$key])."</td>
+               <td>".$value."</td> </tr>";
+        }
+         $resultTable .= "</table>";
+         echo $resultTable;
+         exit();
+    }
+
+    function getTrackem()
+    {
+        // $url = "http://service.trackem.com/v3/Devices/f6c7e00d8eba412eac51d24632eddece/4562425632/";
+        // $url = "http://my.trackem.com/v3/route?username=proace&key=138f665bc50842158918ae086097f0af&deviceid=9051";
+        $url = "http://my.trackem.com/v3/events?username=proace&key=138f665bc50842158918ae086097f0af";
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL,$url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec ($ch);//exit;
+        $result = json_decode($response, true);
+        echo "<pre>";
+        print_r($result);
+        $err = curl_error($ch);
+        print_r($err);
+        curl_close($ch);
+    }
+
+    function testPdf1()
+    {
+        error_reporting(E_ALL);
+        // $settings = $this->Setting->find(array('title'=>'tech_invoice'));
+        $settings = $this->Setting->find(array('title'=>'booking_invoice'));
+        // $template = $settings['Setting']['valuetxt'];
+        $template = '<h1>hi</h1>';
+        // print_r($template); die;
+        $result = $this->Mpdf->createPdf($template);
+
+        print_r($result);
+         die();
+    }
+
+    function getBookingInvoicePdf($orderId)
+    {
+        $order_id = $orderId;
+        $tdate = date("Y-m-d");
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $orderDetails = $this->Order->findAll(array('Order.id'=> $order_id), null, array("job_truck ASC", "job_time_beg ASC"), null, null, 1);
+
+        $conditions = array();
+
+        $conditions += array('`Order`.`id`' => $order_id);
+
+        $allQuestions = array();
+
+        $allStatuses = $this->Lists->ListTable('ace_rp_order_statuses');
+        $allJobTypes = $this->Lists->ListTable('ace_rp_order_types');
+
+        // UNCOMMENT ON LIVE
+        $conditions += array('order_status_id' => array(1, 5, 8));
+
+        //$orders = $this->Order->findAll($conditions, null, "job_truck ASC", null, null, 1);
+        $orders = $this->Order->findAll($conditions, null, array("job_truck ASC", "job_time_beg ASC"), null, null, 1);
+
+       // if($orderDetails[0]['Order']['order_status_id'] != 5){
+
+        $orderItems =  $orderDetails[0]['BookingItem'];
+        // echo "<pre>";
+        // print_r($orderItems);die;
+
+         $questionTable = '';
+         $query = "
+            SELECT qw.question_id, q.rank, q.value question, r.value response, qw.response_text, s.value suggestion, d.value decision
+            FROM ace_rp_orders_questions_working qw
+            LEFT JOIN ace_rp_questions q
+            ON qw.question_id = q.id
+            LEFT JOIN ace_rp_responses r
+            ON qw.response_id = r.id
+            LEFT JOIN ace_rp_suggestions s
+            ON qw.suggestion_id = s.id
+            LEFT JOIN ace_rp_decisions d
+            ON qw.decision_id = d.id
+            WHERE
+            qw.order_id = $order_id
+            ORDER BY q.rank
+        ";
+        //q.for_print = 1 AND
+
+        $result = $db->_execute($query);
+
+        while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+
+            $questionTable .= '<tr>
+            <td style="padding-bottom:5px;padding-top: 5px;border-bottom:1px dotted #333;font-family: Arial, Helvetica, sans-serif;font-size:12px;color: #000;padding-left:10px;padding-right:10px;font-weight:bold;">'.$row['question'].'
+            </td>
+            <td style="padding-bottom:5px;padding-top: 5px;border-bottom:1px dotted #333;font-family: Arial, Helvetica, sans-serif;font-size:12px;color: #000;padding-left:10px;padding-right:10px;">
+                '.$row['response'].'
+            </td>
+            <td style="padding-bottom:5px;padding-top: 5px;border-bottom:1px dotted #333;font-family: Arial, Helvetica, sans-serif;font-size:12px;color: #000;padding-left:10px;padding-right:10px;">'.$row['response_text'].'
+            </td>
+            <td style="padding-bottom:5px;padding-top: 5px;border-bottom:1px dotted #333;font-family: Arial, Helvetica, sans-serif;font-size:12px;color: #000;padding-left:10px;padding-right:10px;">'.$row['suggestion'].'
+            </td>
+          </tr>';
+
+        }
+
+        $itemsTable = '';
+        $subtotal = 0;
+        foreach ($orderItems as $order) {
+            $order['price'] = ($order['price']*$order['quantity'] + 1*$order['addition'] - 1*$order['discount'])/$order['quantity'];
+            $total_prc = $order['price']*$order['quantity'];
+            $subtotal += $total_prc;
+
+            if($order['print_it'] == 'on'){
+                $itemsTable .= ' <tr>
+                  <td style="font-family: Arial, Helvetica, sans-serif;color: #000;font-size:13px;padding-top:6px;padding-bottom:6px;
+                  padding-left:10px;padding-right:10px;border-right:1px solid #333;width:50%;">'.$order['name'].'
+                  </td>
+                  <td style="font-family: Arial, Helvetica, sans-serif;color: #000;font-size:13px;padding-top:6px;padding-bottom:6px;
+                  padding-left:10px;padding-right:10px;border-right:1px solid #333;text-align: right;width:15%;">
+                    '.number_format($order['price'], 2, ".", "").'
+                  </td>
+                  <td style="font-family: Arial, Helvetica, sans-serif;color: #000;font-size:13px;padding-top:6px;padding-bottom:6px;
+                  padding-left:10px;padding-right:10px;border-right:1px solid #333;text-align:center;width:15%;">
+                    '.$order['quantity'].'
+                  </td>
+                  <td style="font-family: Arial, Helvetica, sans-serif;color: #000;font-size:13px;padding-top:6px;padding-bottom:6px;
+                  padding-left:10px;padding-right:10px;text-align: right;width:20%;">
+                    '.number_format(round($total_prc,2), 2, ".", "").'
+                  </td>
+                </tr>';
+            }
+        }
+
+        $deposit = number_format($orders[0]['Order']['customer_deposit'], 2, '.', '');
+        if($deposit >0){
+            $remaining =  ($subtotal+round(0.05*$subtotal,2)) - $deposit;
+        }else {
+            $deposit = '';
+            $remaining = '';
+        }
+        $settings = $this->Setting->find(array('title'=>'booking_invoice'));
+        $template = $settings['Setting']['valuetxt'];
+        $msg = $template;
+        $msg = str_replace('{job_type}',$orders[0]['Type']['name'] , $msg);
+        $my_rating="";
+        $get_rating='<a style="text-decoration: none;color: #FDD017;" class="style"><img src="http://hvacproz.ca/acesys/app/webroot/images/star1.jpg" width="20" height="20" ></a>';
+        for($i=0;$i<$orders[0]['Order']['office_rating'];$i++){
+         $my_rating.=$get_rating;
+        }
+        if($orders[0]['Order']['office_rating']!=0){
+         $msg = str_replace('{rating}','Rating:'.$my_rating, $msg);
+        }
+        else {
+         $msg = str_replace('{rating}','', $msg);
+        }
+        $msg = str_replace('{ref}',$orders[0]['Order']['order_number'] , $msg);
+        $msg = str_replace('{job_date}',$orders[0]['Order']['job_date'] , $msg);
+        $msg = str_replace('{start_time}',$orders[0]['Order']['job_time_beg'], $msg);
+        $msg = str_replace('{end_time}',$orders[0]['Order']['job_time_end'] , $msg);
+        $msg = str_replace('{hk}','' , $msg);
+        $msg = str_replace('{f_name}',$orders[0]['Customer']['first_name'], $msg);
+        $msg = str_replace('{l_name}', $orders[0]['Customer']['last_name'], $msg);
+        $msg = str_replace('{phone}',$orders[0]['Customer']['phone'] , $msg);
+        $msg = str_replace('{cell_phone}', $orders[0]['Customer']['cell_phone'], $msg);
+        $msg = str_replace('{add_unit}', $orders[0]['Customer']['address_unit'] , $msg);
+        $msg = str_replace('{add_street_no}', $orders[0]['Customer']['address_street_number'], $msg);
+        $msg = str_replace('{add_street}', $orders[0]['Customer']['address_street'], $msg);
+        $msg = str_replace('{city}',$orders[0]['Customer']['city'] , $msg);
+        $msg = str_replace('{postal_code}',$orders[0]['Customer']['postal_code'], $msg);
+        $msg = str_replace('{question_table}',$questionTable, $msg);
+        $msg = str_replace('{item_table}',$itemsTable, $msg);
+        $msg = str_replace('{sub_total}',$subtotal, $msg);
+        $msg = str_replace('{gst_amt}',number_format(round(0.05*$subtotal,2), 2, '.', ''), $msg);
+        $msg = str_replace('{total_amt}',number_format($subtotal+round(0.05*$subtotal,2), 2, '.', ''), $msg);
+        $msg = str_replace('{deposit}',$deposit, $msg);
+        $msg = str_replace('{remaining}',$remaining, $msg);
+        $msg = str_replace('{tech_1}',$orders[0]['Technician1']['first_name'].' '.$orders[0]['Technician1']['last_name'], $msg);
+        $msg = str_replace('{tech_2}',$orders[0]['Technician2']['first_name'].' '.$orders[0]['Technician2']['last_name'], $msg);
+        $msg = str_replace('{payment_method}',$orders[0]['OrderPaymentMethod']['name'], $msg);
+        $msg = str_replace('{email}',$orders[0]['Customer']['email'], $msg);
+        $msg = str_replace('{job_notes}',$orders[0]['Order']['job_notes'], $msg);
+        $result = $this->Mpdf->createPdf($msg);
+        return $result;
+        exit();
+    }
+
+    function test123(){
+        $orderId=131052;
+        $order_id = $orderId;
+        $tdate = date("Y-m-d");
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $orderDetails = $this->Order->findAll(array('Order.id'=> $order_id), null, array("job_truck ASC", "job_time_beg ASC"), null, null, 1);
+
+        $conditions = array();
+
+        $conditions += array('`Order`.`id`' => $order_id);
+
+        $allQuestions = array();
+
+        $allStatuses = $this->Lists->ListTable('ace_rp_order_statuses');
+        $allJobTypes = $this->Lists->ListTable('ace_rp_order_types');
+
+        // UNCOMMENT ON LIVE
+        $conditions += array('order_status_id' => array(1, 5, 8));
+
+        //$orders = $this->Order->findAll($conditions, null, "job_truck ASC", null, null, 1);
+        $orders = $this->Order->findAll($conditions, null, array("job_truck ASC", "job_time_beg ASC"), null, null, 1);
+
+       // if($orderDetails[0]['Order']['order_status_id'] != 5){
+
+        $orderItems =  $orderDetails[0]['BookingItem'];
+        // echo "<pre>";
+        // print_r($orderItems);die;
+
+         $questionTable = '';
+         $query = "
+            SELECT qw.question_id, q.rank, q.value question, r.value response, qw.response_text, s.value suggestion, d.value decision
+            FROM ace_rp_orders_questions_working qw
+            LEFT JOIN ace_rp_questions q
+            ON qw.question_id = q.id
+            LEFT JOIN ace_rp_responses r
+            ON qw.response_id = r.id
+            LEFT JOIN ace_rp_suggestions s
+            ON qw.suggestion_id = s.id
+            LEFT JOIN ace_rp_decisions d
+            ON qw.decision_id = d.id
+            WHERE
+            qw.order_id = $order_id
+            ORDER BY q.rank
+        ";
+        //q.for_print = 1 AND
+
+        $result = $db->_execute($query);
+
+        while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+
+            $questionTable .= '<tr>
+            <td style="padding-bottom:5px;padding-top: 5px;border-bottom:1px dotted #333;font-family: Arial, Helvetica, sans-serif;font-size:12px;color: #000;padding-left:10px;padding-right:10px;font-weight:bold;">'.$row['question'].'
+            </td>
+            <td style="padding-bottom:5px;padding-top: 5px;border-bottom:1px dotted #333;font-family: Arial, Helvetica, sans-serif;font-size:12px;color: #000;padding-left:10px;padding-right:10px;">
+                '.$row['response'].'
+            </td>
+            <td style="padding-bottom:5px;padding-top: 5px;border-bottom:1px dotted #333;font-family: Arial, Helvetica, sans-serif;font-size:12px;color: #000;padding-left:10px;padding-right:10px;">'.$row['response_text'].'
+            </td>
+            <td style="padding-bottom:5px;padding-top: 5px;border-bottom:1px dotted #333;font-family: Arial, Helvetica, sans-serif;font-size:12px;color: #000;padding-left:10px;padding-right:10px;">'.$row['suggestion'].'
+            </td>
+          </tr>';
+
+        }
+
+        $itemsTable = '';
+        $subtotal = 0;
+        foreach ($orderItems as $order) {
+            $order['price'] = ($order['price']*$order['quantity'] + 1*$order['addition'] - 1*$order['discount'])/$order['quantity'];
+            $total_prc = $order['price']*$order['quantity'];
+            $subtotal += $total_prc;
+
+            if($order['print_it'] == 'on'){
+                $itemsTable .= ' <tr>
+                  <td style="font-family: Arial, Helvetica, sans-serif;color: #000;font-size:13px;padding-top:6px;padding-bottom:6px;
+                  padding-left:10px;padding-right:10px;border-right:1px solid #333;width:50%;">'.$order['name'].'
+                  </td>
+                  <td style="font-family: Arial, Helvetica, sans-serif;color: #000;font-size:13px;padding-top:6px;padding-bottom:6px;
+                  padding-left:10px;padding-right:10px;border-right:1px solid #333;text-align: right;width:15%;">
+                    '.number_format($order['price'], 2, ".", "").'
+                  </td>
+                  <td style="font-family: Arial, Helvetica, sans-serif;color: #000;font-size:13px;padding-top:6px;padding-bottom:6px;
+                  padding-left:10px;padding-right:10px;border-right:1px solid #333;text-align:center;width:15%;">
+                    '.$order['quantity'].'
+                  </td>
+                  <td style="font-family: Arial, Helvetica, sans-serif;color: #000;font-size:13px;padding-top:6px;padding-bottom:6px;
+                  padding-left:10px;padding-right:10px;text-align: right;width:20%;">
+                    '.number_format(round($total_prc,2), 2, ".", "").'
+                  </td>
+                </tr>';
+            }
+        }
+
+        $deposit = number_format($orders[0]['Order']['customer_deposit'], 2, '.', '');
+        if($deposit >0){
+            $remaining =  ($subtotal+round(0.05*$subtotal,2)) - $deposit;
+        }else {
+            $deposit = '';
+            $remaining = '';
+        }
+        $settings = $this->Setting->find(array('title'=>'booking_invoice'));
+        $template = $settings['Setting']['valuetxt'];
+        $msg = $template;
+        $msg = str_replace('{job_type}',$orders[0]['Type']['name'] , $msg);
+        $msg = str_replace('{ref}',$orders[0]['Order']['order_number'] , $msg);
+        $msg = str_replace('{job_date}',$orders[0]['Order']['job_date'] , $msg);
+        $msg = str_replace('{start_time}',$orders[0]['Order']['job_time_beg'], $msg);
+        $msg = str_replace('{end_time}',$orders[0]['Order']['job_time_end'] , $msg);
+        $msg = str_replace('{hk}','' , $msg);
+        $msg = str_replace('{f_name}',$orders[0]['Customer']['first_name'], $msg);
+        $msg = str_replace('{l_name}', $orders[0]['Customer']['last_name'], $msg);
+        $msg = str_replace('{phone}',$orders[0]['Customer']['phone'] , $msg);
+        $msg = str_replace('{cell_phone}', $orders[0]['Customer']['cell_phone'], $msg);
+        $msg = str_replace('{add_unit}', $orders[0]['Customer']['address_unit'] , $msg);
+        $msg = str_replace('{add_street_no}', $orders[0]['Customer']['address_street_number'], $msg);
+        $msg = str_replace('{add_street}', $orders[0]['Customer']['address_street'], $msg);
+        $msg = str_replace('{city}',$orders[0]['Customer']['city'] , $msg);
+        $msg = str_replace('{postal_code}',$orders[0]['Customer']['postal_code'], $msg);
+        $msg = str_replace('{question_table}',$questionTable, $msg);
+        $msg = str_replace('{item_table}',$itemsTable, $msg);
+        $msg = str_replace('{sub_total}',$subtotal, $msg);
+        $msg = str_replace('{gst_amt}',number_format(round(0.05*$subtotal,2), 2, '.', ''), $msg);
+        $msg = str_replace('{total_amt}',number_format($subtotal+round(0.05*$subtotal,2), 2, '.', ''), $msg);
+        $msg = str_replace('{deposit}',$deposit, $msg);
+        $msg = str_replace('{remaining}',$remaining, $msg);
+        $msg = str_replace('{tech_1}',$orders[0]['Technician1']['first_name'].' '.$orders[0]['Technician1']['last_name'], $msg);
+        $msg = str_replace('{tech_2}',$orders[0]['Technician2']['first_name'].' '.$orders[0]['Technician2']['last_name'], $msg);
+        $msg = str_replace('{payment_method}',$orders[0]['OrderPaymentMethod']['name'], $msg);
+        $msg = str_replace('{email}',$orders[0]['Customer']['email'], $msg);
+        $msg = str_replace('{job_notes}',$orders[0]['Order']['job_notes'], $msg);
+        //$result = $this->Mpdf->createPdf($msg);
+        //return $result;
+        print_r($template);
+        exit;
+    }
+
+    function getBookingInvoicePdf2($orderId)
+    {
+        $orderId=131052;
+        $order_id = $orderId;
+        $tdate = date("Y-m-d");
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $orderDetails = $this->Order->findAll(array('Order.id'=> $order_id), null, array("job_truck ASC", "job_time_beg ASC"), null, null, 1);
+
+        $conditions = array();
+
+        $conditions += array('`Order`.`id`' => $order_id);
+
+        $allQuestions = array();
+
+        $allStatuses = $this->Lists->ListTable('ace_rp_order_statuses');
+        $allJobTypes = $this->Lists->ListTable('ace_rp_order_types');
+
+        // UNCOMMENT ON LIVE
+        $conditions += array('order_status_id' => array(1, 5, 8));
+
+        //$orders = $this->Order->findAll($conditions, null, "job_truck ASC", null, null, 1);
+        $orders = $this->Order->findAll($conditions, null, array("job_truck ASC", "job_time_beg ASC"), null, null, 1);
+
+       // if($orderDetails[0]['Order']['order_status_id'] != 5){
+
+        $orderItems =  $orderDetails[0]['BookingItem'];
+        // echo "<pre>";
+        // print_r($orderItems);die;
+
+         $questionTable = '';
+         $query = "
+            SELECT qw.question_id, q.rank, q.value question, r.value response, qw.response_text, s.value suggestion, d.value decision
+            FROM ace_rp_orders_questions_working qw
+            LEFT JOIN ace_rp_questions q
+            ON qw.question_id = q.id
+            LEFT JOIN ace_rp_responses r
+            ON qw.response_id = r.id
+            LEFT JOIN ace_rp_suggestions s
+            ON qw.suggestion_id = s.id
+            LEFT JOIN ace_rp_decisions d
+            ON qw.decision_id = d.id
+            WHERE
+            qw.order_id = $order_id
+            ORDER BY q.rank
+        ";
+        //q.for_print = 1 AND
+
+        $result = $db->_execute($query);
+
+        while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+
+            $questionTable .= '<tr>
+            <td style="padding-bottom:5px;padding-top: 5px;border-bottom:1px dotted #333;font-family: Arial, Helvetica, sans-serif;font-size:12px;color: #000;padding-left:10px;padding-right:10px;font-weight:bold;">'.$row['question'].'
+            </td>
+            <td style="padding-bottom:5px;padding-top: 5px;border-bottom:1px dotted #333;font-family: Arial, Helvetica, sans-serif;font-size:12px;color: #000;padding-left:10px;padding-right:10px;">
+                '.$row['response'].'
+            </td>
+            <td style="padding-bottom:5px;padding-top: 5px;border-bottom:1px dotted #333;font-family: Arial, Helvetica, sans-serif;font-size:12px;color: #000;padding-left:10px;padding-right:10px;">'.$row['response_text'].'
+            </td>
+            <td style="padding-bottom:5px;padding-top: 5px;border-bottom:1px dotted #333;font-family: Arial, Helvetica, sans-serif;font-size:12px;color: #000;padding-left:10px;padding-right:10px;">'.$row['suggestion'].'
+            </td>
+          </tr>';
+
+        }
+
+        $itemsTable = '';
+        $subtotal = 0;
+        foreach ($orderItems as $order) {
+            $order['price'] = ($order['price']*$order['quantity'] + 1*$order['addition'] - 1*$order['discount'])/$order['quantity'];
+            $total_prc = $order['price']*$order['quantity'];
+            $subtotal += $total_prc;
+
+            if($order['print_it'] == 'on'){
+                $itemsTable .= ' <tr>
+                  <td style="font-family: Arial, Helvetica, sans-serif;color: #000;font-size:13px;padding-top:6px;padding-bottom:6px;
+                  padding-left:10px;padding-right:10px;border-right:1px solid #333;width:50%;">'.$order['name'].'
+                  </td>
+                  <td style="font-family: Arial, Helvetica, sans-serif;color: #000;font-size:13px;padding-top:6px;padding-bottom:6px;
+                  padding-left:10px;padding-right:10px;border-right:1px solid #333;text-align: right;width:15%;">
+                    '.number_format($order['price'], 2, ".", "").'
+                  </td>
+                  <td style="font-family: Arial, Helvetica, sans-serif;color: #000;font-size:13px;padding-top:6px;padding-bottom:6px;
+                  padding-left:10px;padding-right:10px;border-right:1px solid #333;text-align:center;width:15%;">
+                    '.$order['quantity'].'
+                  </td>
+                  <td style="font-family: Arial, Helvetica, sans-serif;color: #000;font-size:13px;padding-top:6px;padding-bottom:6px;
+                  padding-left:10px;padding-right:10px;text-align: right;width:20%;">
+                    '.number_format(round($total_prc,2), 2, ".", "").'
+                  </td>
+                </tr>';
+            }
+        }
+
+        $deposit = number_format($orders[0]['Order']['customer_deposit'], 2, '.', '');
+        if($deposit >0){
+            $remaining =  ($subtotal+round(0.05*$subtotal,2)) - $deposit;
+        }else {
+            $deposit = '';
+            $remaining = '';
+        }
+        $settings = $this->Setting->find(array('title'=>'booking_invoice'));
+        $template = $settings['Setting']['valuetxt'];
+        $msg = $template;
+        $msg = str_replace('{job_type}',$orders[0]['Type']['name'] , $msg);
+        $msg = str_replace('{ref}',$orders[0]['Order']['order_number'] , $msg);
+        $msg = str_replace('{job_date}',$orders[0]['Order']['job_date'] , $msg);
+        $msg = str_replace('{start_time}',$orders[0]['Order']['job_time_beg'], $msg);
+        $msg = str_replace('{end_time}',$orders[0]['Order']['job_time_end'] , $msg);
+        $msg = str_replace('{hk}','' , $msg);
+        $msg = str_replace('{f_name}',$orders[0]['Customer']['first_name'], $msg);
+        $msg = str_replace('{l_name}', $orders[0]['Customer']['last_name'], $msg);
+        $msg = str_replace('{phone}',$orders[0]['Customer']['phone'] , $msg);
+        $msg = str_replace('{cell_phone}', $orders[0]['Customer']['cell_phone'], $msg);
+        $msg = str_replace('{add_unit}', $orders[0]['Customer']['address_unit'] , $msg);
+        $msg = str_replace('{add_street_no}', $orders[0]['Customer']['address_street_number'], $msg);
+        $msg = str_replace('{add_street}', $orders[0]['Customer']['address_street'], $msg);
+        $msg = str_replace('{city}',$orders[0]['Customer']['city'] , $msg);
+        $msg = str_replace('{postal_code}',$orders[0]['Customer']['postal_code'], $msg);
+        $msg = str_replace('{question_table}',$questionTable, $msg);
+        $msg = str_replace('{item_table}',$itemsTable, $msg);
+        $msg = str_replace('{sub_total}',$subtotal, $msg);
+        $msg = str_replace('{gst_amt}',number_format(round(0.05*$subtotal,2), 2, '.', ''), $msg);
+        $msg = str_replace('{total_amt}',number_format($subtotal+round(0.05*$subtotal,2), 2, '.', ''), $msg);
+        $msg = str_replace('{deposit}',$deposit, $msg);
+        $msg = str_replace('{remaining}',$remaining, $msg);
+        $msg = str_replace('{tech_1}',$orders[0]['Technician1']['first_name'].' '.$orders[0]['Technician1']['last_name'], $msg);
+        $msg = str_replace('{tech_2}',$orders[0]['Technician2']['first_name'].' '.$orders[0]['Technician2']['last_name'], $msg);
+        $msg = str_replace('{payment_method}',$orders[0]['OrderPaymentMethod']['name'], $msg);
+        $msg = str_replace('{email}',$orders[0]['Customer']['email'], $msg);
+        $msg = str_replace('{job_notes}',$orders[0]['Order']['job_notes'], $msg);
+        $result = $this->Mpdf->createPdf($msg);
+        return $result;
+        exit();
+    }
+
+    function techLastPage() {
+        $this->layout = "blank";
+
+        $order_id = $_GET['order_id'];
+        $last_order_id = $_GET['last_order_id'];
+        $job = $this->Order->findById($order_id);
+        $last_job = $this->Order->findById($last_order_id);
+
+        $this->set('this_job', $this->Order->findById($order_id));
+        $this->set('order', $job);
+        $this->set('last_order', $last_job);
+        $this->set('invoice', $this->Invoice->findByOrderId($order_id));
+
+        $order_type_id = $job['Order']['order_type_id'];
+        $customer_id = $job['Order']['customer_id'];
+
+        $partImages = $this->UserPartImages->findAll(array('conditions' => array('UserPartImages.customer_id' => $customer_id, 'UserPartImages.from_tech' => 1)));
+         foreach ($partImages as $key => $value) {
+                     if(!empty($value['UserPartImages']['image_name']) && $value['UserPartImages']['image_name'] != null){
+                        $allImages[$key]['id'] = $value['UserPartImages']['id'];
+                        $allImages[$key]['image_name'] = $this->getPhotoPath($value['UserPartImages']['image_name']);
+                    }
+                }
+       $this->set('allImages', $allImages);
+        $jobs = $this->Order->findAll(array(
+            "Order.job_date" => date("Y-m-d"),
+            "OR" => array("Order.booking_source_id" => $this->Common->getLoggedUserID(),
+                "Order.booking_source2_id" => $this->Common->getLoggedUserID(),
+                "Order.job_technician1_id" => $this->Common->getLoggedUserID(),
+                "Order.job_technician2_id" => $this->Common->getLoggedUserID()
+            ))
+        , null, "Order.job_time_beg ASC");
+
+        $this->set('jobs', $jobs);
+
+        $this->set('order_id', $order_id);
+
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+        $item_id = $order_type_id;
+        $query3="SELECT id,GROUP_CONCAT( image_name ) AS images, date_created,label, customer_id FROM `ace_rp_user_part_images` WHERE customer_id
+IN ( ".$customer_id." ) GROUP BY (date_created)";
+$result3 = $db->_execute($query3);
+$query4="SELECT GROUP_CONCAT( CAST( id AS CHAR ) ) AS id
+FROM `ace_rp_user_part_images`
+WHERE customer_id
+IN ( ".$customer_id." )
+GROUP BY (date_created)";
+$result4 = $db->_execute($query4);
+
+$array_result = array();
+while ($row3 = mysql_fetch_array($result3, MYSQL_NUM)) {
+    $array_result[] = $row3;
+}
+
+$array_result11 = array();
+while ($row4 = mysql_fetch_array($result4, MYSQL_NUM)) {
+    $array_result11[] = $row4;
+}
+$this->set('new_images', $array_result);
+$this->set('new_images_id', $array_result11);
+
+        $query = "
+            SELECT *
+            FROM ace_rp_questions
+            WHERE order_type_id = $item_id AND for_sale = 1
+            order by rank, value
+        ";
+
+        $questions = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $questions[$row['id']][$k] = $v;
+        }
+
+        $query = "
+            SELECT r.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_responses r
+            ON q.id = r.question_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+
+        $responses = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $responses[$row['question_id']][$row['id']][$k] = $v;
+        }
+
+        $query = "
+            SELECT s.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_responses r
+            ON q.id = r.question_id
+            LEFT JOIN ace_rp_suggestions s
+            ON r.id = s.response_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+        $suggestions = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $suggestions[$row['response_id']][$row['id']][$k] = $v;
+        }
+
+         $query = "
+            SELECT s.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_responses r
+            ON q.id = r.question_id
+            LEFT JOIN ace_rp_text_responses s
+            ON r.id = s.response_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+        $text_responses = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $text_responses[$row['response_id']][$row['id']][$k] = $v;
+        }
+
+
+        $query = "
+            SELECT d.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_responses r
+            ON q.id = r.question_id
+            LEFT JOIN ace_rp_suggestions s
+            ON r.id = s.response_id
+            LEFT JOIN ace_rp_decisions d
+            ON s.id = d.suggestion_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+
+        $decisions = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $decisions[$row['suggestion_id']][$row['id']][$k] = $v;
+        }
+
+        $query = "
+            SELECT *
+            FROM ace_rp_suggestion_operations
+        ";
+
+        $operations = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $operations[$row['id']][$k] = $v;
+        }
+
+        $query = "
+            SELECT *
+            FROM ace_rp_suggestion_which
+        ";
+
+        $which = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $which[$row['id']][$k] = $v;
+        }
+
+
+        $query = "
+            SELECT *
+            FROM ace_rp_orders_questions_working
+            WHERE order_id = $order_id
+        ";
+
+        $working_answers = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $working_answers[$row['question_id']][$k] = $v;
+        }
+
+        //set carried over answers
+
+        $query = "
+            SELECT qw.*
+            FROM ace_rp_orders_questions_working qw
+            LEFT JOIN ace_rp_questions q
+            ON qw.question_id = q.id
+            WHERE qw.order_id = (SELECT id
+                FROM ace_rp_orders
+                WHERE customer_id = $customer_id
+                AND order_status_id IN (5,3,1)
+                ORDER BY job_date DESC, order_status_id DESC
+                LIMIT 1)
+        ";
+
+        $result = $db->_execute($query);
+
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+            foreach ($row as $k => $v)
+              $carried_answers[$row['question_id']][$k] = $v;
+        }
+
+         $query = "
+            SELECT tr.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_tech_responses tr
+            ON q.id = tr.question_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+
+        $techresponses = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $techresponses[$row['question_id']][$row['id']][$k] = $v;
+        }
+
+        $this->set('carried_answers', $carried_answers);
+
+        // echo "<pre>";
+        // print_r($working_answers); die;
+
+        $this->set('questions', $questions);
+        $this->set('responses', $responses);
+        $this->set('techresponses', $techresponses);
+        $this->set('text_responses', $text_responses);
+        $this->set('suggestions', $suggestions);
+        $this->set('decisions', $decisions);
+        $this->set('item_id', $item_id);
+        $this->set('operations', $operations);
+        $this->set('which', $which);
+        $this->set('working_answers', $working_answers);
+        $this->set('jobtypes', $this->OrderType->findAll());
+    }
+    function techLastPage2() {
+        $this->layout = "blank";
+
+        $order_id = $_GET['order_id'];
+        $last_order_id = $_GET['last_order_id'];
+        $job = $this->Order->findById($order_id);
+        $last_job = $this->Order->findById($last_order_id);
+
+        $this->set('this_job', $this->Order->findById($order_id));
+        $this->set('order', $job);
+        $this->set('last_order', $last_job);
+        $this->set('invoice', $this->Invoice->findByOrderId($order_id));
+
+        $order_type_id = $job['Order']['order_type_id'];
+        $customer_id = $job['Order']['customer_id'];
+
+        $partImages = $this->UserPartImages->findAll(array('conditions' => array('UserPartImages.customer_id' => $customer_id, 'UserPartImages.from_tech' => 1)));
+         foreach ($partImages as $key => $value) {
+                     if(!empty($value['UserPartImages']['image_name']) && $value['UserPartImages']['image_name'] != null){
+                        $allImages[$key]['id'] = $value['UserPartImages']['id'];
+                        $allImages[$key]['image_name'] = $this->getPhotoPath($value['UserPartImages']['image_name']);
+                    }
+                }
+       $this->set('allImages', $allImages);
+        $jobs = $this->Order->findAll(array(
+            "Order.job_date" => date("Y-m-d"),
+            "OR" => array("Order.booking_source_id" => $this->Common->getLoggedUserID(),
+                "Order.booking_source2_id" => $this->Common->getLoggedUserID(),
+                "Order.job_technician1_id" => $this->Common->getLoggedUserID(),
+                "Order.job_technician2_id" => $this->Common->getLoggedUserID()
+            ))
+        , null, "Order.job_time_beg ASC");
+
+        $this->set('jobs', $jobs);
+
+        $this->set('order_id', $order_id);
+
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+        $item_id = $order_type_id;
+        $query3="SELECT id,GROUP_CONCAT( image_name ) AS images, date_created,label, customer_id FROM `ace_rp_user_part_images` WHERE customer_id
+IN ( ".$customer_id." ) GROUP BY (date_created)";
+$result3 = $db->_execute($query3);
+$query4="SELECT GROUP_CONCAT( CAST( id AS CHAR ) ) AS id
+FROM `ace_rp_user_part_images`
+WHERE customer_id
+IN ( ".$customer_id." )
+GROUP BY (date_created)";
+$result4 = $db->_execute($query4);
+
+$array_result = array();
+while ($row3 = mysql_fetch_array($result3, MYSQL_NUM)) {
+    $array_result[] = $row3;
+}
+
+$array_result11 = array();
+while ($row4 = mysql_fetch_array($result4, MYSQL_NUM)) {
+    $array_result11[] = $row4;
+}
+$this->set('new_images', $array_result);
+$this->set('new_images_id', $array_result11);
+
+        $query = "
+            SELECT *
+            FROM ace_rp_questions
+            WHERE order_type_id = $item_id AND for_sale = 1
+            order by rank, value
+        ";
+
+        $questions = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $questions[$row['id']][$k] = $v;
+        }
+
+        $query = "
+            SELECT r.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_responses r
+            ON q.id = r.question_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+
+        $responses = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $responses[$row['question_id']][$row['id']][$k] = $v;
+        }
+
+        $query = "
+            SELECT s.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_responses r
+            ON q.id = r.question_id
+            LEFT JOIN ace_rp_suggestions s
+            ON r.id = s.response_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+        $suggestions = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $suggestions[$row['response_id']][$row['id']][$k] = $v;
+        }
+
+         $query = "
+            SELECT s.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_responses r
+            ON q.id = r.question_id
+            LEFT JOIN ace_rp_text_responses s
+            ON r.id = s.response_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+        $text_responses = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $text_responses[$row['response_id']][$row['id']][$k] = $v;
+        }
+
+
+        $query = "
+            SELECT d.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_responses r
+            ON q.id = r.question_id
+            LEFT JOIN ace_rp_suggestions s
+            ON r.id = s.response_id
+            LEFT JOIN ace_rp_decisions d
+            ON s.id = d.suggestion_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+
+        $decisions = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $decisions[$row['suggestion_id']][$row['id']][$k] = $v;
+        }
+
+        $query = "
+            SELECT *
+            FROM ace_rp_suggestion_operations
+        ";
+
+        $operations = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $operations[$row['id']][$k] = $v;
+        }
+
+        $query = "
+            SELECT *
+            FROM ace_rp_suggestion_which
+        ";
+
+        $which = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $which[$row['id']][$k] = $v;
+        }
+
+
+        $query = "
+            SELECT *
+            FROM ace_rp_orders_questions_working
+            WHERE order_id = $order_id
+        ";
+
+        $working_answers = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $working_answers[$row['question_id']][$k] = $v;
+        }
+
+        //set carried over answers
+
+        $query = "
+            SELECT qw.*
+            FROM ace_rp_orders_questions_working qw
+            LEFT JOIN ace_rp_questions q
+            ON qw.question_id = q.id
+            WHERE qw.order_id = (SELECT id
+                FROM ace_rp_orders
+                WHERE customer_id = $customer_id
+                AND order_status_id IN (5,3,1)
+                ORDER BY job_date DESC, order_status_id DESC
+                LIMIT 1)
+        ";
+
+        $result = $db->_execute($query);
+
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+            foreach ($row as $k => $v)
+              $carried_answers[$row['question_id']][$k] = $v;
+        }
+
+         $query = "
+            SELECT tr.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_tech_responses tr
+            ON q.id = tr.question_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+
+        $techresponses = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $techresponses[$row['question_id']][$row['id']][$k] = $v;
+        }
+
+        $this->set('carried_answers', $carried_answers);
+
+        // echo "<pre>";
+        // print_r($working_answers); die;
+
+        $this->set('questions', $questions);
+        $this->set('responses', $responses);
+        $this->set('techresponses', $techresponses);
+        $this->set('text_responses', $text_responses);
+        $this->set('suggestions', $suggestions);
+        $this->set('decisions', $decisions);
+        $this->set('item_id', $item_id);
+        $this->set('operations', $operations);
+        $this->set('which', $which);
+        $this->set('working_answers', $working_answers);
+        $this->set('jobtypes', $this->OrderType->findAll());
+    }
+
+    function techLastPageNew()
+    {
+        $this->layout = "blank";
+
+        $order_id = $_GET['order_id'];
+        $last_order_id = $_GET['last_order_id'];
+        $job = $this->Order->findById($order_id);
+        $last_job = $this->Order->findById($last_order_id);
+
+        $this->set('this_job', $this->Order->findById($order_id));
+        $this->set('order', $job);
+        $this->set('last_order', $last_job);
+        $this->set('invoice', $this->Invoice->findByOrderId($order_id));
+
+        $order_type_id = $job['Order']['order_type_id'];
+        $customer_id = $job['Order']['customer_id'];
+
+        $partImages = $this->UserPartImages->findAll(array('conditions' => array('UserPartImages.customer_id' => $customer_id, 'UserPartImages.from_tech' => 1)));
+         foreach ($partImages as $key => $value) {
+                     if(!empty($value['UserPartImages']['image_name']) && $value['UserPartImages']['image_name'] != null){
+                        $allImages[$key]['id'] = $value['UserPartImages']['id'];
+                        $allImages[$key]['image_name'] = $this->getPhotoPath($value['UserPartImages']['image_name']);
+                    }
+                }
+       $this->set('allImages', $allImages);
+        $jobs = $this->Order->findAll(array(
+            "Order.job_date" => date("Y-m-d"),
+            "OR" => array("Order.booking_source_id" => $this->Common->getLoggedUserID(),
+                "Order.booking_source2_id" => $this->Common->getLoggedUserID(),
+                "Order.job_technician1_id" => $this->Common->getLoggedUserID(),
+                "Order.job_technician2_id" => $this->Common->getLoggedUserID()
+            ))
+        , null, "Order.job_time_beg ASC");
+
+        $this->set('jobs', $jobs);
+
+        $this->set('order_id', $order_id);
+
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+        $item_id = $order_type_id;
+
+        $query3="SELECT id,GROUP_CONCAT( image_name ) AS images, date_created,label, customer_id FROM `ace_rp_user_part_images` WHERE customer_id
+IN ( ".$customer_id." ) GROUP BY (date_created)";
+$result3 = $db->_execute($query3);
+$query4="SELECT GROUP_CONCAT( CAST( id AS CHAR ) ) AS id
+FROM `ace_rp_user_part_images`
+WHERE customer_id
+IN ( ".$customer_id." )
+GROUP BY (date_created)";
+$result4 = $db->_execute($query4);
+
+$array_result = array();
+while ($row3 = mysql_fetch_array($result3, MYSQL_NUM)) {
+    $array_result[] = $row3;
+}
+
+$array_result11 = array();
+while ($row4 = mysql_fetch_array($result4, MYSQL_NUM)) {
+    $array_result11[] = $row4;
+}
+$this->set('new_images', $array_result);
+$this->set('new_images_id', $array_result11);
+
+        $query = "
+            SELECT *
+            FROM ace_rp_questions
+            WHERE order_type_id = $item_id AND for_sale = 1
+            order by rank, value
+        ";
+
+        $questions = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $questions[$row['id']][$k] = $v;
+        }
+
+        $query = "
+            SELECT r.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_responses r
+            ON q.id = r.question_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+
+        $responses = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $responses[$row['question_id']][$row['id']][$k] = $v;
+        }
+
+        $query = "
+            SELECT s.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_responses r
+            ON q.id = r.question_id
+            LEFT JOIN ace_rp_suggestions s
+            ON r.id = s.response_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+        $suggestions = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $suggestions[$row['response_id']][$row['id']][$k] = $v;
+        }
+
+         $query = "
+            SELECT s.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_responses r
+            ON q.id = r.question_id
+            LEFT JOIN ace_rp_text_responses s
+            ON r.id = s.response_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+        $text_responses = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $text_responses[$row['response_id']][$row['id']][$k] = $v;
+        }
+
+
+        $query = "
+            SELECT d.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_responses r
+            ON q.id = r.question_id
+            LEFT JOIN ace_rp_suggestions s
+            ON r.id = s.response_id
+            LEFT JOIN ace_rp_decisions d
+            ON s.id = d.suggestion_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+
+        $decisions = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $decisions[$row['suggestion_id']][$row['id']][$k] = $v;
+        }
+
+        $query = "
+            SELECT *
+            FROM ace_rp_suggestion_operations
+        ";
+
+        $operations = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $operations[$row['id']][$k] = $v;
+        }
+
+        $query = "
+            SELECT *
+            FROM ace_rp_suggestion_which
+        ";
+
+        $which = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $which[$row['id']][$k] = $v;
+        }
+
+
+        $query = "
+            SELECT *
+            FROM ace_rp_orders_questions_working
+            WHERE order_id = $order_id
+        ";
+
+        $working_answers = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $working_answers[$row['question_id']][$k] = $v;
+        }
+
+        //set carried over answers
+
+        $query = "
+            SELECT qw.*
+            FROM ace_rp_orders_questions_working qw
+            LEFT JOIN ace_rp_questions q
+            ON qw.question_id = q.id
+            WHERE qw.order_id = (SELECT id
+                FROM ace_rp_orders
+                WHERE customer_id = $customer_id
+                AND order_status_id IN (5,3,1)
+                ORDER BY job_date DESC, order_status_id DESC
+                LIMIT 1)
+        ";
+
+        $result = $db->_execute($query);
+
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+            foreach ($row as $k => $v)
+              $carried_answers[$row['question_id']][$k] = $v;
+        }
+
+         $query = "
+            SELECT tr.*
+            FROM ace_rp_questions q
+            LEFT JOIN ace_rp_tech_responses tr
+            ON q.id = tr.question_id
+            WHERE q.order_type_id = $item_id AND q.for_sale = 1
+        ";
+
+        $techresponses = array();
+        $result = $db->_execute($query);
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+            foreach ($row as $k => $v)
+              $techresponses[$row['question_id']][$row['id']][$k] = $v;
+        }
+        $items =  $this->OrderInstallationItem->findAll(array('order_id' => $order_id));
+        $this->set('items',$items);
+        $this->set('carried_answers', $carried_answers);
+
+        // echo "<pre>";
+        // print_r($working_answers); die;
+
+        $this->set('questions', $questions);
+        $this->set('responses', $responses);
+        $this->set('techresponses', $techresponses);
+        $this->set('text_responses', $text_responses);
+        $this->set('suggestions', $suggestions);
+        $this->set('decisions', $decisions);
+        $this->set('item_id', $item_id);
+        $this->set('operations', $operations);
+        $this->set('which', $which);
+        $this->set('working_answers', $working_answers);
+        $this->set('jobtypes', $this->OrderType->findAll());
+    }
+
+    function saveTechLastPage(){
+        $order_id = $this->data['Invoice']['order_id'];
+        $order_status_id = $this->data['Invoice']['order_status_id'];
+        $template = $this->data['Template'];
+
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+        foreach($template as $question_id => $row) {
+            $response_text = isset($row['response_text'])?"'".$row['response_text']."'":"NULL";
+            $response_id = isset($row['response_id'])?$row['response_id']:"NULL";
+            $suggestion_id = isset($row['suggestion_id'])?$row['suggestion_id']:"NULL";
+            $decision_id = isset($row['decision_id'])?$row['decision_id']:"NULL";
+
+            $query = "
+                DELETE FROM ace_rp_orders_questions_working
+                WHERE order_id = $order_id
+                AND question_id = $question_id
+            ";
+
+            $result = $db->_execute($query);
+
+            $query = "
+                INSERT INTO ace_rp_orders_questions_working(order_id, question_id, response_text, response_id, suggestion_id, decision_id)
+                VALUES($order_id, $question_id, $response_text, $response_id, $suggestion_id, $decision_id)
+            ";
+
+            $result = $db->_execute($query);
+        }
+
+        $query = "
+            INSERT INTO ace_rp_notes(message, note_type_id, order_id, user_id, urgency_id, note_date)
+            SELECT CONCAT(
+                '<strong>',q.value,'</strong><br>',
+                IFNULL(r.value, qw.response_text),'<br>',
+                s.value,'<br>',
+                d.value,'<br>'
+                ),
+                3, $order_id, ".$this->Common->getLoggedUserID().", 1, NOW()
+            FROM ace_rp_orders_questions_working qw
+            LEFT JOIN ace_rp_questions q
+            ON q.id = qw.question_id
+            LEFT JOIN ace_rp_responses r
+            ON r.id = qw.response_id
+            LEFT JOIN ace_rp_suggestions s
+            ON s.id = qw.suggestion_id
+            LEFT JOIN ace_rp_decisions d
+            ON d.id = qw.decision_id
+            WHERE d.notify = 1
+            AND qw.order_id = $order_id
+        ";
+        $db->_execute($query);
+
+        $new_entry = 'tech_agent';
+
+        if($order_status_id == 8) {
+            $this->redirect("orders/invoiceTabletPrint?order_id=$order_id");
+        } else {
+            $this->redirect("orders/invoiceTabletItems?order_id=$order_id&new_entry=$new_entry");
+        }
+    }
+
+    function saveTechImages(){
+
+        $orderId = $_POST['orderId'];
+        $customerId = $_POST['customerId'];
+        $date_image = $_POST['date_image'];
+        $label_image = $_POST['label_image'];
+        $images = $_FILES['file'];
+        $db =& ConnectionManager::getDataSource('default');
+         if($label_image==""){
+
+			 $get_label = "select label from ace_rp_user_part_images where customer_id='$customerId' and date_created='$date_image' limit 1";
+
+         $result_label = $db->_execute($get_label);
+
+		while($row = mysql_fetch_array($result_label, MYSQL_ASSOC))
+				{
+					 $item_name = $row['label'];
+
+
+
+				}
+            $label_image = $item_name;
+
+		}
+        if(!empty($images)){
+            foreach ($images['name'] as $key => $value) {
+                $fileName = time()."_".rand()."_".$value;
+                $fileTmpName = $images['tmp_name'][$key];
+                $orgFileName = $value;
+                if($images['error'][$key] == 0)
+                {
+                    //$move = $this->saveImages($file, $orgFileName, 90);
+                 $result = $this->Common->uploadPhoto($fileName,$fileTmpName, $orderId , $config = $this->User->useDbConfig, 1, $customerId,1,$date_image,$label_image);
+
+                }
+            }
+        }
+        if($result){
+             $output = array(
+                        'status' => 'success'
+                    );
+            }else{
+                 $output = array(
+                        'status' => 'error'
+                    );
+            }
+
+        echo json_encode($output);
+                exit();
+    }
+
+     function saveTechQuestions() {
+
+        $job_notes = isset($_POST['job_notes']) ? $_POST['job_notes'] : '';
+        //code for add 4 text box ravindra
+        $call_to_book = isset($_POST['call_to_book']) ? $_POST['call_to_book'] : '';
+        $send_estimate = isset($_POST['send_estimate']) ? $_POST['send_estimate'] : '';
+        $order_part = isset($_POST['order_parts']) ? $_POST['order_parts'] : '';
+        $office_use = isset($_POST['office_use']) ? $_POST['office_use'] : '';
+        //end code for add 4 text box ravindra
+        $customer_notes = isset($_POST['job_customer_notes']) ? $_POST['job_customer_notes'] : '';
+        $order_id = $this->data['Invoice']['order_id'];
+        $order_status_id = $this->data['Invoice']['order_status_id'];
+        $template = $this->data['Template'];
+        $message = 'Please call to '.$_SESSION['user']['name'];
+        $toDate = date('Y-m-d');
+        $fromDate = date('Y-m-d H:i:s');
+        $loggedUserId   = $this->Common->getLoggedUserID();
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+        foreach($template as $question_id => $row) {
+            $response_text = isset($row['response_text'])?"'".$row['response_text']."'":"NULL";
+            $text_response = isset($row['text_response'])?"'".$row['text_response']."'":"NULL";
+            //$admin_response = isset($row['admin_response'])?"'".$row['admin_response']."'":"NULL";
+            $response_id = isset($row['response_id'])?$row['response_id']:"NULL";
+            //$suggestion_id = isset($row['suggestion_id'])?$row['suggestion_id']:"NULL";
+            //$decision_id = isset($row['decision_id'])?$row['decision_id']:"NULL";
+            $text_id = isset($row['text_id'])?$row['text_id']:"NULL";
+
+            $query = "
+                DELETE FROM ace_rp_orders_questions_working
+                WHERE order_id = $order_id
+                AND question_id = $question_id
+            ";
+
+            $result = $db->_execute($query);
+          if($response_text!="NULL" && $response_id!="NULL" && $text_response!="NULL" && $text_id!="NULL" ){
+            $query = "
+                INSERT INTO ace_rp_orders_questions_working(order_id, question_id, response_text, response_id, text_response,text_id)
+                VALUES($order_id, $question_id, $response_text, $response_id,$text_response,$text_id)";
+
+            $result = $db->_execute($query);
+          }
+        }
+
+        $finalRes = $db->_execute("UPDATE ace_rp_orders set job_tech_notes='".$job_notes."',call_to_book='".$call_to_book."',send_estimate='".$send_estimate."',order_part='".$order_part."',office_use='".$office_use."',job_notes='".$customer_notes."' where id=".$order_id."");
+
+        $new_entry = 'tech_agent';
+
+        // $query = "SELECT id from ace_rp_users where role_id = 6";
+        //     $res = $db->_execute($query);
+        //     $query = "INSERT INTO ace_rp_messages (txt,state,to_user,from_user,to_date,from_date)";
+        //     $i=1;
+        //     while($row = mysql_fetch_array($res, MYSQL_ASSOC))
+        //     {
+        //         // // Send message to all office role user's.
+        //         if($i == 1){
+        //             $values .= " VALUES ('".$message."',0,".$row['id'].", ".$loggedUserId.", '".$toDate."','".$fromDate."')";
+        //         } else {
+        //             $values .= ", ('".$message."',0,".$row['id'].", ".$loggedUserId.", '".$toDate."','".$fromDate."')";
+        //         }
+        //         $i++;
+        //     }
+        //     $query = $query.$values;
+        //     $finalRes = $db->_execute($query);
+
+        if($finalRes){
+            $this->redirect("orders/invoiceTabletPayment?order_id=$order_id&sendText=1");
+        }
+        // if($order_status_id == 8) {
+        //     $this->redirect("orders/invoiceTabletPrint?order_id=$order_id");
+        // } else {
+        //     $this->redirect("orders/invoiceTabletItems?order_id=$order_id&new_entry=$new_entry");
+        // }
+    }
+
+    function saveTechQuestionsNew() {
+        $review_answer = isset ($_POST['review_answer']) ? $_POST['review_answer'] : 0;
+        $invoice_answer = isset($_POST['invoice_answer']) ? $_POST['invoice_answer'] : 0;
+        $leave_sticker = isset($_POST['leave_sticker']) ? $_POST['leave_sticker'] : 0;
+        $order_id = $this->data['Invoice']['order_id'];
+        $order_status_id = $this->data['Invoice']['order_status_id'];
+        $template = $this->data['Template'];
+        $message = 'Please call to '.$_SESSION['user']['name'];
+        $toDate = date('Y-m-d');
+        $fromDate = date('Y-m-d H:i:s');
+        $loggedUserId   = $this->Common->getLoggedUserID();
+        $timeOut = date("H:i:s");
+        $this->Order->id = $order_id;
+        $orderDetails = $this->Order->read();
+        $timeDiff = floor(strtotime($timeOut)-strtotime($orderDetails['Order']['fact_job_beg']))/60;
+        // $timeDuration = gmdate("H:i:s", $timeDiff);
+        $hours = floor($timeDiff / 60);
+        $min = round($timeDiff - ($hours * 60));
+        $timeDuration = $hours." hour ".$min." minute";
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $query_check="SELECT fact_job_end from ace_rp_orders where id=".$order_id."";
+        $check_end_time = $db->_execute($query_check);
+        $row2 = mysql_fetch_array($check_end_time, MYSQL_ASSOC);
+
+        if(empty($row2['fact_job_end']) || $row2['fact_job_end']=="" || $row2['fact_job_end']=='00:00:00' ){
+        $finalRes = $db->_execute("UPDATE ace_rp_orders set review_answer = ".$review_answer.", invoice_answer = ".$invoice_answer.", leave_sticker = ".$leave_sticker." , fact_job_end = '".$timeOut."' where id=".$order_id."");
+        if($finalRes){
+            // echo "<script></script>";
+            // $this->redirect("orders/invoiceTablet");
+             $response  = array("res" => '1',"duration" => $timeDuration);
+             echo json_encode($response);
+        }
+        }
+        else {
+         $finalRes = $db->_execute("UPDATE ace_rp_orders set review_answer = ".$review_answer.", invoice_answer = ".$invoice_answer.", leave_sticker = ".$leave_sticker."  where id=".$order_id."");
+         if($finalRes){
+            // echo "<script></script>";
+            // $this->redirect("orders/invoiceTablet");
+             $response  = array("res" => '1',"duration" => 'updated');
+             echo json_encode($response);
+        }
+        }
+
+
+
+
+        exit();
+    }
+
+     function saveAdminAnswer()
+    {
+
+        $order_id = $this->data['Order']['id'];
+        $template = $this->data['Template'];
+        $review_answer = isset ($_POST['review_answer']) ? $_POST['review_answer'] : 0;
+        $invoice_answer = isset($_POST['invoice_answer']) ? $_POST['invoice_answer'] : 0;
+        $leave_sticker = isset($_POST['leave_sticker']) ? $_POST['leave_sticker'] : 0;
+        $job_notes = isset($_POST['job_notes']) ? $_POST['job_notes'] : 0;
+        $call_to_book = isset($_POST['call_to_book']) ? $_POST['call_to_book'] : 0;
+        $send_estimate = isset($_POST['send_estimate']) ? $_POST['send_estimate'] : "";
+        if(isset($_POST['send_estimate'])){
+        $send_estimate=$_POST['send_estimate'];
+        }
+        else {
+        $send_estimate="";
+        }
+
+        $order_part = isset($_POST['order_part']) ? $_POST['order_part'] : 0;
+        $job_tech_notes = isset($_POST['job_tech_notes']) ? $_POST['job_tech_notes'] : 0;
+
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+        foreach($template as $question_id => $row) {
+            $response_text = isset($row['response_text'])?"'".$row['response_text']."'":"NULL";
+            $text_response = isset($row['text_response'])?"'".$row['text_response']."'":"NULL";
+            $admin_response = isset($row['admin_response'])?"'".$row['admin_response']."'":"NULL";
+            $response_id = isset($row['response_id'])?"'".$row['response_id']."'":"NULL";
+            $suggestion_id = isset($row['suggestion_id'])?"'".$row['suggestion_id']."'":"NULL";
+            $decision_id = isset($row['decision_id'])?"'".$row['decision_id']."'":"NULL";
+            $text_id = isset($row['text_id'])?"'".$row['text_id']."'":"NULL";
+
+            $query = "
+                DELETE FROM ace_rp_orders_questions_working
+                WHERE order_id = $order_id
+                AND question_id = $question_id
+            ";
+
+            $result = $db->_execute($query);
+
+            $query = "
+                INSERT INTO ace_rp_orders_questions_working(order_id, question_id, response_text, response_id, suggestion_id, decision_id,text_response,admin_response,text_id)
+                VALUES($order_id, $question_id, $response_text, $response_id, $suggestion_id, $decision_id,$text_response,$admin_response,$text_id)";
+
+            $result = $db->_execute($query);
+        }
+        $query="";
+
+         $query = 'update ace_rp_orders set ';
+if ($_POST['call_to_book'] != '') $query .= 'call_to_book="'.$_POST['call_to_book'].'", ';
+if ($_POST['send_estimate'] != '') $query .= 'send_estimate="'.$_POST['send_estimate'].'", ';
+if ($_POST['order_part'] != '') $query .= 'order_part="'.$_POST['order_part'].'", ';
+if ($_POST['job_notes'] != '') $query .= 'job_notes="'.$_POST['job_notes'].'", ';
+if ($_POST['job_tech_notes'] != '') $query .= 'job_tech_notes="'.$_POST['job_tech_notes'].'", ';
+if ($_POST['invoice_answer'] != '') $query .= 'invoice_answer="'.$_POST['invoice_answer'].'", ';
+if ($_POST['leave_sticker'] != '') $query .= 'leave_sticker="'.$_POST['leave_sticker'].'", ';
+if ($_POST['review_answer'] != '') $query .= 'review_answer="'.$_POST['review_answer'].'", ';
+$query .= "id = '$order_id' where id = '$order_id'";
+
+
+
+        $finalRes = $db->_execute($query);
+
+         echo $finalRes;
+         exit();
+
+    }
+
+    // Loki: send text message to cutomer before tech go to job.
+    function sendTimeReminderText()
+    {
+        $notify = isset($_POST['notify'])? $_POST['notify'] : 0;
+        $message = $_POST['msg'];
+        $id = $_POST['id'];
+        $reachTime = $_POST['reachTime'];
+        date_default_timezone_set("America/Vancouver");
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $today = date("Y-m-d");
+        $fromDate = date("Y-m-d h:i:s");
+        $sender_id = $this->Common->getLoggedUserID();
+
+        $getCustomer = "SELECT c.cell_phone,c.id, o.city,o.job_time_beg,o.job_time_end from ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id where o.id=".$id;
+        $res = $db->_execute($getCustomer);
+        $row = mysql_fetch_array($res);
+        $cusId = $row['id'];
+        $phone_number = $row['cell_phone'];
+
+        if(!empty($phone_number) && $notify == 1)
+        {
+            $response = $this->Common->sendTextMessage($phone_number, $message);
+            if(!empty($response))
+            {
+                $query = "INSERT INTO ace_rp_sms_log (customer_id, log_id, message, sms_date , phone_number, sms_type, sender_id) VALUES (
+                    ".$cusId.", '".$response->id."','".$message."','".$today."', '".$phone_number."', 1, ".$sender_id.")";
+                $result = $db->_execute($query);
+            }
+        }
+
+            $jobStartTime = date("g:i A", strtotime($row['job_time_beg']));
+            $jobEndTime = date("g:i A", strtotime($row['job_time_end']));
+
+            // $adminMessage = $_SESSION['user']['name']." Finished his job and travel to ".$row['city']." job between ".$jobStartTime." and ".$jobEndTime." <br> <p style='color:red; font-size:12px'> Arriving in ".$reachTime." </p>";
+            $adminMessage = $_SESSION['user']['name']." Finished his job and traveling to next job between (".$jobStartTime." and ".$jobEndTime.") <br> <p style='color:red; font-size:12px'> Arriving in ".$reachTime." </p>";
+            $query = "SELECT id from ace_rp_users where role_id = 6";
+            $res = $db->_execute($query);
+            $query = "INSERT INTO ace_rp_messages (txt,state,to_user,from_user,to_date,from_date,order_id,customer_notify)";
+            $i=1;
+            while($row = mysql_fetch_array($res, MYSQL_ASSOC))
+            {
+                // // Send message to all office role user's.
+                if($i == 1){
+                    $values .= " VALUES ('".mysql_real_escape_string($adminMessage)."',0,".$row['id'].", ".$sender_id.", '".$today."','".$fromDate."',".$id.",".$notify.")";
+                } else {
+                    $values .= ", ('".mysql_real_escape_string($adminMessage)."',0,".$row['id'].", ".$sender_id.", '".$today."','".$fromDate."',".$id.", ".$notify.")";
+                }
+                $i++;
+            }
+            $query = $query.$values;
+            $finalRes = $db->_execute($query);
+            if($finalRes)
+            {
+                $response  = array("res" => '1');
+                echo json_encode($response);
+            }
+            exit();
+    }
+
+    function sendTimeChangeMail(){
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $today = date("Y-m-d");
+        $oid = $_POST['oid'];
+        $getCustomer = "SELECT c.cell_phone,c.id,o.job_date, o.job_time_beg,o.job_time_end from ace_rp_orders o LEFT JOIN ace_rp_customers c ON c.id = o.customer_id where o.order_number=".$oid;
+        $res = $db->_execute($getCustomer);
+        $row = mysql_fetch_array($res);
+        $cusId = $row['id'];
+        $phone_number = $row['cell_phone'];
+        $sender_id = $this->Common->getLoggedUserID();
+        $settings = $this->Setting->find(array('title'=>'booking_sms'));
+        $message = $settings['Setting']['valuetxt'];
+        $message = $this->Common->removeSlash($message);
+        $jobTime = $row['job_time_beg'].' to '.$row['job_time_end'];
+        $jobDate = date_format(date_create($row['job_date']),"l F d,Y");
+        $message = str_replace('{time}', $jobTime, $message);
+        $message = str_replace('{date}', $jobDate, $message);
+
+        $queryEmailDateUpdate = "UPDATE ace_rp_orders set email_send_date='".$today."' WHERE id = '".$oid."'";
+        $db->_execute($queryEmailDateUpdate);
+        $subject = $this->emailCustomerBooking($oid);
+        if(!empty($phone_number))
+        {
+            $response = $this->Common->sendTextMessage($phone_number, $message);
+
+            if(!empty($response))
+            {
+                $query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, , phone_number, sms_type, sender_id) VALUES (
+                    ".$oid.",".$cusId.", '".$response->id."','".$message."','".$today."' , '".$phone_number."', 1, ".$sender_id.")";
+                $result = $db->_execute($query);
+            }
+        }
+        // if($result)
+        // {
+            $response  = array("res" => '1');
+            echo json_encode($response);
+        // }
+        exit();
+
+    }
+
+    /*function positraceAPI(){
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"https://locate.positrace.com/api/v1.3/api_devices");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,"application_key=0c0313ef5c50a6010dc7df307792417f&title=New");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        $server_output = curl_exec($ch);
+        $res = json_decode($server_output, true);
+        $err = curl_error($ch);
+        curl_close ($ch);
+        echo "<pre>";
+        print_r($res);
+        exit();
+    }
+
+    function positraceAPISignIn()
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"https://locate.positrace.com/api/v1.3/users/sign_in");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,"email=ali@acecare.ca&password=Aceace88&token=633647f13e3e0da3792ffd37022d55c6");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        $server_output = curl_exec($ch);
+        $res = json_decode($server_output, true);
+        $err = curl_error($ch);
+        curl_close ($ch);
+        echo "<pre>";
+        print_r($err);
+        print_r($res);
+        exit();
+    }
+
+    function positraceAPIAccount()
+    {
+        // yxPifXSA4p9mnxYAzznJ
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"https://locate.positrace.com/api/v1.3/accounts?token=KjfYoe7Am5wqboAxkSz8&with_multi_account=true");
+        // curl_setopt($ch, CURLOPT_POST, 1);
+        // curl_setopt($ch, CURLOPT_POSTFIELDS,"email=ali@acecare.ca&password=Aceace88&token=633647f13e3e0da3792ffd37022d55c6");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        $server_output = curl_exec($ch);
+        $res = json_decode($server_output, true);
+        $err = curl_error($ch);
+        curl_close ($ch);
+        echo "<pre>";
+        print_r($err);
+        print_r($res);
+        exit();
+    }
+
+    function positraceAPIEquipment()
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"https://locate.positrace.com/api/v1.3/equipment?page=1&per_page=10&sort_by=id&sort=DESC");
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Accept: application/json","X-Auth-Token: yxPifXSA4p9mnxYAzznJ"));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        $server_output = curl_exec($ch);
+        $res = json_decode($server_output, true);
+        $err = curl_error($ch);
+        curl_close ($ch);
+        echo "<pre>";
+        print_r($err);
+        print_r($res);
+        exit();
+    } */
+
+    // function positrace(){
+    //     $deviceId = 44564;
+    //     $start_date = "2020-09-24";
+    //     $end_date = "2020-09-24";
+    //      $param = "filters%5Bentity_type%5D=equipment&filters%5Bentity_id%5D=".$deviceId."&filters%5Bstart_date%5D=".$start_date."T00%3A00%3A00Z&filters%5Bend_date%5D=".$end_date."T24%3A00%3A00Z";
+    //     $ch = curl_init();
+    //     curl_setopt($ch, CURLOPT_URL,"https://locate.positrace.com/api/v1.3/state_trips?".$param);
+    //     curl_setopt($ch, CURLOPT_HTTPHEADER, array("Accept: application/json","X-Auth-Token: yxPifXSA4p9mnxYAzznJ"));
+    //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    //     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    //     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+    //     $server_output = curl_exec($ch);
+    //     $res = json_decode($server_output, true);
+    //     $err = curl_error($ch);
+    //     curl_close ($ch);
+    //     echo "<pre>";
+    //     print_r($res);
+    //     exit();
+    // }
+
+    /*loki commented*/
+  /*  function positraceAPIStateTrips($deviceId)
+    {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $query = "SELECT * from ace_rp_positrace_token where id=1";
+        $getToken = $db->_execute($query);
+        $row = mysql_fetch_array($getToken);
+
+        // $deviceId = 45597;
+
+        $start_date = date('Y-m-d', strtotime("-1 days"));
+        $end_date = date('Y-m-d', strtotime("-1 days"));
+
+        // $start_date = "2020-11-01";
+        // $end_date = "2020-11-01";
+        $token = $row['token'];
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/positrace_api.php");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,"deviceId=".$deviceId."&start_date=".$start_date."&end_date=".$end_date."&token=".$token);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $server_output = curl_exec($ch);
+        $res = json_decode($server_output, true);
+        $err = curl_error($ch);
+        curl_close ($ch);
+
+        // echo "<pre>";
+        // print_r($res); die;
+        $getOrders = "SELECT o.id,c.postal_code,c.address_street_number, c.address_street,u.gps_id,c.city from ace_rp_orders o LEFT JOIN ace_rp_users u ON o.job_technician1_id = u.id
+            LEFT JOIN ace_rp_customers c ON o.customer_id = c.id
+            WHERE o.order_status_id !=3 and o.job_date = '".$start_date."' and u.gps_id =".$deviceId;
+        $orders = $db->_execute($getOrders);
+
+        while($row = mysql_fetch_array($orders)) {
+             foreach ($res['state_trips'] as $key => $value) {
+                $halfPostCode = strtolower(trim(substr(str_replace(' ', '', $row['postal_code']),0,3)));
+                $halfZipcode = strtolower(trim(substr(str_replace(' ', '', $value['address']['zipcode']),0,3)));
+                $fullPostCode = strtolower(trim(str_replace(' ', '', $row['postal_code'])));
+                $fullZipcode = strtolower(trim(str_replace(' ', '', $value['address']['zipcode'])));
+                $postStreetNum = trim($row['address_street_number']);
+                $zeoStreetNum = $value['address']['apartment'];
+                $source = $halfPostCode.','.$postStreetNum.','.$row['city'];
+                $destination = $halfZipcode.','.$zeoStreetNum.','.$value['address']['city'];
+                $stopDuration = $value['stop_duration'];
+                $new_date = new DateTime($value['end_date']);
+                $new_date->setTimeZone(new DateTimeZone('PDT'));
+                // $new_date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
+                $start_date =  $new_date->format("Y-m-d H:i:s");
+                $start_time = $new_date->format("H:i:s");
+                $endTime = date("H:i:s", strtotime('+'.$stopDuration.' seconds', strtotime($start_time)));
+
+                if((strlen($fullPostCode) >= 6) && ($fullPostCode == $fullZipcode)){
+                    $result =  $db->execute("UPDATE ace_rp_orders set fact_job_beg ='".$start_time."', fact_job_end='".$endTime."', stop_duration = ".$stopDuration." where id=".$row['id']);
+                }
+              else if(($fullPostCode ==  $fullZipcode) && ($postStreetNum == $zeoStreetNum)){
+                       $result =  $db->execute("UPDATE ace_rp_orders set fact_job_beg ='".$start_time."', fact_job_end='".$endTime."', stop_duration = ".$stopDuration." where id=".$row['id']);
+                } else if(($halfPostCode == $halfZipcode) && ($postStreetNum == $zeoStreetNum)){
+                     $result =  $db->execute("UPDATE ace_rp_orders set fact_job_beg ='".$start_time."', fact_job_end='".$endTime."', stop_duration = ".$stopDuration." where id=".$row['id']);
+                }else if($halfPostCode == $halfZipcode){
+
+                    $distance = $this->getDistanceAdd($source,$destination);
+                    if($distance <= 400){
+                        $result =  $db->execute("UPDATE ace_rp_orders set fact_job_beg ='".$start_time."', fact_job_end='".$endTime."', stop_duration = ".$stopDuration." where id=".$row['id']);
+                    }
+                }
+           }
+        }
+        exit();
+    }*/
+
+/*
+     function positracePoints(){
+        $deviceId = 44564;
+        $start_date = "2020-09-21";
+        $end_date = "2020-09-21";
+        $param = "filters%5Bentity_type%5D=equipment&filters%5Bentity_id%5D=".$deviceId."&filters%5Bstart_date%5D=".$start_date."T00%3A00%3A00Z&filters%5Bend_date%5D=".$end_date."T24%3A00%3A00Z";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"https://locate.positrace.com/api/v1.3/points?".$param);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Accept: application/json","X-Auth-Token: yxPifXSA4p9mnxYAzznJ"));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+        $server_output = curl_exec($ch);
+        $res = json_decode($server_output, true);
+        $err = curl_error($ch);
+        curl_close ($ch);
+        echo "<pre>";
+        print_r($res);
+        exit();
+    }
+*/
+    function positraceToken()
+    {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/positrace_token.php");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,"");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $server_output = curl_exec($ch);
+        $res = json_decode($server_output, true);
+        $err = curl_error($ch);
+        curl_close ($ch);
+        $token = $res['accounts'][0]['token'];
+
+       $ans =  $db->_execute("UPDATE ace_rp_positrace_token set token='".$token."' where id=1");
+        exit();
+    }
+
+    function getDistanceAdd($source,$destination){
+        // $sourcePostCode = str_replace(' ', '+', 'COQUITLAM,1612,V3E   2Y3');
+        // $finalpost = str_replace(' ', '+', 'COQUITLAM,561,V3J   6P8');
+            $sourcePostCode = str_replace(' ', '+', $source);
+            $finalpost = str_replace(' ', '+', $destination);
+            $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$sourcePostCode."&destinations=".$finalpost."&mode=driving&language=en-EN&sensor=false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw";
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/distance_calculation.php");
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS,"URL=".urlencode($url));
+            // receive server response ...
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec ($ch);//exit;
+            $result = json_decode($response, true);
+            $err = curl_error($ch);
+            curl_close($ch);
+            $distance = $result['rows'][0]['elements'][0]['distance']['value'];
+            return $distance;
+            // print_r($result['rows'][0]['elements'][0]['distance']['value']);
+            exit();
+    }
+
+    function updateOrderReminderType()
+    {
+        $oid = $_POST['oid'];
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $res = $db->_execute("Update ace_rp_orders set reminderMail = 1 WHERE id=".$oid);
+
+        if($res)
+        {
+            $response  = array("res" => '1');
+            echo json_encode($response);
+        }
+        exit();
+    }
+
+     /*
+        Loki: Payment status
+        Status: 1 = Approved, 2 = Declined
+
+    */
+     function bamboraPay()
+     {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        date_default_timezone_set("America/Vancouver");
+        $ordId = $_POST['order_id'];
+        $ordNum = $_POST['order_num'];
+        $cusId = $_POST['cus_id'];
+        $cardName = $_POST['cardName'];
+        $cardNum = $_POST['cardNum'];
+        $cvv = $_POST['cvv'];
+        $month = $_POST['ExpMonth'];
+        $year = $_POST['ExpYear'];
+        $amount = $_POST['amount'];
+        $paymentDate = date("Y-m-d h:i:s");
+        $toEmail = $_POST['to_email'];
+        $fromAdmin = isset($_POST['fromAdmin']) ? $_POST['fromAdmin']: 0;
+        $payMethod = isset($_POST['payMethod']) ? $_POST['payMethod']: 0;
+        $lastStatus = isset($_POST['status']) ? $_POST['status']: 0;
+        $creator = $this->Common->getLoggedUserID();
+        $date = date('Y-m-d');
+        $this->Customer->id = $cusId;
+        $cus = $this->Customer->read();
+        $customerDetails = $cus['Customer'];
+        $payment_id = '';
+        $cardStart =  substr($cardNum,0,1);
+        if($cardStart == 4){
+            $payMethod = 3;
+        }else if($cardStart == 5){
+            $payMethod = 4;
+        }
+
+        if($lastStatus == 3 || $lastStatus == 4){
+            $getPaymentDetails = "SELECT payment_id, amount from ace_rp_creditcard_payment_details WHERE payment_status = 3 and order_id =".$ordId;
+            $details = $db->_execute($getPaymentDetails);
+            $row = mysql_fetch_array($details);
+            $amount = $row['amount'];
+            $payment_id = $row['payment_id'];
+        }
+
+        $payment_data = array(
+        'order_number' => $ordNum,
+        'amount' => $amount,
+        'payment_method' => 'card',
+        'card' => array(
+            'name' => $cardName,
+            'number' => $cardNum,
+            'expiry_month' => $month,
+            'expiry_year' => $year,
+            'cvd' => $cvv
+            ),
+        'billing' => array(
+            'name' => $customerDetails['first_name'].' '.$customerDetails['last_name'],
+            'address_line1' => $customerDetails['address_street_number'].' '.$customerDetails['address_street'],
+            'city' => $customerDetails['city'],
+            'postal_code' => $customerDetails['postal_code'],
+            'phone_number' => $customerDetails['cell_phone'],
+            'email_address' => $customerDetails['email'])
+        // 'shipping' => array('email_address' => $toEmail)
+        );
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/bambora.php");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,"paymentData=". json_encode($payment_data)."&paymentId=".$payment_id);
+        // receive server response ...
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec ($ch);//exit;
+        $result = json_decode($response, true);
+        $err = curl_error($ch);
+        curl_close($ch);
+        if($result['approved'] == 1){
+            $updateCus =  $db->_execute("UPDATE ace_rp_customers set credit_card_number = '".$cardNum."',card_exp_month = '".$month."', card_exp_year = '".$year."', card_cvv = '".$cvv."', credit_card_name = '".$cardName."' where id = ".$cusId."");
+
+            $updateStatus =  $db->_execute("UPDATE ace_rp_orders set payment_status = 1 where id = ".$ordId);
+
+            $query = "INSERT INTO ace_rp_creditcard_payment_details (card_num,order_id,customer_id,payment_id, payment_order_id,payment_date,amount,auth_code,payment_status,card_type) VALUES ('".$cardNum."',".$ordId.",".$cusId.",".$result['id'].",".$result['order_number'].",'".$paymentDate."',".$amount.",'".$result['auth_code']."',1,'".$result['card']['card_type']."')";
+
+            $res = $db->_execute($query);
+
+            if($fromAdmin == 1){
+                $query1="select * from ace_rp_payments where idorder='".$ordId."'";
+                $result1 = $db->_execute($query1);
+                $row1 =mysql_num_rows($result1);
+              if($row1 == 0 || $row1 ==''){
+                $query2 = "INSERT INTO ace_rp_payments
+                                        (idorder, creator, payment_method, payment_date, paid_amount, payment_type)
+                                    VALUES ($ordId, '$creator', '$payMethod', '$date', '$amount', 1)";
+                }
+                else{
+                    $query2 = "UPDATE  ace_rp_payments set creator ='".$creator."',payment_method='".$payMethod."',payment_date='".$date."' ,paid_amount='".$amount."',payment_type=1 where idorder='".$ordId."'";
+                }
+                $res2 = $db->_execute($query2);
+            }
+
+            $msg = "Payment Done Successfully.";
+            $response  = array("res" => '1', "msg" => $msg, "auth_code" => $result['auth_code'] , "date" => $paymentDate, "amount" => $amount);
+            echo json_encode($response);
+        }
+
+        else {
+             $query = "INSERT INTO ace_rp_creditcard_payment_details (card_num,order_id,customer_id,payment_id, payment_order_id,payment_date,amount,auth_code,payment_status) VALUES ('".$cardNum."',".$ordId.",".$cusId.",'','','".$paymentDate."',".$amount.",'',2)";
+            $res = $db->_execute($query);
+            $response  = array("res" => '2', "msg" => $result['message'], "date" => $paymentDate, "amount" => $amount);
+            echo json_encode($response);
+        }
+
+        // $response  = array("res" => '1', "msg" => 'done', "auth_code" => '02647J' , "date" => '2020-10-05', "amount" => '0.3');
+        // echo json_encode($response);
+        exit();
+    }
+    /*
+        Loki: PreAuth status
+        Status: 3 = Pre Authorized, 4 = Not Autorized
+
+    */
+    function bamboraPreAuth(){
+
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        date_default_timezone_set("America/Vancouver");
+        $ordId = $_POST['order_id'];
+        $ordNum = $_POST['order_num'];
+        $cusId = $_POST['cus_id'];
+        $cardName = $_POST['cardName'];
+        $cardNum = $_POST['cardNum'];
+        $cvv = $_POST['cvv'];
+        $month = $_POST['ExpMonth'];
+        $year = $_POST['ExpYear'];
+        $amount = $_POST['amount'];
+        $paymentDate = date("Y-m-d h:i:s");
+        $toEmail = $_POST['to_email'];
+        $fromAdmin = isset($_POST['fromAdmin']) ? $_POST['fromAdmin']: 0;
+        $payMethod = isset($_POST['payMethod']) ? $_POST['payMethod']: 0;
+        $creator = $this->Common->getLoggedUserID();
+        $date = date('Y-m-d');
+        $this->Customer->id = $cusId;
+        $cus = $this->Customer->read();
+        $customerDetails = $cus['Customer'];
+        $payment_data = array(
+        'order_number' => $ordNum,
+        'amount' => $amount,
+        'payment_method' => 'card',
+        'card' => array(
+            'name' => $cardName,
+            'number' => $cardNum,
+            'expiry_month' => $month,
+            'expiry_year' => $year,
+            'cvd' => $cvv,
+            'complete' => false
+            ),
+        'billing' => array(
+            'name' => $customerDetails['first_name'].' '.$customerDetails['last_name'],
+            'address_line1' => $customerDetails['address_street_number'].' '.$customerDetails['address_street'],
+            'city' => $customerDetails['city'],
+            'postal_code' => $customerDetails['postal_code'],
+            'phone_number' => $customerDetails['cell_phone'],
+            'email_address' => $customerDetails['email'])
+        // 'shipping' => array('email_address' => $toEmail)
+        );
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/bambora.php");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,"paymentData=". json_encode($payment_data));
+        // receive server response ...
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec ($ch);//exit;
+        $result = json_decode($response, true);
+        $err = curl_error($ch);
+        curl_close($ch);
+        if($result['approved'] == 1){
+            $updateCus =  $db->_execute("UPDATE ace_rp_customers set credit_card_number = '".$cardNum."',card_exp_month = '".$month."', card_exp_year = '".$year."', card_cvv = '".$cvv."', credit_card_name = '".$cardName."' where id = ".$cusId."");
+
+            $updateStatus =  $db->_execute("UPDATE ace_rp_orders set payment_status = 3 where id = ".$ordId);
+
+            $query = "INSERT INTO ace_rp_creditcard_payment_details (card_num,order_id,customer_id,payment_id, payment_order_id,payment_date,amount,auth_code,payment_status,card_type) VALUES ('".$cardNum."',".$ordId.",".$cusId.",".$result['id'].",".$result['order_number'].",'".$paymentDate."',".$amount.",'".$result['auth_code']."',3,'".$result['card']['card_type']."')";
+
+            $res = $db->_execute($query);
+
+            if($fromAdmin == 1){
+                $query1="select * from ace_rp_payments where idorder='".$ordId."'";
+                $result1 = $db->_execute($query1);
+                $row1 =mysql_num_rows($result1);
+              if($row1 == 0 || $row1 ==''){
+                $query2 = "INSERT INTO ace_rp_payments
+                                        (idorder, creator, payment_method, payment_date, paid_amount, payment_type)
+                                    VALUES ($ordId, '$creator', '$payMethod', '$date', '$amount', 1)";
+                }
+                else{
+                    $query2 = "UPDATE  ace_rp_payments set creator ='".$creator."',payment_method='".$payMethod."',payment_date='".$date."' ,paid_amount='".$amount."',payment_type=1 where idorder='".$ordId."'";
+                }
+                $res2 = $db->_execute($query2);
+            }
+
+            $msg = "Payment Done Successfully.";
+            $response  = array("res" => '1', "msg" => $msg, "auth_code" => $result['auth_code'] , "date" => $paymentDate, "amount" => $amount);
+            echo json_encode($response);
+        }
+
+        else {
+             $query = "INSERT INTO ace_rp_creditcard_payment_details (card_num,order_id,customer_id,payment_id, payment_order_id,payment_date,amount,auth_code,payment_status) VALUES ('".$cardNum."',".$ordId.",".$cusId.",'','','".$paymentDate."',".$amount.",'',4)";
+            $res = $db->_execute($query);
+            $response  = array("res" => '2', "msg" => $result['message'], "date" => $paymentDate, "amount" => $amount);
+            echo json_encode($response);
+        }
+
+        // $response  = array("res" => '1', "msg" => 'done', "auth_code" => '02647J' , "date" => '2020-10-05', "amount" => '0.3');
+        // echo json_encode($response);
+        exit();
+    }
+
+    function saveCardInfo(){
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        date_default_timezone_set("America/Vancouver");
+        $ordNum = $_POST['order_id'];
+        $cusId = $_POST['cus_id'];
+        $cardName = $_POST['cardName'];
+        $cardNum = $_POST['cardNum'];
+        $cvv = $_POST['cvv'];
+        $month = $_POST['ExpMonth'];
+        $year = $_POST['ExpYear'];
+
+        $updateCus =  $db->_execute("UPDATE ace_rp_customers set credit_card_number = '".$cardNum."',card_exp_month = '".$month."', card_exp_year = '".$year."', card_cvv = '".$cvv."', credit_card_name = '".$cardName."' where id = ".$cusId."");
+
+        if($updateCus){
+            $response  = array("res" => '1');
+            echo json_encode($response);
+        }else {
+            $response  = array("res" => '2');
+            echo json_encode($response);
+        }
+        exit();
+    }
+
+    //Loki: save credit card payment receipt
+    function savePaymentReceipt()
+    {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $order_id = $_POST['data']['Order']['id'];
+        $customerId = $_POST['data']['Customer']['id'];
+        $image = $_FILES['paymentReceipt'];
+        $fileName = time()."_".rand()."_".$image['name'];
+        $fileTmpName = $image['tmp_name'];
+        $orgFileName = ROOT."/app/webroot/payment-images/".$fileName;
+        $move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/payment-images/".$fileName);
+        $query = "UPDATE ace_rp_orders SET credit_payment_image ='".$fileName."' WHERE id=".$order_id;
+
+        $result = $db->_execute($query);
+        if($result){
+            $response  = array("res" => '1');
+            echo json_encode($response);
+        }
+        exit();
+    }
+
+    function savePayImage(){
+        $loggedUserId = $this->Common->getLoggedUserID();
+        $this->User->id = $loggedUserId;
+        $order_id = $_POST['data']['Order']['id'];
+        $file = $_FILES['uploadFile'];
+        $imageResult = $this->Common->commonSavePaymentImage($file, $order_id , $config = $this->User->useDbConfig);
+        if($imageResult){
+            $response  = array("res" => '1');
+            echo json_encode($response);
+        }
+        exit();
+    }
+
+    function sendImageToOfficer(){
+        $images = $_POST['emailImage'];
+        $officerEmail = $_POST['officerEmail'];
+        $subject = "Pro ace heating installation pictures";
+        $image = '<img src="http://hvacproz.ca/acesys/app/webroot/img/ProAceLogo.png" alt="logo" width="277" height="90" />';
+        $msg = isset($_POST['message']) ? $_POST['message'] : 'Please find attached image.';
+        $msg =  str_replace('{logo}',$image,$msg);
+        $permitNum = isset($_POST['permitNum']) ? $_POST['permitNum'] : '';
+        $newFiles = array();
+        foreach ($images as $key => $value) {
+                $newFiles[] = $this->G_URL."/acesys/upload_photos/".$value;
+        }
+
+        $res = $this->sendMultipleAttachement($officerEmail,$subject,$msg, $order_id, json_encode($newFiles));
+        if (strpos($res, '@acecare') !== false)
+        {
+             $response  = array("res" => '1');
+            echo json_encode($response);
+        } else
+        {
+             $response  = array("res" => '2');
+            echo json_encode($response);
+        }
+        exit();
+    }
+
+    function orderUploadImage()
+    {
+        $oid = $_GET['id'];
+        $cusid = $_GET['customer_id'];
+        $this->set("oid",$oid);
+        $this->set("cusid",$cusid);
+    }
+
+    function getPermitContent(){
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $ordId = $_GET['orderId'];
+        $permitNum = !empty($_GET['permitNum']) ? $_GET['permitNum']: '';
+        $permitVal = $_GET['permitVal'];
+        $image = '<img src="http://hvacproz.ca/acesys/app/webroot/img/ProAceLogo.png" alt="logo" width="277" height="90" />';
+        if($permitVal == 2){
+            $settings = $this->Setting->find(array('title'=>'permit_template'));
+        } else if($permitVal == 3){
+            $settings = $this->Setting->find(array('title'=>'failed_permit_template'));
+        }
+
+        if(!empty($permitNum)){
+            $setPermit = $db->_execute("UPDATE ace_rp_orders set permit_number = ".$permitNum." WHERE id=".$ordId."");
+        }
+
+        $message = $settings['Setting']['valuetxt'];
+        $this->Order->id = $ordId;
+        $this->data = $this->Order->read();
+        $orderDetails = $this->data['Order'];
+        $cusDetails = $this->data['Customer'];
+        $address = $orderDetails['address_street_number'].' '.$orderDetails['address_street'];
+        $now = date("Y-m-d");
+
+        $message = str_replace('{send_date}', $now, $message);
+        $message = str_replace('{ref_num}', $orderDetails['order_number'], $message);
+        $message = str_replace('{job_type}', $this->data['Type']['name'], $message);
+        $message = str_replace('{permit_num}', $permitNum, $message);
+        $message = str_replace('{job_date}', $orderDetails['job_date'], $message);
+        $message = str_replace('{name}', $cusDetails['first_name'].' '.$cusDetails['last_name'], $message);
+        $message = str_replace('{city}', $orderDetails['city'], $message);
+        $message = str_replace('{address}', $address, $message);
+        $message = str_replace('{postal_code}', $orderDetails['postal_code'], $message);
+        $message = str_replace('{cell_phone}', $cusDetails['cell_phone'], $message);
+        $message = str_replace('{phone}', $cusDetails['phone'], $message);
+        $message = str_replace('{email}', $cusDetails['email'], $message);
+        // $message = str_replace('{logo}', $image, $message);
+        $response  = array("msgBody" => $message);
+        echo json_encode($response);
+        exit();
+    }
+
+     function sendInstallImage(){
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $ordId = $_POST['data']['Order']['id'];
+        $permitNum = $_POST['data']['Order']['permitNum1'];
+        $permitVal = $_POST['permitVal'];
+        $images = $_POST['emailImage'];
+        $officerEmail = $_POST['officerEmail'];
+        $subject = "Pro ace heating installation pictures";
+        $logo = '<img src="http://hvacproz.ca/acesys/app/webroot/img/ProAceLogo.png" alt="logo" width="277" height="90" />';
+        if($permitVal == 2){
+            $settings = $this->Setting->find(array('title'=>'permit_template'));
+        } else if($permitVal == 3){
+            $settings = $this->Setting->find(array('title'=>'failed_permit_template'));
+        }
+        // $setPermit = $db->_execute("UPDATE ace_rp_orders set permit_number = ".$permitNum." WHERE id=".$ordId."");
+        $message = $settings['Setting']['valuetxt'];
+        if(empty($message)){
+            $message = "Please find images.";
+        }
+        $this->Order->id = $ordId;
+        $this->data = $this->Order->read();
+        $orderDetails = $this->data['Order'];
+        $cusDetails = $this->data['Customer'];
+        $address = $orderDetails['address_street_number'].' '.$orderDetails['address_street'];
+        $now = date("Y-m-d");
+
+        $message = str_replace('{send_date}', $now, $message);
+        $message = str_replace('{ref_num}', $orderDetails['order_number'], $message);
+        $message = str_replace('{job_type}', $this->data['Type']['name'], $message);
+        $message = str_replace('{permit_num}', $permitNum, $message);
+        $message = str_replace('{job_date}', $orderDetails['job_date'], $message);
+        $message = str_replace('{name}', $cusDetails['first_name'].' '.$cusDetails['last_name'], $message);
+        $message = str_replace('{city}', $orderDetails['city'], $message);
+        $message = str_replace('{address}', $address, $message);
+        $message = str_replace('{postal_code}', $orderDetails['postal_code'], $message);
+        $message = str_replace('{cell_phone}', $cusDetails['cell_phone'], $message);
+        $message = str_replace('{phone}', $cusDetails['phone'], $message);
+        $message = str_replace('{email}', $cusDetails['email'], $message);
+        $message = str_replace('{logo}', $logo, $message);
+
+        $newFiles = array();
+        foreach ($images as $key => $value) {
+            $newFiles[] = $this->G_URL."/acesys/upload_photos/".$value;
+        }
+        
+        $res = $this->sendMultipleAttachement($officerEmail,$subject,$message, $ordId, json_encode($newFiles));
+        // $res = $this->sendAttachmentmail($officerEmail,$subject,$message, $ordId, json_encode($newFiles));
+        
+        if (strpos($res, '@acecare') !== false)
+        {
+             $response  = array("res" => '1');
+            echo json_encode($response);
+        } else
+        {
+             $response  = array("res" => '2');
+            echo json_encode($response);
+        }
+        exit();
+    }
+
+    function savePermitInfo(){
+       $ordersDetails = $_POST['data']['Order'];
+       $appliedDate = date("Y-m-d", strtotime($ordersDetails['permit_applied_date1']));
+       $appliedUser = !empty($ordersDetails['permit_applied_user1']) ? $ordersDetails['permit_applied_user1'] : 0 ;
+       $permitMethod = !empty($ordersDetails['permit_applied_method1']) ? $ordersDetails['permit_applied_method1'] : 0;
+       $permitResult = !empty($ordersDetails['permit_result1']) ? $ordersDetails['permit_result1'] : 0;
+       $permitNum = $ordersDetails['permitNum1'];
+       $ordId = $ordersDetails['id'];
+
+       $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+       $setPermit = $db->_execute("UPDATE ace_rp_orders set permit_number = ".$permitNum.", permit_applied_date = '".$appliedDate."', permit_applied_user =".$appliedUser.", permit_applied_method = ".$permitMethod.", permit_result = ".$permitResult." WHERE id=".$ordId."");
+
+        if ($setPermit)
+        {
+             $response  = array("res" => '1');
+            echo json_encode($response);
+        } else
+        {
+             $response  = array("res" => '2');
+            echo json_encode($response);
+        }
+        exit();
+    }
+
+    public function getData()
+    {
+        $file = fopen ("http://proacehvac.ca/call_recordings", "r");
+        // if (!$file) {
+        //     echo "<p>Unable to open remote file.\n";
+        //     exit;
+        // }
+        // while (!feof ($file)) {
+        //     $line = fgets ($file, 1024);
+        //      This only works if the title and its tags are on one line
+        //     if (preg_match ("@\<title\>(.*)\</title\>@i", $line, $out)) {
+        //         $title = $out[1];
+        //         break;
+        //     }
+        // }
+        // fclose($file);
+        $files = array_diff(scandir($path), array('.', '..'));
+
+        print_r($files); die;
+
+    }
+
+    //save the label and the date from the images
+        public function saveAdminNote(){
+
+            $db =& ConnectionManager::getDataSource("default");
+            $orderId = $_POST['orderId'];
+            $adminNote = $_POST['adminNote'];
+
+            $db->_execute("update ace_rp_orders set job_tech_notes='$adminNote' WHERE id='$orderId'");
+            exit();
+        }
+
 }
 ?>
+

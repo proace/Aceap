@@ -326,8 +326,8 @@ $(document).ready(function(){
 <table border="0" cellspacing="0" cellpadding="5" ><!-- align=left -->
 	<tr>
 		<td>
-			<input type="button" value="Weekly" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/mapSchedule?p_code=<?=$p_code?>&city=<?=$city?>&route_type=<?=$_REQUEST['route_type']?>'" style="font-size: 8pt;">
-			&nbsp;&nbsp;
+			<!-- <input type="button" value="Weekly" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/mapSchedule?p_code=<?=$p_code?>&city=<?=$city?>&route_type=<?=$_REQUEST['route_type']?>'" style="font-size: 8pt;">
+			&nbsp;&nbsp; -->
 			
 			<input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.date_from.value='<?=$ydate?>'; document.viewform.submit();" style="font-size: 8pt;">
 			&nbsp;&nbsp;
@@ -369,6 +369,12 @@ $(document).ready(function(){
 		&nbsp;&nbsp;
 		<input type="button" value="<?=$k?>" class="buttons" onclick="document.viewform.route_type.value='<?=$v?>'; document.viewform.submit();" style="font-size: 8pt;">
 <?php endforeach; ?>
+		</td>
+		<td>
+		<input type="button" value="Daily" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/scheduleView?p_code=<?=$p_code?>&city=<?=$city?>&fdate=<?=$date_from?>&daily=1'" style="font-size: 8pt;">
+		</td>
+		<td>
+		<input type="button" value="Weekly" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/mapSchedule?p_code=<?=$p_code?>&city=<?=$city?>&route_type=<?=$_REQUEST['route_type']?>'" style="font-size: 8pt;">
 		</td>
   </tr>
 </table>

@@ -197,23 +197,23 @@ class SuppliersController extends AppController
 		$sRes = '<table class="sup_branch">';
 		
 		$sRes .= '<tr>
-		<th width="25" style="color: black"><i class="fa fa-trash" aria-hidden="true"></i>
 		<th>Id</th>
 		<th>Name</th>
 		<th>Phone</th>
 		<th>Address</th>
 		<th>City</th>
 		<th>Notes</th>
+		<th width="25" style="color: black"><i class="fa fa-trash" aria-hidden="true"></i>
 		</tr>';
 		foreach ($branches as $key => $value) {
 			$sRes .= '<tr onclick="ClickRow(this)" style="cursor:pointer;">';
-			$sRes .= '<td><a href="'.BASE_URL.'/suppliers/deleteSupplierBranch?branch_id='.$value['Supplier']['id'].'"><i class="fa fa-trash" aria-hidden="true"></a></td>';
 			$sRes .= '<td><a href="'.BASE_URL.'/suppliers/editSupplierBranch?branch_id='.$value['Supplier']['id'].'">'.$value['Supplier']['id'].'</a></td>';
 			$sRes .= '<td>'.$value['Supplier']['name'].'</td>';
-			$sRes .= '<td>'.$value['Supplier']['phone'].'</td>';
+			$sRes .= '<td> <a href="#" id="call_phone" call_cell_phone="'.$value["Supplier"]["phone"].'">'.$value['Supplier']['phone'].'</a></td>';
 			$sRes .= '<td>'.$value['Supplier']['address'].'</td>';
 			$sRes .= '<td>'.$value['Supplier']['city'].'</td>';
 			$sRes .= '<td>'.$value['Supplier']['notes'].'</td>';
+			$sRes .= '<td><a href="'.BASE_URL.'/suppliers/deleteSupplierBranch?branch_id='.$value['Supplier']['id'].'"><i class="fa fa-trash" aria-hidden="true"></a></td>';
 			$sRes .= '</tr>';
 		}
 		$sRes .= '</table>';

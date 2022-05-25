@@ -1,42 +1,42 @@
-
-/* Hide any elements not useful for print copies */
-.toolbar
-{
-	display: none;
-}
-
-.menubar
-{
-	display: none;
-}
-
-.sidebar
-{
-	display: none;
-}
-
-.results .action
-{
-	display: none;
-}
-
-.buttons
-{
-	display: none;
-}
-
-.wrapper
-{
-	border: 0px;
-}
-
-/* Adjust Widths to fit on a portrait page */
-
-.sidebar_wrapper {
-	width: 0px;
-}
-
-.results
-{
-	width: 89%;
+
+/* Hide any elements not useful for print copies */
+.toolbar
+{
+	display: none;
+}
+
+.menubar
+{
+	display: none;
+}
+
+.sidebar
+{
+	display: none;
+}
+
+.results .action
+{
+	display: none;
+}
+
+.buttons
+{
+	display: none;
+}
+
+.wrapper
+{
+	border: 0px;
+}
+
+/* Adjust Widths to fit on a portrait page */
+
+.sidebar_wrapper {
+	width: 0px;
+}
+
+.results
+{
+	width: 89%;
 }

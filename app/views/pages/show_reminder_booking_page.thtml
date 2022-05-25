@@ -61,11 +61,11 @@ function deleteUser(Id)
     margin: auto;
     border: 1px solid black;
     padding-left: 30px;
-    height: 60%;
-    border-radius: 20px;
+        border-radius: 20px;
 }
 .footer {
    position: fixed;
+   display:none;
    left: 0;
    bottom: 0;
    width: 100%;
@@ -89,9 +89,9 @@ function deleteUser(Id)
       <input type="hidden" name="orderNum" value="<?=$orderNum?>">
       <h1>Booking Information</h1>
       <ol>
-        <li><label>What day will work for you?</label> <input type="text" name="workDate" onclick="scwShow(this,event);" onkeydown="return false;"></li>
-        <li><label>Would like it morning or in the afternoon?</label><input type="text" name="workTime"></li>
-        <li><label>Would like to be called, emailed or texted for this booking?</label> <input class="contact_way" type="checkbox" name="contactInfo" value="1"><span>Email</span><input class="contact_way" type="checkbox" name="contactInfo" value="2"><span>Call</span><input class="contact_way" type="checkbox" name="contactInfo" value="3"><span>Text</span>
+        <li><label>What day will work for you?</label> <input type="text" required name="workDate" onclick="scwShow(this,event);" onkeydown="return false;"></li>
+        <li><label>Would like it morning or in the afternoon?</label><input type="text" required name="workTime"></li>
+        <li><label>Would like to be called, emailed or texted for this booking?</label> <input required class="contact_way" type="checkbox" name="contactInfo" value="1"><span>Email</span><input class="contact_way" type="checkbox" name="contactInfo" value="2"><span>Call</span><input class="contact_way" type="checkbox" name="contactInfo" value="3"><span>Text</span>
         </li>
         <li><label style="margin-top: 15px">Note:</label> <textarea name="Notes"></textarea></li>
       </ol>

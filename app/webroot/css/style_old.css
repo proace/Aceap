@@ -1,159 +1,159 @@
-body, td, th, p{
-	font-family: verdana;
-	font-size:10px;
-}
-.pagination{
-  font-size:9px;
-  color:#000000;
-}
-.pagination a{
-  font-size:9px;
-  color: #63A600;
-  text-decoration: none;
-}
-a.parrow{
-  color: #FF0000;
-}
-.filter {
-	border: 1px solid #D9D9D9;
-	background: #F9F8F9;
-}
-.filter td {
-	border: none;
-}
-.clear td{
-  border:0px;
-}
-.results{
-	background: #FFFFFF;
-}
-.results th{
-	background: #CEDFEF;
-	border-left: 1px solid #FFFFFF;
-	border-top: 1px solid #FFFFFF;
-	font-weight: bold;
-	font-size:11px;
-	color: #0071DE;
-}
-.results th a{
-	font-weight: bold;
-	font-size:11px;
-	color: #0061C1;
-	text-decoration: none;
-}
-.results th a:hover{
-	text-decoration: underline;
-}
-.results tr.sel,
-.results tr.sel a{
-	background: #E01588;
-	color: #FFFFFF;
-	font-weight: bold;
-}
-.cell0 td{
-	background: #FFFFFF;
-	font-size:10px;
-	color: #3E3E3E;
-}
-.cell1 td{
-	background: #F9F8F9;
-	border-left: 1px solid #FFFFFF;
-	border-top: 1px solid #FFFFFF;
-	font-size:10px;
-	color: #3E3E3E;
-}
-.cell0 a{
-	color: #3E3E3E;
-	text-decoration: none;
-}
-.cell1 a{
-	color: #3E3E3E;
-	text-decoration: none;
-}
-.cell1 a:hover,.cell0 a:hover{
-	text-decoration: underline;
-}
-
-.dings3
-{
-	font-size: 12px;
-	font-family: Webdings;
-	color: #222;
-}
-.menubottom,.menubottom a{
-	padding: 5px 5px;
-	font-size: 11px;
-	color: #000000;
-	font-weight: bold;
-	text-decoration: none;
-}
-.nav a{
-	padding: 5px 5px;
-	font-size: 11px;
-	color: #184D84;
-	font-weight: bold;
-	text-decoration: none;
-}
-.menubottom a:hover{
-	text-decoration: underline;
-}
-.menuactive{
-	border: 1px solid #184D84;
-	background: #9CC7F7;
-	font-size: 11px;
-	color: #FFFFFF;
-	font-weight: bold;
-	padding-left: 5px;
-	padding-right: 5px;
-  
-}
-.bottomline{
-	/*border-bottom: 1px solid #666666;*/
-  filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#184D84, EndColorStr=#9CC7F7);
-}
-.buttons{
-  font-size: 10px;
-  /*font-weight: bold;*/
-  font-family: verdana;
-  color: #3E3E3E;
-  border: 1px solid #0071DE;
-  FILTER: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#CEDFEF, EndColorStr=#FFFFFF);
-  padding-left: 5px;
-  padding-right: 5px;
-  padding-top: 0px;
-  padding-bottom: 0px;
-  
-}
-.sortarrow{
-  font-family:Wingdings;
-  color: #DD1800;
-  font-size: 8px;
-}
-.editlabel{
-  font-weight: bold;
-  text-align: right;
-}
-.error{
-  color: #FF0000;
-}
-.selected td,
-.selected td a
-{
-	color: #000000;
-	font-weight: bold;
-	border-bottom: 1px solid #cdcdcd; 
-	border-right: 1px solid #cdcdcd; 
-	filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0 StartColorStr=#CEDFEF, EndColorStr=#FFFFFF);
-} 
-
-results input select {
-width:100px;
-}
-.r, .r a{
-  color: #FF0000;
-  font-weight:bold;
-}
-.g, .g a{
-	color:green;
-	font-weight:bold;
-}
+body, td, th, p{
+	font-family: verdana;
+	font-size:10px;
+}
+.pagination{
+  font-size:9px;
+  color:#000000;
+}
+.pagination a{
+  font-size:9px;
+  color: #63A600;
+  text-decoration: none;
+}
+a.parrow{
+  color: #FF0000;
+}
+.filter {
+	border: 1px solid #D9D9D9;
+	background: #F9F8F9;
+}
+.filter td {
+	border: none;
+}
+.clear td{
+  border:0px;
+}
+.results{
+	background: #FFFFFF;
+}
+.results th{
+	background: #CEDFEF;
+	border-left: 1px solid #FFFFFF;
+	border-top: 1px solid #FFFFFF;
+	font-weight: bold;
+	font-size:11px;
+	color: #0071DE;
+}
+.results th a{
+	font-weight: bold;
+	font-size:11px;
+	color: #0061C1;
+	text-decoration: none;
+}
+.results th a:hover{
+	text-decoration: underline;
+}
+.results tr.sel,
+.results tr.sel a{
+	background: #E01588;
+	color: #FFFFFF;
+	font-weight: bold;
+}
+.cell0 td{
+	background: #FFFFFF;
+	font-size:10px;
+	color: #3E3E3E;
+}
+.cell1 td{
+	background: #F9F8F9;
+	border-left: 1px solid #FFFFFF;
+	border-top: 1px solid #FFFFFF;
+	font-size:10px;
+	color: #3E3E3E;
+}
+.cell0 a{
+	color: #3E3E3E;
+	text-decoration: none;
+}
+.cell1 a{
+	color: #3E3E3E;
+	text-decoration: none;
+}
+.cell1 a:hover,.cell0 a:hover{
+	text-decoration: underline;
+}
+
+.dings3
+{
+	font-size: 12px;
+	font-family: Webdings;
+	color: #222;
+}
+.menubottom,.menubottom a{
+	padding: 5px 5px;
+	font-size: 11px;
+	color: #000000;
+	font-weight: bold;
+	text-decoration: none;
+}
+.nav a{
+	padding: 5px 5px;
+	font-size: 11px;
+	color: #184D84;
+	font-weight: bold;
+	text-decoration: none;
+}
+.menubottom a:hover{
+	text-decoration: underline;
+}
+.menuactive{
+	border: 1px solid #184D84;
+	background: #9CC7F7;
+	font-size: 11px;
+	color: #FFFFFF;
+	font-weight: bold;
+	padding-left: 5px;
+	padding-right: 5px;
+  
+}
+.bottomline{
+	/*border-bottom: 1px solid #666666;*/
+  filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#184D84, EndColorStr=#9CC7F7);
+}
+.buttons{
+  font-size: 10px;
+  /*font-weight: bold;*/
+  font-family: verdana;
+  color: #3E3E3E;
+  border: 1px solid #0071DE;
+  FILTER: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#CEDFEF, EndColorStr=#FFFFFF);
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  
+}
+.sortarrow{
+  font-family:Wingdings;
+  color: #DD1800;
+  font-size: 8px;
+}
+.editlabel{
+  font-weight: bold;
+  text-align: right;
+}
+.error{
+  color: #FF0000;
+}
+.selected td,
+.selected td a
+{
+	color: #000000;
+	font-weight: bold;
+	border-bottom: 1px solid #cdcdcd; 
+	border-right: 1px solid #cdcdcd; 
+	filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0 StartColorStr=#CEDFEF, EndColorStr=#FFFFFF);
+} 
+
+results input select {
+width:100px;
+}
+.r, .r a{
+  color: #FF0000;
+  font-weight:bold;
+}
+.g, .g a{
+	color:green;
+	font-weight:bold;
+}

@@ -1,0 +1,54 @@
+function getdata()
+    {
+        error_reporting(E_ALL);
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $date_from = date("Y-m-d");
+        $date_to = date("Y-m-d", strtotime("$date_from +1 week"));
+        $post_data = "v4b2c1";
+        $query = "select o.job_date, o.order_number, u.postal_code
+                    from ace_rp_orders o, ace_rp_customers u
+                    where o.job_date between '$date_from' and '$date_to'
+                     and o.order_status_id in (1,5) and u.id=o.customer_id
+                ";
+        $res = $db->_execute($query);
+        $post_arr = array();
+        $newPostArr = array();
+        while ($row = mysql_fetch_array($res)) 
+        {
+            $post_arr[] = $row['postal_code'];
+        }
+        $finalpost = implode("|", $post_arr) ;
+        $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$post_data."&destinations=".$finalpost."&mode=driving&language=en-EN&sensor=false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw";
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$post_data."&destinations=".$finalpost."&mode=driving&language=en-EN&sensor=false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,"");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $response = curl_exec($ch);
+        
+        $result = json_decode($response, true);
+        $err = curl_error($ch);
+
+        curl_close($ch);
+
+        if ($err) {
+          echo "cURL Error #:" . $err;
+        } else {
+            echo "<pre>";
+            // print_r($result['rows'][0]['elements']); die;
+            $combine = array_combine($post_arr, $result['rows'][0]['elements']);
+            
+            foreach ($combine as $key => $value) {
+                if( $value['distance']['text'] <= 15)
+                {
+                    print_r($key);
+                    $newPostArr[] = $key;
+                }
+            }
+            print_r($newPostArr);
+        }
+        exit();
+    }

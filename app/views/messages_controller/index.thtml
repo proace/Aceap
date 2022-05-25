@@ -6,15 +6,19 @@
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
 <script>
  var chat_window = '';
-  
+
 function showMessages()
 {
   //var answer = window.open("<?=BASE_URL?>/messages/ShowMessages",'', "width=600, height=350, left=300, top=200");
   var answer = window.open("<?=BASE_URL?>/messages/showMessageHistory",'', "width=600, height=350, left=300, top=200");
+  answer.onbeforeunload = function () {
+       var orderId = $("#org-order-id").val();
+        parent.frames['main_view'].loadBooking(orderId);
+    }
 }
 function createMessage()
 {
-  var answer = window.open("<?=BASE_URL?>/messages/EditMessage",'', 
+  var answer = window.open("<?=BASE_URL?>/messages/EditMessage",'',
   "width=700, height=350, left=300, top=200");
 }
 
@@ -25,23 +29,23 @@ function showPlayer(order_id, agent_id, date, phone)
 	url += "&agent_id=" + agent_id;
 	url += "&phone=" + phone;
 	url += "&date=" + date;
-		
+
 	var option = "width=450,height=130,left=300,top=200,status=off,resize=none";
-	
+
 	var answer = window.open(url,'', option);
 }
 
 function showTrackemSettings() {
 	var url = "<?=BASE_URL?>/messages/trackemSettings";
-	
+
 	var option = "width=300,height=450,left=300,top=200,status=off,resize=none";
-	
+
 	var answer = window.open(url,'', option);
 }
 
 function openChat()
 {
-  //var answer = window.open("<?=BASE_URL?>/chat/ShowMessages",'',"width=600, height=500");  
+  //var answer = window.open("<?=BASE_URL?>/chat/ShowMessages",'',"width=600, height=500");
 }
 
 <?php if ($_SESSION['user']['role_id']==6) {?>
@@ -70,13 +74,13 @@ function routeChange()
 
 function showIssues()
 {
-  var answer = window.open("<?=BASE_URL?>/messages/issueGatherer",'', 
+  var answer = window.open("<?=BASE_URL?>/messages/issueGatherer",'',
   "width=450, height=350, left=300, top=200");
 }
 
 function showNotes()
 {
- // var answer = window.open("<?=BASE_URL?>/messages/noteGatherer",'', 
+ // var answer = window.open("<?=BASE_URL?>/messages/noteGatherer",'',
  // "dialogWidth:650px; dialogHeight:400px; dialogLeft:300px; dialogTop:200px;");
   window.open("<?=BASE_URL?>/messages/noteGatherer", "main_view");
 }
@@ -84,11 +88,13 @@ function showNotes()
 var winRef;
 
 function showChat()
-{  
+{
  var username = "<?php echo $_SESSION['user']['username_chat'];?>";
 
  // var targetWin = window.open('','winPop', 'sample-options');
     var targetWin = window.open("", "winPop", "width=800,height=500");
+    console.log('here');
+    console.log(targetWin);
     if(targetWin.location == 'about:blank'){
         //create new
         targetWin.location.href = 'http://support.hvacproz.ca/lhc_web/doc/autologin/autologin.php?username='+username;
@@ -97,33 +103,36 @@ function showChat()
     } else {
         //give it focus (in case it got burried)
         targetWin.focus();
-    } 
+    }
 }
 
 // if site gets closed, just comment below four lines
 $(document).ready(function(e){
         // get_total_unread_chat();
-	   setInterval( function(){     
-	   	get_total_unread_chat();	   
+	   setInterval( function(){
+	   	get_total_unread_chat();
 	    }, 20000 );
 
 });
 
 
-function get_total_unread_chat(){ 
+function get_total_unread_chat(){
  $.ajax({
-    url:"/acesys/adminchat/custom_functions.php", 
-    data:{admin_id:<?php echo $_SESSION['user']['id'];?>,action:'total_all_unread_msg'}, 
-    success:function(result){ 
+    url:"/acesys/adminchat/custom_functions.php",
+    dataType: 'json',
+    data:{admin_id:<?php echo $_SESSION['user']['id'];?>,action:'total_all_unread_msg'},
+    success:function(result){
+
                      var chat_open = "<?php echo $_SESSION['user']['chat_open']?>";
                      var oldRes = "<?php echo $_SESSION['user']['old_chat_res']?>";
-                     var result = JSON.parse(result); 
-                     
-                    res = result['unread'];
+                     var results = JSON.parse(JSON.stringify(result));
+                     var res = results['unread'];
+
                   if(res !== '0' && chat_open == 1 ) {
                      '<?php $_SESSION['user']['chat_open'] = 2;?>';
                       $.ajax({
                           url: "<?=BASE_URL;?>/orders/setChatResSession",
+                          //dataType: 'json',
                           type: "POST",
                           cache: false,
                           data:{chatRes:res },
@@ -132,8 +141,8 @@ function get_total_unread_chat(){
                         });
                         isRead = result['unread'];
                         $('#total_unread_msg').html(result['unread']).show();
-                        showChat(); 
-                        
+                        showChat();
+
                    } else if(chat_open == 2 && (oldRes !== res && oldRes !== 0)){
                         $.ajax({
                           url: "<?=BASE_URL;?>/orders/setChatResSession",
@@ -144,7 +153,7 @@ function get_total_unread_chat(){
                           }
                         });
                         $('#total_unread_msg').html(result['unread']).show();
-                            showChat(); 
+                            showChat();
                    }
                     else {
                         $('#total_unread_msg').html('').hide();
@@ -169,7 +178,7 @@ function get_total_unread_chat(){
 
 .nav img {
 	display:block;
-	width:30px;	
+	width:30px;
 }
 
 .nav li {
@@ -224,7 +233,7 @@ a.item:hover{
 
 .bottom_nav {
 	position:fixed;
-	right:0px;	
+	right:0px;
 	border:1px solid red;
 }
 
@@ -237,15 +246,15 @@ h1 {
 }
 
 .color0 {
-	background-color:transparent;	
+	background-color:transparent;
 }
 
 .color1 {
-	background-color:#dedede;	
+	background-color:#dedede;
 }
 
 a{
-	border:none;	
+	border:none;
 }
 
 #issue_counter {
@@ -301,7 +310,7 @@ div#recent_msg ul{
 <div id="recent_msg"></div>
 
 
-
+<input type="hidden" name="order_id" id="org-order-id">
 <ul class="nav">
 	<li><img src="<?=ROOT_URL?>/app/webroot/img/icon-lg-callback.png" onclick="showMessages()"><b>History</b></li>
     <li><img src="<?=ROOT_URL?>/app/webroot/img/icon-lg-enter-work-done.png" onclick="createMessage()"><b>Message</b></li>
@@ -309,7 +318,7 @@ div#recent_msg ul{
     	<?php if($issue_count > 0) { ?>
         <span id="issue_counter"><strong><?php echo $issue_count ?></strong></span>
         <?php } ?>
-        <b>Issues</b></li>  
+        <b>Issues</b></li>
 
     <?php if($_SESSION['user']['role_id']==6){ ?>
     <li><span class="badge" id="total_unread_msg" style="position: absolute;top: -15px;"><i class="fa fa-comments-o" aria-hidden="true"></i></span><img src="<?=ROOT_URL?>/app/webroot/img/comments.png"><b>Chat</b><input type="hidden" id="check_window_open" value="0" ></li>
@@ -328,7 +337,7 @@ div#recent_msg ul{
 		<td style="text-align:center;">
 			<img src="<?=ROOT_URL?>/app/webroot/img/icon-lg-enter-work-done.png" onclick="createMessage()"><br/>
 			<b>Send</b>
-		</td>		
+		</td>
 	</tr>
 </table>
 <?php } ?>

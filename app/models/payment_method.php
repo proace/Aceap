@@ -1,10 +1,10 @@
-<?php
-
-class PaymentMethod extends AppModel
-{
-	var $name = 'PaymentMethod';
-
-	var $validate = array();
-}
-
-?>
+<?php
+
+class PaymentMethod extends AppModel
+{
+	var $name = 'PaymentMethod';
+
+	var $validate = array();
+}
+
+?>

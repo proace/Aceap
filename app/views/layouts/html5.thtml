@@ -1,14 +1,33 @@
+<?php 
+if($_COOKIE['acecare'])
+{
+    $id = session_regenerate_id();
+    $new_sessionid = session_id();
+    $db =& ConnectionManager::getDataSource('default');
+    $query1 = "UPDATE ace_rp_users set session_id = '".$new_sessionid."' where id =".$_COOKIE['acecare'];     
+    $result = $db->_execute($query1);
+}
+
+ ?>
+
 <!DOCTYPE html>
 <html>
 <head>
 	<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
 	<title>ACE</title>	
+    <script type="text/javascript">
+        function loadBooking(orderId)
+        {
+            document.location.href='<?=BASE_URL?>/orders/editBooking?order_id='+orderId+'&rurl=orders%2FscheduleView%3F';
+        }
+    </script>
 </head>
 <style>
 body {
 	padding:20px 0 0 30px;	
 }
 </style>
+
 <body>
 <?=$content_for_layout?>
 </body>

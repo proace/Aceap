@@ -1,0 +1,11 @@
+<?php foreach ($history as $key => $value) {?>
+	<tr>
+		<td>
+			<i class="fa fa-edit" callbackId ="<?=$value['id'];?>" id="editCallback" style="font-size:15px;cursor: pointer;"></i> &nbsp;&nbsp;
+			<i class="fa fa-trash" aria-hidden="true" id="deleteCallback" callbackId ="<?=$value['id'];?>" style="font-size:15px; cursor: pointer;"></i></a></td>
+		<td><?php echo $value['lastcall_date'];?></td>
+		<td><?php echo $value['callback_date'];?></td>
+		<td><?php echo $value['agent_name'];?></td>
+		<td  style="width:100px"><?php echo $value['notes'];?></td>
+	</tr>
+<? } ?>

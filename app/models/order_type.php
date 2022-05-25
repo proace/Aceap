@@ -1,10 +1,10 @@
-<?php
-
-class OrderType extends AppModel
-{
-	var $name = 'OrderType';
-
-	var $validate = array();
-}
-
-?>
+<?php
+
+class OrderType extends AppModel
+{
+	var $name = 'OrderType';
+
+	var $validate = array();
+}
+
+?>

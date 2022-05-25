@@ -6,7 +6,7 @@
 <!--<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
 <meta name="apple-mobile-web-app-capable" content="yes">-->
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
-<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_preview.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_preview.js?v=1"></script>
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
 </head>
 
@@ -115,7 +115,7 @@
             </tr>
             <tr>
                 <td colspan=22 style="font-size:8pt;" valign=top>
-                    &nbsp;102-3855 Henning Dr. Burnaby, BC V5C 6N3
+                    &nbsp;101-3993 Henning Dr. Burnaby, BC V5C6P7
                 </td>
                 <td colspan=8 align=right><?php if ($obj['Type']['category_id']==2) {?>Time in:<?php }?>&nbsp;</td>
                 <td colspan=3 align=right>HK:</td>

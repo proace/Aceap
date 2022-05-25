@@ -33,7 +33,7 @@ function storeTreeInitialize() {
 	// });
 
 	//assign click events
-	$(".tabs a.link_branch").live("click", function(){		
+	$(".tabs a.link_branch").live("click", function(){	
 		var criteria = $.parseJSON($(this).children(".criteria").val());
 		var path = $(this).children(".path").val();
 		var url = '';
@@ -42,8 +42,8 @@ function storeTreeInitialize() {
 			url = G_URL + "iv_items/storeTreeItems?seed=" + Math.random() + "&mode=store";
 			row_class = 'list_item';
 		} else {
-			url = G_URL + "iv_items/branch?seed=" + Math.random();
-			row_class = 'list_branch';
+			url = G_URL + "iv_items/midBranch?seed=" + Math.random();
+			row_class = 'list_mid_branch';
 		}
 		
 		var temp = $(this).next("ul");
@@ -61,6 +61,35 @@ function storeTreeInitialize() {
 		}
 	});
 	
+$(".tabs a.link_mid_branch").live("click", function(){	
+		var criteria = $.parseJSON($(this).children(".criteria").val());
+		var path = $(this).children(".path").val();
+		var midcatId = $(this).attr('mid_id');
+		var url = '';
+		var row_class = '';
+		if(path == 'item') {
+			url = G_URL + "iv_items/items?seed=" + Math.random();
+			row_class = 'list_item';
+		} else {
+			url = G_URL + "iv_items/branch?seed=" + Math.random()+"&category_id="+midcatId;
+			row_class = 'list_branch';
+		}
+		
+		var temp = $(this).next("ul");
+		if($(this).attr("title") == "More") {
+			$.get(url,
+			criteria,
+			function(data){
+				temp.addClass(row_class);
+				temp.html(data);				
+			});
+			$(this).attr("title", "Less");
+		} else {
+			temp.html("");
+			$(this).attr("title", "More");
+		}
+	});
+
 	$(".all_node").click();
 	//end assign click events
 	
@@ -89,6 +118,7 @@ function storeTreeInitialize() {
 	$(".multipleItems").live("click", function(){
 		var items= [];	
 		var show_purchase = $("#show-purchase").val();
+		var forPurchase = $("#forPurchase").val();
 		$('.addItems:checkbox:checked').each(function () {
 			var cur = $(this).parent().parent();
 			var itema = {}; 
@@ -108,12 +138,17 @@ function storeTreeInitialize() {
 			itema.item_brand 	 		= cur.children(".item_brand").val();
 			itema.item_sku 	 			= cur.children(".item_sku").val();
 			itema.item_sub_category_id 	= cur.children(".item_sub_category_id").val();
+			itema.item_markup_percent 	= cur.children(".item_markup_percent").val();
+			itema.item_tech_percent 	= cur.children(".item_tech_percent").val();
 			items.push(itema);
 		});
-		
 		$.each(items, function( key, value ) {
-  			addItem(value.item_id, value.item_name, value.item_selling_price, value.item_mode, value.item_category_id, value.item_supplier_price, value.item_model, show_purchase, 
-  				value.item_model, value.item_brand,value.item_sku, '','','','',value.item_sub_category_id);
+  			if(forPurchase !=1 || forPurchase == 'undefined'){
+  				addItem(value.item_id, value.item_name, value.item_selling_price, value.item_mode, value.item_category_id, value.item_supplier_price, value.item_model, show_purchase, 
+  				value.item_model, value.item_brand,value.item_sku, '','','','',value.item_sub_category_id,'',value.item_markup_percent,value.item_tech_percent);
+  			} else {
+  				addItem(value.item_id, value.item_name, value.item_supplier_price, value.item_sku, '','','','',value.item_supplier_price,value.item_category_id,1,value.item_sub_category_id,value.item_markup_percent,value.item_tech_percent);
+  			}
 		});
 		
 		$('#closeBookedItems').click();

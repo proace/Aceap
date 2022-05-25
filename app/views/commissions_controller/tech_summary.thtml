@@ -2,13 +2,121 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
 
 <script>
+$(document).ready(function(){
+	$("#ChangePayPeriod").live("change", function(){
+		var id = $(this).val();
+		$("#pay_period_id").val(id);
+	});
+
+	$(".check_pay").live("change", function()
+	{
+		var current = $(this);		
+		if(current.is(":checked"))
+		{
+			current.val(1);
+		} else {
+			current.val(0);
+			$("#ChangePayPeriod").val(-1);
+		}
+	} );
+
+	$("#ftechid").live("change", function(){
+
+	});
+
+	$("#email_invoice").live("click", function(){
+		var wcb_amount = $("#wcb_amount").attr("wcb");
+		var subtotal_amount = $("#subtotal_amount").attr("subtotal");
+		var gst_amount = $("#gst_amount").attr("gst");
+		var total_amount = $("#total_amount").attr("total");
+		var techId = $("#ftechid").val();
+		var to_email = $("#to_email").val();
+		var pay_period = $("#ChangePayPeriod").val();
+		var ffromdate = $("#ffromdate").val();
+		var ftodate = $("#ftodate").val();
+
+		if(techId > 0)
+		{		
+			$.ajax({
+				url: '<?=BASE_URL?>/commissions/sendTechinvoice',
+				dataType: 'json',
+				type: 'POST',
+				cache: false,
+				data:{wcb_amount:wcb_amount, subtotal_amount: subtotal_amount,gst_amount:gst_amount,total_amount:total_amount,techId:techId,to_email:to_email,pay_period:pay_period,ffromdate:ffromdate,ftodate:ftodate},
+				success: function(data) {
+					if(data.res == 1){
+						alert("Invoice sent successfully.");
+					} else {
+						alert("Invoice not sent.")
+					}
+				}
+			});	
+		} else {
+			alert("Please select technician.");
+		}		
+	});
+
+	$("#print_invoice").live("click", function(){
+		var wcb_amount = $("#wcb_amount").attr("wcb");
+		var subtotal_amount = $("#subtotal_amount").attr("subtotal");
+		var gst_amount = $("#gst_amount").attr("gst");
+		var total_amount = $("#total_amount").attr("total");
+		var techId = $("#ftechid").val();
+		var to_email = $("#to_email").val();
+		var pay_period = $("#ChangePayPeriod").val();
+		var ffromdate = $("#ffromdate").val();
+		var ftodate = $("#ftodate").val();
+
+		if(techId > 0)
+		{		
+			$.ajax({
+				url: '<?=BASE_URL?>/commissions/printTechInvoice',
+				dataType: 'html',
+				type: 'POST',
+				cache: false,
+				data:{wcb_amount:wcb_amount, subtotal_amount: subtotal_amount,gst_amount:gst_amount,total_amount:total_amount,techId:techId,to_email:to_email,pay_period:pay_period,ffromdate:ffromdate,ftodate:ftodate},
+				success: function(data) {
+		            var newWindow = window.open();
+		            newWindow.document.write(data);
+				}
+			});	
+		} else {
+			alert("Please select technician.");
+		}		
+	});
+});
+
 function GoChangeCommission(){
 	var TechId=document.getElementById("ftechid").value;
 	top.frames['main_view'].location.href='<? echo $html->url("/commissions/editTech/"); ?>'+TechId+'?rurl=<?=urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING'])?>';
 }
+
+// function ChangePayPeriod()
+// {
+// 	var payPeriod = $(this).children("option:selected").val();
+// 	console.log("pay=",payPeriod);
+// }
 </script>
 
 <style type="text/css">
+	#to_email{
+		padding: 5px;
+    	width: 16%;
+	}
+
+	#email_invoice{
+		padding: 5px;
+		margin-top: 5px;
+	}
+
+	#print_invoice{
+		padding: 5px;
+		margin-top: 5px;
+	}
+
+	tr.border_bottom td {
+  		border-top: 1pt solid black;
+	}
 	.inactive{
 		color: #868686 !important;
 	}
@@ -52,7 +160,7 @@ function GoChangeCommission(){
 <td>
 <table width="90%" border="0" cellspacing="3" cellpadding="0">
 	<tr>
-		<td class="sectionTitle" colspan=4>Technician's Summary</td>
+		<td class="sectionTitle" colspan="6">Technician's Summary</td>
 	</tr>
 	<tr>
 		<td>Technician:</td>
@@ -67,6 +175,7 @@ function GoChangeCommission(){
 		</select>
 		<!-- We could have only one selected user and only one selected commission_type per job -->
 		<input type="hidden" name="comm_oper" id="comm_oper" value="<?=$comm_oper?>" /> <!--edit;cancel;save -->
+		<input type="hidden" name="pay_period_id" id="pay_period_id" value="<?=$pay_period?>" /> <!--edit;cancel;save -->
 		<input type="hidden" name="techId" id="techId" value="<?=$techid?>" />
 		<input type="hidden" name="selected_job" id="selected_job" value="<?=$selected_job?>" />
 		<input type="hidden" name="selected_commission_type" id="selected_commission_type" value="<?=$selected_commission_type?>" />
@@ -78,8 +187,21 @@ function GoChangeCommission(){
 			redo_comm	
 		-->
 		</td>
+		<!-- <td></td> -->
+		<td></td>
+		<td> <input type="checkbox" <?=($check_pay ==1?'checked':'')?> name="check_pay" class="check_pay"> Pay period:</td>
+		<td>
+			<select name="pay_period" id="ChangePayPeriod">
+				<option value="-1" <?=($pay_period<0?'selected':'')?>>-=Custom=-</option>
+			<?php foreach ($allPayPeriods as $v => $k) {
+				$selected = '';
+				if ($v == $pay_period) $selected = 'selected';?>
+				<option value="<?=$v?>" <?=$selected?>><?=$k?></option>
+			<?php } ?>
+			</select></td>
+
 		<?php if ($common->getLoggedUserRoleID() == "6"){?>
-		<td colspan=2>
+		<td>
 			<input type="button" onclick="GoChangeCommission()" value="Change Commission"/>
 		</td>
 		<?php }?>
@@ -89,21 +211,21 @@ function GoChangeCommission(){
 		<td>
 			<input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_fdate?>'; document.viewform.submit();" style="font-size: 8pt;">
 			&nbsp;&nbsp;
-			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+			<input type="text" id="ffromdate" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
 		</td>
 		<td>Date to: </td>
 		<td>
-      <input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+      <input type="text" id="ftodate" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
 			&nbsp;&nbsp;
 			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_tdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
 		</td>
-		<td colspan=2>Type: 
+		<td >Type: 
 			<select name="job_option" id="job_option" onchange="document.viewform.submit();">
 				<option value=1 <? if ($job_option==1) echo 'selected=1';?>>Jobs</option>
 				<option value=2 <? if ($job_option==2) echo 'selected=1';?>>Bookings</option>
       </select>
 		</td>
-		<td colspan="1" align="left">
+		<td align="left">
 		<input type="submit" name="submit2" onclick="return SearchRecords();" id="submit2" value="Update" class="buttons">
 		</td>			
 	</tr>
@@ -152,6 +274,12 @@ function GoChangeCommission(){
   $adjustment_sum = 0;
   $total_sum = 0;
   $approved_sum = 0;
+  $wcb_amount = 0;
+  $gst_amount = 0;
+  $new_total_amount = 0;
+  $new_subtotal_amount = 0;
+  
+
 	foreach ($summary as $obj):
 				$class = 'cell'.(++$r%2);
 				$local_class = '';
@@ -177,6 +305,13 @@ function GoChangeCommission(){
 				$total_sum += $obj['total_comm'];
 				$approved_sum += $obj['approuved'];
 ?>
+<?php 
+	$wcb_amount = ($approved_sum * $tech_details['User']['wcb_percent']) / 100;
+	$gst_amount = ($approved_sum * $tech_details['User']['gst_percent']) / 100;
+	$new_subtotal_amount = $approved_sum - $wcb_amount;
+	$new_total_amount = $new_subtotal_amount + $gst_amount;
+
+ ?>
     <tr class="<?= $class ?>">
         <td style="cursor:pointer;border-left:0px"><a href="<?=BASE_URL?>/commissions/calculateCommissions?ffromdate=<?=$obj['job_date']?>&ftechid=<?=$obj['id'];?>"><?php echo $obj['job_date']; ?></a></td>
         <td align="right"><?=$HtmlAssist->prPrice($obj['total'][0])?></td>
@@ -214,5 +349,33 @@ function GoChangeCommission(){
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?=$HtmlAssist->prPrice($approved_sum);?></b></td>
 				</td>
     </tr>
+    <tr class="border_bottom">
+		<td colspan="10"></td>
+		<td><b>Wcb=</b></td>
+		<td><span id="wcb_amount" wcb="<?= $wcb_amount?>"><?=$HtmlAssist->prPrice($wcb_amount);?></span></td>
+	</tr>
+	<tr>
+		<td colspan="10"></td>
+		<td><b>Sub Total=</b></td>
+		<td><span id="subtotal_amount" subtotal="<?=$new_subtotal_amount?>"><?=$HtmlAssist->prPrice($new_subtotal_amount);?></span></td>
+	</tr>
+	<tr>
+		<td colspan="10"></td>
+		<td><b>Gst=</b></td>
+		<td><span id="gst_amount" gst="<?=$gst_amount?>"><?=$HtmlAssist->prPrice($gst_amount);?></span></td>
+	</tr>
+	<tr>
+		<td colspan="10"></td>
+		<td><b>Total=</b></td>
+		<td><span id="total_amount" total="<?=$new_total_amount?>"><?=$HtmlAssist->prPrice($new_total_amount);?></span></td>
+	</tr>
 </table>
+<div>
+	<input type="text" name="to_email" id="to_email">
+	<input type="button" name="email_invoice" value="Email Invoice" id="email_invoice">
+	<input type="button" name="print_invoice" value="Print Invoice" id="print_invoice">
+</div>
+<!-- <table cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
+	
+</table> -->
 <!--</div>	-->

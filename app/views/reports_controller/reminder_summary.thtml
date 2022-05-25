@@ -1,0 +1,123 @@
+<script type="text/javascript">
+	function getPageData(page)
+	{
+		$("#currentPage").val(page);
+		$("#itemHistory").submit();
+
+	}
+
+	$(function () {
+
+		$("#searchData").live("click", function(){
+			$("#currentPage").val(1);
+			$("#itemHistory").submit();
+		})
+	});
+	
+</script>
+<style type="text/css">
+	.mouseHand{
+		cursor: pointer;
+	}
+
+	.pageSelected{
+		background-color: #0affdd;
+	}
+</style>
+<?php if($ismobile == 1) { ?>
+	<a href="<?php echo BASE_URL ?>/pages/mobileMenu" id="return">Back to Main</a>
+<?php } ?>
+<form id="itemHistory" method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" id="currentPage" name="currentPage" value="<?=$currentPage?>">
+
+<table width="90%" border="0px" cellspacing="10" cellpadding="0">
+	<tr>
+		<td class="sectionTitle" colspan="3">Reminder Summary</td>
+	</tr>
+	<tr>
+		<td colspan="3">
+			Date from: &nbsp;&nbsp;
+      		<input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_tdate?>'; getPageData(1);" style="font-size: 8pt;">
+			&nbsp;&nbsp;
+			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+		
+			&nbsp;&nbsp;Date to: &nbsp;&nbsp;
+      		<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+			&nbsp;&nbsp;
+			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_fdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; getPageData(1);" style="font-size: 8pt;">
+		</td>
+  </tr>
+	<tr>
+		<td colspan="2">
+			Search:<select name="filter" id="filter">
+				<option value="-1">---</option>
+				<option value="6" <?=( 6 == $filter ? ' selected' : '')?>>Ref</option>
+				<option value="1" <?=( 1 == $filter ? ' selected' : '')?>>Phone</option>
+				<option value="2" <?=( 2 == $filter ? ' selected' : '')?>>Failed Email</option>
+				<option value="3" <?=( 3 == $filter ? ' selected' : '')?>>Failed Text</option>
+				<option value="4" <?=( 4 == $filter ? ' selected' : '')?>>Sent Text</option>
+				<option value="5" <?=( 5 == $filter ? ' selected' : '')?>>Sent Email</option>	
+			</select>
+			<input type="text" name="search_param" value="<?=$search_param?>"/>
+			<input type="submit" id="searchData" name="search" value="Search">
+		</td>
+		<!-- <td><input type="text" name="search_param" value="<?=$search_param?>"/></td> -->
+		<!-- <td><input type="submit" id="searchData" name="search" value="Search"></td> -->
+	</tr>
+</table> 	
+</form>
+
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+    <tr>
+		<th>Ref Num</th>
+		<th>Text Reminder</th>
+		<th>Cell Phone</th>
+		<th>Home Phone</th>
+		<th>Email Reminder</th>
+		<th>Email Address</th>
+		<th>Address</th>
+		<th>Sent Date</th>
+		<th>Reminder Date</th>
+		<th>Job Date</th>
+    </tr>
+		<?php $r=1;
+			foreach ($reminder as $obj) {
+				$class = 'cell'.(++$r%2);
+		?>
+    <tr id="r<?=$r?>" class="<?=$class?>" style='cursor:pointer;'>
+		<td><?php if($obj['order_number'] != 0 && $obj['order_number'] != ''){?>
+			<a href="<?=BASE_URL;?>/orders/editBooking?order_id=<?=$obj['order_id']?>"><?php echo $obj['order_number']; ?></a>
+			<?php } ?>
+		</td>
+		
+		<td><?php echo ($obj['sms_sent'] == 1) ? 'Sent' :'Not Sent'; ?> </td>
+		<td><?php echo $obj['cell_phone']; ?></td>
+		<td><?php echo $obj['phone']; ?></td>
+		<td><?php echo ($obj['email_sent'] == 1) ? 'Sent' :'Not Sent'; ?> </td>
+		<td><?php echo $obj['email']; ?> </td>
+		<td><?php echo $obj['address_unit'].','.$obj['address_street_number'].','.$obj['address_street'].','.$obj['postal_code'].','.$obj['city'];?> </td>
+		<td><?php echo date('d-m-Y', strtotime($obj['sms_date'])); ?> </td>
+		<td><?php echo date('d-m-Y', strtotime($obj['sms_date'] . ' + 3 days')); ?> </td>
+		<td><?php echo date('d-m-Y', strtotime($obj['job_date'])); ?> </td>
+    </tr>
+    <? }
+    if (count($items)==0) { ?>
+    <tr>
+		<td colspan=7>No data found.</td>
+	</tr>
+
+	<? } ?>
+</table>
+
+<table>
+	<tr>
+		<td><a onclick ="getPageData(<?=($currentPage-1)?>);" class='button mouseHand'>Previous</a></td>
+		<?php for ($i=1; $i<=$totalPages; $i++) {?>
+		<td><a onclick ="getPageData(<?php echo $i ?>);" class="button mouseHand <?= ($currentPage == $i) ? 'pageSelected' : '' ?>"><?php echo $i ?></a></td>
+	<?php } ?>
+		<td><a onclick ="getPageData(<?=($currentPage+1)?>);" class='button mouseHand'>NEXT</a></td>
+	</tr>
+</table>

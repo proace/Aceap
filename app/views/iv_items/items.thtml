@@ -1,75 +1,489 @@
-<input type="hidden" class="criteria" value='<?php echo $criteria ?>' />
-<div class="item_count"><?php echo $count ?> result<?php echo $count==1?'':'s' ?></div>
-<li><?php //echo $criteria //for debugging ?>
-<div class="list_wrapper">
-    <div class="list_header">
-    <?php if($inventoryAccess['add_item'] && $mode != 'store') { ?>
-    <a href="#" title="Add Item" class="link_additem"></a>
-    <?php } ?>
-    <span class="clear_this">&nbsp;</span>
-    </div>
-    <table class="list clear_this">
-        <tr>
-            <th></th>
-        	<th><?php echo $aliases['sku']['alias']==''?'SKU':$aliases['sku']['alias'] ?></th>
-            <th>Name</th>                        
-            <th><?php echo $aliases['regular_price']['alias']==''?'Regular Price':$aliases['regular_price']['alias'] ?></th>
-            <th><?php echo $aliases['selling_price']['alias']==''?'Selling Price':$aliases['selling_price']['alias'] ?></th>
-             
-            <?php if($inventoryAccess['extended_view']) { ?>      
-            <th><?php echo $aliases['model']['alias']==''?'Model':$aliases['model']['alias'] ?></th>
-            <th><?php echo $aliases['supplier_price']['alias']==''?'Supplier Price':$aliases['supplier_price']['alias'] ?></th>
-            <th><?php echo $aliases['efficiency']['alias']==''?'Efficiency':$aliases['efficiency']['alias'] ?></th>
-            <th><?php echo $aliases['brand']['alias']==''?'Brand':$aliases['brand']['alias'] ?></th>
-            <th><?php echo $aliases['supplier']['alias']==''?'Supplier':$aliases['supplier']['alias'] ?></th>
-            <th><?php echo $aliases['description1']['alias']==''?'Description 1':$aliases['description1']['alias'] ?></th>
-            <th><?php echo $aliases['description2']['alias']==''?'Description 2':$aliases['description2']['alias'] ?></th>
-            <?php } ?>
-        </tr>
-        <?php $i = 0; ?>
-        <?php foreach($items as $item) { ?>
-        <tr class="<?php echo $i++%2==0?'odd':'even' ?> <?php if($inventoryAccess['edit_item'] && $mode != 'store') { ?>editable<?php } ?> item"><input type="hidden" class="id" value="<?php echo $item['id'] ?>" />
-            <input type="hidden" class="item_active" value="<?php echo $item['active'] ?>" />
-            <input type="hidden" class="item_id" value="<?php echo $item['id'] ?>" />
-            <input type="hidden" class="item_sku" value="<?php echo $item['sku'] ?>" />
-            <input type="hidden" class="item_name" value="<?php echo $item['name'] ?>" />
-            <input type="hidden" class="item_model" value="<?php echo $item['model'] ?>" />
-            <input type="hidden" class="item_regular_price" value="<?php echo $item['regular_price'] ?>" />
-            <input type="hidden" class="item_selling_price" value="<?php echo $item['selling_price'] ?>" />
-            <input type="hidden" class="item_supplier_price" value="<?php echo $item['supplier_price'] ?>" />
-            <input type="hidden" class="item_efficiency" value="<?php echo $item['efficiency'] ?>" />
-            <input type="hidden" class="item_brand_id" value="<?php echo $item['brand_id'] ?>" />
-            <input type="hidden" class="item_supplier_id" value="<?php echo $item['supplier_id'] ?>" />
-            <input type="hidden" class="item_description1" value="<?php echo $item['description1'] ?>" />
-            <input type="hidden" class="item_description2" value="<?php echo $item['description2'] ?>" />
-            <input type="hidden" class="item_category_id" value="<?php echo $item['category_id'] ?>" />
-             <input type="hidden" class="item_sub_category_id" value="<?php echo $item['sub_category_id'] ?>" />
-             <input type="hidden" name="brandName" class="brand-name" value="<?=$item['brand_name']?>"/>
-            <input type="hidden" name="supplierName" class="supplier-name" value="<?=$item['supplier_name']?>"/>
-            <input type="hidden" name="categoryName" class="category-name" value="<?=$item['category_name']?>"/>
-             <input type="hidden" name="subCategoryName" class="sub-category-name" value="<?=$item['sub_category_name']?>"/>
+<!-- <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/normal_multiselect.js?time=<?=time(); ?>"></script> -->
 
-            <td style="width: 33px;"><img style="height: 14px;width: 14px;" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" class="remove-dup-item" inactiveId ="<?=$InactiveId?>" itemId="<?=$item['id']?>"><img src="<?=ROOT_URL?>/app/webroot/img/add.png" class="add-dup-item" itemId="<?=$item['id']?>"></td>
-            <td><?php echo $item['sku'] ?></td> 
-            <td><?php echo $item['name'] ?></td>                        
-            <td class="right "><?php echo $item['regular_price'] ?></td>
-            <td class="right "><?php echo $item['selling_price'] ?></td>
-            
-            <?php if($inventoryAccess['extended_view']) { ?> 
-            <td><?php echo $item['model'] ?></td>
-            <td class="right "><?php echo $item['supplier_price'] ?></td>
-            <td><?php echo $item['efficiency'] ?></td>
-            <td><?php echo $item['brand'] ?></td>
-            <td><?php echo $item['supplier'] ?></td>
-            <td><?php echo $item['description1'] ?></td>
-            <td><?php echo $item['description2'] ?></td>
-            <?php } ?>
-        </tr>
-        <?php } ?>
-    </table>    
-</div>
-<div class="clear_this">&nbsp;</div>
-</li>
+<style type="text/css">
+body#page_index {
+        background-color: #ffffff !important;
+    }
+    
+    .ui-widget-content {
+        border-color: #ffffff !important;
+    }
+    
+    .multiselect-wrapper .multiselect-list.active {
+        text-align: left;
+    }
+    
+    .transferQty {
+        padding: 5px;
+    }
+    
+    .transferPkg {
+        padding: 5px;
+    }
+    
+    .ui-icon-closethick {
+        float: right;
+        margin: 0px 2px 4px 0px;
+    }
+    
+    .openPackage {
+        padding: 5px;
+    }
+    
+    .sortData {
+        cursor: pointer;
+    }
+    
+    .hover_span {
+        display: none;
+        position: absolute;
+    }
+    
+    .hover_span img {
+        height: 100px !important;
+        width: 100px !important;
+        ;
+        margin-left: 10px;
+    }
+    
+    .hover_image:hover {
+        transform: scale(3);
+    }
+    
+    .openTransfer {
+        padding: 5px;
+    }
+    
+    .deleteItems {
+        padding: 5px;
+    }
+}
+</style>
+<form name="editItems" id="editItems">
+    <input type="hidden" class="criteria" value='<?php echo $criteria ?>' />
+    <div class="item_count">
+        <?php echo $count ?> result
+        <?php echo $count==1 ?'':'s' ?>
+    </div>
+    <li>
+        <?php //echo $criteria //for debugging ?>
+        <div class="list_wrapper">
+            <div class="list_header" style="background-color:#fff">
+                <?php if($inventoryAccess['add_item'] && $mode != 'store') { ?>
+                <a href="#" title="Add Item" class="link_additem"></a>
+                <?php } ?>
+                <span class="clear_this">&nbsp;</span>
+                <input type="button" name="transfer" value="Transfer To Warehouse" class="transferQty">
+                <!--  <select id="IvItemIvSubCategoryId" multiple><?php foreach($subCategories as $key => $val) { ?><option value="<?php echo $key ?>"><?php echo $val ?></option><?php } ?></select> -->
+                <input type="button" name="copyPackage" value="Copy to Package" class="openPackage">
+
+                <input type="button" name="copyItems" value="Copy Items" class="openItem">
+                <input type="button" name="copyItems" value="Transfer Items" class="openTransfer">
+                <input type="button" name="deleteItems" value="Delete Items" class="deleteItems">
+            </div>
+            <table id="estimateTab" class="list clear_this">
+                <thead>
+                    <tr style="background-color: #0a304e;color:#fff">
+                        <th><input type="checkbox" name="allSelect" class="allSelect"></th>
+                        <th></th>
+                        <th>Code</th>
+                        <th class="sortData" onclick="sortTable(2)">
+                            <?php echo $aliases['sku']['alias']==''?'SKU':$aliases['sku']['alias'] ?>
+                        </th>
+                        <!-- local =40, live= 39 -->
+                        <th>
+                            Image
+                        </th>
+                        <?php if($category_id == 39){?>
+                        <th class="sortData" onclick="sortTable(3)">Default Qty</th>
+                        <?php } else {?>
+                        <th class="sortData" onclick="sortTable(3)">Quantity</th>
+                        <?php } ?>
+                        <th class="sortData" onclick="sortTable(4)">Name</th>
+                        <th class="sortData" onclick="sortTable(5)">Supplier Price</th>
+                        <th class="sortData" onclick="sortTable(6);">Selling Price</th>
+                        <th class="sortData">Member</th>
+                        <?php if($inventoryAccess['extended_view']) { ?>
+                        <th>
+                            <?php echo $aliases['model']['alias']==''?'Model':$aliases['model']['alias'] ?>
+                        </th>
+
+                        <th>
+                            <?php echo $aliases['efficiency']['alias']==''?'Efficiency':$aliases['efficiency']['alias'] ?>
+                        </th>
+                        <th>Brand</th>
+                        <th>Supplier</th>
+
+                        <?php } ?>
+                        <?php foreach ($inventoryTechnician as $tech => $value): ?>
+                        <th>
+                            <?php echo $value['short_name'] ?>
+                        </th>
+                        <?php endforeach ?>
+                        <?php if($inventoryAccess['extended_view']) { ?>
+                        <th>H*W*D</th>
+                        <th>Description</th>
+                        <th>Dba</th>
+                        <th>Tonnage</th>
+                        <th>Seer</th>
+                        <th>Position </th>
+                        <th>Voltage</th>
+                        <th>Mocp</th>
+                        <th>Mca</th>
+                        <th>BTU</th>
+                        <th>Warranty</th>
+                        <?php } ?>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <?php $i = 0; ?>
+                    <?php foreach($items as $item) { ?>
+                    <tr data-id="<?php echo $item['id'] ?>" " row_order="<?=$i?>" class="rowNum
+                        <?=$i?>
+                            <?php echo $i++%2==0?'odd':'even' ?>
+                            <?php if($inventoryAccess['edit_item'] && $mode != 'store') { ?>editable
+                            <?php } ?> item "><input type="hidden" class="id" value="<?php echo $item['id'] ?>" />
+                            <input type="hidden" class="item_active" value="<?php echo $item['active'] ?>" />
+                            <input type="hidden" class="item_id" name="Items[<?=$i?>]['item_id']" value="<?php echo $item['id'] ?>" />
+                            <input type="hidden" class="item_sku" value="<?php echo $item['sku'] ?>" />
+                            <input type="hidden" class="item_name" value="<?php echo htmlentities(stripslashes($item['name']), ENT_QUOTES) ?>" />
+                            <input type="hidden" class="item_model" value="<?php echo $item['model'] ?>" />
+                            <input type="hidden" class="item_regular_price" value="<?php echo $item['regular_price'] ?>" />
+                            <input type="hidden" class="item_selling_price" value="<?php echo $item['selling_price'] ?>" />
+                            <input type="hidden" class="item_supplier_price" value="<?php echo $item['supplier_price'] ?>" />
+                            <input type="hidden" class="item_efficiency" value="<?php echo $item['efficiency'] ?>" />
+                            <input type="hidden" class="item_brand_id" value="<?php echo $item['brand_id'] ?>" />
+                            <input type="hidden" class="item_supplier_id" value="<?php echo $item['supplier_id'] ?>" />
+                            <input type="hidden" class="item_description1" value="<?php echo $item['description1'] ?>" />
+                            <input type="hidden" class="item_description2" value="<?php echo $item['description2'] ?>" />
+                            <input type="hidden" class="item_category_id" value="<?php echo $item['category_id'] ?>" />
+                            <input type="hidden" class="item_sub_category_id" value="<?php echo $item['sub_category_id'] ?>" />
+                            <input type="hidden" name="brandName" class="brand-name" value="<?=$item['brand_name']?>" />
+                            <input type="hidden" name="supplierName" class="supplier-name" value="<?=$item['supplier_name']?>" />
+                            <input type="hidden" name="categoryName" class="category-name" value="<?=$item['category_name']?>" />
+                            <input type="hidden" name="subCategoryName" class="sub-category-name" value="<?=$item['sub_category_name']?>" />
+                            <input type="hidden" name="markup_percent" class="markup_percent" value="<?=$item['markup_percent']?>" />
+                            <input type="hidden" name="tech_percent" class="tech_percent" value="<?=$item['tech_percent']?>" />
+                            <input type="hidden" name="Items[<?=$i?>]['default_qty']" class="default_qty" value="<?=$item['default_quantity']?>" />
+
+                            <td><input type="checkbox" name="Items[<?=$i?>]['transfer_select']" class="transferSelect" value="1"></td>
+                            <td style="width: 33px;"><img style="height: 14px;width: 14px;" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" class="remove-dup-item" inactiveId="<?=$InactiveId?>" itemId="<?=$item['id']?>"><img src="<?=ROOT_URL?>/app/webroot/img/add.png" class="add-dup-item"
+                                    itemId="<?=$item['id']?>"></td>
+                            <td><span class="sku"><?php echo $item['id'] ?></span></td>
+                            <td><span class="sku"><?php echo $item['sku'] ?></span></td>
+                            <td class="img-<?php echo $item['id'] ?>" id="<?php echo $item['id'] ?>">
+                                <?php
+                  $images1 = $item['image'];
+                  $year = substr($images1, 0, 4);
+                    $mon = substr($images1, 4, 2);
+                    $day = substr($images1, 6, 2);
+                    $name = $year.'/'.$mon.'/'.$day.'/'.$images1;
+                if(empty($images1)){
+                    $name="";
+                    
+                    $src="";
+            $img="";
+                    }
+        else {
+        if($item['is_import'] == 0)
+        {
+            $src=ROOT_URL.'/upload_photos/'.$name;
+        } else {
+            $src =  $item['image'];
+        }
+  
+            $img="<img class='hover_image' style='height: 30px;
+             width: 30px;' src='$src'>";
+          
+        }
+                  ?>
+                                    <?= $img ?>
+                                        <span class="hover_span"><?= $img ?></span>
+                            </td>
+                            <td><span class="quantity"><?php echo $item['default_quantity'] ?></span></td>
+                            <td><span class="name"><?php echo $item['name'] ?></span></td>
+                            <td class="right"><span class="supplier_price"><?php echo $item['supplier_price'] ?></span></td>
+                            <td class="right"><span class="selling_price"><?php echo $item['selling_price'] ?></span></td>
+                            <td class="right"><span class="member_price"><?php echo $item['member_price'] ?></span></td>
+                            <?php if($inventoryAccess['extended_view']) { ?>
+                            <td>
+                                <?php echo $item['model'] ?>
+                            </td>
+                            <td>
+                                <?php echo $item['efficiency'] ?>
+                            </td>
+                            <td>
+                                <?php echo $item['brand'] ?>
+                            </td>
+                            <td>
+                                <?php echo $item['supplier'] ?>
+                            </td>
+
+                            <?php } ?>
+                            <?php foreach ($inventoryTechnician as $tech => $value): ?>
+                            <td class="right">
+                                <?php if(!empty($item['tech_data'])){?>
+                                <?php foreach ($item['tech_data'] as $tech1 => $value1): ?>
+                                <?php if($value['id'] == $value1['TechInventoryItem']['tech_id'] ) {?>
+                                <?php echo $value1['TechInventoryItem']['quantity'] ?>
+                                <?php } ?>
+                                <?php endforeach ?>
+                                <?php } ?>
+                            </td>
+                            <?php endforeach ?>
+                            <?php if($inventoryAccess['extended_view']) { ?>
+                            <td>
+                                <?php echo $item['description1'] ?>
+                            </td>
+                            <td>
+                                <?php echo $item['description2'] ?>
+                            </td>
+                            <td>
+                                <?php echo $item['dba'] ?>
+                            </td>
+                            <td>
+                                <?php echo $item['tonnage'] ?>
+                            </td>
+                            <td>
+                                <?php echo $item['seer'] ?>
+                            </td>
+                            <td>
+                                <?php echo $item['position'] ?>
+                            </td>
+                            <td>
+                                <?php echo $item['voltage'] ?>
+                            </td>
+                            <td>
+                                <?php echo $item['mocp'] ?>
+                            </td>
+                            <td>
+                                <?php echo $item['amprage'] ?>
+                            </td>
+                            <td>
+                                <?php echo $item['btu'] ?>
+                            </td>
+                            <td>
+                                <?php echo $item['warranty'] ?>
+                            </td>
+                            <?php } ?>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+        <div class="clear_this">&nbsp;</div>
+    </li>
+</form>
 <pre>
 <?php //echo $query ?>
 </pre>
+<div class="showPackages">
+    <span>Package</span>
+    <select id="IvItemIvSubCategoryId" multiple><?php foreach($subCategories as $key => $val) { ?><option value="<?php echo $key ?>"><?php echo $val ?></option><?php } ?></select>
+    <input type="button" name="copyPackage" value="Save" class="transferPkg">
+
+</div>
+<div class="showSubCategory">
+    <div>
+        <span><b>Copy Items:</b></span>
+    </div>
+    <div style="margin: 10px;">
+        <label for="filebutton"><b>Select Category</b></label>
+        <select id="IvItemIvCategoryId"><option value="">--</option><?php foreach($midCategoryList as $key => $val) { ?><option value="<?php echo $key ?>"><?php echo $val ?></option><?php } ?></select>
+    </div>
+    <div style="margin: 10px;">
+        <label for="filebutton"><b>Select Sub Category</b></label>
+        <select id="sub_category_id"><option value="">--</option></select>
+    </div>
+    <div style="margin: 10px;">
+        <input type="button" name="copyItem" value="Copy" class="copyItems">
+    </div>
+
+</div>
+<div class="showTransferItem">
+    <div>
+        <span><b>Transfer Items:</b></span>
+    </div>
+    <div style="margin: 10px;">
+        <label for="filebutton"><b>Select Category</b></label>
+        <select id="IvItemTransferCategoryId"><option value="">--</option><?php foreach($midCategoryList as $key => $val) { ?><option value="<?php echo $key ?>"><?php echo $val ?></option><?php } ?></select>
+    </div>
+    <div style="margin: 10px;">
+        <label for="filebutton"><b>Select Sub Category</b></label>
+        <select id="sub_category_id_transfer"><option value="">--</option></select>
+    </div>
+    <div style="margin: 10px;">
+        <input type="button" name="TransferItems" value="Transfer" class="TransferItems">
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        var a = 1;
+        $('#IvItemIvSubCategoryId').multiselect().deselectAll();
+        $('#IvItemIvSubCategoryId').multiselect();
+        $('#IvItemIvSubCategoryId option').each(function() {
+            $(this).attr('selected', false);
+        });
+        hideMultiselects(a);
+
+        $(".showPackages").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "",
+            autoOpen: false,
+            width: 300,
+            height: 200,
+            cache: false
+        });
+
+        $(".showSubCategory").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "",
+            autoOpen: false,
+            width: 400,
+            height: 300,
+            cache: false
+        });
+
+        $(".showTransferItem").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "",
+            autoOpen: false,
+            width: 400,
+            height: 300,
+            cache: false
+        });
+
+        $(".openPackage").live("click", function() {
+
+            $('#IvItemIvSubCategoryId').multiselect().deselectAll();
+            $(".showPackages").dialog('open');
+        });
+
+        $(".openItem").live("click", function() {
+            // $('#IvItemIvSubCategoryId').multiselect().deselectAll();
+            $(".showSubCategory").dialog('open');
+        });
+
+        $(".openTransfer").live("click", function() {
+            $(".showTransferItem").dialog('open');
+        });
+
+        /*$(".multiselect-checkbox").live("change", function(){
+         var ischecked= $(this).is(':checked');
+         var dataVal = $(this).attr('data-val');
+         if(!ischecked) {
+            $('#IvItemIvSubCategoryId option').each(function() {
+                $(this).attr('selected',false);
+            });
+         }
+    });*/
+
+        $('#IvItemTransferCategoryId').live('change', function() {
+            var categoryId = $(this).val();
+            var category = $(this).find("option:selected").text();
+            // $("#category-name").val(category);
+            $.ajax({
+                url: "<?=BASE_URL?>/iv_items/getSubCategories",
+                data: {
+                    categoryId: categoryId
+                },
+                type: "POST",
+                success: function(result) {
+                    $('#sub_category_id_transfer').empty();
+                    $('#sub_category_id_transfer').append(result);
+                },
+                error: function(error) {
+                    console.log('error');
+                }
+            });
+        });
+
+        $('#IvItemIvCategoryId').live('change', function() {
+            var categoryId = $(this).val();
+            var category = $(this).find("option:selected").text();
+            // $("#category-name").val(category);
+            $.ajax({
+                url: "<?=BASE_URL?>/iv_items/getSubCategories",
+                data: {
+                    categoryId: categoryId
+                },
+                type: "POST",
+                success: function(result) {
+                    $('#sub_category_id').empty();
+                    $('#sub_category_id').append(result);
+                },
+                error: function(error) {
+                    console.log('error');
+                }
+            });
+        });
+    });
+    IvItemTransferCategoryId
+    window.onclick = function(a) {
+        var myEle = document.getElementById("IvItemIvSubCategoryId");
+        if (myEle) {
+            hideMultiselects(a);
+        }
+    }
+
+    function sortTable(n) {
+        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.getElementById("estimateTab");
+        switching = true;
+        //Set the sorting direction to ascending:
+        dir = "asc";
+        /*Make a loop that will continue until
+        no switching has been done:*/
+        while (switching) {
+            //start by saying: no switching is done:
+            switching = false;
+            rows = table.rows;
+            /*Loop through all table rows (except the
+            first, which contains table headers):*/
+            for (i = 1; i < (rows.length - 1); i++) {
+                //start by saying there should be no switching:
+                shouldSwitch = false;
+                /*Get the two elements you want to compare,
+                one from current row and one from the next:*/
+                x = rows[i].getElementsByTagName("TD")[n];
+                y = rows[i + 1].getElementsByTagName("TD")[n];
+                /*check if the two rows should switch place,
+                based on the direction, asc or desc:*/
+                if (dir == "asc") {
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                        //if so, mark as a switch and break the loop:
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (dir == "desc") {
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                        //if so, mark as a switch and break the loop:
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldSwitch) {
+                /*If a switch has been marked, make the switch
+                and mark that a switch has been done:*/
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                //Each time a switch is done, increase this count by 1:
+                switchcount++;
+            } else {
+                /*If no switching has been done AND the direction is "asc",
+                set the direction to "desc" and run the while loop again.*/
+                if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+    }
+</script>

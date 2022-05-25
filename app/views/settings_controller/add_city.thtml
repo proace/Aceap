@@ -1,0 +1,82 @@
+<html> 
+<head>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<script src="<?=ROOT_URL;?>/app/webroot/js/jpicker-1.1.6.min.js" type="text/javascript"></script>
+<script src="<?=ROOT_URL;?>/app/webroot/js/jscolor.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<link rel="Stylesheet" type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/jPicker.css" />
+<script type="text/javascript">        
+  $(document).ready(
+    function()
+    {
+      $('#colorCode').jPicker();
+    });
+</script>
+<style>
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 2px;
+}  
+.shift {
+  float: left;
+  padding: 10px;
+} 
+
+td {
+  border: 0px ; border-collapse: ;
+}
+</style>
+</head>
+<form method="POST" action="<?php echo BASE_URL ?>/settings/createCity" name="createCity" >
+  <h1>Add City</h1>
+    <table style="border: 0px ; border-collapse: ;" id="dynamic_field">
+        <tr>
+            <td>
+              <b><label>Name:</label>&nbsp</b>
+            </td>
+            <td>
+              <input type="text" id="cityName" name="cityName" value="">
+            </td>
+        </tr>
+        <tr>  
+          <td>
+            <b><label>Postal Code:</label>&nbsp</b>
+          </td>
+            <td>
+              <input type="text" id="postalCode" name="postalCode" value="">
+            </td>
+        </tr>
+         <tr>  
+          <td>
+            <b><label>Color:</label>&nbsp</b>
+          </td>
+            <td>
+              <input type="text" id="colorCode" name="color">
+            </td>
+        </tr>
+         <tr>  
+          <td>
+            <b><label>Select color:</label>&nbsp</b>
+          </td>
+            <td>
+              <input data-jscolor="">
+            </td>
+        </tr>
+       
+      <!--  <tr>  
+          <td>
+            <b><label>City Code:</label>&nbsp</b>
+          </td>
+            <td>
+              <input type="text" placeholder="ex. AB" id="cityCode" name="cityCode" value="">
+            </td>
+        </tr> -->
+    </table>   
+    <div class="shift"> 
+        <input type="submit" value="Save"/>
+    </div>  
+</form>

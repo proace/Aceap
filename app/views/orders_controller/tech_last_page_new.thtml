@@ -1,0 +1,715 @@
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+//echo "<pre>";
+//print_r($new_images);
+//die();
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Invoice</title>
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui.min.js"></script>
+
+<!-- <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script> -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.2.0/dropzone.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.2.0/dropzone.css" rel="stylesheet" type="text/css">
+<link href="<?=ROOT_URL;?>/app/webroot/css/jquery-ui.min.css" rel="stylesheet" type="text/css">
+<!-- <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" /> -->
+<link href="<?=ROOT_URL;?>/app/webroot/css/jquery-ui.min.css" rel="stylesheet" type="text/css">
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/style.css" />
+<style>
+
+
+body {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:12px;	
+}
+.ins_text{
+    margin: 5px; width: 743px; height: 197px;
+}
+#installation_item_table th{
+    text-align: left;
+}
+#installation_item_table td{
+    padding-top: 10px;
+}
+#invoice{
+margin-left : 0px;
+}
+.hide {
+	display:none;	
+}
+
+.rank {
+	width:30px;
+	text-align:right;
+}
+
+.value {
+	width:200px;	
+}
+
+.response {
+	width:200px;
+}
+
+.suggestion {
+	width:200px;
+}
+
+.decision {
+	width:200px;
+}
+
+.delete_box {
+	background-color:#C00;
+	color:#F93;
+	padding: 4px 1px 2px;
+	border-radius: 5px;
+}
+
+.notify_box {
+	background-color:#090;
+	color:#9F0;
+	padding: 4px 1px 2px;
+	border-radius: 5px;
+}
+
+select {
+	width:200px;
+}
+
+input[type=text] {
+	width:200px;	
+}
+
+#questions_template {
+	border:1px solid #CCC;
+	border-collapse: collapse;
+}
+
+#questions_template th {
+	background-color:#ccc;
+	padding:7px;	
+}
+
+#questions_template .even_row {
+	background-color:#eee;	
+}
+
+#questions_template td {
+	padding:2px;
+}
+.invoice-openImg{
+    height: 100px;
+    width: 50px;
+}
+
+@media only screen and (max-width: 796px) {
+	.next_div input[type=submit], .next_div input[type=button] {
+
+	display:block;
+	margin:15px;
+
+	
+
+}
+
+.review_text p{
+	font-size:14px !important;
+}
+  
+}
+#image_upload{
+	min-width:100px;
+	height:50px;
+}
+.images_div{
+	padding:5px;
+	max-width:800px;
+}
+.images_div img{
+	padding:5px;
+}
+</style>
+</head>
+<?php $is_selected = ""; ?>
+<body>
+	
+	<?php
+	require_once 'Mobile_Detect.php';
+
+
+
+	$detect = new Mobile_Detect;
+ 
+// Any mobile device (phones or tablets).
+if ( $detect->isMobile() ) { ?>
+ <style>
+	ul#nav{
+		display:none;
+	}
+ </style>
+ 
+<?php }
+	?>
+	
+<!-- <ul id="nav">
+    <li><a id="jobs_link" href="<?php echo BASE_URL;?>/orders/invoiceTablet" class="buttons" class="buttons"><div>Jobs</div></a></li>
+    <li><a href="<?php echo BASE_URL;?>/pages/main" id="home_link" class="buttons"><div>ACESYS</div></a></li>
+    <li><a id="calc_link" class="buttons"><div>Eff Calculator</div></a></li>
+</ul> -->
+<!-- <div id="nav"></div> -->
+<div id="invoice">
+	 <?php $job = $this_job ?>
+    <div>
+    <?php if($last_order['Order']['order_number'] != "") { ?>
+    <h2><?php echo $last_order['Order']['order_number'] ?> - <?php echo $last_order['Type']['name'] ?></h2>
+    <?php } ?>
+    </div>
+    <div id="overview_div">   
+    <!--<?php echo $job['Order']['job_date'] ?>-->
+    <?php if($job['Order']['order_status_id'] == 8 && ($job['Order']['job_date'] == '0000-00-00' || $job['Order']['job_date'] == '')) { ?>
+    	<h3 id="question_opener">Do you want to answers the Questions?
+        	&nbsp;&nbsp;&nbsp;
+    		<input type="button" class="next_submit" id="open_questions" value="Yes" style="width:100px;height:50px;" />
+            &nbsp;&nbsp;&nbsp;
+            <input type="button" class="next_submit" id="skip_to_comments" value="No" style="width:100px;height:50px;" />
+        </h3>
+    <?php } ?>
+    <form  name="questions_form" id="questions_form" action="<?php echo BASE_URL ?>/orders/saveTechQuestionsNew" method="post" <?php if($job['Order']['order_status_id'] == 8 && ($job['Order']['job_date'] == '0000-00-00' || $job['Order']['job_date'] == '')) { ?>style="display:none;"<?php } ?>>
+    <?php echo $html->input('Invoice/order_id', array('type'=>'hidden', 'value'=>$job['Order']['id'])); ?>    
+    <?php echo $html->input('Invoice/order_type_id', array('type'=>'hidden', 'value'=>$job['Order']['order_type_id'])); ?>
+    <?php echo $html->input('Invoice/order_status_id', array('type'=>'hidden', 'value'=>$job['Order']['order_status_id'])); ?>
+    <?php echo $html->input('Invoice/last_order_id', array('type'=>'hidden', 'value'=>$last_order['Order']['id'])); ?>
+    <input type="hidden" name="orderNum" id="orderNum" value="<?php echo $job['Order']['order_number'] ?>" >
+    <input type="hidden" name="invoiceAnsVal" id="invoiceAnsVal" value="0" >
+    <input type="hidden" name="reviewAnsVal" id="reviewAnsVal" value="0" >
+    <input type="hidden" name="stickerAnsVal" id="stickerAnsVal" value="0" >
+    <?php
+    if($job['Order']['fact_job_end']=='00:00:00'){
+$duration="";    
+$duration1='';
+$duration2="";
+$duration3="";
+$duration4="";
+    }
+    else {
+    (strtotime($job['Order']['fact_job_end'])-strtotime($job['Order']['fact_job_beg']))/60;
+    $duration1 = " min";
+    
+     $timeOut = date("H:i:s");
+        $timeDiff = floor(strtotime($job['Order']['fact_job_end'])-strtotime($job['Order']['fact_job_beg']))/60;
+        
+        $hours = floor($timeDiff / 60);
+        $min = round($timeDiff - ($hours * 60));
+        $duration = "Duration:";
+        $duration1 = $hours;
+        $duration2 = " hour ";
+        $duration3 = $min;
+        $duration4 = " minute";
+    }
+
+
+    ?>
+
+    <?php if($job['Order']['id'] == $order_id) { ?>
+     
+                <!--<tr>
+                     <?php foreach ($allImages as $key => $value) {
+                       
+                        ?>
+                        <td>
+                            <div style="position: relative; padding:0;"> 
+                                <span style="position:absolute;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?php echo $value['image_name']; ?>" image-id="<?php echo $value['id']; ?>"></span>
+                                <img id="" class="invoice-openImg order-images" src="<?php echo ROOT_URL.'/upload_photos/'.$value['image_name'];?>">
+                            </div>
+                        </td>
+                        
+                    <?php } ?>
+                </tr>-->
+																
+																<?php
+																$get_counter=0;
+																foreach($new_images as $images){
+																$get_images = explode(',',$images[1]);
+																$get_ids = explode(',',$new_images_id[$get_counter][0]);
+																$name="";
+																if(empty($images[2])){
+																$date="";
+																}
+																else {
+																$date=$images[2];
+																}
+																$image_id = $images[0];
+																?>
+																<div class="images_div">
+																<input type="text" value="<?= $images[3] ?>" class="save_label">
+																<input type="date" value="<?= $date ?>" class="save_date">
+																	<br>
+																	
+																	<?php
+																	$id_counter=0;
+																	foreach($get_images as $images1){
+																	
+																	$year = substr($images1, 0, 4);
+        $mon = substr($images1, 4, 2);
+        $day = substr($images1, 6, 2);
+        $name = $year.'/'.$mon.'/'.$day.'/'.$images1;
+																	?>
+																	
+																	
+                  
+                  <span style="position:absolute;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?php echo $name; ?>" image-id="<?php echo $get_ids[$id_counter]; ?>"></span>
+                  <img id="" class="invoice-openImg order-images" src="<?php echo ROOT_URL.'/upload_photos/'.$name;?>">
+                           
+                        
+																	
+																<?php
+																$image_id++;
+																$id_counter++;
+																} ?>
+																	
+																	<button data-customer="<?= $images[4] ?>" data-date="<?= $date ?>" class="save_order_images">save</button>
+																
+																</div>
+															<?php
+															$get_counter++;
+															}
+																
+																?>
+																
+      
+    <input type="button" id="image_upload" name="imageUpload" value="Upload Images" style="margin-top: 10px">
+    <div class="review_text">
+        <p><b>Did you get a 5 star review?</b>
+            <input type="checkbox" <?php echo ($job['Order']['review_answer'] == 1 ?'checked' : '') ?> name="review_answer" class= "review_answer" value="1">Yes <input type="checkbox" <?php echo ($job['Order']['review_answer'] == 2 ?'checked' : '') ?> class= "review_answer" name="review_answer" value="2"> No
+        </p>
+        <p><b>Did Customer view their invoice with you?</b>
+            <input type="checkbox" <?php echo ($job['Order']['invoice_answer'] == 1 ?'checked' : '') ?> name="invoice_answer" class= "invoice_answer" value="1">Yes <input type="checkbox" <?php echo ($job['Order']['invoice_answer'] == 2 ?'checked' : '') ?> class= "invoice_answer" name="invoice_answer" value="2"> No
+        </p>
+        <p><b> Did you leave a sticker on customers furnace or boiler?</b>
+            <input type="checkbox" <?php echo ($job['Order']['leave_sticker'] == 1 ?'checked' : '') ?> name="leave_sticker" class= "leave_sticker" value="1">Yes <input type="checkbox" <?php echo ($job['Order']['leave_sticker'] == 2 ?'checked' : '') ?> class= "leave_sticker" name="leave_sticker" value="2"> No
+        </p>
+       
+    </div>
+        <!-- <form action="<?=BASE_URL;?>/settings/subCatImageUpload" class="dropzone"></form> -->
+        <div id="durationDiv">
+           <b><span id="timeDuration"><?= $duration.$duration1.$duration2.$duration3.$duration4 ?></span></b>
+        </div>
+
+    	<div class="next_div">       
+            <input type="button" class="next_submit" id="test_required" value="Submit" />   
+            <input type="button" disabled class="next_submit" id="job_complete" value="Job Completed" onclick="window.location='<?php echo BASE_URL. '/orders/invoiceTablet'?>'" />   
+            <input type="button" class="review-btn" value="Back" onclick="window.location='<?php echo BASE_URL. '/orders/invoiceTabletPrint?order_id='.$job['Order']['id'].''?>'" id="moveToItem"> 	
+            <input type="button" class="installation_items commonCls" value="Installation Items" />  
+             <!-- <input type="button" class="commonCls" id= "techRecommended" name="techRecommended" value="Tech Recommended" /> -->
+            <!--<input type="button" class="commonCls" name="estimate" onclick="window.open('<?php echo BASE_URL ?>/orders/editBooking?customer_id=<?php echo $job['Customer']['id']?>&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date('d M Y'));?>&job_technician1_id=<?php echo $job['Order']['job_technician1_id']?>&job_technician2_id=0&from_tech_page=5&show_preview=1&booking_source_id=<?php echo $loggedUserId?>&old_order_id=<?php echo $job['Order']['id'] ?>&old_oder_type=<?echo $job['Order']['order_type_id']?>', '_self')" value="Estimate" />
+             <input type="button" class="commonCls" name="partRequest" onclick="window.open('<?php echo BASE_URL ?>/orders/editBooking?customer_id=<?php echo $job['Customer']['id']?>&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date('d M Y'));?>&job_technician1_id=<?php echo $job['Order']['job_technician1_id']?>&job_technician2_id=0&from_tech_page=5&booking_source_id=<?php echo $loggedUserId?>&part_request=1&old_order_id=<?php echo $job['Order']['id'] ?>&old_oder_type=<?echo $job['Order']['order_type_id']?>', '_self')" value="Part Request" />         
+-->       </div>
+    </form>  
+         <div id="subcat_images_box" style="display: none;">
+          <form id="imageUploadForm" action="<?=BASE_URL;?>/orders/saveTechImages" class="dropzone">
+            <input type="hidden" name="orderId" id="order-image-id" value="<?=$job['Order']['id']?>">
+            <input type="hidden" name="customerId" id="order-cust-id" value="<?=$job['Customer']['id']?>">
+												<input type="hidden" name="date_image" id="data_image">
+													<input type="hidden" name="label_image" id="label_image">
+          </form>
+										<input type="text" name="label" placeholder="images label" id="images_label">
+										<input type="date" name="date_images" id="date_images">
+            <button id="uploaderBtn" type="button" class="btn btn-primary">Save</button>
+            <button type="button" class="btn btn-default " id="close-upload-btn" data-dismiss="modal">Remove images</button>
+        </div>     
+    </div>
+    <?php } ?>    
+</div>
+
+<div class="invoice-img-enlarge" title="Photo">
+    <!-- <img src="<?=$imgPath?>" style="width:100%;"> -->
+    <img src="<?=$imgPath?>" class="rotate-image" style="width:100%;">
+    <?php echo $this->element('image_rotate'); ?>
+
+</div>
+<div id="recommendBox" style="display: none;">
+    <table>
+        <tr>
+            <td>
+                <textarea rows="10" cols="70" id="recommendMsg"></textarea>            
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="button" name="saveRecommend" id="saveRecommend" value="Save" style="padding: 5px; margin-top: 5px;">    
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="installation_item_box" title="Item" style="display: none">
+    <form id="installation_item_form">
+        <table id="installation_item_table" class="inResultsBooking" style="width: 100%;">
+            <thead>             
+                <tr>
+                    <th onclick="sortTable(0);" style="cursor: pointer;">Name</th>
+                    <th>Office</th>
+                    <th>Tech</th>
+                    <th>Price</th>
+                    <th>Sum</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php 
+                 $h = '';
+                foreach ($items as $key => $value) {  
+
+                $h .= '<tr class="booked">';
+                 $h .=  '<input  type="hidden" id="data[Order][InstallationItem]['.$key.'][id]" name="data[Order][InstallationItem]['.$key.'][id]" value="'.$value['OrderInstallationItem']['id'].'"/>'; 
+                 $h .=  '<input  type="hidden" id="data[Order][InstallationItem]['.$key.'][item_id]" name="data[Order][InstallationItem]['.$key.'][item_id]" value="'.$value['OrderInstallationItem']['item_id'].'"/>';
+                $h .= '<input  type="hidden" class="t-input" id="data[Order][InstallationItem]['.$key.'][name]" name="data[Order][InstallationItem]['.$key.'][name]" value="'.$value['OrderInstallationItem']['name'].'"/>';
+                $h .= '<td class="name">'.$value['OrderInstallationItem']['name'].'</td>';
+                $h .= '<td class="quantity"><input disabled type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][quantity]" name="data[Order][InstallationItem]['.$key.'][quantity]" value="'.$value['OrderInstallationItem']['quantity'].'"/></td>';
+                $h .= '<td class="tech_quantity"><input type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][tech_quantity]" name="data[Order][InstallationItem]['.$key.'][tech_quantity]" value="'.$value['OrderInstallationItem']['tech_quantity'].'" onkeyup="InstallationCalculation()"/></td>';
+                $h .= '<td class="price"><input disabled type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][price]" name="data[Order][InstallationItem]['.$key.'][price]" value="'.$value['OrderInstallationItem']['price'].'" onkeyup="InstallationCalculation()"/></td>';
+                $h .= '<td class="total"><input type="text" class="t-input" disabled id="data[Order][InstallationItem]['.$key.'][total]" name="data[Order][InstallationItem]['.$key.'][total]" value="'.($value['OrderInstallationItem']['price'] * $value['OrderInstallationItem']['tech_quantity'] ).'"/></td>';
+                
+                 $h .= '</tr>';
+                 
+              } 
+              echo $h; ?>
+            </tbody>
+        </table>
+        <div class="installationTotal"></div>
+        <span><b>Notes:</b></span><textarea class="ins_text" name="data[Order][installation_notes]"><?= $job['Order']['installation_notes'] ?></textarea>
+        
+        <input type="hidden"  name="data[Order][order_id]" value="<?= $job['Order']['id'];?>">
+        <input type="button" id="saveInstallationItem" name="saveInstallationItem" value="Save">
+    </form>
+</div>
+<pre>
+<?php //print_r($working_answers) ?>
+</pre>
+<?php echo $this->element('tech_footer'); ?>
+
+</body>
+</html>
+<script type="text/javascript">
+	
+	
+     Dropzone.autoDiscover = false;
+  
+
+    // if (document.getElementById('DropzoneElementId')) {
+      var myAwesomeDropzone = new Dropzone("form#imageUploadForm", {
+
+        autoProcessQueue: false,
+        maxFiles: 100,
+        uploadMultiple: true,
+								parallelUploads: 100,
+        dictDefaultMessage:"Upload 10 images at a time.",
+        
+        init: function() {
+
+            var submitButton = document.querySelector("#uploaderBtn")
+            var closeButton = document.querySelector("#close-upload-btn")
+                myDropzone = this; // closure
+
+            submitButton.addEventListener("click", function() {
+													$('#label_image').val();
+                myDropzone.processQueue(); // Tell Dropzone to process all queued files.
+            });
+
+            closeButton.addEventListener("click", function() {
+													$('#label_image').val($('#images_label').val());
+                myDropzone.removeAllFiles(); // Tell Dropzone to process all queued files.
+            });
+
+            // You might want to show the submit button only when 
+            // files are dropped here:
+            this.on("addedfile", function(file) {
+                 // Create the remove button
+                var removeButton = Dropzone.createElement("<div class='remove-upload-img'><button class='btn btn-link '><i class='fa fa-times'></i></button></div>");
+
+                var _this = this;
+
+                removeButton.addEventListener("click", function(e) {
+
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  _this.removeFile(file);
+                });
+
+                file.previewElement.appendChild(removeButton);
+            });
+
+            this.on("success", function(file, responseText) {
+													
+                myDropzone.removeAllFiles(); 
+                $('#close-upload-btn').trigger('click');
+                $('#subcat_images_box').dialog('close');
+																if (localStorage.getItem("fronFirstPage")==1) {
+																	localStorage.setItem("fronFirstPage", "0");
+																	window.close();
+       
+							return false;
+								
+    }
+                location.reload(true);
+            });
+        }
+    });
+
+// }
+
+$( document ).ready(function() {
+	if (localStorage.getItem("fronFirstPage")==1) {
+        $('#image_upload').trigger('click');
+								
+    }
+    var live_server = "/acesys/index.php/";
+    $("#test_required").on("click", function(){
+        var invoiceAns = $("#invoiceAnsVal").val();
+        var reviewAns = $("#reviewAnsVal").val();
+        var stickerAns = $("#stickerAnsVal").val();
+        var testAns = true;
+        $(".review_answer").each(function(){
+            if($(this).is(":checked")){
+               reviewAns = 1;
+            }
+        });
+        $(".invoice_answer").each(function(){
+            if($(this).is(":checked")){
+               invoiceAns = 1;
+            }
+        });
+        
+        $(".leave_sticker").each(function(){
+            if($(this).is(":checked")){
+               stickerAns = 1;
+            }
+        });
+        $(".text_response").each(function(){
+            if($(this).val() == ''){
+               testAns = false;
+            }
+        })
+
+       
+    if(invoiceAns == 1 && reviewAns == 1 && stickerAns == 1){          
+        var formdata = new FormData($("#questions_form")[0]);
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', "<?=BASE_URL;?>/orders/saveTechQuestionsNew", true);
+            xhr.onload = function (data) {
+                 var response = JSON.parse(xhr.response);
+              if (response.res == 1) {
+                    alert('Data saved successfully.');
+                    $('#job_complete').prop("disabled", false);
+                    if (response.duration!=='updated') {
+                       $("#timeDuration").text('Duration:'+response.duration);
+                    }
+                    
+                    $("#durationDiv").show();
+              }
+            };
+
+            xhr.send(formdata);
+                // document.forms['questions_form'].submit();        
+            
+        }else{
+            alert("Please Response a checkbox Questions");
+        }
+    });
+
+    $("#saveRecommend").on("click", function(){
+        var msg = $("#recommendMsg").val();
+        var orderNum = $("#orderNum").val();
+        var orderId = $("#InvoiceOrderId").val();
+        $.ajax({
+            url: live_server + "orders/addTechRecommendation",
+            type: "post",
+            dataType:"json",
+            data: {orderId:orderId, msg:msg, orderNum:orderNum},
+            success: function(data)
+            {
+                if(data.res == 1){
+                    $("#recommendBox").dialog("close");
+                }
+            }
+        });
+    });
+    $("#recommendBox").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Tech Recommend",
+            autoOpen: false,
+            width: 700,
+            height: 500,
+        });
+    $('#techRecommended').on('click', function(){
+        $( "#recommendBox" ).dialog("open");
+    });
+
+    $(function () {
+        $(".invoice-img-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 1024,
+            height: 786,
+        });
+        $(".invoice-openImg").on("click",function () {
+            var imgPath = $(this).attr('src');
+            $('.invoice-img-enlarge img').attr('src', imgPath);
+            $('.invoice-img-enlarge').dialog('open');
+        });
+    }); 
+       $("#subcat_images_box").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "",
+                autoOpen: false,
+                width: 850,
+                height: 'auto',
+                cache: false
+      });
+
+    $("#image_upload").on("click",function(){
+        // $("#-image-id").dialog('open');
+        $("#subcat_images_box").dialog('open');
+    });
+
+    $('.review_answer').on("change", function(){
+        var $cur = $(this);
+        var $val = $(this).val();
+        if($cur.is(":checked"))
+        {
+            $('.review_answer').prop('checked',false);
+            $cur.prop('checked', true);
+            $("#reviewAnsVal").val(1);
+        }else{
+            $("#reviewAnsVal").val(0);
+        }
+    });
+
+     $('.leave_sticker').on("change", function(){
+        var $cur = $(this);
+        var $val = $(this).val();
+        if($cur.is(":checked"))
+        {
+            $('.leave_sticker').prop('checked',false);
+            $cur.prop('checked', true);
+            $("#stickerAnsVal").val(1);
+        }else{
+            $("#stickerAnsVal").val(0);
+        }
+    });
+    
+    $('.invoice_answer').on("change", function(){
+        var $cur = $(this);
+        var $val = $(this).val();
+        if($cur.is(":checked"))
+        {
+            $('.invoice_answer').prop('checked',false);
+            $cur.prop('checked', true);
+            $("#invoiceAnsVal").val(1);
+        }else{
+            $("#invoiceAnsVal").val(0);
+        }
+    });
+
+        $(".delete-purchase-image").on("click", function(){
+        var id = $(this).attr("image-id");
+        var imgPath = $(this).attr("image-name");
+        $.ajax({
+        url: live_server+'payments/deletePartImage',
+        dataType: 'html',
+        type: 'POST',
+        cache: false,
+        data: {id:id, imgPath:imgPath},
+        success: function(data) {
+                res = JSON.parse(data);
+                if(res.res == "OK")
+                {
+                    location.reload(true);
+                }
+            }           
+        });
+    });
+
+
+    $(".installation_item_box").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Items",
+            autoOpen: false,
+            width: 800,
+            height: 786,
+        });
+
+    $(".installation_items").on("click", function(){
+        $('.installation_item_box').dialog('open');
+    });
+
+    $("#saveInstallationItem").on("click", function(e){
+        e.preventDefault();
+        var formdata = new FormData($("#installation_item_form")[0]);
+        var xhr = new XMLHttpRequest();
+        // var  = <?php echo BASE_URL; ?>;
+        xhr.open('POST', live_server +"orders/saveTechInstallation", true);
+        xhr.onload = function () {
+            var response = JSON.parse(xhr.response);
+            if(response.res == 1)
+            {
+                $('.installation_item_box').dialog('close');
+            } 
+        };
+        xhr.send(formdata);
+    }); 
+
+});
+
+$('#date_images').change(function () {
+   // alert(this.value);
+			$('#data_image').val(this.value);
+});
+
+$('#images_label').on('keyup',function(){
+	
+	$('#label_image').val(this.value);
+	});
+
+	$('.save_order_images').on('click',function(e){
+		e.preventDefault();
+		var getparent = $(this).parent();
+		var label = getparent.find('.save_label').val();
+		var newdate = getparent.find('.save_date').val();
+		var customer = $(this).attr('data-customer');
+		var date = $(this).attr('data-date');
+		
+ $.ajax({
+            url: "<?php echo BASE_URL ?>/technicians/uploadimages",
+            type: "post",
+            dataType:"json",
+            data: {customer:customer, date:date,newdate:newdate,label:label},
+            success: function(data)
+            {
+													console.log(data);
+													location.reload(true);
+            },error: function (jqXHR, exception) {
+    console.log(exception);
+				location.reload(true);
+    // Your error handling logic here..
+},
+        });
+		
+		});
+
+</script>

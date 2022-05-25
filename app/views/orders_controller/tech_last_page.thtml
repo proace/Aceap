@@ -1,0 +1,722 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Invoice</title>
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui.min.js"></script>
+
+    <!-- <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script> -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.2.0/dropzone.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.2.0/dropzone.css" rel="stylesheet" type="text/css">
+    <link href="<?=ROOT_URL;?>/app/webroot/css/jquery-ui.min.css" rel="stylesheet" type="text/css">
+    <!-- <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" /> -->
+    <link href="<?=ROOT_URL;?>/app/webroot/css/jquery-ui.min.css" rel="stylesheet" type="text/css">
+    <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
+    <style>
+        .images_div{
+	padding:5px;
+    max-width:800px;
+}
+.images_div img{
+	padding:5px;
+}
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        .rank {
+            width: 30px;
+            text-align: right;
+        }
+
+        .value {
+            width: 200px;
+        }
+
+        .response {
+            width: 200px;
+        }
+
+        .suggestion {
+            width: 200px;
+        }
+
+        .decision {
+            width: 200px;
+        }
+
+        .delete_box {
+            background-color: #C00;
+            color: #F93;
+            padding: 4px 1px 2px;
+            border-radius: 5px;
+        }
+
+        .notify_box {
+            background-color: #090;
+            color: #9F0;
+            padding: 4px 1px 2px;
+            border-radius: 5px;
+        }
+
+        select {
+            width: 200px;
+        }
+
+        input[type=text] {
+            width: 200px;
+        }
+
+        #questions_template {
+            border: 1px solid #CCC;
+            border-collapse: collapse;
+        }
+
+        #questions_template th {
+            background-color: #ccc;
+            padding: 7px;
+        }
+
+        #questions_template .even_row {
+            background-color: #eee;
+        }
+
+        #questions_template td {
+            padding: 2px;
+        }
+
+        .invoice-openImg {
+            height: 100px;
+            width: 50px;
+        }
+
+        div.wrapper {
+            /*display: flex;*/
+            flex-wrap: wrap;
+        }
+
+        div.six {
+            padding: 10px;
+        }
+
+        p.notes {
+            font-weight: bold;
+            color: #8B0000;
+        }
+
+        @media only screen and (max-width: 768px) {
+            select{
+                width:100px;
+            }
+            input[type="text"]{
+                width:90px;
+            }
+            span.block {
+                display: block;
+                padding: 15px;
+
+            }
+
+            .wrapper textarea {
+                max-width: 300px;
+            }
+
+            body,
+            td,
+            th,
+            p {
+                font-size: 1em !important;
+            }
+        }
+    </style>
+</head>
+<?php $is_selected = ""; ?>
+
+<body>
+<script>
+var mobile=0;
+</script>
+    <?php
+	require_once 'Mobile_Detect.php';
+
+
+
+	$detect = new Mobile_Detect;
+ 
+// Any mobile device (phones or tablets).
+if ( $detect->isMobile() ) { ?>
+ <script>
+ //alert('ok');
+ var mobile=1;
+
+  $('#questions_template').hide();
+  $('div.header').hide();
+ 
+ </script>
+    <style>
+    
+        ul#nav {
+            display: none;
+        }
+
+        #invoice {
+            margin-left: 0px;
+        }
+    </style>
+
+    <?php }
+	?>
+    <ul id="nav">
+        <li><a id="jobs_link" href="<?php echo BASE_URL;?>/orders/invoiceTablet" class="buttons" class="buttons">
+                <div>Jobs</div>
+            </a></li>
+        <li><a href="<?php echo BASE_URL;?>/pages/main" id="home_link" class="buttons">
+                <div>ACESYS</div>
+            </a></li>
+        <li><a id="calc_link" class="buttons">
+                <div>Eff Calculator</div>
+            </a></li>
+    </ul>
+
+    <div id="invoice">
+        <?php $job = $this_job ?>
+        <div>
+            <?php if($last_order['Order']['order_number'] != "") { ?>
+            <h2><?php echo $last_order['Order']['order_number'] ?> - <?php echo $last_order['Type']['name'] ?></h2>
+            <?php } ?>
+        </div>
+        <div id="overview_div">
+            <!--<?php echo $job['Order']['job_date'] ?>-->
+            <?php if($job['Order']['order_status_id'] == 8 && ($job['Order']['job_date'] == '0000-00-00' || $job['Order']['job_date'] == '')) { ?>
+            <h3 id="question_opener">Do you want to answers the Questions?
+                &nbsp;&nbsp;&nbsp;
+                <input type="button" class="next_submit" id="open_questions" value="Yes"
+                    style="width:100px;height:50px;" />
+                &nbsp;&nbsp;&nbsp;
+                <input type="button" class="next_submit" id="skip_to_comments" value="No"
+                    style="width:100px;height:50px;" />
+            </h3>
+            <?php } ?>
+            <form name="questions_form" id="questions_form" action="<?php echo BASE_URL ?>/orders/saveTechQuestions"
+                method="post"
+                <?php if($job['Order']['order_status_id'] == 8 && ($job['Order']['job_date'] == '0000-00-00' || $job['Order']['job_date'] == '')) { ?>style="display:none;"
+                <?php } ?>>
+                <?php echo $html->input('Invoice/order_id', array('type'=>'hidden', 'value'=>$job['Order']['id'])); ?>
+                <?php echo $html->input('Invoice/order_type_id', array('type'=>'hidden', 'value'=>$job['Order']['order_type_id'])); ?>
+                <?php echo $html->input('Invoice/order_status_id', array('type'=>'hidden', 'value'=>$job['Order']['order_status_id'])); ?>
+                <?php echo $html->input('Invoice/last_order_id', array('type'=>'hidden', 'value'=>$last_order['Order']['id'])); ?>
+                <input type="hidden" name="orderNum" id="orderNum" value="<?php echo $job['Order']['order_number'] ?>">
+                <input type="hidden" name="invoiceAnsVal" id="invoiceAnsVal" value="0">
+                <input type="hidden" name="reviewAnsVal" id="reviewAnsVal" value="0">
+                <input type="hidden" name="stickerAnsVal" id="stickerAnsVal" value="0">
+
+                <?php if($job['Order']['id'] == $order_id) { ?>
+                <!--<table>
+                    <tr>
+                        <?php foreach ($allImages as $key => $value) {
+                       
+                        ?>
+                        <td>
+                            <div style="position: relative; padding:0;">
+                                <span style="position:absolute;"><img style="height: 15px;width: 12px;"
+                                        class="delete-purchase-image"
+                                        src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg"
+                                        image-name="<?php echo $value['image_name']; ?>"
+                                        image-id="<?php echo $value['id']; ?>"></span>
+                                <img id="" class="invoice-openImg order-images"
+                                    src="<?php echo ROOT_URL.'/upload_photos/'.$value['image_name'];?>">
+                            </div>
+                        </td>
+
+                        <?php } ?>
+                    </tr>
+                </table>-->
+                
+                	<?php
+																$get_counter=0;
+																foreach($new_images as $images){
+																$get_images = explode(',',$images[1]);
+																$get_ids = explode(',',$new_images_id[$get_counter][0]);
+																$name="";
+																if(empty($images[2])){
+																$date="";
+																}
+																else {
+																$date=$images[2];
+																}
+																$image_id = $images[0];
+																?>
+																<div class="images_div">
+																<input type="text" value="<?= $images[3] ?>" class="save_label">
+																<input type="date" value="<?= $date ?>" class="save_date">
+																	<br>
+																	
+																	<?php
+																	$id_counter=0;
+																	foreach($get_images as $images1){
+																	
+																	$year = substr($images1, 0, 4);
+        $mon = substr($images1, 4, 2);
+        $day = substr($images1, 6, 2);
+        $name = $year.'/'.$mon.'/'.$day.'/'.$images1;
+																	?>
+																	
+																	
+                  
+                  <span style="position:absolute;"><img style="height: 15px;width: 12px;" class="delete-purchase-image" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?php echo $name; ?>" image-id="<?php echo $get_ids[$id_counter]; ?>"></span>
+                  <img id="" class="invoice-openImg order-images" src="<?php echo ROOT_URL.'/upload_photos/'.$name;?>">
+                           
+                        
+																	
+																<?php
+																$image_id++;
+																$id_counter++;
+																} ?>
+																	
+																	<button data-customer="<?= $images[4] ?>" data-date="<?= $date ?>" class="save_order_images">save</button>
+																
+																</div>
+															<?php
+															$get_counter++;
+															}
+																
+																?>
+                <input type="button" id="image_upload" name="imageUpload" value="Upload Images"
+                    style="margin-top: 10px;">
+                <div style="display:none">
+                    <p><b>Did you get a 5 star review?</b>
+                        <input type="checkbox" <?php echo ($job['Order']['review_answer'] == 1 ?'checked' : '') ?>
+                            name="review_answer" class="review_answer" value="1">Yes <input type="checkbox"
+                            <?php echo ($job['Order']['review_answer'] == 2 ?'checked' : '') ?> class="review_answer"
+                            name="review_answer" value="2"> No
+                    </p>
+                    <p><b>Did Customer view their invoice with you?</b>
+                        <input type="checkbox" <?php echo ($job['Order']['invoice_answer'] == 1 ?'checked' : '') ?>
+                            name="invoice_answer" class="invoice_answer" value="1">Yes <input type="checkbox"
+                            <?php echo ($job['Order']['invoice_answer'] == 2 ?'checked' : '') ?> class="invoice_answer"
+                            name="invoice_answer" value="2"> No
+                    </p>
+                    <p><b> Did you leave a sticker on customers furnace or boiler?</b>
+                        <input type="checkbox" <?php echo ($job['Order']['leave_sticker'] == 1 ?'checked' : '') ?>
+                            name="leave_sticker" class="leave_sticker" value="1">Yes <input type="checkbox"
+                            <?php echo ($job['Order']['leave_sticker'] == 2 ?'checked' : '') ?> class="leave_sticker"
+                            name="leave_sticker" value="2"> No
+                    </p>
+
+                </div>
+                <table id="questions_template">
+                    <tr>
+                        <th>#</th>
+                        <th>Questions</th>
+
+                        <th>Tech Comment</th>
+                        <th>Responses</th>
+                        <!--<th>Admin
+                 Comment</th>
+                <th>Suggestions</th>
+                <th>Decisions</th>-->
+                    </tr>
+                    <?php $row = ""; $index = 1;?>
+                    <?php foreach($questions as $question_id => $question) { ?>
+                    <?php $row = $index++%2==0?"even_row":"";?>
+                    <?php if($question['type'] == 'dropdown') { ?>
+                    <tr>
+                        <td class="<?php echo $row ?>"><?php echo $question['rank'] ?></td>
+                        <td class="<?php echo $row ?>"><?php echo $question['value'] ?></td>
+
+                        <td class="error_indicator <?php echo $row ?>">
+                            <?php if(count($techresponses[$question_id]) > 0) { ?>
+                            <input type="hidden" class="question_id" value="<?php echo $question_id ?>" />
+                            <select class="text_response rank<?php echo $question['rank'] ?> required"
+                                name="data[Template][<?php echo $question_id ?>][text_id]">
+                                <option value="">?</option>
+                                <?php foreach($techresponses[$question_id] as $techresponse_id => $techresponse) { ?>
+                                <?php $is_selected = isset($working_answers[$question_id]['text_id'])&&$techresponse_id==$working_answers[$question_id]['text_id']?'selected="selected"':isset($carried_answers[$question_id]['text_id'])&&$techresponse_id==$carried_answers[$question_id]['text_id']?'selected="selected"':'' ?>
+
+                                <option <?php echo $is_selected ?> value="<?php echo $techresponse_id ?>">
+                                    <?php echo $techresponse['value'] ?></option>
+                                <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>
+                            </select>
+                            <?php }//END if ?>
+                        </td>
+                        <td class="<?php echo $row ?>">
+                            <?php if(count($responses[$question_id]) > 0) { ?>
+                            <input type="hidden" class="question_id" value="<?php echo $question_id ?>" />
+                            <select class="responses rank<?php echo $question['rank'] ?> required"
+                                name="data[Template][<?php echo $question_id ?>][response_id]">
+                                <option value="">?</option>
+                                <?php foreach($responses[$question_id] as $response_id => $response) { ?>
+                                <?php $is_selected = isset($working_answers[$question_id]['response_id'])&&$response_id==$working_answers[$question_id]['response_id']?'selected="selected"':isset($carried_answers[$question_id]['response_id'])&&$response_id==$carried_answers[$question_id]['response_id']?'selected="selected"':'' ?>
+
+                                <option <?php echo $is_selected ?> value="<?php echo $response_id ?>">
+                                    <?php echo $response['value'] ?></option>
+                                <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>
+                            </select>
+                            <?php }//END if ?>
+                        </td>
+
+                    </tr>
+                    <?php }//END if($question['type'] == 'dropdown') ?>
+                    <?php if($question['type'] == 'text') { ?>
+                    <tr>
+                        <td class="<?php echo $row ?>"><?php echo $question['rank'] ?></td>
+                        <td class="<?php echo $row ?>"><?php echo $question['value'] ?></td>
+
+                        <td class="error_indicator <?php echo $row ?>">
+                            <?php if(count($techresponses[$question_id]) > 0) { ?>
+                            <input type="hidden" class="question_id" value="<?php echo $question_id ?>" />
+                            <select class="text_response rank<?php echo $question['rank'] ?> required"
+                                name="data[Template][<?php echo $question_id ?>][text_id]">
+                                <option value="">?</option>
+                                <?php foreach($techresponses[$question_id] as $techresponse_id => $techresponse) { ?>
+                                <?php $is_selected = isset($working_answers[$question_id]['text_id'])&&$techresponse_id==$working_answers[$question_id]['text_id']?'selected="selected"':isset($carried_answers[$question_id]['text_id'])&&$techresponse_id==$carried_answers[$question_id]['text_id']?'selected="selected"':'' ?>
+
+                                <option <?php echo $is_selected ?> value="<?php echo $techresponse_id ?>">
+                                    <?php echo $techresponse['value'] ?></option>
+                                <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>
+                            </select>
+                            <?php }//END if ?>
+                            <!-- <input type="hidden" class="question_id" value="<?php echo $question_id ?>" />    -->
+                            <!--  <input type="text" class="text_response rank<?php echo $question['rank'] ?> required" name="data[Template][<?php echo $question_id ?>][text_response]" value="<?php echo isset($working_answers[$question_id]['text_response'])?$working_answers[$question_id]['text_response']:isset($carried_answers[$question_id]['text_response'])?$carried_answers[$question_id]['text_response']:'' ?>" />  
+               -->
+                        </td>
+                        <td class="<?php echo $row ?>">
+                            <?php if(count($responses[$question_id]) > 0) { ?>
+                            <input type="hidden" class="question_id" value="<?php echo $question_id ?>" />
+                            <input type="text" class="response_text rank<?php echo $question['rank'] ?> required"
+                                name="data[Template][<?php echo $question_id ?>][response_text]"
+                                value="<?php echo isset($working_answers[$question_id]['response_text'])?$working_answers[$question_id]['response_text']:isset($carried_answers[$question_id]['response_text'])?$carried_answers[$question_id]['response_text']:'' ?>" />
+                            <div class="response_codes">
+                                <?php foreach($responses[$question_id] as $response_id => $response) { ?>
+                                <div class="code">
+                                    <input type="hidden" class="rank" value="<?php echo $question['rank'] ?>" />
+                                    <input type="hidden" class="id" value="<?php echo $response_id ?>" />
+                                    <input type="hidden" class="operation_id"
+                                        value="<?php echo $response['operation_id'] ?>" />
+                                    <input type="hidden" class="which_id" value="<?php echo $response['which_id'] ?>" />
+                                    <input type="hidden" class="value" value="<?php echo $response['value'] ?>" />
+                                </div>
+                                <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>
+                            </div>
+                            <?php }//END if ?>
+                        </td>
+
+
+
+                    </tr>
+                    <?php }//END if($question['type'] == 'text') ?>
+                    <?php }//END foreach($questions as $question_id => $question) ?>
+                </table>
+
+                <div class="header">
+                    <div class="wrapper">
+                        <div class="six" style="display: none;">
+                            <p class="notes">Sold :</p>
+
+                            <p><textarea name="office_use" rows="8" cols="60" id="office_use"
+                                    value="<?=$job['Order']['office_use']?>"><?=$job['Order']['office_use']?></textarea>
+                        </div>
+                        <div class="six">
+                            <p class="notes">Call to Book :</p>
+
+                            <p><textarea name="call_to_book" rows="8" cols="60" id="call_to_book"
+                                    value="<?=$job['Order']['call_to_book']?>"><?=$job['Order']['call_to_book']?></textarea>
+                        </div>
+                        <div class="six">
+                            <p class="notes">Send estimate :</p>
+
+                            <p><textarea name="send_estimate" rows="8" cols="60" id="send_estimate"
+                                    value="<?=$job['Order']['send_estimate']?>"><?=$job['Order']['send_estimate']?></textarea>
+                        </div>
+                        <div class="six">
+                            <p class="notes">Order Parts :</p>
+
+                            <p><textarea name="order_parts" rows="8" cols="60" id="order_parts"
+                                    value="<?=$job['Order']['order_part']?>"><?=$job['Order']['order_part']?></textarea>
+                        </div>
+         
+
+                        <div class="six">
+                            <p class="notes">Notes for office only:</p>
+
+                            <p><textarea name="job_notes" rows="15" cols="60" id="tech_order_note"
+                                    value="<?=$job['Order']['job_tech_notes']?>"><?=$job['Order']['job_tech_notes']?></textarea>
+                        </div>
+                        <div class="six">
+                            <p class="notes">Notes for customer-prints on invoice:</p>
+
+                            <p><textarea name="job_customer_notes" rows="15" cols="60" id="tech_order_note1"
+                                    value="<?=$job['Order']['job_notes']?>"><?=$job['Order']['job_notes']?></textarea>
+                        </div>
+                    </div>
+                    <!-- <form action="<?=BASE_URL;?>/settings/subCatImageUpload" class="dropzone"></form> -->
+
+                    <div class="next_div">
+                        <span class="block">
+                            <input type="button" class="commonCls" name="estimate"
+                                onclick="window.open('<?php echo BASE_URL ?>/orders/editBooking?customer_id=<?php echo $job['Customer']['id']?>&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date('d M Y'));?>&job_technician1_id=<?php echo $job['Order']['job_technician1_id']?>&job_technician2_id=0&from_tech_page=5&show_preview=1&booking_source_id=<?php echo $loggedUserId?>&old_order_id=<?php echo $job['Order']['id'] ?>&old_oder_type=<?echo $job['Order']['order_type_id']?>', '_self')"
+                                value="Estimate" />
+                            <input type="button" class="commonCls" name="partRequest"
+                                onclick="window.open('<?php echo BASE_URL ?>/orders/editBooking?customer_id=<?php echo $job['Customer']['id']?>&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date('d M Y'));?>&job_technician1_id=<?php echo $job['Order']['job_technician1_id']?>&job_technician2_id=0&from_tech_page=5&booking_source_id=<?php echo $loggedUserId?>&part_request=1&old_order_id=<?php echo $job['Order']['id'] ?>&old_oder_type=<?echo $job['Order']['order_type_id']?>', '_self')"
+                                value="Part Request" />
+                        </span>
+                        <span class="block">
+                            <input type="button" class="review-btn" value="Back"
+                                onclick="window.location='<?php echo BASE_URL. '/orders/invoiceTabletItems?order_id='.$job['Order']['id'].'&new_entry=tech_agent'?>'"
+                                id="moveToItem">
+                            <input type="button" class="next_submit" id="test_required" value="Next" />
+                        </span>
+                        <!-- <input type="button" class="commonCls" id= "techRecommended" name="techRecommended" value="Tech Recommended" /> -->
+                    </div>
+            </form>
+            <div id="subcat_images_box" style="display: none;">
+                <form id="imageUploadForm" action="<?=BASE_URL;?>/orders/saveTechImages" class="dropzone">
+                    <input type="hidden" name="orderId" id="order-image-id" value="<?=$job['Order']['id']?>">
+                    <input type="hidden" name="customerId" id="order-cust-id" value="<?=$job['Customer']['id']?>">
+                    <input type="hidden" name="date_image" id="data_image">
+					<input type="hidden" name="label_image" id="label_image">
+                </form>
+                <input type="text" name="label" placeholder="images label" id="images_label">
+				<input type="date" name="date_images" id="date_images">
+                <button id="uploaderBtn" type="button" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-default " id="close-upload-btn" data-dismiss="modal">Remove
+                    images</button>
+            </div>
+        </div>
+        <?php } ?>
+
+        <!--<pre><?php print_r($last_order) ?></pre>-->
+    </div>
+
+    <div class="invoice-img-enlarge" title="Photo">
+        <!-- <img src="<?=$imgPath?>" style="width:100%;"> -->
+        <img src="<?=$imgPath?>" class="rotate-image" style="width:100%;">
+        <?php echo $this->element('image_rotate'); ?>
+
+    </div>
+    <div id="recommendBox" style="display: none;">
+        <table>
+            <tr>
+                <td>
+                    <textarea rows="10" cols="70" id="recommendMsg"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="button" name="saveRecommend" id="saveRecommend" value="Save"
+                        style="padding: 5px; margin-top: 5px;">
+                </td>
+            </tr>
+        </table>
+    </div>
+    <pre>
+<?php //print_r($working_answers) ?>
+</pre>
+    <?php echo $this->element('tech_footer'); ?>
+
+</body>
+
+</html>
+<script type="text/javascript">
+    Dropzone.autoDiscover = false;
+
+
+    // if (document.getElementById('DropzoneElementId')) {
+    var myAwesomeDropzone = new Dropzone("form#imageUploadForm", {
+
+        autoProcessQueue: false,
+        maxFiles: 100,
+        uploadMultiple: true,
+		parallelUploads: 100,
+        dictDefaultMessage:"Upload 10 images at a time.",
+
+        init: function () {
+
+            var submitButton = document.querySelector("#uploaderBtn")
+            var closeButton = document.querySelector("#close-upload-btn")
+            myDropzone = this; // closure
+
+            submitButton.addEventListener("click", function () {
+                myDropzone.processQueue(); // Tell Dropzone to process all queued files.
+            });
+
+            closeButton.addEventListener("click", function () {
+                myDropzone.removeAllFiles(); // Tell Dropzone to process all queued files.
+            });
+
+            // You might want to show the submit button only when 
+            // files are dropped here:
+            this.on("addedfile", function (file) {
+                // Create the remove button
+                var removeButton = Dropzone.createElement("<div class='remove-upload-img'><button class='btn btn-link '><i class='fa fa-times'></i></button></div>");
+
+                var _this = this;
+
+                removeButton.addEventListener("click", function (e) {
+
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    _this.removeFile(file);
+                });
+
+                file.previewElement.appendChild(removeButton);
+            });
+
+            this.on("success", function (file, responseText) {
+                myDropzone.removeAllFiles();
+                $('#close-upload-btn').trigger('click');
+                $('#subcat_images_box').dialog('close');
+                if(mobile==1){
+                 window.close();
+                }
+                 location.reload(true);
+            });
+        }
+    });
+
+    // }
+
+    $(document).ready(function () {
+        var live_server = "/acesys/index.php/";
+        $("#test_required").on("click", function () {
+            var testAns = true;
+
+            //$(".text_response").each(function () {
+              //  if ($(this).val() == '') {
+                //    testAns = false;
+               // }
+            //});
+            if (testAns) {
+                document.forms['questions_form'].submit();
+            } else {
+                alert("Please Response Tech Comment Questions");
+            }
+        });
+
+        $("#saveRecommend").on("click", function () {
+            var msg = $("#recommendMsg").val();
+            var orderNum = $("#orderNum").val();
+            var orderId = $("#InvoiceOrderId").val();
+            $.ajax({
+                url: live_server + "orders/addTechRecommendation",
+                type: "post",
+                dataType: "json",
+                data: { orderId: orderId, msg: msg, orderNum: orderNum },
+                success: function (data) {
+                    if (data.res == 1) {
+                        $("#recommendBox").dialog("close");
+                    }
+                }
+            });
+        });
+        $("#recommendBox").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Tech Recommend",
+            autoOpen: false,
+            width: 700,
+            height: 500,
+        });
+        $('#techRecommended').on('click', function () {
+            $("#recommendBox").dialog("open");
+        });
+
+        $(function () {
+            $(".invoice-img-enlarge").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "Photo",
+                autoOpen: false,
+                width: 1024,
+                height: 786,
+            });
+            $(".invoice-openImg").on("click", function () {
+                var imgPath = $(this).attr('src');
+                $('.invoice-img-enlarge img').attr('src', imgPath);
+                $('.invoice-img-enlarge').dialog('open');
+            });
+        });
+        $("#subcat_images_box").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "",
+            autoOpen: false,
+            width: 850,
+            height: 'auto',
+            cache: false
+        });
+
+        $("#image_upload").on("click", function () {
+            // $("#-image-id").dialog('open');
+            $("#subcat_images_box").dialog('open');
+        });
+
+
+        $(".delete-purchase-image").on("click", function () {
+            var id = $(this).attr("image-id");
+            var imgPath = $(this).attr("image-name");
+            $.ajax({
+                url: live_server + 'payments/deletePartImage',
+                dataType: 'html',
+                type: 'POST',
+                cache: false,
+                data: { id: id, imgPath: imgPath },
+                success: function (data) {
+                    res = JSON.parse(data);
+                    if (res.res == "OK") {
+                        location.reload(true);
+                    }
+                }
+            });
+        });
+
+    });
+    
+    $('#date_images').change(function () {
+   // alert(this.value);
+			$('#data_image').val(this.value);
+});
+
+$('#images_label').on('keyup',function(){
+	
+	$('#label_image').val(this.value);
+	});
+
+	$('.save_order_images').on('click',function(e){
+		e.preventDefault();
+		var getparent = $(this).parent();
+		var label = getparent.find('.save_label').val();
+		var newdate = getparent.find('.save_date').val();
+		var customer = $(this).attr('data-customer');
+		var date = $(this).attr('data-date');
+		
+ $.ajax({
+            url: "<?php echo BASE_URL ?>/technicians/uploadimages",
+            type: "post",
+            dataType:"json",
+            data: {customer:customer, date:date,newdate:newdate,label:label},
+            success: function(data)
+            {
+													console.log(data);
+													location.reload(true);
+            },error: function (jqXHR, exception) {
+    console.log(exception);
+				location.reload(true);
+    // Your error handling logic here..
+},
+        });
+		
+		});
+</script>

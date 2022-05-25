@@ -1,0 +1,119 @@
+<html> 
+<head>
+  <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<script>
+
+$(document).ready(function(){
+  G_URL = "/acesys/index.php/";
+  $("#addCity").on("click", function(){
+            var url = G_URL + "settings/addCity";
+            var option = "width=450,height=450,left=300,top=200,status=no,resize=none";
+            var answer = window.open(url,'', option);   
+    });
+
+  $("#myInput").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        $("#myTable tr").filter(function() {
+          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+    });
+});
+
+function deleteUser(Id)
+  {
+      $.ajax({
+      url: "<?=BASE_URL;?>/orders/deleteUserResponse",
+      type: "POST",
+      data: {id : Id},
+      success: function(data){
+        res = JSON.parse(data);
+            if(res.res == "OK")
+            {
+                window.location.reload();
+            }
+        //location.href = "<?=BASE_URL;?>/orders/showFailedEmail";
+      }
+    });
+  }
+</script>
+<style type="text/css">
+.active {
+     background-color:  #80ff80 !important;
+}
+a {
+  color: #080808;
+  text-decoration: none;  
+}
+.currentSelected {
+  border: none;
+  outline: none;
+  padding: 10px 16px;
+  background-color: #656565;
+  cursor: pointer;
+}
+table {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: collapse;
+  margin-top: 30px;
+}
+
+table td,
+table th {
+  border: 1px solid #dadada;
+  padding: 5px;
+  text-align: center;
+  font-size: 12px
+}
+table thead th:nth-child(4){
+  width: 30%;
+}
+.btn{
+    float:right;
+    padding: 5px;
+}
+</style>
+</head>
+<body>
+<input type="button" name="addNew" value="New City" id="addCity">
+<input id="myInput" type="text" placeholder="Search..">
+<table >
+    <tr>
+        <th></th>
+        <th>City</th>
+        <th>Postal Code</th>
+        <th>Google my business links</th>
+        <th>Local Goolge Source links</th>
+        <th>Text links</th>
+    </tr>
+      <tbody id="myTable">
+          <?php foreach ($cities as $city){?>
+          <tr>
+              <td>
+                  <a class="delete_city" href="<?=BASE_URL?>/settings/deleteCity/<?=$city['internal_id']?>"><i class="fa fa-trash" aria-hidden="true"></i></a> &nbsp
+                  <a href="<?=BASE_URL?>/settings/editCity/<?=$city['internal_id']?>"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+              </td>
+              <td><?php echo $city['name'] ?></td>
+              <td><?php echo $city['postal_code'] ?></td>
+              <td><?php echo mb_strimwidth($city['link'], 0, 20, "..."); ?></td>
+              <td><?php echo mb_strimwidth($city['link1'], 0, 20, "..."); ?></td>
+              <td><?php echo mb_strimwidth($city['link2'], 0, 20, "..."); ?></td>
+          </tr>
+        <?php } ?>
+      </tbody>
+</table>
+<!-- <div id="listbox" style="float: left;">
+</div> -->
+<script>
+ $('body').on('click','.delete_city',function(e){
+ e.preventDefault();
+ if (confirm('are you sure')) {
+  var href = $(this).attr('href');
+  window.location.href = href;
+    }
+ }); 
+  
+</script>
+</body>
+</html>

@@ -29,6 +29,13 @@ th, td {
       placeCall('*83'+extId);
   });
    
+  //  $(".presence_status").on("click", function(e) {
+  //     e.preventDefault();  
+  //     var email = "lokendra.k@cisinlabs.com";
+  //    result =  apiGetUserStatus(email);
+  //    console.log(result);
+      
+  // });
     $(".training-call").on("click", function(e) {
       e.preventDefault();  
       var extId = $(this).attr("ext_id");
@@ -92,6 +99,7 @@ th, td {
        <td><?php echo $user['first_name'] ?></td>
        <td><?php echo $user['extension_id'] ?></td> 
        <td><input type="button" class="listen-call" name="Listen" value="Listen" ext_id="<?php echo $user['extension_id'] ?>"> <input type="button" class="training-call" name="Training" value="Training" ext_id="<?php echo $user['extension_id'] ?>"> <input type="button" class="barging-call" name="Barging" value="Barging" ext_id="<?php echo $user['extension_id'] ?>">
+         <!-- <input type="button" class="presence_status" name="Status" value="Status" ext_id="<?php echo $user['extension_id'] ?>"> -->
        </td>
        <td><input class="logout" type="checkbox" name="logout" value="<?=$user['id']?>" sessionId = "<?=$user['session_id']?>"></td> 
     </tr>

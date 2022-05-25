@@ -111,7 +111,17 @@ td {
     <input type="hidden" name="catId" id="catId" value="<?=$subCategory['category_id']?>">
     <table style="border: 0px ; border-collapse: ;" id="dynamic_field">
         <tr>
-            <td><b><label>Name:</label>&nbsp</b><input type="text" id="subCatName" name="catName[]" value="<?=$subCategory['name']?>"></td>
+            <td>
+              <b><label>Name:</label>&nbsp</b>
+            </td>
+            <td>
+              <input type="text" id="subCatName" name="catName[]" value="<?=$subCategory['name']?>">
+            </td>
+        </tr>
+        <tr>  
+          <td>
+            <b><label>Category:</label>&nbsp</b>
+          </td>
             <td>
              <select class="category-id" name="allCatId[]">
               <option>Choose here</option>
@@ -120,6 +130,11 @@ td {
               <?}?>
              </select>
             </td>
+        </tr>
+        <tr>
+          <td><label><b>Job Type:</label></b></td>
+            <td><?php echo $html->selectTag('job_type', $job_types,$subCategory['job_type']); ?></td>
+        </tr>
     </table>   
     <div class="shift"> 
         <input  type="button" value="Add Another" id="add-another"/>

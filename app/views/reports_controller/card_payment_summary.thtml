@@ -1,0 +1,144 @@
+<script>
+var previous;
+function ShowTransactions(mid,dat,datid){
+    $('.details').hide();
+    if (previous==mid) {previous=0; return;}
+    previous = mid;
+    $.post("<?=BASE_URL;?>/payments/paymentTransactions",
+        {payment_method_id:mid, payment_type_id:1, job_date:dat},
+        function(data){
+            $('#details'+datid).show().find('td').html(data);
+        }
+    );
+}
+
+$(".payment-confirm").live("change", function(){
+    var orderId = $(this).attr('orderId');
+     if(this.checked) {
+        var checked = 1;
+    } else {
+        var checked = 0;
+    }
+
+    $.ajax({
+        url: "<?=BASE_URL?>/reports/confirmPayment",
+        dataType: 'html',
+        type: 'POST',
+        cache: false,
+        data:{orderId : orderId, checked:checked},
+        success: function(data) {
+                res = JSON.parse(data);
+                if(res.res == "OK")
+                {
+                    window.reload();
+                }
+            }
+        }); 
+}); 
+</script>
+<style type="text/css">
+    .results{
+        width: 100%;
+        text-align: center;
+    }
+    .results th {
+        background: #1f6d6d;
+    }
+    #total_div{
+        float: right;
+        margin: 1%;
+    }
+</style>
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform" id="viewform">
+    <input type="hidden" name="action" value="view" >
+    <input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+    <input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+    <table border="0" cellspacing="3" cellpadding="0">
+    <tr>
+        <td class="sectionTitle" colspan=4>Payments Summary</td>
+    </tr>
+    <tr>
+        <td>Date from: </td>
+        <td>
+      <input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+            &nbsp;&nbsp;
+            <input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+        </td>
+        <td>Date to: </td>
+        <td>
+      <input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+            &nbsp;&nbsp;
+            <input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_fdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+        </td>
+        <td>
+         
+        &nbsp;Payment method:&nbsp;
+            <select name="payment_type" id="payment_type" onchange="document.viewform.submit();">
+                <option value=""></option>
+                <? 
+                foreach($allPaymentMethods as $k => $v) {
+                    echo '<option value="'.$k.'"'.( $k == $paymentType ? ' selected' : '').'>'.$v.'</option>';
+                }
+                ?>
+            </select>
+        </td>
+        <td>            
+        &nbsp;Auth:&nbsp;
+            <input name="auth_search" id="auth_search" value="<?=$authCode?>">
+        </td>
+        <td>            
+        &nbsp;Amount:&nbsp;
+            <input name="amount_search" id="amount_search" value="<?=$amount?>">
+        </td>
+        <td colspan="1" align="left">
+      <input type="submit" name="submit2" onclick="return SearchRecords();" id="submit2" value="Update" class="buttons">
+        </td>           
+    </tr>
+    </table>
+</form>
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;">
+    <tr style="height:25px;">
+        <th>REF#</th>
+        <th>Date</th>
+        <th>Job Type</th>
+        <th>Method</th>
+        <th>Tech 1</th>
+        <th>Type</th>
+        <th>Auth #</th>
+        <th>Status</th>
+        <th>Amount</th>
+    </tr>
+
+<?php
+    $total = 0;
+    foreach ($summary as $obj):
+        $class = 'cell'.(++$r%2);
+        $total = $total + $obj['amount'];
+        ?>
+    <tr class="cell0">
+        <td>
+            <a href="<?=BASE_URL?>/orders/editBooking?order_id=<?php echo $obj['order_id']?>"><?=$obj['order_number']?></a>
+        </td>
+        <td><?=$obj['payment_date']?></td>
+        <td><?=$obj['job_type']?></td>
+        <td><?=$obj['payment_method']?></td>
+        <td><?=$obj['tech1_name']?></td>
+        <td><?=$obj['card_type']?></td>
+        <td><?=$obj['auth_code']?></td>
+
+        <?php if($obj['payment_status'] == 1){
+                    echo '<td>Approved</td>';
+                } else if($obj['payment_status'] == 2) {
+                    echo '<td>Declined</td>';
+                }else{
+                    echo '<td></td>';
+                }
+            ?> 
+            <td><?=$obj['amount']?></td>
+    </tr>
+    <?php endforeach; ?>
+
+     
+</table>
+<div id="total_div"><b>Total: $ <?=$total?></b></div>

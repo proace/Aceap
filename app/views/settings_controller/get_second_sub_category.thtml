@@ -1,0 +1,12 @@
+ <ul class="nested">
+      <?php foreach ($trainingSecondSubCategories as $obj) { ?>
+      		 <li><span class="caret secondSubCat" ><?=$obj['TrainingSecondSubCategory']['name']?></span>
+      		 	<ul class="nested">
+      		 		<li>Documents <i class="fa fa-plus addSecondCatDoc" secondSubcat-id="<?php echo $obj['TrainingSecondSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSecondCatDoc" secondSubcat-id="<?php echo $obj['TrainingSecondSubCategory']['id']; ?>"></i></li>
+	              <li>Note <i class="fa fa-plus addSecondCatNote" secondSubcat-id="<?php echo $obj['TrainingSecondSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSecondCatNote" secondSubcat-id="<?php echo $obj['TrainingSecondSubCategory']['id']; ?>"></i></li>
+	              <li>Images <i class="fa fa-plus addSecondCatImage" secondSubcat-id="<?php echo $obj['TrainingSecondSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSecondCatImage" secondSubcat-id="<?php echo $obj['TrainingSecondSubCategory']['id']; ?>"></i></li>
+	              <li>Video <i class="fa fa-plus addSecondCatVideo" secondSubcat-id="<?php echo $obj['TrainingSecondSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSecondCatVideo" secondSubcat-id="<?php echo $obj['TrainingSecondSubCategory']['id']; ?>"></i></li>
+	            </ul>
+	          </li>
+      <? } ?>
+    </ul>

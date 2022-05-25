@@ -3,8 +3,8 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Invoice</title>
-<!--<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
-<meta name="apple-mobile-web-app-capable" content="yes">-->
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_questions.js"></script>
@@ -81,11 +81,41 @@ input[type=text] {
 #questions_template td {
 	padding:2px;
 }
+@media only screen and (max-width: 768px) {
+ 
+ #invoice{
+    margin-left: 0px;
+}
+}
+span.time_in{
+	
+    font-size: 16px;
+    padding: 2px;
+    font-weight: bold;
+}
+}
 
 </style>
 </head>
 <?php $is_selected = ""; ?>
 <body>
+	<?php
+	require_once 'Mobile_Detect.php';
+
+
+
+	$detect = new Mobile_Detect;
+ 
+// Any mobile device (phones or tablets).
+if ( $detect->isMobile() ) { ?>
+ <style>
+	ul#nav{
+		display:none;
+	}
+ </style>
+ 
+<?php }
+	?>
 <ul id="nav">
     <li><a id="jobs_link" class="buttons"><div>Jobs</div></a></li>
     <li><a href="<?php echo BASE_URL;?>/pages/main" id="home_link" class="buttons"><div>ACESYS</div></a></li>
@@ -110,7 +140,7 @@ input[type=text] {
     
     <?php $job = $this_job ?>
     <?php if($job['Order']['id'] == $order_id) { ?>
-    <div class="header">
+    <!--<div class="header">
     <h1>#<?php echo $job['Order']['order_number'] ?> - <?php echo $job['Type']['name'] ?></h1>
    <table>
         <tr>
@@ -158,7 +188,7 @@ input[type=text] {
 		<?php echo $job['Customer']['address'] ?> <?php echo $job['Customer']['city'] ?> <?php echo $job['Customer']['postal_code'] ?>
         </a>
     </p>
-    </div>
+    </div>-->
     <div>
     <?php if($last_order['Order']['order_number'] != "") { ?>
     <h2><?php echo $last_order['Order']['order_number'] ?> - <?php echo $last_order['Type']['name'] ?></h2>
@@ -173,19 +203,25 @@ input[type=text] {
             &nbsp;&nbsp;&nbsp;
             <input type="button" class="next_submit" id="skip_to_comments" value="No" style="width:100px;height:50px;" />
         </h3>
+					
     <?php } ?>
     <form id="questions_form" action="<?php echo BASE_URL ?>/orders/saveInvoiceTabletQuestions" method="post" <?php if($job['Order']['order_status_id'] == 8 && ($job['Order']['job_date'] == '0000-00-00' || $job['Order']['job_date'] == '')) { ?>style="display:none;"<?php } ?>>
     <?php echo $html->input('Invoice/order_id', array('type'=>'hidden', 'value'=>$job['Order']['id'])); ?>    
     <?php echo $html->input('Invoice/order_type_id', array('type'=>'hidden', 'value'=>$job['Order']['order_type_id'])); ?>
     <?php echo $html->input('Invoice/order_status_id', array('type'=>'hidden', 'value'=>$job['Order']['order_status_id'])); ?>
     <?php echo $html->input('Invoice/last_order_id', array('type'=>'hidden', 'value'=>$last_order['Order']['id'])); ?>
-        <table id="questions_template">
+        <br>
+								<span class="time_in">Time In:</span>
+					<span class="time_in"><?= $jobs[0]['Order']['fact_job_beg'] ?></span>
+					<br><br>
+								<table id="questions_template">
+									
             <tr>
                 <th>#</th>
                 <th>Questions</th>
                 <th>Responses</th>
-                <th>Suggestions</th>
-                <th>Decisions</th>
+                <!--<th>Suggestions</th>
+                <th>Decisions</th>-->
                 <th></th>
             </tr>
             <?php $row = ""; $index = 1;?>
@@ -208,7 +244,7 @@ input[type=text] {
                 </select>
                 <?php }//END if ?>
                 </td>
-                <td class="<?php echo $row ?>">
+                <!--<td class="<?php echo $row ?>">
                 <?php if(count($responses[$question_id]) > 0) { ?>        
                     <?php foreach($responses[$question_id] as $response_id => $response) { ?>
                     
@@ -241,8 +277,8 @@ input[type=text] {
                         
                     <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>
                 <?php }//END if ?>
-                </td>
-                <td class="<?php echo $row ?>">
+                </td>-->
+                <!--<td class="<?php echo $row ?>">
                 <?php if(count($responses[$question_id]) > 0) { ?>        
                     <?php foreach($responses[$question_id] as $response_id => $response) { ?>
                     
@@ -282,7 +318,7 @@ input[type=text] {
                     <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>
                 <?php }//END if ?>
                 
-                </td> 
+                </td> -->
                 <td class="error_indicator <?php echo $row ?>"></td>     
             </tr>
             <?php }//END if($question['type'] == 'dropdown') ?>
@@ -307,7 +343,7 @@ input[type=text] {
                 </div>
                 <?php }//END if ?>
                 </td>
-                <td class="<?php echo $row ?>">
+                <!--<td class="<?php echo $row ?>">
                 <?php if(count($responses[$question_id]) > 0) { ?>        
                     <?php foreach($responses[$question_id] as $response_id => $response) { ?>
                     
@@ -324,8 +360,8 @@ input[type=text] {
                         
                     <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>
                 <?php }//END if ?>
-                </td>
-                <td class="<?php echo $row ?>">
+                </td>-->
+                <!--<td class="<?php echo $row ?>">
                 <?php if(count($responses[$question_id]) > 0) { ?>        
                     <?php foreach($responses[$question_id] as $response_id => $response) { ?>
                     
@@ -347,7 +383,7 @@ input[type=text] {
                     <?php }//END if ?>                        
                     <?php }//END foreach($responses[$question_id] as $response_id => $response) ?>
                 <?php }//END if ?>                
-                </td>
+                </td>-->
                 <td class="error_indicator <?php echo $row ?>"></td> 
             </tr>
             <?php }//END if($question['type'] == 'text') ?>

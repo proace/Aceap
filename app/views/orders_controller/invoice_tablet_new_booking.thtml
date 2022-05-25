@@ -14,9 +14,10 @@
 
 <body>
 <ul id="nav">
-    <li><a id="jobs_link" class="buttons"><div>Jobs</div></a></li>   
+    <!-- <li><a id="jobs_link" class="buttons"><div>Jobs</div></a></li>    -->
+    <li><a id="jobs_link" href="<?php echo BASE_URL;?>/orders/invoiceTablet" class="buttons" class="buttons"><div>Jobs</div></a></li>
     <li><a href="<?php echo BASE_URL;?>/pages/main" id="home_link" class="buttons"><div>ACESYS</div></a></li>    
-    <li><a id="calc_link" class="buttons"><div>Eff Calculator</div></a></li>
+    <!-- <li><a id="calc_link" class="buttons"><div>Eff Calculator</div></a></li> -->
 </ul>
 <div id="invoice">	
 	<ul id="job_list">
@@ -42,22 +43,22 @@
     	<tr>
         	<td><?php echo $job['Order']['order_number'] ?></td>
             <td><?php echo $job['Customer']['first_name'] ?> <?php echo $job['Customer']['last_name'] ?></td>
-      <!--     <td><a href="<?php echo BASE_URL ?>/orders/saveInvoiceTabletNewBooking?customer_id=<?php echo $job['Customer']['id'] ?>&phone=<?php echo $job['Customer']['phone'] ?>&mode=0">Estimate</a></td>  -->
+      <!--     <td><a href="<?php echo BASE_URL ?>/orders/saveInvoiceTabletNewBooking?customer_id=<?php echo $job['Customer']['id'] ?>&phone=<?php echo $job['Customer']['phone'] ?>&mode=0&estimate=1">Estimate</a></td>  -->
            
-            <td><a href="<?php echo BASE_URL ?>/orders/editBooking?customer_id= <?php echo $job['Customer']['id']?>&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date('d M Y'));?>&job_technician1_id=0&job_technician2_id=0&from_tech_page=1">Estimate</a></td>
+            <td><a href="<?php echo BASE_URL ?>/orders/editBooking?customer_id= <?php echo $job['Customer']['id']?>&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date('d M Y'));?>&job_technician1_id=0&job_technician2_id=0&from_tech_page=1&show_preview=1&estimate=1">Estimate</a></td>
 
 
             <!--<td><a href="<?php echo BASE_URL ?>/orders/saveInvoiceTabletNewBooking?customer_id=<?php echo $job['Customer']['id'] ?>&phone=<?php echo $job['Customer']['phone'] ?>&mode=1">Booking</a></td>-->
         </tr>
         <?php } ?>
-        <tr>
+       <!--  <tr>
         	<td></td>
             <td><em>New Customer</em></td>
-           <!--  <td><a href="<?php echo BASE_URL ?>/orders/invoiceTabletNewCustomer?mode=0">Estimate</a></td> -->
-
-            <td><a href="<?php echo BASE_URL ?>/orders/editBooking?customer_id=&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date('d M Y'));?>&job_technician1_id=0&job_technician2_id=0&from_tech_page=1">Estimate</a></td>
+             <td><a href="<?php echo BASE_URL ?>/orders/invoiceTabletNewCustomer?mode=0">Estimate</a></td> -->
+<!-- 
+            <td><a href="<?php echo BASE_URL ?>/orders/editBooking?customer_id=&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date('d M Y'));?>&job_technician1_id=0&job_technician2_id=0&from_tech_page=1&show_preview=1">Estimate</a></td> -->
             <!--<td><a href="<?php echo BASE_URL ?>/orders/invoiceTabletNewCustomer?mode=1">Booking</a></td>-->
-        </tr>
+        <!-- </tr> -->
     </table>    	
 </div>
 

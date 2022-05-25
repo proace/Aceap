@@ -1,138 +1,138 @@
-html, body {
-	margin:0;
-	padding:0;	
-	font-family:Arial, Helvetica, sans-serif;
-	font-size:85%;
-}
-
-.dates {
-	font-family:monospace;
-	font-size:16px;
-	text-align:center;
-}
-
-.weeks, .months {
-	font-family:monospace;
-	text-align:center;	
-}
-
-.slot {
-	padding:0;
-	margin:0;
-	width:20px;
-	height:20px;
-}
-
-.slot a {
-	text-align:center;
-	font-weight:bold;
-	display:block;
-	text-decoration:none;
-	color:#360;	
-	border:1px solid transparent;
-	cursor:pointer;
-}
-
-.slot a:link, .slot a:visited {
-	
-}
-
-.slot a:hover, .slot a:active {
-	border:1px groove #336600;
-	
-	color:black;
-	background-color:#C93;	
-}
-
-.slot_picker {
-	border:1px solid #cccccc;
-	border-collapse:collapse;	
-}
-
-.slot_picker td {
-	border-bottom:1px solid #cccccc;
-}
-
-.slot_name {
-	text-align:right;
-	color:black;	
-}
-
-.slot_picker th {
-	border-right:1px solid #cccccc;	
-	border-left:1px solid #cccccc;
-	background-color:#6ccff;	
-}
-
-.week1 {
-	background-color:#ffffff;	
-}
-
-.week2 {
-	background-color:#eeeeee;	
-}
-
-.week3 {
-	background-color:#dddddd;	
-}
-
-.week4 {
-	background-color:#cccccc;	
-}
-
-.week5 {
-	background-color:#bbbbbb;	
-}
-
-.week6 {
-	background-color:#aaaaaa;	
-}
-
-.week0 {
-	background-color:#999999;	
-}
-
-.topbar {
-	padding:6px 4px;
-}
-
-.topbar h1 {
-	display:inline;
-	font-size:100%;	
-}
-
-.topbar a {
-	float:right;
-}
-
-h2 {
-	font-size:110%;	
-	padding-left:4px;
-}
-
-.slot_confirmation {
-	margin:5px auto 0 auto;
-	width:300px;
-	height:70px;
-	border:1px solid #cccccc;
-	background-color:#eeeeee;
-	padding:7px;
-	text-align:center;
-}
-
-.slot_confirmation input[type=button] {
-	width:100px;
-}
-
-.slot_confirmation .slot_status {	
-	font-size:120%;
-	font-weight:bold;
-}
-
-.slot_confirmation .available {
-	color:#360;
-}
-
-.slot_confirmation .unavailable {
-	color:#C00;
+html, body {
+	margin:0;
+	padding:0;	
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:85%;
+}
+
+.dates {
+	font-family:monospace;
+	font-size:16px;
+	text-align:center;
+}
+
+.weeks, .months {
+	font-family:monospace;
+	text-align:center;	
+}
+
+.slot {
+	padding:0;
+	margin:0;
+	width:20px;
+	height:20px;
+}
+
+.slot a {
+	text-align:center;
+	font-weight:bold;
+	display:block;
+	text-decoration:none;
+	color:#360;	
+	border:1px solid transparent;
+	cursor:pointer;
+}
+
+.slot a:link, .slot a:visited {
+	
+}
+
+.slot a:hover, .slot a:active {
+	border:1px groove #336600;
+	
+	color:black;
+	background-color:#C93;	
+}
+
+.slot_picker {
+	border:1px solid #cccccc;
+	border-collapse:collapse;	
+}
+
+.slot_picker td {
+	border-bottom:1px solid #cccccc;
+}
+
+.slot_name {
+	text-align:right;
+	color:black;	
+}
+
+.slot_picker th {
+	border-right:1px solid #cccccc;	
+	border-left:1px solid #cccccc;
+	background-color:#6ccff;	
+}
+
+.week1 {
+	background-color:#ffffff;	
+}
+
+.week2 {
+	background-color:#eeeeee;	
+}
+
+.week3 {
+	background-color:#dddddd;	
+}
+
+.week4 {
+	background-color:#cccccc;	
+}
+
+.week5 {
+	background-color:#bbbbbb;	
+}
+
+.week6 {
+	background-color:#aaaaaa;	
+}
+
+.week0 {
+	background-color:#999999;	
+}
+
+.topbar {
+	padding:6px 4px;
+}
+
+.topbar h1 {
+	display:inline;
+	font-size:100%;	
+}
+
+.topbar a {
+	float:right;
+}
+
+h2 {
+	font-size:110%;	
+	padding-left:4px;
+}
+
+.slot_confirmation {
+	margin:5px auto 0 auto;
+	width:300px;
+	height:70px;
+	border:1px solid #cccccc;
+	background-color:#eeeeee;
+	padding:7px;
+	text-align:center;
+}
+
+.slot_confirmation input[type=button] {
+	width:100px;
+}
+
+.slot_confirmation .slot_status {	
+	font-size:120%;
+	font-weight:bold;
+}
+
+.slot_confirmation .available {
+	color:#360;
+}
+
+.slot_confirmation .unavailable {
+	color:#C00;
 }

@@ -1,0 +1,19 @@
+ <ul class="nested">
+      <?php foreach ($trainingSubCategories as $obj) { ?>
+      		 <li><span class="caret secondCat open_content" data-subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>" data-secondsubcattype="1" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>"><?=$obj['TrainingSubCategory']['name']?> </span>
+         <i class="fa fa-pencil-square-o editSubCat" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>"></i>
+         <i class="fa fa-trash-o deleteSubCat" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>"></i>
+         <i class="fa fa-file open_content1" data-subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>" data-secondsubcattype="1"></i>
+      		 	<ul class="nested">
+	               <li><span class="caret" onclick="showSecondSubCtaegory(<?php echo $obj['TrainingSubCategory']['id']; ?>,1,this)">Installation</span> <i class="fa fa-plus addSecondSubCat" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>" secondSubCatType="1" aria-hidden="true"></i></li>
+	               <li><span class="caret" onclick="showSecondSubCtaegory(<?php echo $obj['TrainingSubCategory']['id']; ?>,2,this)">Repair</span> <i class="fa fa-plus addSecondSubCat" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>" secondSubCatType="2" aria-hidden="true"></i></li>
+	               <li><span class="caret" onclick="showSecondSubCtaegory(<?php echo $obj['TrainingSubCategory']['id']; ?>,3,this)">Service</span> <i class="fa fa-plus addSecondSubCat" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>" secondSubCatType="3" aria-hidden="true"></i></li>
+	              <li>Tech Support <i class="fa fa-plus techSupport" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showTechSupport" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>"></i></li>
+	              <li>Note <i class="fa fa-plus subCatNotes" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSubCatNotes" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>"></i></li>
+	              <li>Images <i class="fa fa-plus subCatImages" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSubCatImages" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>"></i></li>
+	               <li>Document <i class="fa fa-plus subCatDocument" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSubCatDocuments" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>"></i></li>
+	               <li>Video <i class="fa fa-plus subCatVideo" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSubCatVideos" subcat-id="<?php echo $obj['TrainingSubCategory']['id']; ?>"></i></li>
+	            </ul>
+	          </li>
+      <? } ?>
+     </ul>

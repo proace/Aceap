@@ -88,7 +88,7 @@ function ShowHideOfficeNote(jobId)
 	<? if ($show_op_date) { ?>
 
 	    <td valign="middle" style="white-space: nowrap; height: 55px;">Date Scheduled:</td>
-	    <td>from<br/><input type="text" name="ffromdate" style="width:100px" value="<?=$_GET['ffromdate']?>">
+	    <td>from<br/><input type="text" name="ffromdate" style="width:100px" value="">
 	      <a href="#" onclick="showCalendar('ffromdate','viewform')">set</a>&nbsp;&nbsp;</td>
 			<td>to<br/><input type="text" name="ftodate" style="width:100px" value="<?=$_GET['ftodate']?>">
 	      <a href="#" onclick="showCalendar('ftodate','viewform')">set</a>
@@ -144,7 +144,20 @@ function ShowHideOfficeNote(jobId)
 
 	    <td valign="middle" style="white-space: nowrap; height: 55px;">Date Booked:</td>
 
-	    <td>from<br/><input type="text" name="ffromdatebooking" style="width:100px" value="<?=$_GET['ffromdatebooking']?>">
+  <?php
+  if(isset($_REQUEST['ffromdatebooking'])){
+    $today = $_REQUEST['ffromdatebooking'];
+    
+  }
+    else {
+    $today = date('Y-m-d');  
+    }
+  
+  
+  ?>
+
+
+	    <td>from<br/><input type="text" name="ffromdatebooking" style="width:100px" value="<?=$today?>">
 
 	      <a href="#" onclick="showCalendar('ffromdatebooking','viewform')">set</a>&nbsp;&nbsp;</td>
 
@@ -353,7 +366,7 @@ if ( $show_total_amounts )
 ?>
 </table>
 <p></p>
-<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="140%">
 
     <tr>
 
@@ -369,9 +382,10 @@ if ( $show_total_amounts )
 
 	<? if ($show_customer_first) { ?> <th><a href="javascript:setOrder('scustomerfirst')">First Name</a><?=$scustomerfirst?></th> <? } ?>
 
-	<? if ($show_customer_address) { ?> <th>Address</th> <? } ?>
+	<? if ($show_customer_address) { ?> <th>Email</th> <? } ?>
 
         <th><a href="javascript:setOrder('scity')">City</a><?=$scity?></th>
+        <? if ($show_source) { ?> <th>Source</th> <? } ?>
 	<? if ($show_customer_phone) { ?><th>Phone</th><? } ?>
 
 	<? if (0 && $show_customer_rating) { ?> <th><a href="javascript:setOrder('scrating')">Cust. Rating</a><?=$scrating?></th> <? } ?>
@@ -388,7 +402,7 @@ if ( $show_total_amounts )
 
 	<? if ($show_techs) { ?> 
 
-        <th><a href="javascript:setOrder('stech2')">Tech 2</a><?=$stech2?></th>
+
 
 	<? } ?>
 
@@ -412,15 +426,15 @@ if ( $show_total_amounts )
 
         <? if ($show_paid) { ?> <th>Paid</th> <? } ?>
 
-        <? if ($show_source) { ?> <th>Source</th> <? } ?>
-		<th>2009</th><th>2010</th><th>2011</th>
+        
+	
         <? if ($show_closer) { ?> <th>Closer</th> <? } ?>
 
         <?=($show_callback ? '<th>Call Back Date</th>'		 : '') ?>
 
     </tr>
 
-		<?php foreach ($orders as $obj): 
+		<?php foreach ($orders as $val=> $obj): 
 
 		$class = 'cell'.(++$r%2);
 
@@ -455,9 +469,9 @@ if ( $show_total_amounts )
 
 			<td>
 
-				<a href="<?=$HtmlAssist->getOrderGoogleMap($obj['Customer']);?>" target="_blank"><img src="<?=ROOT_URL;?>/app/webroot/img/icon-vsm-globe.png" style="border: 0px; width: 15px; height: 15px; vertical-align: middle;">&nbsp;<?php echo $obj['Customer']['address']; ?></a>
+				<?php echo $obj['Customer']['email'] ?>
 
-				<?
+				<?php
 
 				if ($this->params['url']['view_mode'] == 'current_day')
 
@@ -473,16 +487,19 @@ if ( $show_total_amounts )
 
 			</td> <? } ?>
 
-      <td><?php echo $obj['Customer']['city']; ?></td>
+      
+      <td>
+        <a href="<?=$cities[$val] ?>" target="_blank">
+      <?php echo $obj['Customer']['city']; ?>
+      </a>
+      </td>
+      	 <? if ($show_source) { echo '<td><a href="'.$cities[$val].'" target="_blank">'.$booking_sources[$obj['Order']['booking_source_id']].'&nbsp;</a></td>'; } ?>
 	<? if ($show_customer_phone) { ?> 
 
 	  <td><?php
 
 			echo $Common->displayPhone($obj['Customer']['phone']);
 
-			if ($obj['Customer']['cell_phone'])
-
-				echo "<br/>".$Common->displayPhone($obj['Customer']['cell_phone']);
 
 		?></td>
 	<? } ?>
@@ -493,7 +510,7 @@ if ( $show_total_amounts )
 
       <? if ($show_techs) { ?> 
 
-      <td><?php echo $html->link($obj['Technician1']['first_name'].' '.$obj['Technician1']['last_name'], "/payrolls/add_workdone?user_id=".$obj['Technician1']['id']."&date=".$obj['Order']['job_date']); ?></td>
+      <td><?php echo $obj['Technician1']['first_name'].' '.$obj['Technician1']['last_name']; ?></td>
 
       <? } ?>
 
@@ -508,8 +525,7 @@ if ( $show_total_amounts )
 
       <? if ($show_techs) { ?> 
 
-      <td><?php echo $html->link($obj['Technician2']['first_name'].' '.$obj['Technician2']['last_name'], "/payrolls/add_workdone?user_id=".$obj['Technician2']['id']."&date=".$obj['Order']['job_date']); ?></td>
-
+      
       <? } ?>
 
       <? if ($show_commission_2) {
@@ -595,10 +611,8 @@ if ( $show_total_amounts )
 
 		<? } ?>
 
-		 <? if ($show_source) { echo '<td>'.$booking_sources[$obj['Order']['booking_source_id']].'&nbsp;</td>'; } ?>
-		 <td><?php echo $job_count[$obj['Order']['customer_id']]['2009_jobs'] ?></td>
-         <td><?php echo $job_count[$obj['Order']['customer_id']]['2010_jobs'] ?></td>
-         <td><?php echo $job_count[$obj['Order']['customer_id']]['2011_jobs'] ?></td>
+	
+		 
 		 <? if ($show_closer) { echo '<td>'.$booking_sources[$obj['Order']['booking_closer_id']].'&nbsp;</td>'; } ?>
 
 		 <? if ($show_callback) { echo '<td>'.$obj['Order']['callback_time'].'&nbsp;</td>'; } ?>

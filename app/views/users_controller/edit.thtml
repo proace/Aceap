@@ -1,12 +1,20 @@
 <!-- This tag creates our form tag -->
+<link rel="stylesheet" type="text/css"  href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css"  href="/acesys/app/webroot/css/style_print.css" />
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.4.min.js"></script>
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/jquery.fancybox-1.3.4.css" rel="stylesheet" />
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.fancybox-1.3.4.pack.js"></script>
 <script type="text/javascript">
-function getBinaryPicture()
-{
-  var answer = window.showModalDialog("<?php echo ROOT_URL ?>/upload_picture.html",'', 
-  "dialogWidth:450px; dialogHeight:350px; dialogLeft:300px; dialogTop:200px;");
-  return answer;
-}
+//function getBinaryPicture()
+//{
+//  var answer = window.open("<?php echo ROOT_URL ?>/upload_picture.html",'', 
+//  "dialogWidth:450px; dialogHeight:350px; dialogLeft:300px; dialogTop:200px;");
+//  return answer;
+//}
+
+$(document).ready(function(){
+$("a.example1").fancybox();
+});
 
 function showHideTrucks(elem){
 	var roleId=$(elem).val();
@@ -16,102 +24,221 @@ function showHideTrucks(elem){
 		$(".assignedTrucksTr").hide();
 	}
 }
-$(function() {
-	$(".upload").click(function(){
-		var binary = getBinaryPicture();
-		$("#mugshot").attr("src", binary);
-		$("#UserBinaryPicture").val(binary);		
-	});
-});
+//$(function() {
+//	$(".upload").click(function(){
+//		var binary = getBinaryPicture();
+//		$("#mugshot").attr("src", binary);
+//		$("#UserBinaryPicture").val(binary);		
+//	});
+//});
 
 </script>
-<?php echo $html->formTag('/users/edit/' . $html->tagValue('User/id')); ?>
+
+<style>
+  span.text_heading{
+   display: inline-block;
+    width: 95px;
+  }
+  input[type="text"],input[type="password"]{
+    border-radius: 6px;
+    border:1px solid gray;
+  }
+  select{
+    height: calc(1em + .75rem + 2px);
+    padding: .200rem .00rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .30rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+  }
+  .page-header{
+    padding-bottom: 9px;
+    margin: 20px 0 20px;
+    border-bottom: 1px solid #eee;
+  }
+</style>
+<?php
+$action = BASE_URL.'/users/edit/' . $html->tagValue('User/id');
+?>
+<form action="<?= $action ?>" method="post" enctype="multipart/form-data">
 <?php echo $html->hidden ('User/id', array("value",$html->tagValue('User/id'))); ?>
 <?php echo $html->hidden ('User/roleId', array("value",$html->tagValue('User/roleId'))); ?>
 <? echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
 <input type="hidden" name="roleId" value="<?=$roleId?>">
-<table align="left" border="0" cellspacing="1" cellpadding="0">	
-	<tr style="padding-bottom:20px;">
-		<td class="sectionTitle" colspan="4"><?=$subtitle ?></td>
-	</tr>
-	<tr>
-		<td>&nbsp;</td>
-	</tr>
-	<tr>
-		<td>First Name:</td>
-		<td>
-			<?php echo $html->input('User/first_name'); ?>
+<div class="">
+  <h2 class="page-header">
+      Information
+    </h2>
+  <div class="row">
+    
+    <div class="col-sm-8">
+      <div class="row">
+    <div class="col-sm-6">
+      <p>
+        <span class="text_heading">
+      First Name:
+        </span>
+      <?php echo $html->input('User/first_name'); ?>
       		<?php echo $html->tagErrorMsg('User/first_name','Please enter in a first name for this user.') ?>
-		</td>
-		<td>Phone*:</td>
-		<td><?php echo $html->input('User/phone',array("value"=>$common->displayPhone($html->tagValue('User/phone'))));?>
-		<font color="red"><b><?php echo $html->tagErrorMsg('User/phone','Please enter in a phone for this user') ?></b></font>
-		</td>
-	</tr>
-	<tr>
-		<td>Last Name:</td>
-		<td>
-			<?php echo $html->input('User/last_name'); ?>
+        </p>
+      <p>
+        <span class="text_heading">
+          Last Name:
+        </span>
+          
+          <?php echo $html->input('User/last_name'); ?>
 			<?php echo $html->tagErrorMsg('User/last_name', 'Please enter in a last name for this user.') ?>
-		</td>
-		<td>Cell Phone:</td>
-		<td><?php echo $html->input('User/cell_phone',array("value"=>$common->displayPhone($html->tagValue('User/cell_phone'))));?></td>
-	</tr>
-	<tr style="padding-top:10px;">
-		<td>Address:</td><td><?php echo $html->input('User/address');?></td>
-		<td>E-Mail:</td><td><?php echo $html->input('User/email');?>
-		<font color="red"><b><?php echo $html->tagErrorMsg('User/email_1','Please enter in an e-mail for this user') ?>
-		<?php echo $html->tagErrorMsg('User/email_2','Please enter in a valid e-mail address for this user') ?></b></font>
-		</td>
-	</tr>
-	<tr>
-		<td>City:</td><td><?php echo $html->input('User/city');?></td>
-		<td>Theme:</td><td><?php echo $html->selectTag('User/interface_id',$interfaces,$data['User']['interface_id']);?></td>
-	</tr>
-	<tr>
-		<td>Postal Code:</td><td><?php echo $html->input('User/postal_code',array("value"=>$common->displayZip($html->tagValue('User/postal_code'))));?></td>
-		<td>Eprint Terminal:</td><td><?php echo $html->selectTag('User/eprint_id',$eprint,$data['User']['eprint_id']);?></td>
-	</tr>
-    <tr>
-		<td>Extension #:</td><td><?php echo $html->input('User/extension_id');?>
-       <font color="red"><b> <?php echo $html->tagErrorMsg('User/extension_id', 'Please enter extension id for this user.') ?> </b></font>
-        </td>
-		<td>&nbsp;</td>
-	</tr>
-	<tr>
-		<td>Active:</td>
-		<td>
+      </p>
+      <p>
+        <span class="text_heading">
+        Address:
+        </span>
+        <?php echo $html->input('User/address');?>
+      </p>
+      <p>
+        <span class="text_heading">
+        City:
+        </span>
+        
+        <?php echo $html->input('User/city');?>
+      </p>
+      <p>
+        <span class="text_heading">
+        Postal Code:
+        </span>
+        <?php echo $html->input('User/postal_code',array("value"=>$common->displayZip($html->tagValue('User/postal_code'))));?>
+      </p>
+      <p>
+        <span class="text_heading">
+        Extension #:
+        </span>
+        <?php echo $html->input('User/extension_id');?>
+      </p>
+      
+    </div>
+    <div class="col-sm-6">
+      <p>
+        <span class="text_heading">
+        Phone*:
+        </span>
+		<?php echo $html->input('User/phone',array("value"=>$common->displayPhone($html->tagValue('User/phone'))));?>
+      </p>
+      <p>
+        <span class="text_heading">
+        Cell Phone:
+        </span>
+		<?php echo $html->input('User/cell_phone',array("value"=>$common->displayPhone($html->tagValue('User/cell_phone'))));?>
+      </p>
+      <p>
+        <span class="text_heading">
+        E-Mail:
+        </span>
+        
+        <?php echo $html->input('User/email');?>
+		<font color="red"><b><?php echo $html->tagErrorMsg('User/email_1','Please enter in an e-mail for this user') ?></b></font>
+      </p>
+      <p style="display:none">
+        <span class="text_heading">
+        Theme:
+        </span>
+        
+        <?php echo $html->selectTag('User/interface_id',$interfaces,$data['User']['interface_id']);?>
+      </p>
+      <p style="display:none">
+        <span class="text_heading">
+        Eprint Terminal:
+        </span>
+        <?php echo $html->selectTag('User/eprint_id',$eprint,$data['User']['eprint_id']);?>
+        
+      </p>
+      </div>
+    </div>
+    </div>
+    
+    <div class="col-sm-4">
+      Active:
+      
+		
 			Yes<input type="radio" name="is_active" id="is_active"  value='1' <?=$this->data['User']['is_active'] == 1 ? 'checked="checked"' : ''?>/>
-			&nbsp;&nbsp;No<input type="radio" name="is_active" id="is_active"  value='0' <?=$this->data['User']['is_active'] == 0 ? 'checked="checked"' : ''?>/>
-		</td>
-		<td></td>
-	</tr>
-	<tr>
-		<td>&nbsp;</td>
-	</tr>
-	<tr>
-		<td colspan="4" class="sectionTitle">Login Information:</td>
-	</tr>
-	<tr>
-		<td>&nbsp;</td>
-	</tr>
-	<tr>
-		<td>Username:</td><td><?php echo $html->input('User/username');?></td>
-		<td>Password:</td><td><?php echo $html->input('User/password', array("type" => "password"));?></td>
-	</tr>
-	<tr>
-		<td>Role:</td>
-		<td colspan="3">
-			
-			<?=$html->selectTag('Role/role_id',$Roles4Select,$this->data['Role'][0]['id'], array("onChange" => "showHideTrucks(this);"));?>
-				
-		</td>
-	</tr>
-	
-	<tr class="assignedTrucksTr" style="display:<?php echo ($this->data['Role']['role_id']==3 || $this->data['Role'][0]['id']==3)?'block':'none'; ?>" >
-		<td>Assign Trucks:</td>
-		<td colspan="3">
-				<?php 
+			&nbsp;&nbsp;No<input type="radio" name="is_active" id="is_active22"  value='0' <?=$this->data['User']['is_active'] == 0 ? 'checked="checked"' : ''?>/>
+		
+    </div>
+    
+    
+    
+  </div>
+  <h2 class="page-header">Login Information</h2>
+  <div class="row">
+      <div class="col-sm-12">
+        <div class="col-sm-8" style="padding:0">
+          
+          
+          <div class="row">
+            <div class="col-sm-6">
+              <p>
+                <span class="text_heading">
+              Username:
+              </span>
+              <?php echo $html->input('User/username');?>
+              </p>
+              <p>
+                <span class="text_heading">
+                Role:
+                </span>
+                <?=$html->selectTag('Role/role_id',$Roles4Select,$this->data['Role'][0]['id'], array("onChange" => "showHideTrucks(this);"));?>
+
+                
+              </p>
+            </div>
+            <div class="col-sm-6">
+              <p>
+                <span class="text_heading">
+              Password:
+              </span>
+              <?php echo $html->input('User/password', array("type" => "password"));?>
+              </p>
+              
+            </div>
+            
+          </div>
+          
+        </div>
+  
+        
+  
+        
+      </div>
+
+    
+      
+    </div>
+   
+  
+</div>
+
+  <h2 style="display:<?php echo ($this->data['Role']['role_id']==3 || $this->data['Role'][0]['id']==3)?'block':'none'; ?>"  class="page-header">Settings</h2>
+<div class="row">
+
+  <div class="col-sm-4" style="display:<?php echo ($this->data['Role']['role_id']==3 || $this->data['Role'][0]['id']==3)?'block':'none'; ?>" >
+    <p>
+      Maximum time between jobs
+      <input type="text" name="data[User][max_time]" id="max_time" value="<?=$this->data['User']['max_time'] ?>" placeholder="time in minutes">
+
+    </p>
+    <p>
+      Maximum Kms between jobs
+      <input type="text" name="data[User][max_km]" id="max_km" value="<?=$this->data['User']['max_km'] ?>" placeholder="kms">
+
+    </p>
+  </div>
+  <div class="col-sm-4" style="display:<?php echo ($this->data['Role']['role_id']==3 || $this->data['Role'][0]['id']==3)?'block':'none'; ?>">
+    Assigned Trucks:
+    	<?php 
 					
 					foreach ($trucks as $key => $eachtruck) { 
 					?>
@@ -122,65 +249,87 @@ $(function() {
 						</div>
 			
 				<?php } ?>
-			
-		</td>
-	</tr>
-	<input type="hidden" name="view_mode" value="<?=$view_mode;?>" />
+    
+  </div>
+  <div class="col-sm-4" style="display:<?php echo ($this->data['Role']['role_id']==3 || $this->data['Role'][0]['id']==3)?'block':'none'; ?>" >
+    Login Admin Permission
+    <input type="radio" name="data[User][admin_per]" value="1" <?=$this->data['User']['admin_per'] == 1 ? 'checked="checked"' : '' ?>>Yes
+      <input type="radio" name="data[User][admin_per]" value="0" <?=$this->data['User']['admin_per'] == 0 ? 'checked="checked"' : '' ?>>No
+      <br>
+      Show Estimate
+    <input type="radio" name="data[User][show_estimate]" value="1" <?=$this->data['User']['show_estimate'] == 1 ? 'checked="checked"' : '' ?>>Private
+    <input type="radio" name="data[User][show_estimate]" value="2" <?=$this->data['User']['show_estimate'] == 2 ? 'checked="checked"' : '' ?>>Public
+      <input type="radio" name="data[User][show_estimate]" value="0" <?=$this->data['User']['show_estimate'] == 0 ? 'checked="checked"' : '' ?>>No
+    
+  </div>
+</div>
+<h2 class="page-header">
+  Portfolio
+</h2>
+<div class="row">
+  <div class="col-sm-6">
+    <p>
+      <?php
+                  $images1 = $data["User"]["binary_picture"];
+                  $year = substr($images1, 0, 4);
+        $mon = substr($images1, 4, 2);
+        $day = substr($images1, 6, 2);
+        $name = $year.'/'.$mon.'/'.$day.'/'.$images1;
+       if(empty($images1)){
+          $name="";
+          
+          $src="";
+  $img="";
+        }
+        else {
+          $src=ROOT_URL.'/upload_photos/'.$name;
+  
+  $img="<img style='max-height:280px;
+    max-width:280px' src='$src'>";
+          
+        }
+                  ?>
+                  
+               <!--   <a class="example1" href="<?= $src ?>"><?= $img ?></a>-->
+ 
+        	<!--<img src="" id="mugshot" style="max-height:300px;max-width:400px;" />-->
+			           
+		</p>
+    
+    
+    	<p colspan="4"><input name="upload_image" type="file" value="Upload Picture" class="upload" /></p>
+    
+        <p colspan="4">About<br /> <?php echo $html->textarea('User/about', array('cols'=>65));?>
+        </p>
+    
+        <p colspan="4">Qualifications<br /> <?php echo $html->textarea('User/qualifications', array('cols'=>65));?>
+        </p>
+ 
     <tr>
-		<td>&nbsp;</td>
-	</tr>
-    <tr>
-		<td colspan="4" class="sectionTitle">Portfolio:</td>
-	</tr>
-    <tr>
-		<td>&nbsp;</td>
-	</tr>
-    <tr>
-    	<td colspan="4">Picture<br />
-        	<img src="<?php echo $data["User"]["binary_picture"] ?>" id="mugshot" style="max-height:300px;max-width:400px;border:1px dashed #999999" />
-			<?php echo $html->input('User/binary_picture', array('type'=>'hidden'));?>            
-		</td>
-    </tr>
-    <tr>
-    	<td colspan="4"><input type="button" value="Upload Picture" class="upload" /></td>
-    </tr>
-    <tr>
-        <td colspan="4">About<br /> <?php echo $html->textarea('User/about', array('cols'=>65));?>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="4">Qualifications<br /> <?php echo $html->textarea('User/qualifications', array('cols'=>65));?>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="4">Experience<br />  <?php echo $html->textarea('User/experience', array('cols'=>65));?>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="4">Skills<br /> <?php echo $html->textarea('User/skills', array('cols'=>65));?>
-        </td>
-    </tr>    
-    <tr>
-        <td colspan="4">Goals<br /> <?php echo $html->textarea('User/goals', array('cols'=>65));?>
-        </td>
-    </tr>
-    <tr>
-		
-        <td colspan="4">Hobbies<br /> <?php echo $html->textarea('User/hobbies', array('cols'=>65));?>
-        </td>
-    </tr>
-	<tr>
-		<td>&nbsp;</td>
-		<td colspan="2" align="left"><br/>
-		  <input type="submit" name="submit" value="Submit" class="buttons">&nbsp;
-		  <input type="button" value="Cancel" onclick="javascript:history.go(-1);" class="buttons">          
-		</td>
-		<td colspan="1">&nbsp;</td>
-	</tr>
-</table>
+        <p colspan="4">Experience<br />  <?php echo $html->textarea('User/experience', array('cols'=>65));?>
+        </p>
+   
+        <p colspan="4">Skills<br /> <?php echo $html->textarea('User/skills', array('cols'=>65));?>
+        </p>
+      
 
-<?php echo $portfolio ?>
+        <p colspan="4">Goals<br /> <?php echo $html->textarea('User/goals', array('cols'=>65));?>
+        </p>
+  </div>
+  
+  <div class="col-sm-6">
+    <?php echo $portfolio ?>
 
-<pre>
-<?php //print_r($portfolio) ?>
-</pre>
+  </div>
+  
+</div>
+
+    <!--<input type="submit" name="submit" value="Submit" class="buttons" style="display:block">&nbsp;
+		  <input type="button" value="Cancel" onclick="javascript:history.go(-1);" style="display:block" class="buttons"> -->
+    
+   <div class="row">
+  <div class="col-6"><input type="submit" name="submit" value="Submit" class="buttons" style="display:block;float:right"></div>
+  <div class="col-6"><input type="button" value="Cancel" onclick="javascript:history.go(-1);" style="display:block" class="buttons"></div>
+</div>
+  
+

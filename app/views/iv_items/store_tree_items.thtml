@@ -1,80 +1,176 @@
 <input type="hidden" class="criteria" value='<?php echo $criteria ?>' />
-<div class="item_count"><?php echo $count ?> result<?php echo $count==1?'':'s' ?></div>
-<li><?php //echo $criteria //for debugging ?>
-<div class="list_wrapper">
-    <input type="button" class="btn btn-navy btn-left-shift multipleItems" name="multipleItems" value="Submit">
-    <table class="list clear_this">
-        <tr>
-            <th>Add</th>
-            <th>Name</th>
-            <th><?php echo $aliases['model']['alias']==''?'Model':$aliases['model']['alias'] ?></th>  
-            <th>Brand</th>
-            <th><?php echo $aliases['regular_price']['alias']==''?'Regular Price':$aliases['regular_price']['alias'] ?></th>
-            <th><?php echo $aliases['selling_price']['alias']==''?'Selling Price':$aliases['selling_price']['alias'] ?></th>
-        </tr>
-        <tbody>
-        <?php $i = 0; ?>
-        <?php foreach($items as $item) { ?>
-        <tr class="<?php echo $i++%2==0?'odd':'even' ?> item"><input type="hidden" class="id" value="<?php echo $item['id'] ?>" />
-            <input type="hidden" class="item_active" value="<?php echo $item['active'] ?>" />
-            <input type="hidden" class="item_category_id" value="<?php echo $item['category_id'] ?>" />
-            <input type="hidden" class="item_id" value="<?php echo $item['id'] ?>" />
-            <input type="hidden" class="item_name" value="<?php echo $item['name'] ?>" />
-            <input type="hidden" class="item_model" value="<?php echo $item['model'] ?>" />
-            <input type="hidden" class="item_regular_price" value="<?php echo $item['regular_price'] ?>" />
-            <input type="hidden" class="item_selling_price" value="<?php echo $item['selling_price'] ?>" />
-            <input type="hidden" class="item_supplier_price" value="<?php echo $item['supplier_price'] ?>" />
-            <input type="hidden" class="item_efficiency" value="<?php echo $item['efficiency'] ?>" />
-            <input type="hidden" class="item_brand_id" value="<?php echo $item['brand_id'] ?>" />
-            <input type="hidden" class="item_supplier_id" value="<?php echo $item['supplier_id'] ?>" />
-            <input type="hidden" class="item_description1" value="<?php echo $item['description1'] ?>" />
-            <input type="hidden" class="item_description2" value="<?php echo $item['description2'] ?>" />
-            <input type="hidden" class="item_mode" value="<?php echo $mode ?>" />
-            <input type="hidden" class="item_brand" value="<?php echo $item['brand'] ?>" />
-            <input type="hidden" class="item_sku" value="<?php echo $item['sku'] ?>" />
-            <input type="hidden" class="item_sub_category_id" value="<?php echo $item['sub_category_id'] ?>" />
-
-           <td class="left"><input type="checkbox" name="addItem" class="addItems"></td>
-            <td class="right"><?php echo $item['name'] ?></td>
-            <td class="right"><?php echo $item['model'] ?></td>  
-            <td class="right"><?php echo $item['brand'] ?></td>                   
-            <td class="right"><?php echo $item['regular_price'] ?></td>
-            <td class="right"><?php echo $item['selling_price'] ?></td>
-        </tr>
-        <?php } ?>
-        </tbody>
-    </table>    
-    <input type="button" class="btn btn-navy btn-right-shift multipleItems" name="multipleItems" value="Submit" >
+<div class="item_count">
+    <?php echo $count ?> result
+    <?php echo $count==1?'':'s' ?>
 </div>
-<div class="clear_this">&nbsp;</div>
+<li>
+    <?php //echo $criteria //for debugging ?>
+    <div class="list_wrapper">
+        <input type="button" class="btn btn-navy btn-left-shift multipleItems" name="multipleItems" value="Submit">
+        <table class="list clear_this">
+            <tr>
+                <th>Add</th>
+                <th>Name</th>
+                <th>Image</th>
+                <th>
+                    <?php echo $aliases['model']['alias']==''?'Model':$aliases['model']['alias'] ?>
+                </th>
+                <th>Efficiency</th>
+                <th>Brand</th>
+                <th>Size</th>
+                <th>Supplier Price</th>
+                <th>Selling Price</th>
+                <?php foreach ($inventoryTechnician as $tech => $value): ?>
+                <th>
+                    <?php echo $value['short_name'] ?>
+                </th>
+                <th>Dba</th>
+                <th>Tonnage</th>
+                <th>Seer</th>
+                <th>Position</th>
+                <th>Btu</th>
+                <th>Warranty</th>
+                <?php endforeach ?>
+                <!-- <th>Warehouse</th> -->
+            </tr>
+            <tbody>
+                <?php $i = 0; ?>
+                <?php foreach($items as $item) { ?>
+                <tr class="<?php echo $i++%2==0?'odd':'even' ?> item"><input type="hidden" class="id" value="<?php echo $item['id'] ?>" />
+                    <input type="hidden" class="item_active" value="<?php echo $item['active'] ?>" />
+                    <input type="hidden" class="item_category_id" value="<?php echo $item['category_id'] ?>" />
+                    <input type="hidden" class="item_id" value="<?php echo $item['id'] ?>" />
+                    <input type="hidden" class="item_name" value="<?php echo htmlentities(stripslashes($item['name']), ENT_QUOTES)  ?>" />
+                    <input type="hidden" class="item_model" value="<?php echo $item['model'] ?>" />
+                    <input type="hidden" class="item_regular_price" value="<?php echo $item['regular_price'] ?>" />
+                    <input type="hidden" class="item_selling_price" value="<?php echo $item['selling_price'] ?>" />
+                    <input type="hidden" class="item_supplier_price" value="<?php echo $item['supplier_price'] ?>" />
+                    <input type="hidden" class="item_efficiency" value="<?php echo $item['efficiency'] ?>" />
+                    <input type="hidden" class="item_brand_id" value="<?php echo $item['brand_id'] ?>" />
+                    <input type="hidden" class="item_supplier_id" value="<?php echo $item['supplier_id'] ?>" />
+                    <input type="hidden" class="item_description1" value="<?php echo $item['description1'] ?>" />
+                    <input type="hidden" class="item_description2" value="<?php echo $item['description2'] ?>" />
+                    <input type="hidden" class="item_mode" value="<?php echo $mode ?>" />
+                    <input type="hidden" class="item_brand" value="<?php echo $item['brand'] ?>" />
+                    <input type="hidden" class="item_sku" value="<?php echo $item['sku'] ?>" />
+                    <input type="hidden" class="warehouse_qty" value="<?php echo $item['warehouse_qty'] ?>" />
+                    <input type="hidden" class="item_sub_category_id" value="<?php echo $item['sub_category_id'] ?>" />
+                    <input type="hidden" class="item_markup_percent" value="<?php echo $item['markup_percent'] ?>" />
+                    <input type="hidden" class="item_tech_percent" value="<?php echo $item['tech_percent'] ?>" />
+                    <?php
+            $images1 = $item['image'];
+                  $year = substr($images1, 0, 4);
+        $mon = substr($images1, 4, 2);
+        $day = substr($images1, 6, 2);
+        $name = $year.'/'.$mon.'/'.$day.'/'.$images1;
+       if(empty($images1)){
+          $name="";
+          
+          $src="";
+  $img="";
+        }
+        else {
+          $src=ROOT_URL.'/upload_photos/'.$name;
+  
+  $img="<img class='invoice-openImg order-images' style='height: 70px;
+    width: 70px;' src='$src'>";
+          
+        }
+            ?>
+                        <td class="left"><input type="checkbox" name="addItem" class="addItems"></td>
+                        <td class="right">
+                            <?php echo $item['name'] ?>
+                        </td>
+                        <td class="right">
+                            <?php echo $img ?>
+                        </td>
+                        <td class="right">
+                            <?php echo $item['model'] ?>
+                        </td>
+                        <td class="right">
+                            <?php echo $item['efficiency'] ?>
+                        </td>
+                        <td class="right">
+                            <?php echo $item['brand'] ?>
+                        </td>
+                        <td class="right">
+                            <?php echo $item['description1'] ?>
+                        </td>
+                        <td class="right">
+                            <?php echo $item['supplier_price'] ?>
+                        </td>
+                        <td class="right">
+                            <?php echo $item['selling_price'] ?>
+                        </td>
+                        <?php foreach ($inventoryTechnician as $tech => $value): ?>
+                        <td class="right">
+                            <?php if(!empty($item['tech_data'])){?>
+                            <?php foreach ($item['tech_data'] as $tech1 => $value1): ?>
+                            <?php if($value['id'] == $value1['TechInventoryItem']['tech_id'] ) {?>
+                            <?php echo $value1['TechInventoryItem']['quantity'] ?>
+                            <?php } ?>
+                            <?php endforeach ?>
+                            <?php } ?>
+                        </td>
+                        <td class="right">
+                            <?php echo $item['dba'] ?>
+                        </td>
+                        <td class="right">
+                            <?php echo $item['tonnage'] ?>
+                        </td>
+                        <td class="right">
+                            <?php echo $item['seer'] ?>
+                        </td>
+                        <td class="right">
+                            <?php echo $item['position'] ?>
+                        </td>
+                        <td class="right">
+                            <?php echo $item['btu'] ?>
+                        </td>
+                        <td class="right">
+                            <?php echo $item['warranty'] ?>
+                        </td>
+                        <?php endforeach ?>
+                        <!-- <td class="right"><?php echo $item['warehouse_qty'] ?></td> -->
+                </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+        <input type="button" class="btn btn-navy btn-right-shift multipleItems" name="multipleItems" value="Submit">
+    </div>
+    <div class="clear_this">&nbsp;</div>
 </li>
 <style type="text/css">
     .sub-w100 .btn {
-    font-size: 16px;
-    font-weight: 600;
-    width: 125px;
-}
-.btn-navy {
-    background: #000040;
-    color: #fff;
-}
-.btn-right-shift {
-    margin-top: 10px;
-    float: right;
-}
-.btn-left-shift {
-    margin-bottom: 10px;
-    float: left;
-}
-.btn {
-    width: 98px;
-    height: 23px;
-    line-height: 23px;
-    display: inline-block;
-    text-align: center;
-    font-size: 12px;
-    border-style: solid;
-    border-width: 2px;
-    border-color: #fff #7d7d7d #7d7d7d #fff;
-}
+        font-size: 16px;
+        font-weight: 600;
+        width: 125px;
+    }
+    
+    .btn-navy {
+        background: #000040;
+        color: #fff;
+    }
+    
+    .btn-right-shift {
+        margin-top: 10px;
+        float: right;
+    }
+    
+    .btn-left-shift {
+        margin-bottom: 10px;
+        float: left;
+    }
+    
+    .btn {
+        width: 98px;
+        height: 23px;
+        line-height: 23px;
+        display: inline-block;
+        text-align: center;
+        font-size: 12px;
+        border-style: solid;
+        border-width: 2px;
+        border-color: #fff #7d7d7d #7d7d7d #fff;
+    }
 </style>

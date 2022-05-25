@@ -91,7 +91,7 @@ table thead th:nth-child(4){
             <td><?=$i?></td>
             <td><?=$user['first_name'].' '.$user['last_name']?></td>
             <td><?=$user['email']?></td>
-            <td><?=$user['order_num']?></td>
+            <td><a href="<?=BASE_URL?>/orders/editBooking?order_id=<?=$user['order_id']?>"><?=$user['order_num']?></a></td>
             <td><?=$user['work_date']?></td>
             <td><?=$user['work_time']?></td>
             <td><?=$user['contactInfo']?></td>

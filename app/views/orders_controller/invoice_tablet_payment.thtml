@@ -3,13 +3,14 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Invoice</title>
-<!--<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
-<meta name="apple-mobile-web-app-capable" content="yes">-->
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/edit_help.js"></script>
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/showhint.js"></script>
 <!-- <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.quicksearch.js"></script> -->
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_payment14.js?time=<?= time()?>"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/eff_calculator.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/meio.js"></script>
@@ -21,9 +22,51 @@
 <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/media-queries.css" rel="stylesheet" type="text/css">
 <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
 <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
-
-
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/style.css" />
 <style type="text/css">
+
+.cardStatusTbl{
+    float: left;
+    /*margin-left: 30%;*/
+    border: 1px solid black;
+    margin-top: 2%;
+    text-align: left;
+}
+@media only screen and (max-width: 768px) {
+ .cardStatusTbl{
+        margin-left: 1% !important;     
+    }
+}
+.cardStatusTbl td{
+    padding: 3%;
+}
+
+.next_div{
+    margin-top: 15%;
+}
+.ui-dialog .ui-dialog-content { background: white; }
+
+    .ins_text{
+    margin: 5px; width: 743px; height: 197px;
+}
+.t-input {
+    width: 100% !important;
+    height: 22px;
+}
+.installationTotal{
+    float: right;
+}
+#saveInstallationItem
+{
+    margin-top: 10px;
+    padding: 5px;
+}
+#installation_item_table th{
+    text-align: left;
+}
+#installation_item_table td{
+    padding-top: 10px;
+}
 .td_space{
     padding-top: 10%;
 }
@@ -62,11 +105,11 @@
   cursor: pointer
 }
 .emailBox{
-    margin: 0px auto 0 10px; margin-bottom: 10px; width: 200px; padding: 10px;
+    margin: 0px auto 0 10px; margin-bottom: 10px; width: 150px; padding: 10px;
 }
 input.largerCheckbox { 
-            width: 20px; 
-            height: 20px; 
+            width: 13px; 
+            height: 11px; 
             margin-left: 10px;
         } 
 .payBtn{
@@ -181,6 +224,69 @@ input.largerCheckbox {
   text-align: center;
   cursor: pointer
 }
+
+/*css added by cis*/
+
+@media screen and (max-width: 768px) {
+#invoice{
+    margin-left: 0px;
+}
+  textarea#tech_job_notes {
+    width: 100%;
+}
+table th{
+ font-size:12px;
+}
+.creditCardDiv{ width: 100%;}
+/*.cardStatusTbl{ width: 100% !important; }*/
+.cardStatusTbl{ float: right; border: 2px solid grey; width: 100%; }
+.next_div input[type=submit], 
+.next_div input[type=button] {
+    width: 100%;
+    margin: 5px 0px;
+}
+.creditCardTbl{
+    width: 100% !important;
+}
+.creditCardTbl td input{ width: 100%; }
+#items_div .tech{
+    margin-bottom: 5%;
+}
+.CredStatus {
+    width: 100%;
+}
+.cardStatusTbl{
+ background:#fff;
+}
+input.commonCls{
+ background:#fff;
+}
+input.right{
+ font-size:14px;
+}
+}
+.creditCardTbl{
+    float: right;
+    width:22%;
+    border: 2px solid grey;
+}
+.creditCardDiv{
+    float: right;
+    width: 100%;
+    display: none;
+    border: none;
+}
+.CredStatus{
+    float:right;
+    margin-right: 2%;
+}
+@media only screen and (max-width: 768px) {
+ body, td, th, p{
+	font-size:1em !important;
+ }
+ 
+}
+
 </style>
 <script type="text/javascript">
     //Loki- Delete payment image
@@ -207,30 +313,78 @@ input.largerCheckbox {
 </head>
 
 <body>
+ <?php
+	require_once 'Mobile_Detect.php';
+
+
+
+	$detect = new Mobile_Detect;
+ 
+// Any mobile device (phones or tablets).
+if ( $detect->isMobile() ) { ?>
+ <style>
+	ul#nav{
+		display:none;
+	}
+ </style>
+ 
+<?php }
+	?>
 <ul id="nav">	
-    <li><a id="jobs_link" class="buttons"><div>Jobs</div></a></li>
+    <!-- <li><a id="jobs_link" class="buttons"><div>Jobs</div></a></li> -->
+    <li><a id="jobs_link" href="<?php echo BASE_URL;?>/orders/invoiceTablet" class="buttons" class="buttons"><div>Jobs</div></a></li>
     <li><a href="<?php echo BASE_URL;?>/pages/main" id="home_link" class="buttons"><div>ACESYS</div></a></li>
-    <li><a id="calc_link" class="buttons"><div>Eff Calculator</div></a></li>
+    <!-- <li><a id="calc_link" class="buttons"><div>Eff Calculator</div></a></li> -->
 </ul>
 
 <div id="invoice">
 <script>
 
     $(document).ready(function(){
+    // var payingBy = $("#payingBy").val();
+    //  if(payingBy == 3 || payingBy == 4 || payingBy == 5 || elementVal == 14 ){
+    //     $(".creditCardDiv").show();    
+    // }
+
+    var payStatus = $("#payment_status").val();
+    var show_card = $("#show_card").val();
+    // if(payStatus == 1 || show_card == 0 || show_card == ''){
+    if(payStatus == 1){
+        var trailingCharsIntactCount = 4;
+        var str = $("#creditCardNum").val().trim();
+        if(str != ''){
+            str = new Array(str.length - trailingCharsIntactCount + 1).join('x')
+           + str.slice(-trailingCharsIntactCount);
+            $("#creditCardNum").val(str);
+        }
+    }
+   
     var element = $("#PaymentPaymentMethodId").find('option:selected'); 
     var showPicture = element.attr("show-picture");
+    var elementVal = element.val();
     if(showPicture == 1)
     {
        $("#payment-image").show(); 
     }
+    if(elementVal == 3 || elementVal == 4 || elementVal == 5 || elementVal == 14 ){
+        $(".creditCardDiv").show();    
+    }
+
     $("#PaymentPaymentMethodId").live("change", function (){
         var element = $("#PaymentPaymentMethodId").find('option:selected'); 
         var method = $("#PaymentPaymentMethodId").val();
+        var elementVal1 = element.val();
         var option = element.attr("show-picture"); 
         if(option == 1) {
             $("#payment-image").show();
         } else {
             $("#payment-image").hide();
+        }
+
+        if(elementVal1 == 3 || elementVal1 == 4 || elementVal1 == 5 ){
+            $(".creditCardDiv").show();    
+        } else {
+            $(".creditCardDiv").hide();    
         }
     });
     $('#save-reminder-email').live("click", function(){
@@ -357,13 +511,14 @@ function upload_photo(cur,i) {
     
     <?php $job = $order ?>
     <?php if(isset($job)) { ?>
-    <div class="header">
         <input type="hidden" name="orderNum" id="orderNum" value="<?php echo $job['Order']['order_number'] ?>" >
+        <input type="hidden" name="toEmail" id="toEmail" value="<?php echo $job['Customer']['email'] ?>" >
+            <input type="hidden" id="customerId" name="customerId" value="<?=$job['Customer']['id'] ?>">
+    <!--<div class="header">
     <h1>#<?php echo $job['Order']['order_number'] ?> - <?php echo $job['Type']['name'] ?></h1>
    <table>
         <tr>
             <td>Firs name:</td>
-            <input type="hidden" id="customerId" name="customerId" value="<?=$job['Customer']['id'] ?>">
             <td><?php echo $job['Customer']['first_name'] ?></td>
         </tr>
         <tr>
@@ -396,7 +551,7 @@ function upload_photo(cur,i) {
         </tr>
         <tr>
             <td>Cell Phone:</td>
-            <td><?php echo $job['Customer']['cell_phone'] ?></td>
+            <td><span id="cell_phone_no"><?php echo $job['Customer']['cell_phone'] ?></span></td>
         </tr>
         <tr>
             <td>Home Phone:</td>
@@ -407,7 +562,7 @@ function upload_photo(cur,i) {
 		<?php echo $job['Customer']['address'] ?> <?php echo $job['Customer']['city'] ?> <?php echo $job['Customer']['postal_code'] ?>
         </a>
     </p>
-    </div>
+    </div> -->
 
     <?php if(!empty($_GET['payment_image_error'])) {?>
         <div class="success" >
@@ -427,12 +582,13 @@ function upload_photo(cur,i) {
         <?php echo $html->input('Invoice/city_id', array('type'=>'hidden', 'id'=>'city_id', 'value'=>$city_id)); ?>
         <?php echo $html->input('Invoice/userRole', array('type'=>'hidden', 'id'=>'userRole', 'value'=>$common->getLoggedUserRoleID())); ?>
         <?php echo $html->input('Invoice/imageName', array('type'=>'hidden', 'id'=>'imageName', 'value'=>$invoice_payment_photo)); ?>
+        <input type="hidden" name="show_card" id="show_card" value="<?=$job['Order']['show_card']?>">
         <div class="order_div">            
-        <h3>#<?php echo $job['Order']['order_number'] ?> - <?php echo $job['Type']['name'] ?></h3>
+        <!-- <h3>#<?php echo $job['Order']['order_number'] ?> - <?php echo $job['Type']['name'] ?></h3> -->
         <table class="item_table office">
         	<tr>
-            	<th class="item_name"></th>
-                <th>Discount</th>
+            	<th class="item_name">Item</th>
+                <!-- <th>Discount</th> -->
                 <th>Payable</th>                
             </tr>
             
@@ -440,9 +596,9 @@ function upload_photo(cur,i) {
             <tbody>
             <?php if($item['class'] == 0) { ?>
         	<tr>
-            	<td class="left"><?php echo $item['name'] ?></td>
-                <td class="right"><?php echo $item['discount'] ?></td>                                
-                <td class="right"><?php echo ($item['price'] * $item['quantity']) - $item['discount'] + $item['addition'] ?>
+            	<td class="center"><?php echo $item['name'] ?></td>
+                <!-- <td class="right"><?php echo $item['discount'] ?></td>                                 -->
+                <td class="center"><?php echo ($item['price'] * $item['quantity']) - $item['discount'] + $item['addition'] ?>
                 <input type="hidden" class="current_office_cost" value="<?php echo ($item['price'] * $item['quantity']) - $item['discount'] + $item['addition'] ?>" />
                 </td>
             </tr>
@@ -451,7 +607,7 @@ function upload_photo(cur,i) {
             <?php } ?>
         </table>
         
-        <h3>New Requirements</h3>
+        <h4>Addition</h4>
         <!--<div class="item_tabs">
         	<input type="button" value="Service" class="items_button service_tab" />
             <input type="button" value="Furnace" class="items_button furnace_tab" />
@@ -466,53 +622,43 @@ function upload_photo(cur,i) {
         </div>-->
         <table class="item_table tech">
         	<tr>
-            	<th class="item_name"></th>
-                <th>Installed/Done</th>
+            	<th class="item_name">Item</th>
+              <!--   <th>Installed/Done</th>
                 <th>Discount</th>                
                 <th>Quantity</th>
-                <th>Price</th>
+                <th>Price</th> -->
                 <th>Payable</th> 
-                <th></th>              
+                <!-- <th></th>               -->
             </tr>
             <tbody id="item_details">
         	<?php foreach($job['BookingItem'] as $item) { ?>            
             <?php if($item['class'] == 1) { ?>
         	<tr class="item_detail">
-            	<td class="left"><?php echo $item['name'] ?>
+            	<td class="center"><?php echo $item['name'] ?>
                     <input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][item_id]" value="<?php echo $item['item_id'] ?>" />
                 	<input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][name]" value="<?php echo $item['name'] ?>" />
                     <input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][price_purchase]" value="<?php echo $item['price_purchase'] ?>" />
                 	<input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][item_category_id]" value="<?php echo $item['item_category_id'] ?>" />              		<input type="hidden" name="data[BookingItem][<?php echo $item['item_id'] ?>][addition]" value="<?php echo $item['addition'] ?>" />
                 </td>
-                <td class="center">                	
+               <!--  <td class="center">                	
                 	<select class="installed" name="data[BookingItem][<?php echo $item['item_id'] ?>][installed]">
                     	<option value="0" <?php echo $item['installed']==0?"selected":""; ?>></option>
                         <option value="2" <?php echo $item['installed']==2?"selected":""; ?>>No</option>
 						<option value="1" <?php echo $item['installed']==1?"selected":""; ?>>Yes</option>
                     </select>
-                </td>
-                <td class="center">
+                </td> -->
+                <td class="center" style="display: none">
                 	<input type="text" class="discount_presets" name="data[BookingItem][<?php echo $item['item_id'] ?>][discount]" value="<?php echo $item['discount'] ?>" />                	
-                    <!--<select class="discount_presets" name="data[BookingItem][<?php echo $item['item_id'] ?>][discount]">
-                    	<option value="<?php echo $item['discount'] ?>"><?php echo $item['discount'] ?></option>
-                        <option value="<?php echo $item['price']*0.05 ?>"><?php echo number_format(round($item['price']*0.05,2), 2, '.', '') ?>(5%)</option>
-						<option value="<?php echo $item['price']*0.10 ?>"><?php echo number_format(round($item['price']*0.10,2), 2, '.', '') ?>(10%)</option>
-                    </select>-->
                 </td>
-                <td class="center">
-                	<select class="quantity_presets" name="data[BookingItem][<?php echo $item['item_id'] ?>][quantity]">
-                    	<?php for($i = 1; $i < 11; $i++) { ?>
-                    	<option value="<?php echo $i ?>" <?php echo $item['quantity']==$i?"selected":"" ?>><?php echo $i ?></option>
-                        <?php } ?>           	
-                    </select>
-                	<!--<input type="text" name="data[BookingItem][<?php echo $item['item_id'] ?>][quantity]" value="<?php echo $item['quantity'] ?>" />-->
+                <td class="center" style="display: none">
+                	<input type="text" class="quantity_presets" name="data[BookingItem][<?php echo $item['item_id'] ?>][quantity]" value="<?php echo $item['quantity'] ?>" />
                 </td>
-                <td class="center"><input type="text" class="org_price" value="<?php echo $item['price'] ?>" /></td>
+                <td class="center" style="display: none"><input type="text" class="org_price" value="<?php echo $item['price'] ?>" /></td>
                 <td class="center">
                 	<input type="hidden" class="base_price" name="data[BookingItem][<?php echo $item['item_id'] ?>][price]" value="<?php echo $item['price'] ?>" />
                 	<input type="text" class="price_payable" value="0" />
                 </td>
-                <td><input type="button" value=" X " class="delete_button" /></td>
+                <!-- <td><input type="button" value=" X " class="delete_button" /></td> -->
             </tr>            
             <?php } ?>            
             <?php } ?>             
@@ -528,14 +674,15 @@ function upload_photo(cur,i) {
     <!-- <div class="right"><input type="button" value="Save" id="save-payment-image" style=" margin-right: 30px;width: 100px;" /></div> -->
             
         <div class="right" id="payment_box">
-        <div class="clear_this"></div>
-
+            <div class="clear_this"></div>
+            <div style="padding-right: 3%"><span style="color: blue;"><b>Paying By:</b> <?php echo $job['OrderPaymentMethod']['name']?></span></div>
+            <input type="hidden" name="payingBy" id="payingBy" value="<?php echo $job['Order']['payment_method_type']?>">
         <!-- <div>Paid by: <?php echo $html->selectTag('Payment/payment_method_id', $payment_method); ?></div> -->
             <div> Paid by: 
             <select id="PaymentPaymentMethodId" name="data[Payment][payment_method_id]">
                 <option value="0">--</option>
                <?php foreach($payment_methods as $method) {?>
-                    <option value="<?=$method['id']?>" <?php echo $job['Order']['payment_method_type'] == $method['id']? 'selected' : '';?> show-picture="<?=$method['show_picture']?>" show-payment="<?=$method['show_payment']?>" show-message="<?=$method['message_to_office']?>" ><? echo $method['name']?>
+                    <option value="<?=$method['id']?>" <?php echo $job['Payment']['payment_method'] == $method['id']? 'selected' : '';?> show-picture="<?=$method['show_picture']?>" show-payment="<?=$method['show_payment']?>" show-message="<?=$method['message_to_office']?>" ><? echo $method['name']?>
                     </option>
                <?php }?> 
             </select>
@@ -573,8 +720,115 @@ function upload_photo(cur,i) {
                 }
             ?> 
         </div><!--END of order_div-->
+    </div>
+           <div class="creditCardDiv" style="float:right;">
+             
+            <table class="creditCardTbl">
+                <tr>
+                    <td>Name:</td>
+                    <td>
+                        <?php if(empty($job['Customer']['credit_card_name'])){?>
+                        <input type="text" name="creditName" id="creditName" value="<?=$job['Customer']['first_name'].' '.$job['Customer']['last_name']?>">
+                     <?php } else{ ?>
+                        <input type="text" name="creditName" id="creditName" value="<?=$job['Customer']['credit_card_name']?>">
+                        <?php } ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Card Number:</td>
+                    <td><input type="text" name="creditCardNum" id="creditCardNum" value="<?php echo $job['Customer']['credit_card_number'] ?>"></td>
+                </tr>
+                <tr>
+                    <td>Expiration Date:</td>
+                    <td><select id="cardExpMonth">
+                         <option value="00">--</option>
+                       <option <? echo ($job['Customer']['card_exp_month'] == "01") ? 'selected' : ''; ?> value="01">01</option>
+                        <option <? echo ($job['Customer']['card_exp_month'] == "02") ? 'selected' : ''; ?> value="02">02</option>
+                        <option <? echo ($job['Customer']['card_exp_month'] == "03") ? 'selected' : ''; ?> value="03">03</option>
+                        <option <? echo ($job['Customer']['card_exp_month'] == "04") ? 'selected' : ''; ?> value="04">04</option>
+                        <option <? echo ($job['Customer']['card_exp_month'] == "05") ? 'selected' : ''; ?> value="05">05</option>
+                        <option <? echo ($job['Customer']['card_exp_month'] == "06") ? 'selected' : ''; ?> value="06">06</option>
+                        <option <? echo ($job['Customer']['card_exp_month'] == "07") ? 'selected' : ''; ?> value="07">07</option>
+                        <option <? echo ($job['Customer']['card_exp_month'] == "08") ? 'selected' : ''; ?> value="08">08</option>
+                        <option <? echo ($job['Customer']['card_exp_month'] == "09") ? 'selected' : ''; ?> value="09">09</option>
+                        <option <? echo ($job['Customer']['card_exp_month'] == "10") ? 'selected' : ''; ?> value="10">10</option>
+                        <option <? echo ($job['Customer']['card_exp_month'] == "11") ? 'selected' : ''; ?> value="11">11</option>
+                        <option <? echo ($job['Customer']['card_exp_month'] == "12") ? 'selected' : ''; ?> value="12">12</option>
+                    </select>
+                    <select id="cardExpYear">
+                        <option value="0">--</option>
+                        <?php for($i = 20; $i <= 45; $i++){?>
+                            <option <? echo ($job['Customer']['card_exp_year'] == $i) ? 'selected' : ''; ?> value="<?=$i?>"><?php echo $i;?></option>
+                        <?php } ?>
+                    </select>(MM/YY)
+                    </td> 
+                </tr>
+                <tr>
+                    <td>CVV2/CVC2:</td>
+                    <td><input type="text" name="creditCvv" id="creditCvv" value="<? echo $job['Customer']['card_cvv']?>"></td>
+                </tr>
+                <tr>
+                    <td>Sale Amount:</td>
+                    <td><input type="text" name="saleAmount" id="saleAmount" value="<?=$job['Payment']['paid_amount']?>"></td>
+                </tr>
+                <tr>
+                    <td><input type="button" name="saveCardInfo" id="saveCardInfo" value="Save"></td>
+                    <td><input type="button" <?php echo ($job['Order']['payment_status'] == 1) ? 'disabled' : '' ?> name="cardTransaction" id="cardTransaction" value="Charge"></td>
+                </tr>
+            </table>
 
-          <div>
+            
+        </div>
+        <div class="CredStatus">
+            <table class="cardStatusTbl">
+                <?php $lastkey = end(array_keys($job['CreditcardPaymentDetails'])); ?>
+                <input type="hidden" name="payment_status" id="payment_status" value="<?=$job['CreditcardPaymentDetails'][$lastkey]['payment_status'];?>">
+                <tr>
+                    <?php if($job['CreditcardPaymentDetails'][$lastkey]['payment_status'] == 1){ 
+                        $payState = 'Approved';
+                        $paycolor = 'Green';
+                    } else if($job['CreditcardPaymentDetails'][$lastkey]['payment_status'] == 2){
+                        $paycolor = 'Red';
+                        $payState = 'Declined';
+                    }
+                    else if($job['CreditcardPaymentDetails'][$lastkey]['payment_status'] == 3){
+                        $payState = 'Authorization';
+                        $paycolor = 'Green';
+                    }else if($job['CreditcardPaymentDetails'][$lastkey]['payment_status'] == 4){
+                        $paycolor = 'Red';
+                        $payState = 'Not Authorized';
+                    }
+                     else{
+                            $paycolor = $color_status;
+                            $payState = $paid_status;
+                        }
+                ?>
+                    <td>Payment Status: </td>
+                    <td><span id="transaction_status" style="color: <?php echo $paycolor?>"><?php echo $payState?></span></td>
+                </tr>
+                <tr>
+                    <td>Amount: </td>
+                    <td><span id="transaction_amount"><?php echo $job['CreditcardPaymentDetails'][$lastkey]['amount'];?></span></td>
+                </tr>
+                <tr>
+                    <td>Authorization: </td>
+                    <td><span id="transaction_auth"><?php echo $job['CreditcardPaymentDetails'][$lastkey]['auth_code'];?></span></td>
+                </tr>
+                <tr>
+                    <td>Date: </td>
+                    <td><span id="transaction_date"><?php echo $job['CreditcardPaymentDetails'][$lastkey]['payment_date'];?></span></td>
+                </tr>
+            </table>
+            </div>
+       <!--  <div style="margin-top: 3%;" >
+            <div style="float:left;display:none">
+                <span><b>Invoice Notes</b></span> <textarea id="tech_job_notes" rows="7" cols="50" value="<?=$job['Order']['job_notes']?>"><?=$job['Order']['job_notes']?></textarea>
+
+            </div>
+      
+         
+        </div> -->
+       <!--  <div>
             <table>
                 <tr>
                      <?php foreach ($allImages as $key => $value) {
@@ -620,7 +874,7 @@ function upload_photo(cur,i) {
                     </td>
                 </tr>
             </table>
-        </div>
+        </div> -->
         
         <div class="order_div">
         <?php if($last_order['Order']['order_number'] != "") { ?>
@@ -735,13 +989,16 @@ function upload_photo(cur,i) {
                <!--  <a class="payBtn" style="text-decoration: navajowhite;font-size: 13px;" href="https://www.acecare.ca/pay-here?orderId=<?php echo base64_encode($job['Order']['id']); ?>" target="_balnk"> Pay Here </a> -->
 
               <!--   <input type="button" class="commonCls" name="estimate" onclick="window.open('<?php //echo BASE_URL ?>/orders/techBooking?order_id=<?php echo $job['Order']['id']?> & rurl=&fromTech=2', '_self')" value="Estimate" /> -->
-               <input type="button" class="commonCls" id= "payViaOfc" name="payViaOfc" value="Pay Via Office" />
-                <input type="button" class="commonCls" id= "techRecommended" name="techRecommended" value="Tech Recommended" />
-                <input type="button" class="commonCls" name="estimate" onclick="window.open('<?php echo BASE_URL ?>/orders/techBooking?customer_id=<?php echo $job['Customer']['id']?> &order_id=0&main_id=<?=$job['Order']['id']?>&fromTechPay=1&forEstimate=1&job_technician1_id=<?php echo $job['Order']['job_technician1_id']?>&booking_source_id=<?php echo $job['Order']['booking_source_id']?>', '_self')" value="Estimate" />
-                 <input type="button" class="commonCls" name="partRequest" onclick="window.open('<?php echo BASE_URL ?>/orders/techBooking?customer_id=<?php echo $job['Customer']['id']?> &order_id=0&fromTechPay=1&main_id=<?=$job['Order']['id']?>&forEstimate=1&part_request=1&job_technician1_id=<?php echo $job['Order']['job_technician1_id']?>&booking_source_id=<?php echo $job['Order']['booking_source_id']?>', '_self')" value="Part Request" />
-                <span style="font-size: 14px">Email Receipt</span><input class="largerCheckbox" type="checkbox" name="paymentReceipt" id="paymnetReceipt" value="0">
-                 <input type="email" name="newEmail" id="receiptEmail"  value="<?php echo isset($job['Customer']['email']) ? $job['Customer']['email'] : ''; ?>" class="emailBox">
-                 <input type="button" class="commonCls" name="saveJobs" id="saveJobPayment" value="Save" />
+        <!-- <input type="button" class="installation_items commonCls" value="Installation Items" />
+               <input type="button" class="commonCls" id= "payViaOfc" name="payViaOfc" value="Pay Via Office" /> -->
+               <!--  <input type="button" class="commonCls" id= "techRecommended" name="techRecommended" value="Tech Recommended" />
+                <input type="button" class="commonCls" name="estimate" onclick="window.open('<?php echo BASE_URL ?>/orders/editBooking?customer_id=<?php echo $job['Customer']['id']?>&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date('d M Y'));?>&job_technician1_id=<?php echo $job['Order']['job_technician1_id']?>&job_technician2_id=0&from_tech_page=1&show_preview=1&booking_source_id=<?php echo $loggedUserId?>', '_self')" value="Estimate" />
+                 <input type="button" class="commonCls" name="partRequest" onclick="window.open('<?php echo BASE_URL ?>/orders/editBooking?customer_id=<?php echo $job['Customer']['id']?>&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date('d M Y'));?>&job_technician1_id=<?php echo $job['Order']['job_technician1_id']?>&job_technician2_id=0&from_tech_page=4&booking_source_id=<?php echo $loggedUserId?>&part_request=1', '_self')" value="Part Request" /> -->
+            <!--     <span style="font-size: 14px">Email Receipt</span><input class="largerCheckbox" type="checkbox" name="paymentReceipt" id="paymnetReceipt" value="0">
+                 <input type="email" name="newEmail" id="receiptEmail"  value="<?php echo isset($job['Customer']['email']) ? $job['Customer']['email'] : ''; ?>" class="emailBox"> -->
+
+                 <input type="button" class="commonCls" name="back" value="Back" onclick="window.location='<?php echo BASE_URL. '/orders/techLastPage?order_id='.$job['Order']['id'].'&order_type_id='.$job['Order']['order_type_id']?>'" />        
+                 <input type="button" class="commonCls" name="saveJobs" id="saveJobPayment" value="Next" />        
             </div>
            <!--  <input type="submit" name="review" value="Email invoice with Review links" /> &nbsp
             <b>Check to attach receipt</b> <input type="checkbox" class="attachChebox" checked id="attachPaymentImage" name="attachPaymentImage" value="1"> -->
@@ -900,6 +1157,43 @@ Cvv:
             </td>
         </tr>
     </table>
+</div>
+<div class="installation_item_box" title="Item" style="display: none">
+    <form id="installation_item_form">
+        <table id="installation_item_table" class="inResultsBooking" style="width: 100%;">
+            <thead>             
+                <tr>
+                    <th onclick="sortTable(0);" style="cursor: pointer;">Name</th>
+                    <th>Office</th>
+                    <th>Tech</th>
+                    <th>Price</th>
+                    <th>Sum</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($items as $key => $value) {             
+                $h .= '<tr class="booked">';
+                 $h .=  '<input  type="hidden" id="data[Order][InstallationItem]['.$key.'][id]" name="data[Order][InstallationItem]['.$key.'][id]" value="'.$value['OrderInstallationItem']['id'].'"/>'; 
+                 $h .=  '<input  type="hidden" id="data[Order][InstallationItem]['.$key.'][item_id]" name="data[Order][InstallationItem]['.$key.'][item_id]" value="'.$value['OrderInstallationItem']['item_id'].'"/>';
+                $h .= '<input  type="hidden" class="t-input" id="data[Order][InstallationItem]['.$key.'][name]" name="data[Order][InstallationItem]['.$key.'][name]" value="'.$value['OrderInstallationItem']['name'].'"/>';
+                $h .= '<td class="name">'.$value['OrderInstallationItem']['name'].'</td>';
+                $h .= '<td class="quantity"><input disabled type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][quantity]" name="data[Order][InstallationItem]['.$key.'][quantity]" value="'.$value['OrderInstallationItem']['quantity'].'"/></td>';
+                $h .= '<td class="tech_quantity"><input type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][tech_quantity]" name="data[Order][InstallationItem]['.$key.'][tech_quantity]" value="'.$value['OrderInstallationItem']['tech_quantity'].'" onkeyup="InstallationCalculation()"/></td>';
+                $h .= '<td class="price"><input disabled type="text" class="t-input" id="data[Order][InstallationItem]['.$key.'][price]" name="data[Order][InstallationItem]['.$key.'][price]" value="'.$value['OrderInstallationItem']['price'].'" onkeyup="InstallationCalculation()"/></td>';
+                $h .= '<td class="total"><input type="text" class="t-input" disabled id="data[Order][InstallationItem]['.$key.'][total]" name="data[Order][InstallationItem]['.$key.'][total]" value="'.($value['OrderInstallationItem']['price'] * $value['OrderInstallationItem']['tech_quantity'] ).'"/></td>';
+                
+                 $h .= '</tr>';
+                 
+              } 
+              echo $h; ?>
+            </tbody>
+        </table>
+        <div class="installationTotal"></div>
+        <span><b>Notes:</b></span><textarea class="ins_text" name="data[Order][installation_notes]"><?= $job['Order']['installation_notes'] ?></textarea>
+        
+        <input type="hidden"  name="data[Order][order_id]" value="<?= $job['Order']['id'];?>">
+        <input type="button" id="saveInstallationItem" name="saveInstallationItem" value="Save">
+    </form>
 </div>
 <?php echo $this->element('tech_footer'); ?>
 </body>

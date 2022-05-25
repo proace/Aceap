@@ -79,7 +79,7 @@
 		die();
 	}
 
-	Configure::write('debug', DEBUG);
+	Configure::write('debug', 0);
 
 	require CAKE . 'dispatcher.php';
 

@@ -5,8 +5,37 @@
 a, u {
     text-decoration: none;
 }
+
+@media only screen and (max-width: 1024px) {
+ .tabtrigger_sm {
+ 	width: 70px;
+ }
+}
+@media only screen and (max-width: 1024px) {
+ .toolbar .icon {
+ 	width: 65px;
+ }
+}
+#failedCount{
+	font-size: 20px;
+	color: red;
+}
+
+#bookingCount{
+  font-size: 20px;
+  color: red;
+}
+.blink_me {
+  animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
 .menuOver{
-	background:#EBE9ED;
+	background:white;
 	height:16px;
 	margin:0px;
 	background:'url(<?=BASE_URL?>/app/webroot/img/red-grad.gif) repeat-x 0px -1px';
@@ -22,6 +51,10 @@ a, u {
 	height:0px;
 	border:none;
 }
+span.blink_me{
+ font-size: 20px;
+    color: red;
+}
 
 </style>
 
@@ -34,28 +67,303 @@ a, u {
 var nopen = 1;
 
 $(document).ready(function(e){
-	   setInterval( function(){     
-            get_chat_count();
-           // get_mail_count();
-	    }, 20000 );
+        var callTime = 5*60*1000;
+        var now = new Date();
+        var millisTill10 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0, 0, 0) - now;
+        if (millisTill10 < 0) {
+             millisTill10 += 86400000; // it's after 10am, try 10am tomorrow.
+        }
+       
+		/*get_today_event();
+		setInterval( function(){
+           get_today_event(e);
+	    }, 600000 );*/
 
-	   // var blink_speed = 500; 
-	   // var t = setInterval(function () 
+	  
+	   setInterval( function(){
+            get_failed_email_count();
+	    }, millisTill10 );
+
+      setInterval( function(){
+            get_booking_count();
+      }, callTime );
+
+	  setInterval( function(){
+            get_ace_booking_count();
+      }, callTime );
+
+	  setInterval( function(){
+            get_total_unread_chat();
+      }, callTime );
+
+	  setInterval( function(){
+            get_ace_follow_count();
+      }, millisTill10 );
+
+      setInterval( function(){
+            get_callback_count();
+      }, millisTill10 );
+
+      setInterval( function(){
+            get_estimate_count();
+      }, callTime );
+
+    // setInterval( function(){
+    //         run_reminder_email_logs();
+
+    //   }, 20000 );
+// run_reminder_email_logs();
+
+	   // var blink_speed = 500;
+	   // var t = setInterval(function ()
 	   // 	{ var ele = document.getElementById('showMessage');
 	   // 		ele.style.visibility = (ele.style.visibility == 'hidden' ? '' : 'hidden'); }, blink_speed);
 });
-function get_chat_count(){ 
+
+function get_today_event() {
  $.ajax({
-    url:"<?=BASE_URL;?>/messages/getMessages/", 
+    url:"<?=BASE_URL;?>/settings/todayEvent",
+    data: {},
+    type: "POST",
+    success:function(result){
+    	var res = JSON.parse(result);
+    	console.log(res);
+    	if(res.length > 0) {
+    		for(var i=0; i<res.length; i++) {
+            // var e = window.event;
+    			var val = confirm(res[i].title);
+    			if(val == true) {
+            // e.preventDefault();
+    				$.ajax({
+					    url:"<?=BASE_URL?>/settings/closeReminder",
+					    data: { id: res[i].id },
+					    type: "POST",
+					    success:function(result){
+    						// window.open("<?=BASE_URL?>/settings/orgniser","main_view");
+                console.log('reminder closed') ;
+					    },
+						error: function (error) {
+						  console.log('error');
+						}
+
+					});
+    			}
+    		}
+    	}
+
+        },
+		error: function (error) {
+		  console.log('error');
+		}
+
+   });
+}
+
+function get_callback_count() {
+ $.ajax({
+    url:"<?=BASE_URL;?>/reports/getcallbookcount/",
     type: "GET",
-    success:function(result){ 
+    success:function(result){
+
+      count = result;
+            if(count > 0)
+            {
+              $('#callback_count').css('visibility','visible');
+            	$('#callback_count').text(count);
+
+            } else
+            {
+              $('#callback_count').css('visibility','hidden');
+            	//$('#callback_count').text('');
+            }
+
+        },
+error: function (error) {
+  console.log('error');
+}
+
+   });
+
+}
+
+// Hitesh created it
+function run_reminder_email_logs() {
+ $.ajax({
+    url:"<?=BASE_URL;?>/orders/sendReminderEmail/",
+    type: "GET",
+    success:function(result){
+      console.log('successful email reminder');
+      console.log(result);
+     },
+error: function (error) {
+  console.log('error');
+}
+
+   });
+
+}
+
+function get_ace_booking_count() {
+ $.ajax({
+    url:"<?=BASE_URL;?>/reports/getbookingcount/",
+    type: "GET",
+    dataType: 'json',
+    success:function(result){
+      count = result.total;
+            if(count > 0)
+            {
+            	$('span.online_booking').text(count);
+
+            } else
+            {
+            	$('span.online_booking').text('');
+            }
+
+        },
+error: function (error) {
+  console.log('error');
+}
+
+   });
+
+}
+function get_total_unread_chat(){
+ $.ajax({
+    url:"/acesys/adminchat/custom_functions.php",
+
+    data:{admin_id:<?php echo $_SESSION['user']['id'];?>,action:'total_all_unread_msg'},
+    success:function(result){
+
+                     var result = JSON.parse(result);
+
+                    res = result['unread'];
+
+                    if (res==0) {
+						//console.log('no chat');
+            $('#total_unread_chat_msg').css('visibility','hidden');
+                    // $('#total_unread_chat_msg').hide();
+                    }
+                    else {
+                     $('#total_unread_chat_msg').css('visibility','visible');
+                     $('#total_unread_chat_msg').html(result['unread']).show();
+                    }
+
+	 }
+   });
+}
+function get_ace_follow_count() {
+ $.ajax({
+    url:"<?=BASE_URL;?>/reports/getfollowcount/",
+    type: "GET",
+    success:function(result){
+
+      count = result;
+            if(count > 0)
+            {
+              $('#follow_count').css('visibility','visible');
+            	$('#follow_count').text(count);
+
+            } else
+            {
+              $('#follow_count').css('visibility','hidden');
+            	//$('#follow_count').text('');
+            }
+
+        },
+error: function (error) {
+  console.log('error');
+}
+
+   });
+
+}
+
+function get_failed_email_count()
+{
+	$.ajax({
+    url:"<?=BASE_URL;?>/orders/getfailedEmailCount/",
+    type: "GET",
+    dataType: 'json',
+    success:function(result){
+            count = result.total;
+            if(count > 0)
+            {
+              $('#failedCount').css('visibility','visible');
+            	$('#failedCount').text(count);
+
+            } else
+            {
+              $('#failedCount').css('visibility','hidden');
+            	//$('#failedCount').text('');
+            }
+        }
+   });
+}
+function get_booking_count()
+{
+  $.ajax({
+    url:"<?=BASE_URL;?>/orders/getBookingEmailCount/",
+    type: "GET",
+    dataType: 'json',
+    success:function(result){
+            count = result.total;
+            if(count > 0)
+            {
+              $('#bookingCount').text(count);
+
+            } else
+            {
+              $('#bookingCount').text('');
+            }
+        }
+   });
+}
+
+function get_estimate_count() {
+ $.ajax({
+    url:"<?=BASE_URL;?>/reports/callbackcount/",
+    type: "GET",
+    dataType: 'json',
+    success:function(result){
+      console.log(result);
+      count = result;
+            if(count > 0)
+            {
+              $('#estimates_count').css('visibility','visible');
+            	$('#estimates_count').text(count);
+
+            } else
+            {
+              $('#estimates_count').css('visibility','hidden');
+            	//$('#estimates_count').text('');
+            }
+
+        },
+error: function (error) {
+  console.log('error');
+}
+
+   });
+
+}
+
+function get_chat_count(){
+ $.ajax({
+    url:"<?=BASE_URL;?>/messages/getMessages/",
+    type: "GET",
+    success:function(result){
             var res = JSON.parse(result);
             count = res['total'];
             if(count >= 1 && count > 0)
             {
             	//$('#showMessage').text(count);
                 // window.open("<?=BASE_URL?>/messages/ShowMessages?fromMessage=1", "", "width=50,height=50,top=100, left=1300");
-            	window.open("<?=BASE_URL?>/messages/ShowMessages?fromMessage=1", "", "width=450, height=350, left=300, top=200");
+
+                 var answer = window.open("<?=BASE_URL?>/messages/ShowMessages?fromMessage=1", "", "width=450, height=350, left=300, top=200");
+                 // answer.onbeforeunload = function () {
+                 //       var orderId = $("#org-order-id").val();
+                 //       parent.frames['main_view'].loadBooking(orderId);
+                 //    }
 
             } if( count == 0)
             {
@@ -65,11 +373,12 @@ function get_chat_count(){
         }
    });
 }
-function get_mail_count(){ 
+function get_mail_count(){
  $.ajax({
-    url:"<?=BASE_URL;?>/users/getMailCount", 
+    url:"<?=BASE_URL;?>/users/getMailCount",
+    dataType: 'json',
     type: "GET",
-    success:function(result){ 
+    success:function(result){
             var res = JSON.parse(result);
             count = res['total'];
             if(count >= 1)
@@ -84,7 +393,7 @@ function get_mail_count(){
 
 function openChat()
 {
-  var answer = window.open("<?=BASE_URL?>/messages/ShowMessages",'',"width=600, height=500");  
+  var answer = window.open("<?=BASE_URL?>/messages/ShowMessages",'',"width=600, height=500");
 }
 function openTab(n)
 {
@@ -122,13 +431,13 @@ function CheckForMessages()
 			var method = '<? if ($common->getLoggedUserRoleID() == "1") echo 'techBooking'; else echo 'editBooking';?>';
 			if (ShownMessage!=val['id']){
 			 ShownMessage=val['id'];
-			 if (val['file_link']!=null) 
+			 if (val['file_link']!=null)
 				$.jGrowl("<a target='main_view' href='<?=BASE_URL?>/orders/"+method+"?order_id="+val['file_link']+"'>Open file</a><br/>"+val['txt'],
 					{header: "From: "+val['from']+"&nbsp;<a href='#' onclick='respond("+val['from_user']+","+val['file_link']+")'>(Reply)</a>&nbsp;<a href='#' onclick='forward(\""+val['txt']+"\","+val['file_link']+")'>(Forward)</a>",
 					 close:function(){$.post("<?=BASE_URL;?>/messages/ReadMessage?message_id="+val['id']);},sticky:true,glue:'before'}
 				 );
 			 else
-				if (val['customer_link']!=null) 
+				if (val['customer_link']!=null)
 				 $.jGrowl("<a target='main_view' href='<?=BASE_URL?>/orders/"+method+"?customer_id="+val['customer_link']+"'>Open file</a><br/>"+val['txt'],
 					{header: "From: "+val['from']+"&nbsp;<a href='#' onclick='respond("+val['from_user']+")'>(Reply)</a>&nbsp;<a href='#' onclick='forward(\""+val['txt']+"\")'>(Forward)</a>",
 					 close:function(){$.post("<?=BASE_URL;?>/messages/ReadMessage?message_id="+val['id']);},sticky:true,glue:'before'}
@@ -145,27 +454,27 @@ function CheckForMessages()
 }
 function respond(to_user_id, order_id)
 {
-  var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id="+order_id+"&to_user_id="+to_user_id,'', 
+  var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id="+order_id+"&to_user_id="+to_user_id,'',
   "width=450, height=350, left=300, top=200");
 }
 function forward(text, order_id)
 {
-  var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id="+order_id+"&text="+text,'', 
+  var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id="+order_id+"&text="+text,'',
   "width=450, height=350, left=300, top=200");
 }
 function showMessages()
 {
-  var answer = window.open("<?=BASE_URL?>/messages/ShowMessages",'', 
+  var answer = window.open("<?=BASE_URL?>/messages/ShowMessages",'',
   "width=600, height=350,left=300, top=200");
 }
 function createMessage()
 {
-  var answer = window.open("<?=BASE_URL?>/messages/EditMessage",'', 
+  var answer = window.open("<?=BASE_URL?>/messages/EditMessage",'',
   "width=650, height=350, left=300, top=200");
 }
 function openMap()
 {
-  window.open("<?=ROOT_URL?>/training/Maps/map.html",'', 
+  window.open("<?=ROOT_URL?>/training/Maps/map.html",'',
   "width=800, height=500, left=300, top=200");
 }
 
@@ -183,10 +492,12 @@ parent.window.tabMode = 'bookings';
 </script>
 
 <div class="toolbar">
+<input type="hidden" name="order_id" id="org-order-id">
+
 <?php
 if( $_SESSION['user']['id'] > 0 ) {
 	$linkPrefix = "";
-	
+
 	$aMenu = $common->getMenuItems();
 	$tabs = $aMenu['tabs'];
 	$menu = $aMenu['content'];
@@ -201,21 +512,24 @@ if( $_SESSION['user']['id'] > 0 ) {
 		$idx++;
 	}
 	$u = BASE_URL;
-	echo "<div style='float:right;padding-right:10px;'><a href='javascript:createMessage()'><b>Message</b> &nbsp<span id='showMessage' style='font-size:15px;'></span></a>&nbsp;&nbsp;User: <a href='$u/users/editself' target='main_view'><b>{$_SESSION['user']['name']}</b></a>&nbsp;&nbsp;<a href='$u/login/logout' target='_top'>Logout</a></div>";
+	echo "<div class='top_message' style='float:right;padding-right:10px;'><a href='javascript:createMessage()'><b>Message</b> &nbsp<span id='showMessage' style='font-size:15px;'></span></a>&nbsp;&nbsp;User: <a href='$u/users/editself' class='main_men' target='main_view'><b>{$_SESSION['user']['name']}</b></a>&nbsp;&nbsp;<a href='$u/login/logout' target='_top'>Logout</a></div>";
 	echo "</div>";
 	$idx = 1;
 	$on_off = "";
 	foreach ($menu as $tab)
-	{ 
+	{
 		echo "<div id='tabA$idx' class='tab_sm' style='$on_off'>";
 		foreach ($tab as $tbi)
-		{ 
+		{
+      if(empty($tbi)){
+    continue;
+   }
 			if ($tbi['name'] == 'Chat') {
 			$userId = $common->getLoggedUserID();
 			 $db =& ConnectionManager::getDataSource('default');
 				 $query = "select username from ace_rp_users where id=".$userId."";
 				 $result = $db->_execute($query);
-				 if($row = mysql_fetch_array($result)) { 
+				 if($row = mysql_fetch_array($result)) {
 					$userName = $row[0];
 				 }
 				echo "<div class='icon'>";
@@ -225,7 +539,7 @@ if( $_SESSION['user']['id'] > 0 ) {
 				$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
 				$onclick = "";
 				if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
-				echo "<a href='$url' target='_blank' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']."</a>";
+				echo "<a href='$url' class='main_men'  target='_blank' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']."</a>";
 				echo "</div>";
 			}
     		// } else if ($tbi['name'] == 'Message')
@@ -236,13 +550,86 @@ if( $_SESSION['user']['id'] > 0 ) {
     		// 		$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
     		// 		$onclick = "";
     		// 		if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
-    		// 		echo "<a href='$url' target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']." <span id='showMessage' style='font-size:15px;'></span></a>";
+    		// 		echo "<a href='$url'  target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']." <span id='showMessage' style='font-size:15px;'></span></a>";
     		// 		echo "</div>";
     		// }
             else if( $tbi['name'] == 'Send Message')
             {
                 $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
                 echo "<div class='icon'><img src=".$img." onclick='createMessage();' style=\"width:27px;height:27px\">Send Message</div>";
+            }
+            else if( $tbi['name'] == 'Estimates')
+            {
+                $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+                  echo "<div class='icon' style='margin-top: 1%;'>";
+                $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+                $url = $linkPrefix.$tbi['url'];
+                $tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
+                $onclick = "";
+                if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
+                echo "<a href='$url' class='main_men' target='$tgt' $onclick><span style='visibility:hidden' class='blink_me' id='estimates_count'>1</span><br/>".$tbi['name']."</a>";
+                echo "</div>";
+            }
+            else if( $tbi['name'] == 'Call To Book')
+            {
+                $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+                  echo "<div class='icon' style='margin-top: 1%;'>";
+                $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+                $url = $linkPrefix.$tbi['url'];
+                $tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
+                $onclick = "";
+                if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
+                echo "<a href='$url' class='main_men' target='$tgt' $onclick><span style='visibility:hidden' class='blink_me' id='callback_count'>1</span><br/>".$tbi['name']."</a>";
+                echo "</div>";
+            }
+			else if( $tbi['name'] == 'Follow up')
+            {
+                $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+                  echo "<div class='icon' style='margin-top: 1%;'>";
+                $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+                $url = $linkPrefix.$tbi['url'];
+                $tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
+                $onclick = "";
+                if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
+                echo "<a href='$url' class='main_men' target='$tgt' $onclick><span style='visibility:hidden' class='blink_me' id='follow_count'>1</span><br/>".$tbi['name']."</a>";
+                echo "</div>";
+            }
+            else if( $tbi['name'] == 'Failed Email')
+            {
+                $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+                	echo "<div class='icon' style='margin-top: 1%;'>";
+        				$img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+        				$url = $linkPrefix.$tbi['url'];
+        				$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
+        				$onclick = "";
+        				if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
+        				echo "<a href='$url' class='main_men'  target='$tgt' $onclick><span style='visibility:hidden' class='blink_me' id='failedCount'>1</span><br/>".$tbi['name']."</a>";
+        				echo "</div>";
+            }
+			else if( $tbi['name'] == 'Chat1')
+            {
+             $tbi['name']='Chat';
+                $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+                  echo "<div class='icon' style='margin-top: 1%;'>";
+                $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+                $url = $linkPrefix.$tbi['url'];
+                $tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
+                $onclick = "";
+                if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
+                echo "<a href='$url' target='$tgt' $onclick><span style='visibility:hidden' class='blink_me' id='total_unread_chat_msg'>1</span><br/>".$tbi['name']."</a>";
+                echo "</div>";
+            }
+            else if( $tbi['name'] == 'Booking Requests')
+            {
+                $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+                  echo "<div class='icon' style='margin-top: .7%;'>";
+                $img = ROOT_URL."/app/webroot/img/".$tbi['img'];
+                $url = $linkPrefix.$tbi['url'];
+                $tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
+                $onclick = "";
+                if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
+                echo "<a href='$url' class='main_men'  target='$tgt' $onclick><span class='blink_me' id='bookingCount'></span><br/>".$tbi['name']."</a>";
+                echo "</div>";
             }
     		 else {
     				echo "<div class='icon'>";
@@ -251,7 +638,14 @@ if( $_SESSION['user']['id'] > 0 ) {
     				$tgt = (($tbi['target'] != '') ? $tbi['target'] : 'main_view');
     				$onclick = "";
     				if ($tbi['onclick']) $onclick = "onclick='{$tbi['onclick']};'";
-    				echo "<a href='$url' target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']."</a>";
+    				if($tbi['name']=='Agent Training' ||
+					$tbi['name']=='Techs Training' ||
+					$tbi['name']=='Admin Support' ||
+					$tbi['name']=='Techs Training'
+					 ){
+					$tgt="_blank";
+					}
+					echo "<a href='$url' class='main_men'  target='$tgt' $onclick><img src='$img' style=\"width:27px;height:27px\" /><br/>".$tbi['name']."</a>";
     				echo "</div>";
                     if($tbi['name'] == 'Received Email')
                     {
@@ -259,8 +653,13 @@ if( $_SESSION['user']['id'] > 0 ) {
                          echo "<div class='icon'><a href='JavaScript:void(0);' class='openAnonymousMailBox' onclick='openNewSendMail();' ><img src='$img1' style=\"width:27px;height:27px\" /><br/>Send Mail</a></div>";
                     }
     			}
-			
-		}    
+
+		}?>
+		<?php if($common->getLoggedUserRoleID()==6){ ?>
+     <div class="icon" style="margin-top:5px;"><a class="main_men" href="/acesys/index.php/reports/acacareBooking" target="main_view"><span class="online_booking blink_me" style="font-size: 20px;color: red;"></span><br>Online Booking</a></div>
+	<?php	} ?>
+
+		<?php
         echo "</div>";
 		 $on_off = "display: none;";
 		$idx++;
@@ -270,3 +669,26 @@ if( $_SESSION['user']['id'] > 0 ) {
 </div>
 <!-- <iframe id="chatframe" src="http://aceno1.ca/chat/notify_admin.php?web_key=<?php echo $_SESSION['user']['web_key'] ?>"></iframe> -->
 <iframe id="chatframe" src="<?=BASE_URL?>/chat/notify_admin.php?web_key=<?php echo $_SESSION['user']['web_key'] ?>"></iframe>
+
+<script>
+var check_role="<?php echo $common->getLoggedUserRoleID() ?>";
+$('a.main_men').live('click',function(e){
+	console.log('clicked');
+	if(check_role==3 || check_role==9 || check_role==1 ){
+
+}
+else {
+	var name = $(this).attr('target');
+	if(name=='_blank'){
+
+	}
+	else {
+e.preventDefault();
+console.log('123');
+    window.top.frames['main_view'].src=$(this).attr('href');
+}
+}
+
+
+});
+</script>

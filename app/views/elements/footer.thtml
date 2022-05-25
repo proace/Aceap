@@ -1,0 +1,56 @@
+<!-- <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/text_chat.css" rel="stylesheet" />
+<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<script language="JavaScript" type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/showhint.js"></script>
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.menu.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.cookie.js"></script>
+</head>
+<style type="text/css">
+     .ui-widget-content{
+        background: white !important;
+    }
+</style>
+<script type="text/javascript">
+    
+function showChatBox(phone_number)
+{
+     $.ajax({
+            url:"<?=BASE_URL;?>/messages/getMessageHistory", 
+            type: "POST",
+            dataType: 'html',
+            data:{phone_number:phone_number},
+            success:function(data){ 
+                $("#chat-window-card1").css({ 'display' : 'block'});
+                $("#chat-window-card1").html(data);
+                $("#chat-window-card1" ).dialog("open");
+                $(".ui-dialog-titlebar").hide();
+            }
+        });
+}
+
+$(document).ready(function(){
+     $(function () {
+        $("#chat-window-card1").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "",
+            autoOpen: false,
+            width: 400,
+            height: 600,
+            open: function(e) {
+                $(e.target).parent().css('background-color','white');
+            },
+            position: { my: "right top", at: "right top"}
+        });
+    });
+    $("#close_chat_popup").live("click",function(){
+         $( "#chat-window-card1" ).dialog("close");
+    });
+});
+</script>
+
+<div id="chat-window-card1" class="chat-window-card" style="display: none;">
+</div>
+ -->

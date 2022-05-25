@@ -1,6 +1,6 @@
-<?php
-class Login extends AppModel
-{
-	var $useTable = 'users';
-}
-?>
+<?php
+class Login extends AppModel
+{
+	var $useTable = 'users';
+}
+?>

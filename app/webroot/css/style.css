@@ -95,7 +95,7 @@ body {
 	width: 83%;
 }
 .results th{
-	background: #666666;
+	background: #0a304e;
 	border-left: 0px solid #FFFFFF;
 	border-top: 0px solid #FFFFFF;
 	font-weight: bold;
@@ -137,10 +137,10 @@ body {
 	border-bottom-width: 1px;
 	border-bottom-style: solid;
 	border-bottom-color:#555555;
-	/*background:#DDFFDD;*/
-	background: #FFFF99;
-	/*color:#004400;*/
-	color: #000000;
+	background:white !important;
+	/*background: #666666;*/
+	color: #065AB0 !important;
+	/*color: #ffffff;*/
 	height:23px;
 }
 
@@ -156,8 +156,8 @@ body {
 }
 
 .inResultsBooking td {
-	padding-left: 5px;
-	padding-right: 5px;
+	/*padding-left: 5px;
+	padding-right: 5px;*/
 	height:16px;
 	border-bottom-width: 1px;
 	border-bottom-style: solid;
@@ -165,9 +165,9 @@ body {
 	border-right-width: 1px;
 	border-right-style: solid;
 	border-right-color:#BBBBBB;
-	/*color:#004000;*/
-	color: #000000;
-	background: #FFFF99;
+	color:#004000 !important;
+	/*color: #000000;*/
+	/*background: #FFFF99;*/
 }
 
 .inResultsBooking .extra td {
@@ -417,7 +417,9 @@ input, select, textarea {
 	width: 100%;
 	height: 90px;
 	clear: both;
-	background: url(../img/red-grad.gif) repeat-x;
+	/* background: url(../img/red-grad.gif) repeat-x; */
+    background: #007bff0a;
+
 	border-top: 1px solid #A0A0A0;
 	border-bottom: 1px solid #A0A0A0;
 	text-align: left;
@@ -589,15 +591,29 @@ input, select, textarea {
 	height: 16px;
 	border-bottom: 1px solid #F5F5F5;
 	float: left;
-}
+	background:#065AB0;
 
+}
+.top_message a {
+color:white;
+}
+.top_message{
+color:white;
+}
+.change_service{
+	border:1px solid #065AB0;
+}
+.change_service:hover{
+	border:1px solid gray;
+}
 .tabtrigger_sm {
 	width: 100px;
 	height: 14px;
 	border-top: 1px solid #F5F5F5;
 	border-left: 1px solid #F5F5F5;
 	border-right: 1px solid #A7A6AA;
-	background: url(../img/red-grad.gif) repeat-x -3px -2px;
+	/* background: url(../img/red-grad.gif) repeat-x -3px -2px; */
+	background:white;
 	color: black;
 	font-family: Verdana;
 	font-size: 8pt;
@@ -614,8 +630,10 @@ input, select, textarea {
 	border-left: 1px solid #F5F5F5;
 	border-right: 1px solid #A7A6AA;
 	border-bottom: 1px solid #A7A6AA;
-	background: url(../img/red-grad.gif) repeat-x 0px -16px;
-	background-color: #EBE9ED;
+	/* background: url(../img/red-grad.gif) repeat-x 0px -16px; */
+	 /* background-color: #F5FAFF; */
+	 /* background-color: #007bff0a;  */
+	 background-image: linear-gradient(white, #007bff0a);
 }
 
 
@@ -629,8 +647,8 @@ input, select, textarea {
 .frame-header-left {
 	width: 15px;
 	height: 10px;
-	border-top: 2px solid #72BF44;
-	border-left: 2px solid #72BF44;
+	border-top: 2px solid #065AB0;
+	border-left: 2px solid #065AB0;
 	margin-top: 8px;
 	float: left;
 }
@@ -650,9 +668,9 @@ input, select, textarea {
 }
 
 .frame-body {
-	border-left: 2px solid #72BF44;
-	border-right: 2px solid #72BF44;
-	border-bottom: 2px solid #72BF44;
+	border-left: 2px solid #065AB0;
+	border-right: 2px solid #065AB0;
+	border-bottom: 2px solid #065AB0;
 	padding: 0px 5px 5px 5px;
 	float: left;
 }

@@ -1,72 +1,173 @@
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
+<script type="text/javascript">
+	function getPageData(page)
+	{
+		$("#currentPage").val(page);
+		$("#itemHistory").submit();
+
+	}
+
+	$(function () {
+
+		$("#searchData").live("click", function(){
+			$("#currentPage").val(1);
+			$("#itemHistory").submit();
+		});
+
+		$(".deleteTransaction").live("click", function(){
+			var transactionId = $(this).attr("transactionId");
+			$.ajax({
+				url: "<?=BASE_URL;?>/inventories/deleteItemTransaction",
+				dataType: 'json',
+				type: 'GET',
+				cache: false,
+				data:{transactionId:transactionId},
+				success: function(data) {
+					if(data.res == "1")
+					{	
+						window.location.reload();
+					} 
+				}	
+			});	
+		});
+	});
+	
+</script>
+<style type="text/css">
+	.deleteTransaction{
+		font-size: 14px;
+	}
+	.mouseHand{
+		cursor: pointer;
+	}
+
+	.pageSelected{
+		background-color: #0affdd;
+	}
+</style>
 <?php if($ismobile == 1) { ?>
 	<a href="<?php echo BASE_URL ?>/pages/mobileMenu" id="return">Back to Main</a>
 <?php } ?>
-<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<form id="itemHistory" method="GET" action="<?= $PHP_SELF?>" name="viewform">
 <input type="hidden" name="action" value="view" >
 <input type="hidden" name="order" value="<?=$_GET['order']?>">
 <input type="hidden" name="sort" value="<?=$_GET['sort']?>">
-<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+<input type="hidden" id="currentPage" name="currentPage" value="<?=$currentPage?>">
 
 <table width="90%" border="0px" cellspacing="10" cellpadding="0">
 	<tr>
-		<td class="sectionTitle" >Techs Inventory Transactions</td>
-		<td colspan="7">
+		<td class="sectionTitle" colspan="9">Techs Inventory Transactions</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td colspan="8">
 			Date from: &nbsp;&nbsp;
-      <input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+      		<input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_tdate?>'; getPageData(1);" style="font-size: 8pt;">
 			&nbsp;&nbsp;
 			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+		
 			&nbsp;&nbsp;Date to: &nbsp;&nbsp;
-      <input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+      		<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
 			&nbsp;&nbsp;
-			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_fdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
+			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_fdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>'; getPageData(1);" style="font-size: 8pt;">
 		</td>
   </tr>
 	<tr>
-		<td>Tech:&nbsp;
-				<select name="ftechid" id="ftechid" <?=(($_SESSION['user']['role_id'] == 1) ? "disabled='disabled'" : "")?> onchange="document.viewform.submit();">
-					<option value="-1">-=All=-</option>
-					<? 
-					foreach($locations as $k => $v) { ?>
-						<option value="<?=$k?>" <?=( $k == $_GET["ftechid"] ? ' selected' : '')?>><?=$v?></option>
-					<?php }	?>
-				</select>
-		</td>
+		<td>Tech:&nbsp;</td>
 		<td>
-			Part #: <input type="text" name="part" value="<?=$_GET["part"]?>"/>
-			<input type="submit" value="Search by SKU" /> <br/>
-			Booking #: <input type="text" name="booking" value="<?=$_GET["booking"]?>"/>
-			<input type="submit" value="Search by Booking #" />
+			<select name="ftechid" id="ftechid" <?=(($_SESSION['user']['role_id'] == 1) ? "disabled='disabled'" : "")?>">
+				<option value="-1">---</option>
+				<? 
+				foreach($locations as $k => $v) { ?>
+					<option value="<?=$k?>" <?=( $k == $techid ? ' selected' : '')?>><?=$v?></option>
+				<?php }	?>
+			</select>
 		</td>
+		<td>Status:&nbsp;</td>
+		<td>
+			<select name="status" id="status" <?=(($_SESSION['user']['role_id'] == 1) ? "disabled='disabled'" : "")?>>
+					<option <?=( -1 == $status ? ' selected' : '')?> value="-1">---</option>
+					<option <?=( 1 == $status ? ' selected' : '')?> value="1">Purchase</option>
+					<option <?=( 2 == $status ? ' selected' : '')?> value="2">Sold</option>
+					<option <?=( 3 == $status ? ' selected' : '')?> value="3">Received</option>
+			</select>
+		</td>
+			<!-- Part #: <input type="text" name="part" value="<?=$_GET["part"]?>"/>
+			<input type="submit" value="SKU" /> <br/> -->
+		<td>Part:&nbsp;</td>
+		<td> <input type="text" name="part_name" value="<?=$part_name?>"/></td>
+		<td>Booking:&nbsp;</td>
+		<td><input type="text" name="booking" value="<?=$booking?>"/></td>
+		<td><input type="button" id="searchData" name="search" value="Search"></td>
 	</tr>
 </table> 	
 </form>
 
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
     <tr>
-		<th>Item Name</td>
-		<th>SKU</td>
-		<th>Quantity</td>
-		<th>Date Sold</td>
-		<th>Technician Name</td>
-		<th>Customer Sold To</td>
+		<th>Ref Num</th>
+		<th>SKU</th>
+		<th>Part Name</th>
+		<th>Date</th>
+		<th>Quantity</th>
+		<th>Purchase Price</th>
+		<th>Selling Price</th>
+		<th>Invoice Number</th>
+		<th>Sold By</th>
+		<th>Received By</th>
+		<th>Assigned By</th>
+		<th>Paid By</th>
+		<th>Supplier</th>
+		<th>Status</th>
+		<th></th>
     </tr>
 		<?php $r=1;
-			foreach ($documents as $obj) {
+			foreach ($items as $obj) {
 				$class = 'cell'.(++$r%2);
 		?>
     <tr id="r<?=$r?>" class="<?=$class?>" style='cursor:pointer;'>
-		<td><?php echo $obj['items.name']; ?> &nbsp;</td>
-		<td><?php echo $obj['items.model']; ?> &nbsp;</td>
-		<td><?php echo $obj['.quantity']; ?> &nbsp;</td>
-		<td><?php echo $obj['movements.date']; ?> &nbsp;</td>
-		<td><?php echo $obj['tech']; ?> &nbsp;</td>
-		<td onclick="document.location.href='/acebeta/index.php/orders/editBooking?order_id=<?php echo $obj['items_sold.order_id']; ?>&rurl=supplies%3F'">Booking #<?php echo $obj['orders.order_number']; ?></td>
+		<td><?php if($obj['job_ref_num'] != 0 && $obj['job_ref_num'] != ''){?>
+			<a href="<?=BASE_URL;?>/orders/editBooking?order_id=<?=$obj['order_id']?>"><?php echo $obj['job_ref_num']; ?></a>
+			<?php } ?>
+		</td>
+		<td><?php echo $obj['auto_sku']; ?></td>
+		<td><?php echo $obj['item_name']; ?> </td>
+		<td><?php echo date('d M Y', strtotime($obj['item_date'])); ?></td>
+		<td><?php echo $obj['quantity']; ?> </td>
+		<td><?php echo $obj['purchase_price']; ?> </td>
+		<td><?php echo $obj['selling_price']; ?> </td>
+		<td><?php echo $obj['Invoice_num']; ?> </td>
+		<td><?php echo $obj['sold_by']; ?> </td>
+		<td><?php echo $obj['received_by']; ?> </td>
+		<td><?php echo $obj['assigned_by']; ?> </td>
+		<td><?php echo $obj['paid_by']; ?> </td>
+		<td><?php echo $obj['supplier_name']; ?> </td>
+		<td><?php echo $obj['status_name']; ?> </td>		
+		<td> <i class="fa fa-trash deleteTransaction" transactionId="<?=$obj['id']?>" aria-hidden="true"></td>		
     </tr>
     <? }
-    if (count($documents)==0) { ?>
+    if (count($items)==0) { ?>
     <tr>
 		<td colspan=7>No transactions found.</td>
 	</tr>
 
 	<? } ?>
 </table>
+
+<table>
+	<tr>
+		<td><a onclick ="getPageData(<?=($currentPage-1)?>);" class='button mouseHand'>Previous</a></td>
+		<?php for ($i=1; $i<=$totalPages; $i++) {?>
+		<td><a onclick ="getPageData(<?php echo $i ?>);" class="button mouseHand <?= ($currentPage == $i) ? 'pageSelected' : '' ?>"><?php echo $i ?></a></td>
+	<?php } ?>
+		<td><a onclick ="getPageData(<?=($currentPage+1)?>);" class='button mouseHand'>NEXT</a></td>
+	</tr>
+</table>
+<!-- <ul>
+	<li><a href='index.php?page=<?=($page-1)?>' class='button'>Previous</a></li>
+<?php for ($i=1; $i<=$totalPages; $i++) {?>
+	<li><a href='index.php?page="<?=$i?>"'><?php echo $i ?></a></li>
+<?php } ?>
+	<li><a href='index.php?page=<?=($page+1)?>' class='button'>NEXT</a></li>
+</ul>
+</div> -->

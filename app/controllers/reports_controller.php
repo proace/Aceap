@@ -8,7 +8,7 @@ class ReportsController extends AppController
 	//To avoid possible PHP4 problemfss
 	var $name = "ReportsController";
 
-	var $uses = array('Order', 'OrderStatus', 'User', 'PaymentMethod','OrderType','CallResult');
+	var $uses = array('Order', 'OrderStatus', 'User', 'PaymentMethod','OrderType','CallResult','Customer');
 
 	var $helpers = array('Time', 'Ajax', 'Javascript', 'Common');
 	var $components = array('HtmlAssist', 'RequestHandler', 'Jpgraph', 'Common', 'Lists');
@@ -185,6 +185,110 @@ class ReportsController extends AppController
 		$this->set('allJobTypes', $allJobTypes);
 		$this->set('fdetails', ($fdetails=='on')?'checked':'');
 	}
+	function acacareBooking(){
+		$this->layout="blank";
+		$users=  array();
+		$showArchive = isset($_GET['showArchive']) ? $_GET['showArchive'] : 0;
+
+		// die($showArchive);
+		$db =& ConnectionManager::getDataSource('default');
+		if($showArchive < 1)
+		{
+			$query = "select * from rp_acacare_ca_booking where is_order=0 and is_archive= 0 order by id desc";
+		} else {
+			$query = "select * from rp_acacare_ca_booking where is_order=0 and is_archive= '$showArchive' order by id desc";
+		}
+		$totalRes = $db->_execute($query);
+         
+		  while($row = mysql_fetch_array($totalRes, MYSQL_ASSOC)){
+			$user_phone = $row['phone'];
+			$user_city = $row['city'];
+			if($this->checkCustomerId($user_phone)){
+				$row['customer'] = $this->checkCustomerId($user_phone);
+				$row['city1'] = $this->getcitybyname($user_city);
+			}
+			$users[] = $row;	
+		 }
+
+		 $this->set('showArchive', $showArchive);
+		 $this->set("users", $users); 
+	}
+	function getcitybyname($city){
+		$db =& ConnectionManager::getDataSource('default');
+		$city1 = strtoupper($city);
+		$query="SELECT id from ace_rp_cities where name='$city' limit 1";
+		$result = $db->_execute($query);
+		$row = mysql_fetch_array($result);
+		if(!empty($row['id']))
+		{
+			return $row['id'];
+            
+		} else {
+			return '';
+            
+		}
+		
+	}
+	function checkCustomerId($phone_num)
+	{
+		$db =& ConnectionManager::getDataSource('default');
+		
+		
+		$result = $db->_execute("SELECT id from ace_rp_customers where (cell_phone='$phone_num' or phone='phone' ) order by id desc limit 1 ;");
+		$row = mysql_fetch_array($result);
+		if(!empty($row['id']))
+		{
+			return $row['id'];
+            
+		} else {
+			return false;
+            
+		}
+		exit();
+
+	}
+	function deletebooking(){
+		$db =& ConnectionManager::getDataSource('default');
+      $id = $_REQUEST['id'];
+		
+		echo $query = "delete from rp_acacare_ca_booking where id='$id'";
+	$db->_execute($query);
+		
+		exit;
+	}
+	function archiveBooking(){
+			$db =& ConnectionManager::getDataSource('default');
+	      $id = $_REQUEST['id'];
+	      $archiveVal = $_REQUEST['archiveVal'];
+			
+			echo $query = "update rp_acacare_ca_booking set is_archive='$archiveVal' where id='$id'";
+		$db->_execute($query);
+			
+			exit;
+	}
+
+	function addNote(){
+		$db =& ConnectionManager::getDataSource('default');
+	  $id = $_REQUEST['id'];
+	  $notes = $_REQUEST['message'];
+		
+		echo $query = "update rp_acacare_ca_booking set notes='$notes' where id='$id'";
+		$db->_execute($query);
+		// $this->redirect("reports/acacareBooking");
+		exit;
+	}
+	function getbookingcount(){
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $query = "SELECT count(*) as total from rp_acacare_ca_booking where is_order=0 and is_archive=0";
+        
+        $result = $db->_execute($query);
+
+        $row = mysql_fetch_array($result);
+        $total = $row['total'];     
+        $data=array('total'=>$total);
+        echo json_encode($data); 
+        exit();
+	}
 	
 	function telem_groups() {
 		$this->layout="list";
@@ -265,6 +369,449 @@ class ReportsController extends AppController
 		
 		$this->set('allTelemarketers',$allTelemarketers);	
 
+	}
+	//orsers reports
+	
+	function orderReports(){
+		$this->layout="list";
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$sort = $_GET['sort'];
+		$order = $_GET['order'];
+		$allTechnicians = $this->Lists->Technicians();
+
+		if ($this->params['url']['ffromdate'] != '')
+			$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
+		else
+			$fdate = date("Y-m-d", strtotime("-1 days"));
+
+		if ($this->params['url']['ftodate'] != '')
+			$tdate = date("Y-m-d", strtotime($this->params['url']['ftodate']));
+		else
+			$tdate = date("Y-m-d", strtotime("-1 days"));
+
+		$sqlConditions = "";
+		if($fdate != '')
+			$sqlConditions .= " and o.job_date >= '".$this->Common->getMysqlDate($fdate)."'"; 
+		if($tdate != '')
+			$sqlConditions .= " and o.job_date <= '".$this->Common->getMysqlDate($tdate)."'";
+		if ($payment_type != 1000 && $payment_type !=''){
+			$sqlConditions .= " and exists (select * from ace_rp_payments p where p.idorder=o.id and p.payment_method='$payment_type')";
+		}else if ($payment_type == 1000){
+			$sqlConditions .= " and NOT EXISTS (select * from ace_rp_payments p where p.idorder=o.id)";
+		}
+		if($payStatus > 0){
+			$sqlConditions .= " and cp.payment_status =".$payStatus;
+		}
+		if ($auth_search)
+			$sqlConditions .= " and exists (select * from ace_rp_payments p where p.idorder=o.id and p.auth_number='$auth_search')";	
+				
+		if (!$order) $order = 'order_number asc';
+		
+		if(isset($_GET['show_hidden'])){
+			$sqlConditions .=' and o.is_hidden=1';
+			
+		}
+		else {
+			$sqlConditions .=' and o.is_hidden=0';
+		}
+		if(isset($_GET['ftechid']) && $_GET['ftechid']!=-1 ){
+			$sqlConditions .=" and o.job_technician1_id=".$_GET['ftechid'];
+			
+		}
+		if(isset($_GET['ref']) && $_GET['ref']!="" ){
+			$sqlConditions .=" and o.order_number=".$_GET['ref'];
+			
+		}
+	//	$sqlConditions .=' and o.is_checked=0';
+		
+		$query = "select o.id, o.order_number, o.job_date, o.order_status_id,o.job_technician1_id,o.job_technician2_id,
+										o.booking_source_id, o.booking_source2_id,
+										 s.name order_status, o.invoice_submitted,o.is_checked,
+										 concat(t1.first_name,' ',t1.last_name) tech1_name,
+										 concat(t2.first_name,' ',t2.last_name) tech2_name,
+										 concat(c.first_name,' ',c.last_name) client_name,
+										 concat(t3.first_name,' ',t3.last_name) confirmed_by,
+										 c.address_street client_address, c.phone client_phone,
+										 o.order_type_id, o.order_status_id, jt.category_id,o.customer_id,
+										 jt.name job_type_name, o.customer_deposit,o.payment_image,o.call_to_book,o.send_estimate,o.order_part,o.office_use,o.is_hidden,o.job_tech_notes,o.job_notes,
+										 (SELECT SUM(p.paid_amount) 
+										 FROM ace_rp_payments p 
+										 WHERE p.idorder = o.id) payment,
+										 (SELECT GROUP_CONCAT(DISTINCT pm.name, '') 
+										 FROM ace_rp_payments p
+										 LEFT JOIN ace_rp_payment_methods pm
+										 ON p.payment_method = pm.id
+										 WHERE p.idorder = o.id) method,
+										 cp.payment_status,cp.card_num
+							  from ace_rp_orders o
+								left outer join ace_rp_order_types as jt on ( o.order_type_id = jt.id ) 
+							  left outer join ace_rp_customers c on o.customer_id=c.id
+							  left outer join ace_rp_users t1 on o.job_technician1_id=t1.id
+							  left outer join ace_rp_users t2 on o.job_technician2_id=t2.id
+							  left outer join ace_rp_users t3 on o.verified_by_id=t3.id
+							  left outer join ace_rp_order_statuses s on s.id=o.order_status_id
+							  LEFT JOIN ace_rp_creditcard_payment_details cp ON cp.order_id = o.id AND cp.id = (SELECT MAX(id) FROM ace_rp_creditcard_payment_details where order_id = o.id)
+							 where order_status_id in (1,2,3,4,5) $sqlConditions 
+							 order by $order $sort";
+		// print_r($query); die;
+		$query2 = "select id, name, price, quantity from ace_rp_order_items where 1=1 $sqlConditions order by $order $sort";
+		
+		$redo = array();
+		$followup = array();
+		$install = array();
+		$other = array();
+		$items = array();
+		$result = $db->_execute($query);
+		//$customer_id  = $result['customer_id'];
+	
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			
+            $customer_id = $row['customer_id'];
+			$allImages = array();
+		 if($customer_id)
+            {
+				$allImages = array();
+                $this->Customer->id = $customer_id;
+                $cus = $this->Customer->read();
+	//			print_r($cus);
+                //$this->set('campaingId',$cus['Customer']['campaign_id']);
+                
+                 foreach ($cus['PartImages'] as $key => $value) {
+                     if(!empty($value['image_name']) && $value['image_name'] != null){
+                        $allImages[$key]['id'] = $value['id'];
+                    $allImages[$key]['image_name'] = $this->getPhotoPath($value['image_name']);
+                        $allImages[$key]['extension'] = pathinfo($value['image_name'], PATHINFO_EXTENSION);
+                    }
+                }
+				
+				
+				//print_r($allImages);
+				$items[$row['id']]['pics'] = $allImages;
+			}
+			$totals = $this->Common->getOrderTotal($row['id']);
+			
+			$comm = $this->requestAction('/commissions/getForOrder/'.$row['id']);
+            $tech1_comm = $comm[0][1]['total_comm'];
+            $tech2_comm = $comm[0][2]['total_comm'];
+     
+            if ($row['booking_source_id'] == $row['job_technician1_id'])
+                $tech1_comm += $comm[0][3]['total_comm'];
+            elseif ($row['booking_source_id']==$row['job_technician2_id'])
+                $tech2_comm += $comm[0][3]['total_comm'];
+            elseif ($row['booking_source2_id']==$row['job_technician1_id'])
+                $tech1_comm += $comm[0][4]['total_comm'];
+            elseif ($row['booking_source2_id']==$row['job_technician2_id'])
+                $tech2_comm += $comm[0][4]['total_comm'];
+           
+           $items[$row['id']]['tech1_comm'] = round($tech1_comm, 2);
+           $items[$row['id']]['tech2_comm'] = round($tech2_comm, 2);
+            // $this->set('tech2_comm', round($tech2_comm, 2));
+            // $this->set('tech1_comm', round($tech1_comm, 2));
+
+
+			if (($amount_search)&&($amount_search!=$totals['sum_total'])) continue;
+			
+			//$items[$row['id']]['total'] = $totals['sum_total'] - $row['customer_deposit'];
+			$items[$row['id']]['total'] = $row['payment'] - $row['customer_deposit'];
+
+			foreach ($row as $k => $v)
+			  $items[$row['id']][$k] = $v;
+
+			if ($row['order_type_id'] == 9) $redo[$row['order_status_id']][$row['id']] = 1;
+			elseif ($row['order_type_id'] == 10) $followup[$row['order_status_id']][$row['id']] = 1;
+			elseif ($row['category_id'] == 2) $install[$row['order_status_id']][$row['id']] = 1;
+			else $other[$row['order_status_id']][$row['id']] = 1;
+
+			$payments = array();
+			$total_p = 0;
+
+			$query = "select p.id, m.id payment_method_id, m.name payment_method,
+											 p.paid_amount, p.payment_date, p.notes
+									from ace_rp_payments p
+									left outer join ace_rp_payment_methods m on m.id=p.payment_method
+								 where payment_type=2 and p.idorder='{$row['id']}'";
+			$result_p = $db->_execute($query);
+			while($row_p = mysql_fetch_array($result_p, MYSQL_ASSOC))
+			{
+				foreach ($row_p as $k => $v)
+					$payments[$row_p['id']][$k] = $v;
+					
+				$total_p += 1*$row_p['paid_amount'];
+			}
+			
+			$items[$row['id']]['payments'] = $payments;
+			$items[$row['id']]['total_payments'] = $total_p;
+
+			$payments = '';
+			$tech_auth = '';
+			$div = '';
+			$query = "select p.id, m.id payment_method_id, m.name payment_method,
+											 p.paid_amount, p.auth_number, p.payment_date
+									from ace_rp_payments p
+									left outer join ace_rp_payment_methods m on m.id=p.payment_method
+								 where payment_type=1 and p.idorder='{$row['id']}'";
+			$result_p = $db->_execute($query);
+			while($row_p = mysql_fetch_array($result_p, MYSQL_ASSOC))
+			{
+				$payments .= $div.$row_p['payment_method'];
+				$tech_auth .= $div.$row_p['auth_number'];
+				$div = '<br/>';
+			}
+			$items[$row['id']]['tech_payments'] = $payments;
+			$items[$row['id']]['tech_auth'] = $tech_auth;
+			
+		}
+		
+		$this->set('items', $items);
+		$this->set('sort', $sort);
+		$this->set('order', $order);
+		$this->set('allImages',$allImages);
+		$this->set('prev_fdate', date("d M Y", strtotime($fdate) - 24*60*60));
+		$this->set('next_fdate', date("d M Y", strtotime($fdate) + 24*60*60));
+		$this->set('prev_tdate', date("d M Y", strtotime($tdate) - 24*60*60));
+		$this->set('next_tdate', date("d M Y", strtotime($tdate) + 24*60*60));
+		$this->set('fdate', date("d M Y", strtotime($fdate)));
+		$this->set('tdate', date("d M Y", strtotime($tdate)));
+		$this->set('payment_type', $payment_type);
+		$this->set('job_type', $job_type);
+		$this->set('payStatus', $payStatus);
+		$this->set('allPaymentTypes', $this->Lists->ListTable('ace_rp_payment_methods'));
+		$this->set('allJobTypes', $this->Lists->ListTable('ace_rp_order_types'));
+	
+		$redo = array('booked' => count($redo[1]),'done' => count($redo[5]),'canceled' => count($redo[3]));
+		$followup = array('booked' => count($followup[1]),'done' => count($followup[5]),'canceled' => count($followup[3]));
+		$install = array('booked' => count($install[1]),'done' => count($install[5]),'canceled' => count($install[3]));
+		$other = array('booked' => count($other[1]),'done' => count($other[5]),'canceled' => count($other[3]));
+
+		$this->set('redo', $redo);
+		$this->set('followup', $followup);
+		$this->set('install', $install);
+		$this->set('other', $other);
+		$this->set('allTechnicians',$allTechnicians);
+		//$this->set('allImages',$allImages);
+		
+	}
+	function getfollowcount(){
+		$db =& ConnectionManager::getDataSource('default');
+		$this->layout="list";
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$sort = $_GET['sort'];
+		$order = $_GET['order'];
+		$allTechnicians = $this->Lists->Technicians();
+
+		if ($this->params['url']['ffromdate'] != '')
+			$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
+		else
+			$fdate = date("Y-m-d", strtotime("-1 days"));
+
+		if ($this->params['url']['ftodate'] != '')
+			$tdate = date("Y-m-d", strtotime($this->params['url']['ftodate']));
+		else
+			$tdate = date("Y-m-d", strtotime("today"));
+
+		$sqlConditions = "";
+		if($fdate != '')
+			$sqlConditions .= " and o.job_date >= '".$this->Common->getMysqlDate($fdate)."'"; 
+		if($tdate != '')
+			$sqlConditions .= " and o.job_date <= '".$this->Common->getMysqlDate($fdate)."'";
+		if ($payment_type != 1000 && $payment_type !=''){
+			$sqlConditions .= " and exists (select * from ace_rp_payments p where p.idorder=o.id and p.payment_method='$payment_type')";
+		}else if ($payment_type == 1000){
+			$sqlConditions .= " and NOT EXISTS (select * from ace_rp_payments p where p.idorder=o.id)";
+		}
+		if($payStatus > 0){
+			$sqlConditions .= " and cp.payment_status =".$payStatus;
+		}
+		if ($auth_search)
+			$sqlConditions .= " and exists (select * from ace_rp_payments p where p.idorder=o.id and p.auth_number='$auth_search')";	
+				
+		if (!$order) $order = 'order_number asc';
+		
+		if(isset($_GET['show_hidden'])){
+			$sqlConditions .=' and o.is_hidden=1';
+			
+		}
+		else {
+			$sqlConditions .=' and o.is_hidden=0';
+		}
+		if(isset($_GET['ftechid']) && $_GET['ftechid']!=-1 ){
+			$sqlConditions .=" and o.job_technician1_id=".$_GET['ftechid'];
+			
+		}
+		if(isset($_GET['ref']) && $_GET['ref']!="" ){
+			$sqlConditions .=" and o.order_number=".$_GET['ref'];
+			
+		}
+		//$sqlConditions .=' and o.is_checked=0';
+		
+		$query = "select o.id, o.order_number, o.job_date, o.order_status_id,o.job_technician1_id,o.job_technician2_id,
+										o.booking_source_id, o.booking_source2_id,
+										 s.name order_status, o.invoice_submitted,o.is_checked,
+										 concat(t1.first_name,' ',t1.last_name) tech1_name,
+										 concat(t2.first_name,' ',t2.last_name) tech2_name,
+										 concat(c.first_name,' ',c.last_name) client_name,
+										 concat(t3.first_name,' ',t3.last_name) confirmed_by,
+										 c.address_street client_address, c.phone client_phone,
+										 o.order_type_id, o.order_status_id, jt.category_id,o.customer_id,
+										 jt.name job_type_name, o.customer_deposit,o.payment_image,o.call_to_book,o.send_estimate,o.order_part,o.office_use,o.is_hidden,o.job_tech_notes,o.job_notes,
+										 (SELECT SUM(p.paid_amount) 
+										 FROM ace_rp_payments p 
+										 WHERE p.idorder = o.id) payment,
+										 (SELECT GROUP_CONCAT(DISTINCT pm.name, '') 
+										 FROM ace_rp_payments p
+										 LEFT JOIN ace_rp_payment_methods pm
+										 ON p.payment_method = pm.id
+										 WHERE p.idorder = o.id) method,
+										 cp.payment_status,cp.card_num
+							  from ace_rp_orders o
+								left outer join ace_rp_order_types as jt on ( o.order_type_id = jt.id ) 
+							  left outer join ace_rp_customers c on o.customer_id=c.id
+							  left outer join ace_rp_users t1 on o.job_technician1_id=t1.id
+							  left outer join ace_rp_users t2 on o.job_technician2_id=t2.id
+							  left outer join ace_rp_users t3 on o.verified_by_id=t3.id
+							  left outer join ace_rp_order_statuses s on s.id=o.order_status_id
+							  LEFT JOIN ace_rp_creditcard_payment_details cp ON cp.order_id = o.id AND cp.id = (SELECT MAX(id) FROM ace_rp_creditcard_payment_details where order_id = o.id)
+							 where order_status_id in (1,2,3,4,5) $sqlConditions 
+							 order by $order $sort";
+							 
+							 $order=array();
+							 
+							 $result = $db->_execute($query);
+							 
+							 while($row = mysql_fetch_array($result, MYSQL_ASSOC)){
+								if($row['job_tech_notes']=="" && $row['job_notes']=="" && $row['call_to_book']==""
+								   && $row['order_part']=="" && $row['send_estimate']==""
+								   ){
+									continue;
+									
+								}
+								if($row['is_checked']==1){
+									continue;
+
+								}
+								$order[]=$row;
+							 }
+							 echo count($order);
+							 exit;
+		
+	}
+	function getcallbookcount(){
+		$db =& ConnectionManager::getDataSource("default");
+		date_default_timezone_set("America/Vancouver");
+		$today_date = date("Y-m-d");
+		$sql="SELECT c.id, c.card_number, c.first_name, c.last_name, c.postal_code, c.email, c.address_unit,
+c.address_street_number, c.address_street, c.city, c.phone, c.cell_phone,c.selected_customer_from_search
+as customer_row_color,c.selected_customer_from_search_agent as customer_row_color_agent, h.call_user_id,
+h.call_note, h.call_result_id, arc.order_type_id as job_type,arc.job_date as last_job_done_date, h.callback_date,
+h.callback_time, if((h.callback_date=current_date())&&(TIME_TO_SEC(CAST(now() AS TIME))>=
+TIME_TO_SEC(CAST(h.callback_time AS TIME))-300),1,0) reminder_flag, h.call_date, u.first_name as telemarketer_first_name,
+u.last_name as telemarketer_last_name FROM ace_rp_customers AS c join ace_rp_call_history h left join ace_rp_users
+u on u.id=h.call_user_id left join ace_rp_orders arc on c.id = arc.customer_id WHERE c.id=h.customer_id and
+(h.call_result_id in (0,1,2,4,8,9) or h.call_result_id is null) AND h.callback_date LIKE '%$today_date%'
+AND h.call_date <= h.callback_date and not exists (select * from ace_rp_call_history y where y.customer_id=h.customer_id
+and (y.call_date>h.call_date or y.call_date=h.call_date and y.call_time>h.call_time)) GROUP by c.id";
+
+ $order=array();
+    $result = $db->_execute($sql);
+	while ($row = mysql_fetch_array($result,MYSQL_ASSOC)){
+		$order[]=$row;
+	}
+	echo count($order);
+	exit;
+	
+	}
+	function callbackcount(){
+		$db =& ConnectionManager::getDataSource('default');
+		date_default_timezone_set("America/Vancouver");
+		$today_date = date("Y-m-d");
+		
+		$sql="SELECT o.id, concat(est.first_name, ' ', est.last_name)
+		estimator_name,concat(u.first_name, ' ', u.last_name) agent_name,
+		concat(c.first_name, ' ',c.last_name) customer_name, o.customer_id,
+		t.name order_type, o.order_number, c.phone, c.cell_phone,o.flagactive,
+		o.booking_date, o.sCancelReason, o.created_date , c.city FROM ace_rp_orders o
+		left join ace_rp_customers c on o.customer_id=c.id left join ace_rp_users u on
+		o.booking_source_id=u.id left join ace_rp_users est on o.estimator = est.id left
+		join ace_rp_order_types t on o.order_type_id=t.id WHERE o.job_truck in (40) AND 1
+		AND o.flagactive=1 AND o.estimate_callback_date >= '$today_date'
+		AND o.estimate_callback_date <= '$today_date'";
+		
+		 $order=array();
+    $result = $db->_execute($sql);
+	while ($row = mysql_fetch_array($result,MYSQL_ASSOC)){
+		$order[]=$row;
+	}
+	echo count($order);
+	exit;
+		
+	}
+	function getPhotoPath($name)
+    {
+        if (!$name)
+            return "";
+        $year = substr($name, 0, 4);
+        $mon = substr($name, 4, 2);
+        $day = substr($name, 6, 2);
+        $name = $year.'/'.$mon.'/'.$day.'/'.$name;
+        return $name;
+    }
+	//fecth the images for a customer
+	function fetchImages(){
+		$customer_id = $_POST['cusid'];
+		 if($customer_id)
+            {
+                $this->Customer->id = $customer_id;
+                $cus = $this->Customer->read();
+	//			print_r($cus);
+                //$this->set('campaingId',$cus['Customer']['campaign_id']);
+                $allImages = array();
+				if(empty($cus['PartImages'])){
+					die('<h1>No images found</h1');
+				}
+                 foreach ($cus['PartImages'] as $key => $value) {
+                     if(!empty($value['image_name']) && $value['image_name'] != null){
+                        //$allImages[$key]['id'] = $value['id'];
+                         $allImages[$key]['image_name'] = $this->getPhotoPath($value['image_name']);
+						 echo "<a class='example1' href='".ROOT_URL."/upload_photos/".$this->getPhotoPath($value['image_name'])."'><img class='customer_image' src='".ROOT_URL."/upload_photos/".$this->getPhotoPath($value['image_name'])."' alt=''/></a>";;
+                        //$allImages[$key]['extension'] = pathinfo($value['image_name'], PATHINFO_EXTENSION);
+						
+						
+                    }
+					else {
+						die('<h1>No images found</h1>');
+					}
+					
+                }
+				exit;
+				
+				
+				
+				
+			}
+				exit();
+	}
+	
+	function markHidden(){
+		$db =& ConnectionManager::getDataSource('default');
+	$id = $_POST['id'];
+	$query = "update ace_rp_orders set is_hidden='1' where id='$id'";
+	$db->_execute($query);
+	exit;
+	}
+	function markChecked(){
+		$db =& ConnectionManager::getDataSource('default');
+	$id = $_POST['id'];
+	$query = "update ace_rp_orders set is_checked='1' where id='$id'";
+	$db->_execute($query);
+	exit;
+	}
+	function unMarkHidden(){
+		$db =& ConnectionManager::getDataSource('default');
+	$id = $_POST['id'];
+	$query = "update ace_rp_orders set is_hidden='0' where id='$id'";
+	$db->_execute($query);
+	exit;
 	}
 	
 	// The telemarketers board
@@ -378,8 +925,9 @@ class ReportsController extends AppController
 				)
         	AND p.id=$pay_period
 			)
-		AND o.order_type_id IN(2,3,4,1113,17,18,19,21,39,43,59,31,28)
-        GROUP BY o.id
+		AND o.order_type_id IN(2,95,80,3,4,1113,17,18,19,21,39,43,59,31,28)
+        AND o.order_status_id not in (3)
+		GROUP BY o.id
 		ORDER BY g.id, is_leader DESC, u.first_name
         ";
 //ORDER BY $order $sort
@@ -707,6 +1255,21 @@ class ReportsController extends AppController
 		$result = $db->_execute($query);
 		exit;
 	}
+	function timeslot(){
+		
+     $table = "ace_rp_route_types";
+	 $db =& ConnectionManager::getDataSource('default');
+	 $query = "select * from ace_rp_route_types";
+	$totalRes = $db->_execute($query);
+	  while($row = mysql_fetch_array($totalRes, MYSQL_ASSOC)){
+			
+			
+			$users[] = $row;
+			
+			
+		 }
+		 $this->set("users", $users);
+	}
 	
 	function setQuota()
 	{
@@ -988,9 +1551,9 @@ class ReportsController extends AppController
     
 		$allJobTypes = $this->Lists->ListTable('ace_rp_order_types');
 
-    $groupTypes = $_REQUEST['groupTypes'];
-    $groupItems = $_REQUEST['groupItems'];
-    $job_type = $_REQUEST['job_type'];
+	    $groupTypes = $_REQUEST['groupTypes'];
+	    $groupItems = $_REQUEST['groupItems'];
+	    $job_type = $_REQUEST['job_type'];
 		
 		//CONDITIONS
 		//Convert date from date picker to SQL format
@@ -2977,16 +3540,51 @@ this function for trasfer jobs
 		$this->set('fofficeid', $fofficeid);
 	}
   	
+  	function getLastEstimateRecord($id)
+  	{
+  		$db =& ConnectionManager::getDataSource('default');
+  		$query = "SELECT * FROM ace_rp_estimate_callback where order_id=".$id." order by id desc limit 1";	
+  		$result = $db->_execute($query);
+  		$row = mysql_fetch_array($result);
+  		return $row;
+  		exit();
+  	}
   	function estimates(){
+  		$fromTech = isset($_GET['fromTech']) ? $_GET['fromTech'] : 0;
   		$ShowInactive = $_GET['ShowInactive'];
-
+  		$dateFilter = $_GET['dateFilter'];
   		$this->layout="list";
-    	$sqlConditions_job = ' 1 ';	
-
-    	if ($ShowInactive == 'on') 
+  		$loggedInUser = $this->Common->getLoggedUserID();
+		$sqlConditions_job = ' 1 ';
+		$sqlConditions_job1 = ' 1 ';
+		$sqlConditions_job2 = ' 1 ';
+    	$disabled = '';
+		$estimate1 = array();
+		$estimate2 = array();
+		$records2= array();
+    	//$sort_field = isset($_GET['sort_field']) ? $_GET['sort_field'] : 'estimator_name';
+    	//$sort_order = isset($_GET['sort_order']) ? $_GET['sort_order'] :'asc';
+    	
+    	if($fromTech == 1){
+    		// die("here");
+    		$sqlConditions_job .= " AND ".$loggedInUser." IN (o.estimator,o.booking_source_id)";
+    		$sqlConditions_job1 .= " AND ".$loggedInUser." IN (o.estimator,o.booking_source_id)";
+			$sqlConditions_job2 .= " AND ".$loggedInUser." IN (o.estimator,o.booking_source_id)";
+			$estimator = $loggedInUser;
+    		$disabled = 'disabled';
+    	}
+		
+    	if ($ShowInactive == 'on') {
     		$sqlConditions_job .= " AND o.flagactive=0";
-    	else 
+			$sqlConditions_job1 .= " AND o.flagactive=0";
+			$sqlConditions_job2 .= " AND o.flagactive=0";
+		}
+    	else{ 
     		$sqlConditions_job .= " AND o.flagactive=1";
+			$sqlConditions_job1 .= " AND o.flagactive=1";
+			$sqlConditions_job2 .= " AND o.flagactive=1";
+
+		}
 
     	$fdate = ($this->params['url']['ffromdate'] != '' ? date("Y-m-d", strtotime($this->params['url']['ffromdate'])): date("Y-m-d") ) ;
 		$tdate = ($this->params['url']['ftodate'] != '' ? date("Y-m-d", strtotime($this->params['url']['ftodate'])): date("Y-m-d") ) ;
@@ -2994,30 +3592,107 @@ this function for trasfer jobs
 		$officeid = $this->params['url']['fofficeid'];
     	
     	//echo "<pre>"; print_r($_GET);
-    	$sqlConditions_job .= " AND DATE(o.created_date) >= '".$this->Common->getMysqlDate($fdate)."'"; 
-		
-		$sqlConditions_job .= " AND DATE(o.created_date) <= '".$this->Common->getMysqlDate($tdate)."'";
+    	/* 1 = estimate date
+			2=  callback date
+    	*/
+		if(isset($_REQUEST['dateFilter'])){
+			$dateFilter	= $_REQUEST['dateFilter'];
+			}
+			else {
+			$dateFilter=2;	
+			}
+				
+				
+				if($dateFilter==3){
+					$dateFilter=2;
+				}
+			
+		if($dateFilter != 2){
+			$sqlConditions_job .= " AND DATE(o.job_date) >= '".$this->Common->getMysqlDate($fdate)."'"; 
+			
+			$sqlConditions_job .= " AND DATE(o.job_date) <= '".$this->Common->getMysqlDate($tdate)."'";
 
-		
+			$sqlConditions_job .= " AND o.estimate_callback_date IS NULL";
+		}
+			$sqlConditions_job1 .= " AND DATE(o.job_date) >= '".$this->Common->getMysqlDate($fdate)."'"; 
+			
+			$sqlConditions_job1 .= " AND DATE(o.job_date) <= '".$this->Common->getMysqlDate($tdate)."'";
+			
+			$sqlConditions_job1 .= " AND o.estimate_callback_date IS NULL";
+	
+		if($dateFilter == 2 || $dateFilter == 3 ){
+	    	$sqlConditions_job .= " AND o.estimate_callback_date >= '".$fdate."'"; 
+			
+			$sqlConditions_job .= " AND o.estimate_callback_date <= '".$tdate."'";
+		}
+		$sqlConditions_job2 .= " AND o.estimate_callback_date >= '".$fdate."'"; 
+			
+			$sqlConditions_job2 .= " AND o.estimate_callback_date <= '".$tdate."'";
+	
 		if(!empty($_GET['job_type'])){
 			$sqlConditions_job .= " AND o.order_type_id = ".$_GET['job_type']; 
+		    $sqlConditions_job1 .= " AND o.order_type_id = ".$_GET['job_type'];
+			$sqlConditions_job2 .= " AND o.order_type_id = ".$_GET['job_type'];
 		}
 
-		if(!empty($_GET['booking_source'])){
-			$sqlConditions_job .= " AND o.booking_source_id = ".$_GET['booking_source']; 
+
+		if(!empty($_GET['order_id'])){
+			$sqlConditions_job .= " AND o.order_number = ".$_GET['order_id']; 
+		   $sqlConditions_job1 .= " AND o.order_number = ".$_GET['order_id'];
+			$sqlConditions_job2 .= " AND o.order_number = ".$_GET['order_id'];
+		}
+
+		if(!empty($_GET['phone'])){
+			$sqlConditions_job .= " AND c.cell_phone = ".$_GET['phone']; 
+		    $sqlConditions_job1 .= " AND c.cell_phone = ".$_GET['phone'];
+			$sqlConditions_job2 .= " AND c.cell_phone = ".$_GET['phone'];
+		}
+
+		if(!empty($_GET['estimator'])){
+			$sqlConditions_job .= " AND o.estimator = ".$_GET['estimator']; 
+			$sqlConditions_job1 .= " AND o.estimator = ".$_GET['estimator'];
+			$sqlConditions_job2 .= " AND o.estimator = ".$_GET['estimator'];
+			$estimator = $_GET['estimator'];
+		}
+
+		if($this->Common->getShowEstimateId() == 1) {
+			$sqlConditions_job .= " AND o.estimator = ".$this->Common->getLoggedUserID(); 
+			$sqlConditions_job1 .= " AND o.estimator = ".$this->Common->getLoggedUserID(); 
+			$sqlConditions_job2 .= " AND o.estimator = ".$this->Common->getLoggedUserID(); 
+			$estimator = $this->Common->getLoggedUserID(); 
 		}		
 
-    	$query = "SELECT o.id, concat(u.first_name, ' ', u.last_name) agent_name, concat(c.first_name, ' ',c.last_name) customer_name, o.customer_id,
-               t.name order_type, o.order_number, c.phone, o.flagactive,
+    $query = "SELECT o.id, o.modified,concat(est.first_name, ' ', est.last_name) estimator_name,concat(u.first_name, ' ', u.last_name) agent_name, concat(c.first_name, ' ',c.last_name) customer_name, o.customer_id,
+               t.name order_type, o.order_number, c.phone, c.cell_phone,o.flagactive,
+				o.booking_date, o.sCancelReason, o.created_date , c.city ,c.email as customer_email
+          FROM ace_rp_orders o
+          left join ace_rp_customers c on o.customer_id=c.id 
+          left join ace_rp_users u on o.booking_source_id=u.id
+          left join ace_rp_users est on o.estimator = est.id
+          left join ace_rp_order_types t on o.order_type_id=t.id
+             WHERE (o.job_truck in (40) OR o.payment_method_type in (11) ) AND ". $sqlConditions_job;
+            $query1 = "SELECT o.id, o.modified,concat(est.first_name, ' ', est.last_name) estimator_name,concat(u.first_name, ' ', u.last_name) agent_name, concat(c.first_name, ' ',c.last_name) customer_name, o.customer_id,
+               t.name order_type, o.order_number, c.phone, c.cell_phone,o.flagactive,
 				o.booking_date, o.sCancelReason, o.created_date , c.city 
           FROM ace_rp_orders o
           left join ace_rp_customers c on o.customer_id=c.id 
           left join ace_rp_users u on o.booking_source_id=u.id
+          left join ace_rp_users est on o.estimator = est.id
           left join ace_rp_order_types t on o.order_type_id=t.id
-          inner join ace_rp_order_estimation oe on oe.order_id = o.id
-	      WHERE ". $sqlConditions_job;
-
-     	if($fdate!='')
+             WHERE (o.job_truck in (40) OR o.payment_method_type in (11) ) AND ". $sqlConditions_job1;
+			 
+			 $query2 = "SELECT o.id, o.modified,concat(est.first_name, ' ', est.last_name) estimator_name,concat(u.first_name, ' ', u.last_name) agent_name, concat(c.first_name, ' ',c.last_name) customer_name, o.customer_id,
+               t.name order_type, o.order_number, c.phone, c.cell_phone,o.flagactive,
+				o.booking_date, o.sCancelReason, o.created_date , c.city 
+          FROM ace_rp_orders o
+          left join ace_rp_customers c on o.customer_id=c.id 
+          left join ace_rp_users u on o.booking_source_id=u.id
+          left join ace_rp_users est on o.estimator = est.id
+          left join ace_rp_order_types t on o.order_type_id=t.id
+             WHERE (o.job_truck in (40) OR o.payment_method_type in (11) ) AND ". $sqlConditions_job2;
+     	
+		//  die($query);		 
+		 if($fdate!='')
 			$this->set('fdate', date("d M Y", strtotime($fdate)));
 		if($tdate!='')
 			$this->set('tdate', date("d M Y", strtotime($tdate)));
@@ -3030,13 +3705,48 @@ this function for trasfer jobs
 
 		$db =& ConnectionManager::getDataSource('default');
 
+		
 		$result = $db->_execute($query);
+				$result1 = $db->_execute($query1);
+		$result2 = $db->_execute($query2);
+
+		while($row1 = mysql_fetch_array($result1)) {
+			
+			
+			$estimate1[]=$row1;
+						
+		}
+
+		
+		while($row2 = mysql_fetch_array($result2)) {
+			$records2[$row2['id']]['modified'] = $row2['modified'];
+			$records2[$row2['id']]['id'] = $row2['id'];
+			$records2[$row2['id']]['estimator_name'] = $row2['estimator_name'];
+			$records2[$row2['id']]['agent_name'] = $row2['agent_name'];
+			$records2[$row2['id']]['customer_name'] = $row2['customer_name'];
+			$records2[$row2['id']]['phone'] = $row2['phone'];
+			$records2[$row2['id']]['cell_phone'] = $row2['cell_phone'];
+			$records2[$row2['id']]['order_number'] = $row2['order_number'];
+			$records2[$row2['id']]['booking_date'] = $row2['created_date'];
+			$records2[$row2['id']]['order_type'] = $row2['order_type'];
+			$records2[$row2['id']]['city'] = $row2['city'];
+			$records2[$row2['id']]['sCancelReason'] = $row2['sCancelReason'];
+			$records2[$row2['id']]['flagactive'] = $row2['flagactive'];
+			$records2[$row2['id']]['last_call_history'] = $this->getLastCallHistory($row2['customer_id']);
+			$records2[$row2['id']]['last_estimate_details'] = $this->getLastEstimateRecord($row2['order_number']);
+			
+		}
+
 		while($row = mysql_fetch_array($result)) {
- 			
+			$records[$row['id']]['modified'] = $row['modified'];
 			$records[$row['id']]['id'] = $row['id'];
+			$records[$row['id']]['estimator_name'] = $row['estimator_name'];
 			$records[$row['id']]['agent_name'] = $row['agent_name'];
 			$records[$row['id']]['customer_name'] = $row['customer_name'];
+			$records[$row['id']]['customer_id'] = $row['customer_id'];
+            $records[$row['id']]['customer_email'] = $row['customer_email'];
 			$records[$row['id']]['phone'] = $row['phone'];
+			$records[$row['id']]['cell_phone'] = $row['cell_phone'];
 			$records[$row['id']]['order_number'] = $row['order_number'];
 			$records[$row['id']]['booking_date'] = $row['created_date'];
 			$records[$row['id']]['order_type'] = $row['order_type'];
@@ -3044,13 +3754,22 @@ this function for trasfer jobs
 			$records[$row['id']]['sCancelReason'] = $row['sCancelReason'];
 			$records[$row['id']]['flagactive'] = $row['flagactive'];
 			$records[$row['id']]['last_call_history'] = $this->getLastCallHistory($row['customer_id']);
+			$records[$row['id']]['last_estimate_details'] = $this->getLastEstimateRecord($row['order_number']);
+			
 			/*$records[$row['id']]['change_id'] = $row['change_id'];*/
 		}
 
 		//echo "<pre>"; print_r($records); die;
 
-
+		//$this->set('sort_field', $sort_field);
+		//$this->set('sort_order', $sort_order);
 		$this->set("items", $records);
+		$this->set("records2", $records2);
+		$this->set("estimate1", $estimate1);
+		$this->set("estimate2", $estimate2);
+		$this->set("disabled", $disabled);
+		$this->set("fromTech", $fromTech);
+		$this->set("dateFilter", $dateFilter);
 		$this->set("telemid", $telemid);
 		if($fdate!='')
 			$this->set('fdate', date("d M Y", strtotime($fdate)));
@@ -3067,16 +3786,17 @@ this function for trasfer jobs
 		$this->set('allTechnician',$this->Lists->Technicians(true));
 
 		
-		$this->set('booking_source_id', $_GET['booking_source']);
+		// $this->set('booking_source_id', $_GET['estimator']);
+		$this->set('phone', $_GET['phone']);
+		$this->set('order_id', $_GET['order_id']);
+		$this->set('booking_source_id', $estimator);
 
 		$this->set('job_type_id', $_GET['job_type']);		
 		$this->set('booking_sources', $this->Lists->BookingSources());
-
   	}
 
   	function getLastCallHistory($customer_id){
-		
-		
+			
 		//Telemarketers will not see 'Answering Machine' results
 		$ans = '';
 		if (($this->Common->getLoggedUserRoleID() == 3)
@@ -3316,6 +4036,101 @@ this function for trasfer jobs
 		$db->_execute($query);
 		//$this->redirect('http://192.168.2.150/acesys/acetest/acesys-2.0/index.php/reports/telem_board');	
 	
+	}
+
+	function getcallhistory(){
+		
+		$db =& ConnectionManager::getDataSource('default');
+		$orderId = $_REQUEST['orderId'];
+		$query = "select customer_id,customer_phone from ace_rp_orders where id='$orderId'";
+		$result = $db->_execute($query);
+		
+		while ($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			$customer_id=$row['customer_id'];
+			
+			$phone=$row['customer_phone'];
+
+		}
+	
+            $isDialer = 1;
+			
+        if ((!$customer_id)&&(!$phone)) exit;
+
+            $phone = preg_replace("/[- \.]/", "", $phone);
+
+        //Telemarketers will not see 'Answering Machine' results
+        $ans = '';
+        if (($this->Common->getLoggedUserRoleID() == 13)
+            ||($this->Common->getLoggedUserRoleID() == 9))
+            $ans = 'call_result_id!=6 and';
+
+        $users=$this->Lists->BookingSources();
+        $call_results=$this->Lists->ListTable('ace_rp_call_results');
+
+        echo "<script>";
+        echo "function DeleteCallRecord(rec_id, cust_id){";
+        echo "$.get('".BASE_URL."/orders/deleteCallRecord', {record_id:rec_id}, function(data){";
+                echo "$.get('".BASE_URL."/orders/getCallHistory', {phone:".$phone."}, function(data){";
+                echo "showhist=1;$('#CallHistory').html(data);});});";
+        echo "}";
+        echo "</script>";
+        echo "<table style='background-color:white'>";
+        echo "<tr class='results'><th colspan=3>Call</th><th rowspan=2>Note</th><th colspan=2>Callback</th><th rowspan=2>Action</th>";
+        echo "</tr><tr class='results'><th>Date</th><th>User</th><th>Result</th><th>Date</th><th>User</th></tr>";
+
+        if ($customer_id) $query = "select * from ace_rp_call_history where ".$ans." customer_id='".$customer_id."'";
+//      else if ($phone) $query = "select * from ace_rp_call_history where ".$ans." customer_id in (select id from ace_rp_users where phone='".$phone."')";
+        else if ($phone) $query = "select * from ace_rp_call_history where ".$ans." cell_phone='".$phone."'";
+
+        if($isDialer == 1)
+        {
+            $query .= " order by call_date desc, call_time desc";
+        } else {
+            $query .= " order by call_date desc, call_time desc";
+        }
+        
+        $r = 1;
+
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $result = $db->_execute($query);
+        $loopstart=1;
+                while ($row = mysql_fetch_array($result,MYSQL_ASSOC))
+        {
+            if($loopstart ==1)$class='';else $class="showcallhistory";
+            
+            echo "<tr id='" .$row['id'] ."' class='" ."cell".(++$r%2) ." ".$class."'>";
+            echo "<td>" .date('d-m-Y',strtotime($row['call_date'])) ."</td>";
+            echo "<td>" .$users[$row['call_user_id']] ."</td>";
+            echo "<td>" .$call_results[$row['call_result_id']] ."</td>";
+
+            $action = 'return false;';
+
+            $cb_note = '';
+            $cb_date = '';
+            if ((($this->Common->getLoggedUserRoleID() != 3)
+            && ($this->Common->getLoggedUserRoleID() != 9))
+            || (1*$this->Common->getLoggedUserID() == 1*$row['call_user_id']))
+            {
+                $cb_note = $row['call_note'];
+              $cb_date = date('d-m-Y',strtotime($row['callback_date']));
+            if (($row['dialer_id']!='web')&&($row['dialer_id']!=''))
+                $action = "alert('This call was made from DIALER and can not be removed.');";
+            else
+                $action = "DeleteCallRecord(" .$row['id'] ."," .$row['customer_id'] .");";
+            }
+
+            echo "<td><div style='width:150px'>" .$cb_note ."</div></td>";
+            echo "<td>" .$cb_date ."</td>";
+            echo "<td>" .$users[$row['callback_user_id']] ."</td>";
+            echo "<td></td>";
+            //echo "<td><img src='" .ROOT_URL . "/app/webroot/img/icon-vsm-delete.png' onclick=\"" .$action ."\"></td>";
+            echo "</tr>";
+            $loopstart++;
+            }
+        echo "</table>";
+    
+		exit;
 	}
 	
 	function filters() {
@@ -4289,6 +5104,257 @@ this function for trasfer jobs
 			$this->set('next_tdate', date("d M Y", strtotime($tdate) + 24*60*60));
 			$this->set('fdate', date("d M Y", strtotime($fdate)));
 			$this->set('tdate', date("d M Y", strtotime($tdate)));
+	}
+
+	function reminderSummary(){
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$limit = 50;
+		$reminder = array();
+		$pageNo = isset($_GET['currentPage']) ? $_GET['currentPage'] : 1;
+		$filter = isset($_GET['filter']) ? $_GET['filter'] : -1;
+		$search_param = isset($_GET['search_param']) ? $_GET['search_param']:'';
+		if($pageNo == 0)
+		{
+			$pageNo	= 1;
+		}
+		$record_index= ($pageNo-1) * $limit;   
+
+
+		if ($this->params['url']['ffromdate'] != '')
+			$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate'])) . ' 00:00:00';
+		else
+			$fdate = date("Y-m-d".' 00:00:00');
+
+		if ($this->params['url']['ftodate'] != '')
+			$tdate = date("Y-m-d", strtotime($this->params['url']['ftodate'])) . ' 23:59:59';
+		else
+			$tdate = date("Y-m-d" .' 23:59:59');   
+
+		$date_start = $this->Common->getMysqlDate($fdate);
+		$date_end = $this->Common->getMysqlDate($tdate);
+		$sqlConditions = "(s.sms_date BETWEEN '$date_start' AND '$date_end')";
+		if($filter != -1){
+			//filter with phone number
+			if($filter == 1){
+				$sqlConditions .= " AND u.cell_phone ='".$search_param."'";
+			}
+
+			//filter with failed email
+			if($filter == 2){
+				$sqlConditions .= " AND e.is_sent =0";
+			}
+			//filter with failed sms
+			if($filter == 3){
+				$sqlConditions .= " AND s.is_sent =0";
+			}
+
+			//filter with failed email
+			if($filter == 4){
+				$sqlConditions .= " AND s.is_sent =1";
+			}
+			//filter with failed sms
+			if($filter == 5){
+				$sqlConditions .= " AND e.is_sent =1";
+			}
+
+			//filter for reference number
+			if($filter == 6){
+				$sqlConditions .= " AND o.order_number =".$search_param."";
+			}
+		}
+
+		$query = "SELECT s.order_id, s.sms_date, s.is_sent as sms_sent, e.is_sent as email_sent,o.order_number, o.address_unit, o.address_street_number, o.address_street,o.city,o.postal_code,s.text_type,e.email_type,u.cell_phone,u.phone,u.email,o.job_date FROM ace_rp_sms_log s
+				LEFT JOIN ace_rp_reminder_email_log e ON s.order_id = e.order_id
+				LEFT JOIN ace_rp_orders o ON s.order_id = o.id
+				LEFT JOIN ace_rp_customers u ON s.customer_id = u.id
+				WHERE s.text_type = 2 AND e.email_type = 2 AND $sqlConditions order by s.id asc  LIMIT $record_index, $limit
+				";
+
+			// print_r($query); die;
+			$result = $db->_execute($query);
+		
+			while($row = mysql_fetch_array($result)){
+				$reminder[] = $row;
+			}
+		$query1 = "SELECT count(*) FROM ace_rp_sms_log s
+			LEFT JOIN ace_rp_reminder_email_log e ON s.order_id = e.order_id
+			LEFT JOIN ace_rp_orders o ON s.order_id = o.id
+			LEFT JOIN ace_rp_customers u ON s.customer_id = u.id
+			WHERE s.text_type = 2 AND e.email_type = 2 AND $sqlConditions order by s.id asc
+			";
+		
+		$result1 = $db->_execute($query1);
+		$row1 = mysql_fetch_array($result1);  
+		$total_records = $row1[0];
+		$total_pages = ceil($total_records / $limit);  
+		
+		$this->set('totalPages', $total_pages);
+		$this->set('currentPage', $pageNo);
+		$this->set('search_param', $search_param);
+		$this->set('filter', $filter);
+		$this->set('reminder', $reminder);
+		$this->set('prev_fdate', date("d M Y", strtotime($fdate) - 24*60*60));
+		$this->set('next_fdate', date("d M Y", strtotime($fdate) + 24*60*60));
+		$this->set('prev_tdate', date("d M Y", strtotime($tdate) - 24*60*60));
+		$this->set('next_tdate', date("d M Y", strtotime($tdate) + 24*60*60));
+		$this->set('fdate', date("d M Y", strtotime($fdate)));
+		$this->set('tdate', date("d M Y", strtotime($tdate)));
+	}
+
+	//Loki: set the reminder date for estimate
+	function setReminderCallback()
+	{
+		$orderId = $_POST['orderId'];
+        $remiderNote = $_POST['remiderNote'];
+        $reminderDate = date('Y-m-d',strtotime($_POST['reminderDate']));
+        $lastcallDate = date('Y-m-d');
+        $createdBy = $this->Common->getLoggedUserID();
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "INSERT INTO ace_rp_estimate_callback (order_id, callback_date,notes,created_by,lastcall_date) VALUES (".$orderId.", '".$reminderDate."','".$remiderNote."',".$createdBy.",'".$lastcallDate."')";
+        $result = $db->_execute($query);
+        if ($result) {
+        	$db->_execute("UPDATE ace_rp_orders set estimate_callback_date = '".$reminderDate."' where order_number =".$orderId);
+            $response  = array("res" => "OK");
+            echo json_encode($response);
+            exit;
+        }
+	}
+
+	//Loki: get the  reminder history of estimate
+	function viewEstimateReminder()
+	{
+		$orderId = $_POST['orderId'];
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "SELECT ec.* , concat(u.first_name, ' ', u.last_name) agent_name FROM ace_rp_estimate_callback ec 
+		LEFT JOIN ace_rp_users u ON u.id = ec.created_by
+		where order_id=".$orderId." order by id desc";
+        $result = $db->_execute($query);
+
+        while ($row = mysql_fetch_array($result)) {
+        	print_r($row);
+        	$history[] = $row;
+        }
+        $this->set("history",$history);
+	}
+	/*Loki: get estimate callback details.*/
+	function getEstimateReminder()
+	{
+		$Id = $_POST['Id'];
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "SELECT * FROM ace_rp_estimate_callback where id=".$Id." order by id desc";
+        $result = $db->_execute($query);
+        $row = mysql_fetch_array($result);
+        $row['callback_date'] = date("d M Y", strtotime($row['callback_date']));
+        echo json_encode($row);
+        exit();
+	}
+
+	/*Loki: Edit Callback notes*/
+	function editReminderCallback()
+	{
+		$callbackId = $_POST['callbackId'];
+		$remiderNote = $_POST['remiderNote'];
+
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "UPDATE ace_rp_estimate_callback set notes = '".$remiderNote."' where id=".$callbackId;
+        $result = $db->_execute($query);
+
+        if ($result) {
+            $response  = array("res" => "OK");
+            echo json_encode($response);
+            exit;
+        }
+	}
+
+	function deleteCallback()
+	{
+		$callbackId = $_POST['callbackId'];
+
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "DELETE FROM ace_rp_estimate_callback where id=".$callbackId;
+        $result = $db->_execute($query);
+
+        if ($result) {
+            $response  = array("res" => "OK");
+            echo json_encode($response);
+            exit;
+        }
+	}
+
+	function cardPaymentSummary()
+	{
+		$paymentType = isset($this->params['url']['payment_type']) ? $this->params['url']['payment_type'] : 0;
+		$authCode = isset($this->params['url']['auth_search']) ? $this->params['url']['auth_search'] : '';
+		$amount = isset($this->params['url']['amount_search']) ? $this->params['url']['amount_search'] : '';
+		$this->layout="list";
+		if ($this->Common->getLoggedUserRoleID() != 6) return;
+    
+	    $allPaymentMethods = $this->Lists->paymenTable('ace_rp_payment_methods');
+	    $allTechnicians = $this->Lists->Technicians();
+    
+		//CONDITIONS
+		//Convert date from date picker to SQL format
+		if ($this->params['url']['ffromdate'] != '')
+			$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
+	    else
+				// $fdate = date("Y-m-d");
+	    		$fdate = date('Y-m-d',strtotime("-1 days"));
+
+
+			if ($this->params['url']['ftodate'] != '')
+				$tdate = date("Y-m-d", strtotime($this->params['url']['ftodate']));
+	    else
+				//$tdate = date("Y-m-d");
+	    	$tdate = date('Y-m-d',strtotime("-1 days"));
+
+
+		$db =& ConnectionManager::getDataSource('default');
+		$sqlConditions = "";
+		if($fdate != '')
+			$sqlConditions .= " CAST(cp.payment_date AS DATE) >= '".$this->Common->getMysqlDate($fdate)."'"; 
+		if($tdate != '')
+			$sqlConditions .= " AND CAST(cp.payment_date AS DATE) <= '".$this->Common->getMysqlDate($tdate)."'";
+    	
+	    if($paymentType > 0){
+	    	$sqlConditions .= " AND o.payment_method_type =".$paymentType;		
+	    }
+
+	    if($authCode != ''){
+	    	$sqlConditions .= " AND cp.auth_code LIKE '%".$authCode."%'";			
+	    }
+	    if($amount != ''){
+	    	$sqlConditions .= " AND cp.amount LIKE '%".$amount."%'";			
+	    }
+
+		$records = array();
+		$recordsTotal = array();
+		$orders = array();
+		
+		$query ="select cp.*,pm.name as payment_method,o.order_number, ot.name as job_type, CONCAT(tech1.first_name,' ', tech1.last_name) tech1_name, CONCAT(tech2.first_name,' ', tech2.last_name) tech2_name from ace_rp_creditcard_payment_details cp JOIN ace_rp_orders o ON 	 cp.order_id = o.id
+				 LEFT JOIN ace_rp_payment_methods pm ON pm.id = o.payment_method_type
+				 LEFT JOIN ace_rp_order_types ot ON ot.id = o.order_type_id
+				 LEFT JOIN ace_rp_users tech1 ON tech1.id = o.job_technician1_id
+				 LEFT JOIN ace_rp_users tech2 ON tech2.id = o.job_technician2_id
+		 		where $sqlConditions AND cp.id = (SELECT MAX(id) FROM ace_rp_creditcard_payment_details cp1 WHERE cp.order_id = cp1.order_id)";
+	    $result = $db->_execute($query);
+	    $summary = array();
+	    while($row = mysql_fetch_array($result))
+	    {    	
+	    	$summary[] = $row;
+	    }
+
+   		$this->set("summary", $summary);    
+		$this->set("allPaymentMethods", $allPaymentMethods);
+		$this->set('prev_fdate', date("d M Y", strtotime($fdate) - 24*60*60));
+		$this->set('next_fdate', date("d M Y", strtotime($fdate) + 24*60*60));
+		$this->set('prev_tdate', date("d M Y", strtotime($tdate) - 24*60*60));
+		$this->set('next_tdate', date("d M Y", strtotime($tdate) + 24*60*60));
+		$this->set('fdate', date("d M Y", strtotime($fdate)));
+		$this->set('tdate', date("d M Y", strtotime($tdate)));
+		$this->set("allTechnicians", $allTechnicians);
+		$this->set("paymentType", $paymentType);
+		$this->set("authCode", $authCode);
+		$this->set("amount", $amount);
 	}
 
 } //end of reports controller

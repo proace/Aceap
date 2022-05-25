@@ -1,3 +1,15 @@
+<?php 
+if($_COOKIE['acecare'])
+{
+	$id = session_regenerate_id();
+	$new_sessionid = session_id();
+	$db =& ConnectionManager::getDataSource('default');
+    $query1 = "UPDATE ace_rp_users set session_id = '".$new_sessionid."' where id =".$_COOKIE['acecare'];     
+    $result = $db->_execute($query1);
+}
+
+?>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -10,7 +22,12 @@
 <!--[if lt IE 7.]>
 <script defer type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/pngfix.js"></script>
 <![endif]-->
-
+<script type="text/javascript">
+function loadBooking(orderId)
+{
+    document.location.href='<?=BASE_URL?>/orders/editBooking?order_id='+orderId+'&rurl=orders%2FscheduleView%3F';
+}
+</script>
 </head>
 <body>
 <?php echo $content_for_layout ?>

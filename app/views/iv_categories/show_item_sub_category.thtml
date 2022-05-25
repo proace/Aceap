@@ -1,104 +1,199 @@
-<html> 
+<html>
+
 <head>
-<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
-<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
-<script>
-jQuery( document ).ready(function($) {
-   $("#add-sub-cat").on("click", function(){
-              window.open("<?=BASE_URL;?>/iv_categories/editSubCategory/", "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=400,height=400");
-          });
-   $('#removeSubCategory').on('click', function(e){
-          var selected = [];
-           $("input:checkbox[class=checkboxes]:checked").each(function () {
-               selected.push($(this).attr('type_id'));
-          });
-          jQuery.ajax({
-            url: "<?=BASE_URL;?>/iv_categories/deleteSubCategory",
-            type: "POST",
-            data: {typeIds:selected},
-            success: function(data){
-              location.href = "<?=BASE_URL;?>/iv_categories/";
-                   document.forms['viewform'].submit();
-          }
-        });  
-      }); 
-   $('.sub-category-name').on('click', function(){
-              var id = $(this).attr('cat-id');
-              window.open("<?=BASE_URL;?>/iv_categories/editSubCategory/"+id, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=900,width=500,height=150");
-          });
-});
-</script>
-<style>
-table, th, td {
-  border: 1px solid black;
-  border-collapse: collapse;
-}
-th, td {
-  padding: 10px;
-  text-align: center;
-}   
-.question_button {
-    background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/text_page.png) no-repeat center #666;
-    border:1px solid #999;
-    border-radius:5px;
-    width:25px;
-    height:25px;
-}
+    <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+    <script>
+        jQuery(document).ready(function($) {
+            $("#myInput").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#myTable tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+            $("#add-sub-cat").on("click", function() {
+                window.open("<?=BASE_URL;?>/iv_categories/editSubCategory/", "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=400,height=600");
+            });
+            $('#removeSubCategory').on('click', function(e) {
+                var selected = [];
+                $("input:checkbox[class=checkboxes]:checked").each(function() {
+                    selected.push($(this).attr('type_id'));
+                });
+                jQuery.ajax({
+                    url: "<?=BASE_URL;?>/iv_categories/deleteSubCategory",
+                    type: "POST",
+                    data: {
+                        typeIds: selected
+                    },
+                    success: function(data) {
+                        location.href = "<?=BASE_URL;?>/iv_categories/";
+                        document.forms['viewform'].submit();
+                    }
+                });
+            });
+            $('#hideSubCategory').on('click', function(e) {
+                var selected = [];
+                $("input:checkbox[class=hideCheckboxes]:checked").each(function() {
+                    selected.push($(this).attr('type_id'));
+                });
+                jQuery.ajax({
+                    url: "<?=BASE_URL;?>/iv_categories/hideSubCategory",
+                    type: "POST",
+                    data: {
+                        typeIds: selected
+                    },
+                    success: function(data) {
+                        location.href = "<?=BASE_URL;?>/iv_categories/";
+                        document.forms['viewform'].submit();
+                    }
+                });
+            });
+            $('.sub-category-name').on('click', function() {
+                var id = $(this).attr('cat-id');
+                window.open("<?=BASE_URL;?>/iv_categories/editSubCategory/" + id, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=900,right=0,width=500,height=500");
+            });
+            $('.showHide').on("click", function() {
+                var $cur = $(this);
+                if ($cur.is(":checked")) {
+                    $('.showArchive').val(1);
+                    document.forms['viewform'].submit();
+                    $cur.attr('checked', true);
+                } else {
+                    $('.showArchive').val(0);
+                    document.forms['viewform'].submit();
+                }
+            });
+            $('.hideCheckboxes').on("click", function() {
+                var $cur = $(this);
+                var typeId = $(this).attr('type_id');
+                if ($cur.is(":checked")) {
+                    jQuery.ajax({
+                        url: "<?=BASE_URL;?>/iv_categories/hideShowSubCategory",
+                        type: "POST",
+                        data: {
+                            typeId: typeId,
+                            isHide: 1,
+                        },
+                        success: function(data) {
+                            location.href = "<?=BASE_URL;?>/iv_categories/";
+                            document.forms['viewform'].submit();
+                        }
+                    });
+                } else {
+                    jQuery.ajax({
+                        url: "<?=BASE_URL;?>/iv_categories/hideShowSubCategory",
+                        type: "POST",
+                        data: {
+                            typeId: typeId,
+                            isHide: 0,
+                        },
+                        success: function(data) {
+                            location.href = "<?=BASE_URL;?>/iv_categories/";
+                            document.forms['viewform'].submit();
+                        }
+                    });
+                }
+            });
 
-.timeslot_button {
-    background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/calendar.png) no-repeat center #666;
-    border:1px solid #999;
-    border-radius:5px;
-    width:25px;
-    height:25px;
-}
 
-.item_category_button {
-    background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/tree.png) no-repeat center #666;
-    border:1px solid #999;
-    border-radius:5px;
-    width:25px;
-    height:25px;
-}
-</style>
+        });
+    </script>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        
+        th,
+        td {
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .question_button {
+            background: url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/text_page.png) no-repeat center #666;
+            border: 1px solid #999;
+            border-radius: 5px;
+            width: 25px;
+            height: 25px;
+        }
+        
+        .timeslot_button {
+            background: url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/calendar.png) no-repeat center #666;
+            border: 1px solid #999;
+            border-radius: 5px;
+            width: 25px;
+            height: 25px;
+        }
+        
+        .item_category_button {
+            background: url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/tree.png) no-repeat center #666;
+            border: 1px solid #999;
+            border-radius: 5px;
+            width: 25px;
+            height: 25px;
+        }
+    </style>
 </head>
 <form method="GET" action="<?= $PHP_SELF?>" name="viewform">
-<input type="hidden" name="action" value="view" >
-<input type="hidden" name="order" value="<?=$_GET['order']?>">
-<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
-<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+    <input type="hidden" name="action" value="view">
+    <input type="hidden" name="order" value="<?=$_GET['order']?>">
+    <input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+    <input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+    <input type="hidden" class="showArchive" name="showArchive" value="<?=$_GET['showArchive']?>">
 
-<!-- <table width="90%" border="0px" cellspacing="10" cellpadding="0">
-    <tr>
-        <td align="left"> -->
-        <!--     <input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/jobs/editItem'" /> -->
-      <!--   </td>
-        <td align="left"> -->
-          <!--   <input type="button" name="addnew" value="Remove" onclick="document.location.href='<?=BASE_URL?>/jobs/editItem'" /> -->
-      <!--   </td>
-    </tr>
-</table>     -->
 </form>
-<form >
-<h1>Sub Categories :-</h1>
-<input type="button" name="addnew" value="Add new" id="add-sub-cat" />
- <input type="button" name="Remove" value="Remove" id="removeSubCategory" style="margin: 0 0 5px 10px;"/>
-<table class="results"  style="border-style: solid;border-width:1px; width: 50%;" width="100%">
-    <tr>
-        <th width="50"><b>ID</b></td>
-        <th width="50">Sub Category Name</th>
-        <th width="50">Category Name</th>
-        <th width="10">Delete Category</th>
-   </tr>
-        <?php $r=1;
+<form>
+    <h1>Sub Categories :- </h1>
+    <div>
+        <span style="float: left;">
+        <input type="button" name="addnew" value="Add new" id="add-sub-cat" />
+      </span>
+        <span style="padding-left: 10%;">
+        Search <input id="myInput" type="text" placeholder="">
+        <input type="button" name="hide" value="Archive" id="hideSubCategory" style="margin: 0 0 5px 10px;" />
+        <input type="button" name="Remove" value="Remove" id="removeSubCategory" style="margin: 0 0 5px 10px;" />
+      </span>
+        <span style="padding-left: 3%;">Show Archive<input type="checkbox" class="showHide" name="showHide" <?php if ($showArchive) echo 'checked';?>></span>
+    </div>
+    <table class="results" style="border-style: solid;border-width:1px; width: 70%;" width="100%">
+        <tr>
+            <th width="50"><b>ID</b></th>
+            <th width="50">Sub Category Name</th>
+            <th width="50">Category Name</th>
+            <!-- <th width="50">Main Category</th> -->
+            <th width="50">Job Type</th>
+            <th width="10">Archive</th>
+            <th width="10">Delete Category</th>
+        </tr>
+        <tbody id="myTable">
+            <?php $r=1;
             foreach ($itemSubCategories as $obj) {
                 $class = 'cell'.(++$r%2);
         ?>
-        <td class="firstcol sub-category-name" cat-id="<?=$obj['id']?>" style="cursor: pointer;">&nbsp;<?php echo $obj['id']; ?></td>
-        <td class="sub-category-name" cat-id="<?=$obj['id']?>" style="cursor: pointer;">&nbsp;<?php echo $obj['name']; ?></td>
-        <td class="firstcol">&nbsp;<?php echo $obj['catName']; ?></td>
-        <td><input type="checkbox" class="checkboxes" name="remove_<?=$obj['id']?>" id="remove_<?=$obj['id']?>" type_id = "<?=$obj['id']?>"></td>
-    </tr>
-    <? } ?>
-</table>
+            <tr>
+                <td class="firstcol sub-category-name" cat-id="<?=$obj['IvSubCategory']['id']?>" style="cursor: pointer;">&nbsp;
+                    <?php echo $obj['IvSubCategory']['id']; ?>
+                </td>
+                <td class="sub-category-name" cat-id="<?=$obj['IvSubCategory']['id']?>" style="cursor: pointer;font-size: 11px;">&nbsp;
+                    <?php echo $obj['IvSubCategory']['name']; ?>
+                </td>
+                <td class="firstcol" style="font-size: 11px;">&nbsp;
+                    <?php echo $obj['IvMidCategory']['name']; ?>
+                </td>
+                <!-- <td class="sub-category-name" cat-id="<?=$obj['IvSubCategory']['id']?>" style="cursor: pointer;font-size: 11px;">&nbsp;
+                    <?php echo $obj['IvMidCategory']['IvCategory']['name']; ?>
+                </td> -->
+                <td class="category-name" cat-id="<?=$obj['IvSubCategory']['id']?>" style="cursor: pointer;font-size: 11px">&nbsp;
+                    <?php echo $obj['Type']['name']; ?>
+                </td>
+                <td><input type="checkbox" class="hideCheckboxes" name="hide_<?=$obj['IvSubCategory']['id']?>" id="hide_<?=$obj['IvSubCategory']['id']?>" type_id="<?=$obj['IvSubCategory']['id']?>" <?php if ($obj[ 'IvSubCategory'][ 'is_hide']) echo
+                        'checked';?>></td>
+                <td><input type="checkbox" class="checkboxes" name="remove_<?=$obj['IvSubCategory']['id']?>" id="remove_<?=$obj['IvSubCategory']['id']?>" type_id="<?=$obj['IvSubCategory']['id']?>"></td>
+            </tr>
+            <? } ?>
+        </tbody>
+    </table>
 </form>

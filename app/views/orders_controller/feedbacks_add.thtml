@@ -235,7 +235,7 @@ $(document).ready(function(){
 		        <td><?= $html->textarea('Order/feedback_comment',array('style' => "width:450px; height: 80px;"));?></td>
           </tr>
 			<tr> 
-		        <td>Tech Recommendation :</td>
+		        <td>Solution :</td>
           </tr>
 	        <tr>
 		        <td><?= $html->textarea('Order/feedback_suggestion',array('style' => "width:450px; height: 80px;"));?></td>

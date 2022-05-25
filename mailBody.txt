@@ -1,0 +1,163 @@
+<div style="border: 1px solid grey; padding-right: 35px; padding-left: 35px;">
+<div class="header mceNonEditable" title="test">
+<p><img class="headerimg" style="margin-right: auto; margin-left: auto; display: block;" src="https://www.acecare.ca/wp-content/uploads/2017/10/newacelogo.png" alt="no image foud" /></p>
+<p><span style="color: #000000;">Pro Ace Heating and Air Conditioning Ltd.</span><br /><span style="color: #000000;">102 - 3855 Henning Dr,</span><br /><span style="color: #000000;">Burnaby, BC, V5C 6N3</span><br /><span style="color: #000000;">604-293-3770</span></p>
+
+<br /><span style="color: #000000;"><span style="color: #000000;"><span style="color: #000000;"><span style="color: #000000;">Reference: <span class="cus_ref">121251</span></span></span></span></span>
+<p style="text-align: left;">First and Last Name: <span class="cus_name">loki </span></p>
+<p>Address: <span class="cus_address"> 0 247</span></p>
+<p>City: <span class="cus_city">Indore</span></p>
+<p>Postal code: <span class="cus_postal">452001</span></p>
+<p>Email: <span class="cus_email">lokendra.k@cisinlabs.com</span></p>
+<p>Phone: <span class="cus_phone">9907398339</span></p>
+<p>Cell Phone:</p>
+<p> </p>
+</div>
+<p>Dear Client,</p>
+<p>Pro Ace Heating and Air Conditioning is eager for the opportunity to offer our services to you. We</p>
+<p>have been in business for over twenty years, with over eighty thousand residential,</p>
+<p>commercial and industrial clients served, and a proven track record of success and distinction in</p>
+<p>the heating and cooling industry. Our licensed technicians have years of experience and training</p>
+<p>that sets them apart, to offer you, our valued client, the highest quality of service.</p>
+<p>Our promise is to deliver an exceptional installation with quality and care, and to ensure that your</p>
+<p>Hvac system meets every need required. Heating and cooling are what we do for a living.tetet</p>
+<p> </p>
+<div class="officequestion mceNonEditable" title="officequestion">
+<p><span style="color: #000000;"><strong>Information Provided by Client:</strong></span></p>
+<table class="officeQueryHTML" style="border-collapse: collapse; width: 35%;" border="1">
+<tbody>
+<tr style="height: 18px;">
+<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">#</strong></td>
+<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Questions</strong></td>
+<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Responses</strong></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 16.6667%; height: 18px; text-align: center;"> 0</td>
+<td style="width: 16.6667%; height: 18px;"> Age of the Applaince:</td>
+<td style="width: 16.6667%; height: 18px;"> sad</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 16.6667%; height: 18px; text-align: center;"> 0</td>
+<td style="width: 16.6667%; height: 18px;"> What kind of appliance</td>
+<td style="width: 16.6667%; height: 18px;"> ad</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 16.6667%; height: 18px; text-align: center;"> 0</td>
+<td style="width: 16.6667%; height: 18px;"> What Was The Problem:</td>
+<td style="width: 16.6667%; height: 18px;"> asd</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 16.6667%; height: 18px; text-align: center;"> 1</td>
+<td style="width: 16.6667%; height: 18px;"> Hot Water Tank Condition and Age</td>
+<td style="width: 16.6667%; height: 18px;"> asd</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 16.6667%; height: 18px; text-align: center;"> 4</td>
+<td style="width: 16.6667%; height: 18px;"> Elite Annual Pass</td>
+<td style="width: 16.6667%; height: 18px;"> asdd</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 16.6667%; height: 18px; text-align: center;"> 5</td>
+<td style="width: 16.6667%; height: 18px;"> Notes</td>
+<td style="width: 16.6667%; height: 18px;"> asd</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p> </p>
+<p><span style="color: #000000;"><strong>Estimate For: </strong>Repair</span></p>
+<p> </p>
+<div class="option1 mceNonEditable" title="option1">
+<table class="option1_new" style="border-collapse: collapse; width: 35%;" border="1">
+<tbody>
+<tr style="height: 18px;">
+<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Item</strong></td>
+<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Brand</strong></td>
+<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Model</strong></td>
+<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Qty</strong></td>
+<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Price</strong></td>
+<td style="width: 16.6667%; height: 18px; text-align: center;"><strong contenteditable="false">Disc</strong></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 16.6667%; height: 18px; text-align: center;"> tets 11</td>
+<td style="width: 16.6667%; height: 18px; text-align: center;"> Black Iron Piping</td>
+<td style="width: 16.6667%; height: 18px; text-align: center;"> loki</td>
+<td style="width: 16.6667%; height: 18px;"> 1</td>
+<td style="width: 16.6667%; height: 18px;"> 12</td>
+<td style="width: 16.6667%; height: 18px;"> 0.00</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 16.6667%; height: 18px; text-align: center;"> tets 112</td>
+<td style="width: 16.6667%; height: 18px; text-align: center;"> Black Iron Piping</td>
+<td style="width: 16.6667%; height: 18px; text-align: center;"> loki</td>
+<td style="width: 16.6667%; height: 18px;"> 1</td>
+<td style="width: 16.6667%; height: 18px;"> 12</td>
+<td style="width: 16.6667%; height: 18px;"> 0.00</td>
+</tr>
+</tbody>
+</table>
+<p><span style="color: #000000;">  </span></p>
+<table class="subTotal1" style="border-collapse: collapse; width: 15.593%; height: 100px;" border="1">
+<tbody>
+<tr>
+<td style="width: 50%; text-align: right;">SubTotal:</td>
+<td style="width: 50%; text-align: right;">24</td>
+</tr>
+<tr>
+<td style="width: 50%; text-align: right;">GST:</td>
+<td style="width: 50%; text-align: right;">1.2</td>
+</tr>
+<tr>
+<td style="width: 50%; text-align: right;">Total</td>
+<td style="width: 50%; text-align: right;">25.2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p> </p>
+<div class="option2 mceNonEditable" title="option2">
+<p><span style="color: #000000;">  </span></p>
+<p><span style="color: #000000;"> </span></p>
+</div>
+<p> </p>
+<p><strong><span style="font-size: large;">Rebate From Forties :</span></strong></p>
+<p><strong><span style="font-size: large;"><span style="font-size: small;">Total of  ($700 on each furnace and $200 on each tank )</span><br /></span></strong></p>
+<p><strong><span style="font-size: large;"> </span></strong></p>
+<p><span style="font-size: large;"><strong>Scope of work:</strong></span></p>
+<p><span style="font-size: small;">Removal, Demolition, Disconnecting and disposal of the existing heating Furnaces, Hot water tanks, Ac,</span></p>
+<p><span style="font-size: small;">Modifying Piping, Electrical, Fittings, Venting, Sheet metal work and Gas Lines.</span></p>
+<p> </p>
+<p><span style="font-size: large;"><strong>Warranty</strong>: <br /></span></p>
+<p><span style="font-size: small;">Labour : 1 year on all appliances</span></p>
+<p><span style="font-size: small;">Furnace : 10 years on parts and life time on heat exchanger</span></p>
+<p><span style="font-size: small;">Heat pump : 10 years on parts and 12 years on compressor</span></p>
+<p><span style="font-size: large;"><span style="font-size: small;">Hot water tank: 6 years on each tank </span><br /></span></p>
+<p> </p>
+<p><strong><span style="font-size: large;">Permit:</span></strong></p>
+<p><span style="font-size: small;">4 appliances would be $240 payable to safety authority. You will pay pro ace and we will apply and do the paper work for you.</span></p>
+<span style="font-size: large;"> </span>
+<p> </p>
+<p><strong><span style="font-size: large;">Method of payment:</span></strong></p>
+<p><span style="font-size: small;">Visa, mastercard, certified cheque or Cash </span></p>
+<p><strong><span style="font-size: large;"> </span></strong></p>
+<p><strong><span style="font-size: large;">Financing:</span></strong></p>
+<p><span style="font-size: large;"><span style="font-size: small;">9 months no pay no interest upon approval </span></span><strong><span style="font-size: large;"><br /></span></strong></p>
+<hr />
+<p><strong>Notes:</strong></p>
+<p><strong> </strong></p>
+<p><strong> </strong></p>
+<p><strong> </strong></p>
+<div class="mceNonEditable sincerely" title="sincerely">
+<p>Sincerely:</p>
+<p>Ali Soroush , Project manager</p>
+</div>
+<p>604-8415774</p>
+<br />
+<p> </p>
+<p> </p>
+<p><a href="https://www.acecare.ca" target="_blank"><img src="https://www.acecare.ca/wp-content/uploads/2018/11/checkoutoursite.jpg" alt="Check out our site" width="193" height="208" /></a><a href="https://www.acecare.ca/elite-card-sign-up"><img src="https://www.acecare.ca/wp-content/uploads/2018/10/subscribe.png" alt="subscribe" width="193" height="208" /></a><a href="https://www.youtube.com/watch?v=je1HpnqM16c" target="_blank"><img src="https://www.acecare.ca/wp-content/uploads/2018/11/about-us.jpg" alt="about us" width="180" height="194" /></a><a href="https://search.google.com/local/writereview?placeid=ChIJSRBjmi93hlQRWDtY6I6n1Ao" target="_blank"><img src="https://www.acecare.ca/wp-content/uploads/2018/11/check-out-our-reviews.jpg" alt="check out our reviews" width="193" height="208" /></a></p>
+<div class="sincerely mceNonEditable" title="sincerely">
+<p>Sincerely:</p>
+<p>Ali Soroush , Project manager</p>
+</div>
+</div>

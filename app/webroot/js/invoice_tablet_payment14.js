@@ -7,6 +7,126 @@ $(function() {
 	
 	var l = $(location).attr('href');
 	
+	//Loki payment API
+    $("#cardTransaction").live("click", function(){
+        var cardName = $("#creditName").val().trim();
+        var cardNum = $("#creditCardNum").val().trim();
+        var ExpMonth = $("#cardExpMonth").val();
+        var ExpYear = $("#cardExpYear").val();
+        var cvv = $("#creditCvv").val().trim();
+        var amount = $("#saleAmount").val();
+        var orderId = $('#InvoiceOrderId').val();
+        var orderNum = $('#orderNum').val();
+        var cusId = $("#customerId").val();
+        var to_email = $("#toEmail").val();
+        var status = $("#payment_status").val();
+        var method = $("#PaymentPaymentMethodId").val();
+        if(cardNum.indexOf('x') != -1 ){
+           alert("Please Contact Admin.");
+            return false;
+        }
+        if(method == 0){
+            alert("Please select paid by method.");
+            return false;
+        }
+        if (cardName.length <= 0){
+            alert("Please enter Card Name");
+            return false;
+        }
+
+        if (cardNum.length < 13){
+            alert("Please enter valid Card Number");
+            return false;
+        }
+
+        if (cvv.length < 3){
+            alert("Please enter valid CVV");
+            return false;
+        }
+
+        if(amount <= 0){
+            alert("Please enter Amount");
+            return false;   
+        }
+        $("#cardTransaction").val("In Progress");
+    	$("#cardTransaction").attr("disabled", true);
+         $.ajax({
+            url: G_URL+'orders/bamboraPay',
+            dataType: 'JSON',
+            type: 'POST',
+            cache: false,
+            data: {order_id:orderId, cus_id:cusId,cardName:cardName,cardNum:cardNum,ExpMonth:ExpMonth,cvv:cvv,
+            	amount:amount,ExpYear:ExpYear,to_email:to_email,order_num:orderNum,status:status},
+            success: function(data) {
+            	$("#cardTransaction").val("Charge");
+    			$("#cardTransaction").attr("disabled", false);
+                        if(data.res == 1)
+                        {
+                            $("#transaction_status").text("Approved");
+                            $("#transaction_status").css('color', 'green');
+                            $("#transaction_amount").text(data.amount);
+                            $("#transaction_auth").text(data.auth_code);
+                            $("#transaction_date").text(data.date);
+                            $("#cardTransaction").attr("disabled", true);
+                            var trailingCharsIntactCount = 4;
+                            var str = $("#creditCardNum").val().trim();
+                            if(str != ''){
+                                str = new Array(str.length - trailingCharsIntactCount + 1).join('x')
+                               + str.slice(-trailingCharsIntactCount);
+                                $("#creditCardNum").val(str);
+                            }
+                           alert("Payment Done Successfully.");
+                        } else {
+                            $("#transaction_status").text("Declined");
+                            $("#transaction_status").css('color', 'red');
+                            $("#transaction_auth").text('');
+                            $("#transaction_amount").text(data.amount);
+                            $("#transaction_date").text(data.date);
+                            alert(data.msg);
+                        }
+                    }           
+            });   
+    });
+      $("#saveCardInfo").live("click", function(){
+        var cardName = $("#creditName").val().trim();
+        var cardNum = $("#creditCardNum").val().trim();
+        var ExpMonth = $("#cardExpMonth").val();
+        var ExpYear = $("#cardExpYear").val();
+        var cvv = $("#creditCvv").val().trim();
+        var amount = $("#saleAmount").val();
+        var orderId = $('#InvoiceOrderId').val();
+        var cusId = $("#customerId").val();
+
+        if (cardName.length <= 0){
+            alert("Please enter Card Name");
+            return false;
+        }
+
+        if (cardNum.length < 13){
+            alert("Please enter valid Card Number");
+            return false;
+        }
+
+        if (cvv.length < 3){
+            alert("Please enter valid CVV");
+            return false;
+        }
+         $.ajax({
+            url: G_URL+'orders/saveCardInfo',
+            dataType: 'JSON',
+            type: 'POST',
+            cache: false,
+            data: {order_id:orderId, cus_id:cusId,cardName:cardName,cardNum:cardNum,ExpMonth:ExpMonth,cvv:cvv,ExpYear:ExpYear},
+            success: function(data) {
+                        if(data.res == 1)
+                        {
+                           alert("Card Information saved Successfully.");
+                        } else {
+                            alert(data.msg);
+                        }
+                    }           
+            });    
+    });
 	// Delete purchase images
 	$(".delete-purchase-image").live("click", function(){
 		var id = $(this).attr("image-id");
@@ -92,9 +212,9 @@ $(function() {
 	
 	$("#job_list").hide();	
 	
-	$("#jobs_link").click(function(){
-		$("#job_list").toggle();	
-	});
+	// $("#jobs_link").click(function(){
+	// 	$("#job_list").toggle();	
+	// });
 	
 	//initializeItems();
 	
@@ -166,7 +286,6 @@ $(function() {
 	});
 	$(".org_price").live("change", function(){
 		price = $(this).val();
-		console.log(price);
 		$(this).parent().next().find(".base_price").val(price);
 		computeValues();	
 	});
@@ -343,8 +462,66 @@ $(function() {
         	$("#paymnetReceipt").val(0);
         }
      });
-});
 
+		$("#notSendInvoice").live("change", function(){
+        if($(this).is(":checked"))
+        {
+             $("#notSendInvoice").val(1);
+        } else {
+        	$("#notSendInvoice").val(0);
+        }
+     });
+	
+
+	$(".installation_item_box").dialog({
+	        modal: true,
+	        autoOpen: false,
+	        title: "Items",
+	        autoOpen: false,
+	        width: 800,
+	        height: 786,
+	    });
+
+	$(".installation_items").live("click", function(){
+		$('.installation_item_box').dialog('open');
+	});
+
+	$("#saveInstallationItem").live("click", function(e){
+        e.preventDefault();
+        var formdata = new FormData($("#installation_item_form")[0]);
+        var xhr = new XMLHttpRequest();
+        // var  = <?php echo BASE_URL; ?>;
+        xhr.open('POST', live_server +"orders/saveTechInstallation", true);
+        xhr.onload = function () {
+            var response = JSON.parse(xhr.response);
+            if(response.res == 1)
+            {
+                $('.installation_item_box').dialog('close');
+            } 
+        };
+        xhr.send(formdata);
+    }); 
+});
+//Loki:
+function InstallationCalculation()
+{
+	subtotal = 0;
+    CheckPrcCount = 0;
+    invoiceSubTotal = 0;
+    amount = 0;
+    $('#installation_item_table').children('tbody').children('.booked').each(function(i, el)
+    {
+    	qty = $(el).children('.tech_quantity').children('input').val();  
+    	if (qty!=null && qty != undefined)
+		{
+	    	prc = $(el).children('.price').children('input').val();
+	    	amount = parseFloat(prc) * qty;
+			subtotal += amount;
+			$(el).children('.total').children('input').val(amount);
+		}
+    });
+	$(".installationTotal").html('Total = $ '+subtotal);
+}
 function addItem(container, item_id, name, item_category_id, price, price_purchase, isNew) {
 	var temp = '';
 	var five = Math.round((parseFloat(price)*0.05)*10)/10;
@@ -535,10 +712,10 @@ function computeValues() {
 	
 	$("#current_subtotal").val(current_cost);
 	$("#current_tax").val(current_tax); 
-	$("#current_total").val(+current_cost + +current_tax);
-	$("#current_balance").val(+current_cost + +current_tax + -current_deposit);
+	$("#current_total").val((+current_cost + +current_tax).toFixed(2));
+	$("#current_balance").val((+current_cost + +current_tax + -current_deposit).toFixed(2));
+	$("#saleAmount").val((+current_cost + +current_tax + -current_deposit).toFixed(2));
 	var payableAmount = $("#paid_by_amount").val();
-	console.log(payableAmount);
 	if(payableAmount == 0)
 	{
 		$("#paid_by_amount").val(+current_cost + +current_tax + -current_deposit);	
@@ -654,8 +831,11 @@ function showPayments(){
 	});
 }*/
 function SavePayment(){
+	var cell_phone = $("#cell_phone_no").val();
 	var email = $("#receiptEmail").val();
+	var jobNotes = $("#tech_job_notes").val();
 	var sendReceipt = $("#paymnetReceipt").val();
+	var sendReviewEmail = $("#notSendInvoice").val();
 	var userRole = $("#userRole").val();
 	var imageName = $("#imageName").val();
     var id = $('#InvoiceOrderId').val();
@@ -669,7 +849,10 @@ function SavePayment(){
 	var orderId = $("#remOrderId").val();
 	var orderNum = $("#orderNum").val();
 	var customerId = $("#customerId").val();
-	
+	if(method == 0){
+        alert("Please select paid by method.");
+        return false;
+    }
 	if (!method) {alert('A payment method should be selected!'); return;}
 	if(amount == '' && paymentOption == 1 )
 	{
@@ -685,6 +868,8 @@ function SavePayment(){
 	formdata.append("email",email);
 	formdata.append("orderNum",orderNum);
 	formdata.append("customerId",customerId);
+	formdata.append("sendReviewEmail",sendReviewEmail);
+	formdata.append("jobNotes",jobNotes);
 	if(!imageName)
 	{
 		if(option == 1)
@@ -724,10 +909,23 @@ function SavePayment(){
 			$("#auth_number").removeAttr("readonly");
 			$("#save_payment").removeAttr("disabled");
 			
-			$("#PaymentPaymentMethodId").val(0);
-			$("#paid_by_amount").val(0);
+			// $("#PaymentPaymentMethodId").val(0);
+			// $("#paid_by_amount").val(0);
 			// location.reload(); 
-			window.location.href = G_URL+"orders/invoiceTablet";
+			// if(sendReviewEmail == 0){
+			// 	$.ajax({
+			// 		url: G_URL + "orders/sendInvoiceWithReviewLink",
+			// 		dataType: 'html',
+			// 		type: 'POST',
+			// 		cache: false,
+			// 		data: {email:email, cus_id:customerId,cell_phone:cell_phone,order_id:orderId},
+			// 		success: function(data) {
+			// 			window.location.href = G_URL+"orders/invoiceTablet";
+							
+			// 			}			
+			// 		});
+			// }
+			window.location.href = G_URL+"orders/invoiceTabletPrint?order_id="+id;		
 		}
 	});
 }
@@ -771,4 +969,59 @@ function hideInvoiceReview(){
 function showInvoiceReview(){
 	document.getElementById("reminderEmail").style.display = "block";
 	// document.getElementById("reminderEmail").style.display = "block";
+}
+
+function sortTable(n) {
+  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById("installation_item_table");
+  switching = true;
+  //Set the sorting direction to ascending:
+  dir = "asc"; 
+  /*Make a loop that will continue until
+  no switching has been done:*/
+  while (switching) {
+    //start by saying: no switching is done:
+    switching = false;
+    rows = table.rows;
+    /*Loop through all table rows (except the
+    first, which contains table headers):*/
+    for (i = 1; i < (rows.length - 1); i++) {
+      //start by saying there should be no switching:
+      shouldSwitch = false;
+      /*Get the two elements you want to compare,
+      one from current row and one from the next:*/
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      /*check if the two rows should switch place,
+      based on the direction, asc or desc:*/
+      if (dir == "asc") {
+        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+          //if so, mark as a switch and break the loop:
+          shouldSwitch= true;
+          break;
+        }
+      } else if (dir == "desc") {
+        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+          //if so, mark as a switch and break the loop:
+          shouldSwitch = true;
+          break;
+        }
+      }
+    }
+    if (shouldSwitch) {
+      /*If a switch has been marked, make the switch
+      and mark that a switch has been done:*/
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      //Each time a switch is done, increase this count by 1:
+      switchcount ++;      
+    } else {
+      /*If no switching has been done AND the direction is "asc",
+      set the direction to "desc" and run the while loop again.*/
+      if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
 }

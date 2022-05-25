@@ -1,10 +1,10 @@
-<?php
-
-class Commission extends AppModel
-{
-	var $name = 'Commission';
-
-	var $validate = array();
-}
-
-?>
+<?php
+
+class Commission extends AppModel
+{
+	var $name = 'Commission';
+
+	var $validate = array();
+}
+
+?>

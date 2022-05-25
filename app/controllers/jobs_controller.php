@@ -19,16 +19,22 @@ class JobsController extends AppController
 		
 		
 		$sort = $_GET['sort'];
+		$categoryId = isset($_GET['category']) ? $_GET['category'] : 2 ;
 		$order = $_GET['order'];
 		if (!$order) $order = 'id asc';
 		
 		$conditions = "where flagactive=1";
 		$ShowInactive = $_GET['ShowInactive'];
-		if ($ShowInactive) $conditions = "";
-
+		if ($ShowInactive) $conditions = "where flagactive=0";
+		if($categoryId)
+		{
+			$conditions .= " and category_id=".$categoryId;
+		} else {
+			$conditions .= " and category_id=2";
+		}
 		$query = "select *
-								from ace_rp_order_types i
-							 $conditions
+								from ace_rp_order_types i 
+							 ".$conditions." 
 							 order by ".$order.' '.$sort;
 		
 		$items = array();
@@ -39,6 +45,7 @@ class JobsController extends AppController
 			  $items[$row['id']][$k] = $v;
 		}
 		
+		$this->set('category', $categoryId);
 		$this->set('ShowInactive', $ShowInactive);
 		$this->set('items', $items);
 		$this->set('jobcategories', $this->Lists->ListTable('ace_rp_order_type_categories'));
@@ -328,7 +335,21 @@ class JobsController extends AppController
 		echo $row['category_id'];
 		exit;
 	}
-
+	// Loki: get category package:
+	function getPackage()
+	{
+		$job_type = $_GET['job_type'];
+		
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "select id from ace_iv_sub_categories where job_type=".$job_type;
+		$result = $db->_execute($query);
+		$row = mysql_fetch_array($result, MYSQL_ASSOC);
+		
+		$id = !empty($row['id']) ? $row['id'] : 0;
+		
+		echo trim($id);
+		exit;
+	}
 	// AJAX method for activation/deactivation of an item
 	function changeActive()
 	{
@@ -379,6 +400,7 @@ class JobsController extends AppController
 		$row = mysql_fetch_array($result, MYSQL_ASSOC);
 		
 		/*echo "<pre>"; print_r($row); die;*/
+
 
 		$this->set('template', $row['template']);
 		$this->set('typeId', $item_id);
@@ -501,6 +523,23 @@ class JobsController extends AppController
 		}
 		
 		$query = "
+			SELECT s.* 
+			FROM ace_rp_questions q
+			LEFT JOIN ace_rp_responses r
+			ON q.id = r.question_id
+			LEFT JOIN ace_rp_text_responses s
+			ON r.id = s.response_id
+			WHERE q.order_type_id = $item_id
+		";
+		$text_response = array();
+		$result = $db->_execute($query);
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			foreach ($row as $k => $v)
+			  $text_response[$row['response_id']][$row['id']][$k] = $v;
+		}
+
+		$query = "
 			SELECT d.* 
 			FROM ace_rp_questions q
 			LEFT JOIN ace_rp_responses r
@@ -570,17 +609,43 @@ class JobsController extends AppController
 			  //$reminders[$row['decision_id']]=$row['value'];
 		}
 		
-	
+		$query = "
+	      SELECT tr.* 
+	      FROM ace_rp_questions q
+	      LEFT JOIN ace_rp_tech_responses tr
+	      ON q.id = tr.question_id
+	      WHERE q.order_type_id = $item_id
+	    ";
+	        
+	    $techresponses = array();
+	    $result = $db->_execute($query);
+	    while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+	    {
+	      foreach ($row as $k => $v)
+	        $techresponses[$row['question_id']][$row['id']][$k] = $v;
+	    }
+
+		$query = "select * from ace_rp_order_types i where flagactive = 1 order by name asc";
 		
-		
+		$jobType = array();
+		$result = $db->_execute($query);
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			foreach ($row as $k => $v)
+			  $jobType[$row['id']][$k] = $v;
+		}
+
+		$this->set('jobType', $jobType);
 		$this->set('questions', $questions);
 		$this->set('responses', $responses);
+		$this->set('techresponses', $techresponses);
 		$this->set('suggestions', $suggestions);		
 		$this->set('decisions', $decisions);
 		$this->set('item_id', $item_id);
 		$this->set('operations', $operations);
 		$this->set('which', $which);
 		$this->set('reminders', $reminders);
+		$this->set('text_responses', $text_response);
 		
 		$this->set('jobtypes', $this->OrderType->findAll());
 		//$this->set('jobcategories', $this->Lists->ListTable('ace_rp_order_type_categories'));
@@ -591,10 +656,10 @@ class JobsController extends AppController
 	
 	function saveQuestionsTemplate() { 
 		$this->layout = "blank";
-
+		// print_r($this->data); die;
 		ini_set('max_execution_time', 300);
 
-		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$db1 =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
 		$this->set('item_id', $_GET['item_id']);
 		
@@ -612,15 +677,17 @@ class JobsController extends AppController
 			category_id = $category_id
 			WHERE id = $ordertype_id
 		";
-		$db->_execute($query);
-		
+		$db1->_execute($query);
+	echo "<pre>";
 		foreach($this->data['questions'] as $question_id => $question) {
+			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 			//set defaults
 			if(!isset($question['for_print'])) $question['for_print'] = 0;
 			if(!isset($question['for_office'])) $question['for_office'] = 0;
 			if(!isset($question['for_tech'])) $question['for_tech'] = 0;
 			if(!isset($question['for_estimate'])) $question['for_estimate'] = 0;
 			if(!isset($question['is_permanent'])) $question['is_permanent'] = 0;
+			if(!isset($question['for_sale'])) $question['for_sale'] = 0;
 			
 			if(isset($question['delete_this']) && $question['delete_this'] == 1) {
 				if($question_id[0] == 'n') {
@@ -636,8 +703,8 @@ class JobsController extends AppController
 			} else {
 				if($question_id[0] == 'n') {
 					$query = "
-						INSERT INTO ace_rp_questions(value, type, order_type_id, rank, for_print, for_office, for_tech, for_estimate, is_permanent)
-						VALUES('".$question['value']."', '".$question['type']."', '".$question['order_type_id']."', '".$question['rank']."', '".$question['for_print']."', '".$question['for_office']."', '".$question['for_tech']."', '".$question['for_estimate']."', '".$question['is_permanent']."')
+						INSERT INTO ace_rp_questions(value, type, order_type_id, rank, for_print, for_office, for_tech, for_estimate, is_permanent,for_sale)
+						VALUES('".$question['value']."', '".$question['type']."', '".$question['order_type_id']."', '".$question['rank']."', '".$question['for_print']."', '".$question['for_office']."', '".$question['for_tech']."', '".$question['for_estimate']."', '".$question['is_permanent']."',".$question['for_sale'].")
 					";
 					$db->_execute($query);
 					$query = "
@@ -647,7 +714,7 @@ class JobsController extends AppController
 					$row = mysql_fetch_array($result, MYSQL_ASSOC);
 					$last_question_id = $row['last_id'];					
 				} else {
-					$query = "
+					$query1 = "
 						UPDATE ace_rp_questions
 						SET value = '".$question['value']."', 
 						type = '".$question['type']."', 
@@ -657,10 +724,12 @@ class JobsController extends AppController
 						for_office = '".$question['for_office']."', 
 						for_tech = '".$question['for_tech']."',
 						for_estimate = '".$question['for_estimate']."',
-						is_permanent = '".$question['is_permanent']."'
+						is_permanent = '".$question['is_permanent']."',
+						for_sale = ".$question['for_sale']."
 						WHERE id = $question_id
 					";
-					$db->_execute($query);
+					
+					 $db->_execute($query1);
 					$last_question_id = $question_id;
 				}
 			}
@@ -705,7 +774,86 @@ class JobsController extends AppController
 						$db->_execute($query);
 						$last_response_id = $response_id;
 					}
+				}	
+
+				// foreach($question['text_response'] as $text_response_id => $text_response) {		
+				// 	if((isset($text_response['delete_this']) && $text_response['delete_this'] == 1) || $last_response_id == 0) {
+				// 		if($text_response_id[0] == 'n') {
+				// 			unset($text_response);
+				// 		} else {
+				// 			$query = "
+				// 				DELETE FROM ace_rp_text_responses
+				// 				WHERE id = $text_response_id
+				// 			";
+				// 			$db->_execute($query);
+				// 		}
+				// 		$last_text_response_id = 0;
+				// 	} else {
+				// 		if($text_response_id[0] == 'n') {				
+				// 			$query = "
+				// 				INSERT INTO ace_rp_text_responses (value, response_id)
+				// 				VALUES('".$text_response['value']."', '$last_response_id')
+				// 			";
+				// 			$db->_execute($query);
+				// 			$query = "
+				// 				SELECT LAST_INSERT_ID() AS last_id
+				// 			";
+				// 			$result = $db->_execute($query);
+				// 			$row = mysql_fetch_array($result, MYSQL_ASSOC);
+				// 			$last_text_response_id = $row['last_id'];
+				// 		} else {
+				// 			$query = "
+				// 				UPDATE ace_rp_text_responses
+				// 				SET value = '".$text_response['value']."',
+				// 				response_id = '$last_response_id'							
+				// 				WHERE id = $text_response_id
+				// 			";
+				// 			print_r($query); die;
+				// 			$db->_execute($query);
+				// 			$last_text_response_id = $text_response_id;
+				// 		}
+				// 	}
+				// }
+
+				foreach($response['text_response'] as $text_response_id => $text_response) {					
+					if((isset($text_response['delete_this']) && $text_response['delete_this'] == 1) || $last_response_id == 0) {
+						if($text_response_id[0] == 'n') {
+							unset($text_response['decisions']);
+						} else {
+							$query = "
+								DELETE FROM ace_rp_text_responses
+								WHERE id = $text_response_id
+							";
+							$db->_execute($query);
+						}
+						$last_text_response_id = 0;
+					} else {
+						if($text_response_id[0] == 'n') {				
+							$query = "
+								INSERT INTO ace_rp_text_responses(value, response_id)
+								VALUES('".$text_response['value']."', '$last_response_id')
+							";
+							$db->_execute($query);
+							$query = "
+								SELECT LAST_INSERT_ID() AS last_id
+							";
+							$result = $db->_execute($query);
+							$row = mysql_fetch_array($result, MYSQL_ASSOC);
+							$last_text_response_id = $row['last_id'];
+						} else {
+							$query = "
+								UPDATE ace_rp_text_responses
+								SET value = '".$text_response['value']."',
+								response_id = '$last_response_id'							
+								WHERE id = $text_response_id
+							";
+							$db->_execute($query);
+							$last_text_response_id = $text_response_id;
+						}
+					}
 				}
+
+
 				foreach($response['suggestions'] as $suggestion_id => $suggestion) {					
 					if((isset($suggestion['delete_this']) && $suggestion['delete_this'] == 1) || $last_response_id == 0) {
 						if($suggestion_id[0] == 'n') {
@@ -830,6 +978,48 @@ class JobsController extends AppController
 					} //END foreach($suggestion['decisions'] as $decision_id => $decision)
 				} //END foreach($response['suggestions'] as $suggestion_id => $suggestion) {
 			} //END foreach($question['responses'] as $response_id => $response)
+			foreach($question['techresponses'] as $response_id => $response) {
+				if(!isset($response['operation_id'])) $response['operation_id'] = 0;
+				if(!isset($response['which_id'])) $response['which_id'] = 0;
+				
+				if((isset($response['delete_this']) && $response['delete_this'] == 1) || $last_question_id == 0) {
+					if($response_id[0] == 'n') {
+						unset($response['suggestions']);
+					} else {
+						$query = "
+							DELETE FROM ace_rp_tech_responses
+							WHERE id = $response_id
+						";
+						$db->_execute($query);
+					}
+					$last_response_id = 0;
+				} else {
+					if($response_id[0] == 'n') {				
+						$query = "
+							INSERT INTO ace_rp_tech_responses(value, question_id, operation_id, which_id)
+							VALUES('".$response['value']."', '".$last_question_id."', '".$response['operation_id']."', '".$response['which_id']."')
+						";
+						$db->_execute($query);
+						$query = "
+							SELECT LAST_INSERT_ID() AS last_id
+						";
+						$result = $db->_execute($query);
+						$row = mysql_fetch_array($result, MYSQL_ASSOC);
+						$last_response_id = $row['last_id'];
+					} else {
+						$query = "
+							UPDATE ace_rp_tech_responses
+							SET value = '".$response['value']."',
+							question_id = '$last_question_id',
+							operation_id = '".$response['operation_id']."',
+							which_id = '".$response['which_id']."'
+							WHERE id = $response_id
+						";
+						$db->_execute($query);
+						$last_response_id = $response_id;
+					}
+				 }
+			}
 		} //END foreach($this->data['questions'] as $question_id => $question)
 		
 		
@@ -970,10 +1160,30 @@ class JobsController extends AppController
 			  //$reminders[$row['decision_id']]=$row['value'];
 		}
 		
+		$query = "
+			SELECT s.* 
+			FROM ace_rp_questions q
+			LEFT JOIN ace_rp_responses r
+			ON q.id = r.question_id
+			LEFT JOIN ace_rp_text_responses s
+			ON r.id = s.response_id
+			WHERE q.order_type_id = $item_id
+		";
+		$text_response = array();
+		$result = $db->_execute($query);
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		{
+			foreach ($row as $k => $v)
+			  $text_response[$row['response_id']][$row['id']][$k] = $v;
+		}
 		
+		// echo "<pre>";
+		// print_r($text_response);
+		// print_r($text_response); die;
 		$this->set('questions', $questions);
 		$this->set('responses', $responses);
 		$this->set('suggestions', $suggestions);		
+		$this->set('text_responses', $text_response);		
 		$this->set('decisions', $decisions);
 		$this->set('item_id', $item_id);
 		$this->set('operations', $operations);

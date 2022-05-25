@@ -1,10 +1,10 @@
-<?php
-
-class Zone extends AppModel
-{
-	var $name = 'Zone';
-
-	var $validate = array();
-}
-
-?>
+<?php
+
+class Zone extends AppModel
+{
+	var $name = 'Zone';
+
+	var $validate = array();
+}
+
+?>

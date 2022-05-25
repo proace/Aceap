@@ -1,0 +1,427 @@
+<html>
+
+<head>
+    <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tinymce/tinymce.min.js"></script>
+    <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+    <style type="text/css">
+        .dropdown {
+            /*background-color: #fff;*/
+            color: #2aabe2;
+            padding: 4px 8px;
+            font-size: 12px;
+            border: 1px solid #cbc5c5;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .dropdown a,
+        .dropbtn {
+            background-color: #fff;
+            color: #2aabe2;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /*.dropdown {
+  position: relative;
+  display: inline-flex;
+}*/
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 100px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            text-align: left;
+        }
+        
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+        
+        .dropdown:hover .dropdown-content {
+            display: block;
+            background: #fff;
+        }
+        
+        .dropdown:hover,
+        .dropdown:hover .dropbtn {
+            background-color: #f5f5f5;
+        }
+        
+        .active {
+            background-color: #80ff80 !important;
+        }
+        
+        a {
+            color: #080808;
+            text-decoration: none;
+        }
+        
+        .currentSelected {
+            border: none;
+            outline: none;
+            padding: 10px 16px;
+            background-color: #656565;
+            cursor: pointer;
+        }
+        
+        table {
+            width: 100%;
+            border-spacing: 0;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+        
+        table td,
+        table th {
+            border: 1px solid #dadada;
+            padding: 5px;
+            text-align: center;
+            font-size: 12px
+        }
+        
+        table thead th:nth-child(4) {
+            width: 30%;
+        }
+        
+        .btn {
+            float: right;
+            padding: 5px;
+        }
+        
+        .co_button {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            padding: 4px 8px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            width: 50px;
+        }
+        
+        span.delete_booking {
+            /*  margin-top:5px;*/
+            cursor: pointer;
+            /*margin-left:12px;*/
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        span.delete_booking i {
+            position: relative;
+            top: -1px;
+        }
+        
+        span.archive_booking {
+            margin-top: 5px;
+            cursor: pointer;
+            /*margin-left:12px;*/
+        }
+    </style>
+    <script>
+        function addTinyMCE(ele) {
+            tinyMCE.init({
+                selector: ele,
+                // mode: 'textareas',
+                file_picker_types: 'file image media',
+                theme: "modern",
+                browser_spellcheck: true,
+                plugins: "code,safari,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,visualchars,nonbreaking,xhtmlxtras,template,imagemanager,filemanager, nanospell, link unlink, anchor, image, media,textcolor",
+                toolbar: "forecolor backcolor link image code bold italic formatselect numlist bullist indent outdent underline alignleft aligncenter alignright table ",
+                external_plugins: {
+                    "nanospell": "plugins/nanospell/plugin.js"
+                },
+                nanospell_server: "php", // choose "php" "asp" "asp.net" or "java"
+                // Theme options
+                theme_advanced_buttons1: "save,newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,styleselect,formatselect,fontselect,fontsizeselect,|nanospell",
+                theme_advanced_buttons2: "cut,copy,paste,pastetext,pasteword,|,search,replace,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,insertdate,inserttime,preview,|,forecolor,backcolor",
+                theme_advanced_buttons3: "tablecontrols,|,hr,removeformat,visualaid,|,sub,sup,|,charmap,emotions,iespell,media,advhr,|,print,|,ltr,rtl,|,fullscreen",
+                theme_advanced_buttons4: "insertlayer,moveforward,movebackward,absolute,|,styleprops,spellchecker,|,cite,abbr,acronym,del,ins,attribs,|,visualchars,nonbreaking,template,blockquote,pagebreak,|,insertfile,insertimage",
+                theme_advanced_toolbar_location: "top",
+                theme_advanced_toolbar_align: "right",
+                theme_advanced_statusbar_location: "bottom",
+                theme_advanced_resizing: true,
+
+                // Example content CSS (should be your site CSS)
+                content_css: "css/example.css",
+                toolbar_drawer: 'sliding',
+                convert_urls: true,
+                width: 800,
+                height: 600,
+                template_external_list_url: "js/template_list.js",
+                external_link_list_url: "js/link_list.js",
+                external_image_list_url: "js/image_list.js",
+                media_external_list_url: "js/media_list.js",
+                gecko_spellcheck: true,
+                browser_spellcheck: true
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <form method="GET" name="onlineBooking" id="onlineBooking" action="<?= $PHP_SELF?>">
+    <input type="hidden" id="noteid" value="">
+        <div>
+            Show Archive :
+            <!-- <span><input type="checkbox" name="showArchive" id="showArchive" <?php if ($showArchive == 1) echo 'checked';?> value="<?=$showArchive?>"></span> -->
+            <select name="showArchive" id="showArchive">
+        <option value="0" <?php if ($showArchive==0) echo 'selected' ;?>>--</option>
+        <option value="1" <?php if ($showArchive==1) echo 'selected' ;?>>Archive</option>
+        <option value="2" <?php if ($showArchive==2) echo 'selected' ;?>>Heating</option>
+        <option value="3" <?php if ($showArchive==3) echo 'selected' ;?>>Cooling</option>
+        <option value="4" <?php if ($showArchive==4) echo 'selected' ;?>>Repair</option>
+      </select>
+        </div>
+        <table>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Tel:</th>
+                <th>Email</th>
+
+                <th>Job Type</th>
+                <th>Job Date</th>
+                <th>Job Time</th>
+                <th>Service</th>
+
+                <th>Date Booked</th>
+                <th>Message</th>
+                <th>Notes</th>
+                <th>Action</th>
+            </tr>
+    <?php $i=1; foreach ($users as $user){
+         if($user['customer']){
+            $customer = "&customer_id=".$user['customer'];
+          }
+          else {
+            $customer="";
+          }
+          if(!empty($user['city'])){
+            $city = strtoupper($user['city']);
+          $get_links = $user['link']."&from_booking=1&booking_id=".$user['id']."&first_name=".$user['first_name']."&last_name=".$user['last_name']."&email=".$user['email']."&phone=".$user['phone'].$customer."&street=".$user['street_number']."&route=".$user['route']."&message=".$user['message']."&job_type=".$user['job_type']."&coupon=".$user['coupon']."&city=".$city;
+            
+          }
+          else {
+            $get_links = $user['link']."&from_booking=1&booking_id=".$user['id']."&first_name=".$user['first_name']."&last_name=".$user['last_name']."&email=".$user['email']."&phone=".$user['phone'].$customer."&street=".$user['street_number']."&route=".$user['route']."&message=".$user['message']."&job_type=".$user['job_type']."&coupon=".$user['coupon'];
+
+          }
+         
+                 if($user['job_type']=='Estimation'){
+         $job_time="";
+         $get_new_date = date('d+M+Y',strtotime($user['created_at']));
+         if(!empty($user['city'])){
+           $city = strtoupper($user['city']);
+          $get_links11="http://hvacproz.ca/acesys/index.php/orders/editBooking?customer_id=&job_truck=&job_time_beg=&job_date=$get_new_date&job_technician1_id=0&job_technician2_id=0&from_tech_page=1&show_preview=1&estimate=1&from_booking=1&booking_id=".$user['id']."&first_name=".$user['first_name']."&last_name=".$user['last_name']."&email=".$user['email']."&phone=".$user['phone'].$customer."&street=".$user['street_number']."&route=".$user['route']."&message=".$user['message']."&job_type=".$user['job_type']."&coupon=".$user['coupon']."&city=".$city."&postal_code=".$user['post_code'];
+         }
+         else {
+          $get_links11="http://hvacproz.ca/acesys/index.php/orders/editBooking?customer_id=&job_truck=&job_time_beg=&job_date=$get_new_date&job_technician1_id=0&job_technician2_id=0&from_tech_page=1&show_preview=1&estimate=1&from_booking=1&booking_id=".$user['id']."&first_name=".$user['first_name']."&last_name=".$user['last_name']."&email=".$user['email']."&phone=".$user['phone'].$customer."&street=".$user['street_number']."&route=".$user['route']."&message=".$user['message']."&job_type=".$user['job_type']."&coupon=".$user['coupon']."&postal_code=".$user['post_code'];
+          
+         }
+         
+                  $confirm = '<a title="go to booking page" class="dropbtn" href="'.$get_links11.'"><i class="fa fa-share-square-o" aria-hidden="true"></i>&nbsp;View  </a>';
+        }
+        else {
+                $job_time=$user['job_time'];
+                $confirm = '<a title="go to booking page" class="dropbtn" href="'.$get_links.'"><i class="fa fa-share-square-o" aria-hidden="true"></i>&nbsp;View</a>';
+        }
+        ?>
+            <tr>
+                <td>
+                    <?=$user['first_name']?>
+                </td>
+                <td>
+                    <?=$user['last_name']?>
+                </td>
+                <td>
+                    <?=$user['phone']?>
+                </td>
+                <td>
+                    <?=$user['email']?>
+                </td>
+
+                <td>
+                    <?=$user['job_type']?>
+                </td>
+                <td>
+                    <?=$user['job_date']?>
+                </td>
+                <td>
+                    <?= $job_time ?>
+                </td>
+                <td>
+                    <?= $user['coupon'] ?>
+                </td>
+                <td>
+                    <?= $user['created_at'] ?>
+                </td>
+                <td><textarea style="border:none;text-align:center" readonly cols="10" rows="4"><?= $user['message'] ?></textarea></td>
+                <td><textarea style="border:none;text-align:center" readonly cols="10" rows="4"><?= $user['notes'] ?></textarea></td>
+                <!-- 
+            <td><?= $confirm ?><span data-id="<?= $user['id'] ?>" class="delete_booking co_button" title="delete the booking">Delete</span>
+                <span data-id="<?= $user['id'] ?>" class="archive_booking co_button" title="Archive the booking">Archive</span></td> -->
+                <td>
+                    <div class="dropdown">
+                        <?= $confirm ?>
+                    </div>
+                    <div class="dropdown">
+                        <span data-id="<?= $user['id'] ?>" class="delete_booking dropbtn" title="delete the booking"><i
+                class="fa fa-trash-o"></i>&nbsp;Delete</span>
+                    </div>
+                    <div class="dropdown">
+                        <button class="dropbtn"><i class="fa fa-exclamation-circle"></i>&nbsp;Archive</button>
+                        <div class="dropdown-content">
+                            <a href="#" class="archive-select" archive-val="1" data-id="<?= $user['id'] ?>">Archive</a>
+                            <a href="#" class="archive-select" archive-val="2" data-id="<?= $user['id'] ?>">Heating</a>
+                            <a href="#" class="archive-select" archive-val="3" data-id="<?= $user['id'] ?>">Cooling</a>
+                            <a href="#" class="archive-select" archive-val="4" data-id="<?= $user['id'] ?>">Repair</a>
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <span data-id="<?= $user['id'] ?>" class="add_note dropbtn" title="notes"><i
+                class="fa fa-plus"></i>&nbsp;Note</span>
+                    </div>
+                </td>
+            </tr>
+            <?php }  ?>
+
+        </table>
+        <div id="reviewNote" style="display: none">
+            <div>
+                <textarea class="bookingNote" id="bookingNote" style="width: 500px;height: 300px;"></textarea>
+            </div>
+            <div>
+                <input type="button" name="OK" value="Save" style="padding: 5px;margin-top: 5px;" onclick="addNotes();">
+                <input type="button" name="cancel" value="Cancel" onclick="hideNoteTextBox();" style="padding: 5px;margin-top: 5px;">
+            </div>
+        </div>
+    </form>
+    <!-- <div id="listbox" style="float: left;">
+</div> -->
+    <script>
+        $('.delete_booking').on('click', function() {
+            var get_id = $(this).attr('data-id');
+            var that = $(this);
+            if (confirm("Are you Sure?")) {
+                $.ajax({
+                    url: '<?=BASE_URL?>/reports/deletebooking',
+                    dataType: 'html',
+                    type: 'POST',
+                    cache: false,
+                    data: {
+                        id: get_id
+                    },
+                    success: function(data) {
+                        that.parent().parent().parent().hide();
+                    }
+                });
+            }
+        });
+
+        $('.archive_booking').on('click', function() {
+            var get_id = $(this).attr('data-id');
+            var that = $(this);
+            if (confirm("Are you Sure?")) {
+                $.ajax({
+                    url: '<?=BASE_URL?>/reports/archiveBooking',
+                    dataType: 'html',
+                    type: 'POST',
+                    cache: false,
+                    data: {
+                        id: get_id
+                    },
+                    success: function(data) {
+                        that.parent().parent().hide();
+                    }
+                });
+            }
+        });
+        $('.archive-select').on('click', function() {
+            var get_id = $(this).attr('data-id');
+            var archiveVal = $(this).attr('archive-val');
+            var that = $(this);
+            if (confirm("Are you Sure?")) {
+                $.ajax({
+                    url: '<?=BASE_URL?>/reports/archiveBooking',
+                    dataType: 'html',
+                    type: 'POST',
+                    cache: false,
+                    data: {
+                        id: get_id,
+                        archiveVal: archiveVal
+                    },
+                    success: function(data) {
+                        that.parent().parent().parent().parent().hide();
+                    }
+                });
+            }
+        });
+
+        $('#showArchive').on('change', function() {
+            $('#onlineBooking').submit();
+        });
+
+        $(function() {
+            $("#reviewNote").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "Add Note",
+                autoOpen: false,
+                width: 700,
+                height: 500,
+            });
+            $('.add_note').on('click', function() {
+                var get_id = $(this).attr('data-id');
+                var setid = $('#noteid').val(get_id);
+                if (tinymce.get("bookingNote")) {
+                    tinymce.remove('#bookingNote');
+                }
+                $("#reviewNote").dialog("open");
+            });
+        });
+
+        function hideNoteTextBox() {
+            $("#reviewNote").dialog("close");
+        }
+
+        function addNotes() {
+            var message = $('#bookingNote').val();
+            // var get_id = $('.add_note').attr('data-id');
+            var get_id =  $('#noteid').val();
+            var that = $(this);
+            $.ajax({
+                url: '<?=BASE_URL?>/reports/addNote',
+                dataType: 'html',
+                type: 'POST',
+                cache: false,
+                data: {
+                    message: message,
+                    id: get_id
+                },
+                success: function(data) {
+                    hideNoteTextBox();
+                    window.location.reload();
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

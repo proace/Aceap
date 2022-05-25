@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Category</title>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/iv_items_edit.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/inventory.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+</head>
+<body id="page_edit">
+<h1>Add Category</h1>
+<form action="<?php echo BASE_URL ?>/settings/agentSave" method="post">
+    <?php echo $html->hidden('AgentTrainingCategory/id'); ?>
+    <input type="hidden" name="fromAdd" value="<?=$fromAdd?>">
+    <table>
+        <tr>
+            <td><label><b>Category Name</label></b></td>
+            <td><?php echo $html->input('AgentTrainingCategory/name')?></td>
+        </tr>
+        <tr>  
+            <td><?php echo $html->submit('Save') ?></td>
+            <td><input type="button" value="Cancel" class="button_cancel" /></td>
+        </tr>               
+    </table>        
+</form>
+</body>
+</html>

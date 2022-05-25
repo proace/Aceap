@@ -1,6 +1,6 @@
 <? ob_start();
 // error_reporting(E_ALL);
-error_reporting(1);
+// error_reporting(1);
 
 class CommissionsController extends AppController
 
@@ -8,11 +8,11 @@ class CommissionsController extends AppController
 
 	var $name = "CommissionsController";
 
-	var $uses = array('Commission', 'User', 'Order','TechQualification');
+	var $uses = array('Commission', 'User', 'Order','TechQualification','Setting');
 
 	var $helpers = array('Common');
 
-	var $components = array('HtmlAssist','Common','Lists');
+	var $components = array('HtmlAssist','Common','Lists','Tcpdf','Mpdf');
 
 	var $itemsToShow = 20;
 
@@ -20,16 +20,21 @@ class CommissionsController extends AppController
 
 	var $layout="edit";
 
-
+	var $G_URL  = "http://hvacproz.ca";
+	
 	function editTech($user_id = null)
 
 	{
 		$this->layout = "edit";
+		$loggedUser = $this->Common->getLoggedUserRoleID();
 
+		// echo "<pre>";
+		// print_r($_POST); die;
+		// print_r($this->data); die;
 		if (!empty($this->data))
 
 		{
-			// $this->Common->printData($this->data);
+			// $this->Common->printData($_POST['pending_tech']);
 
 			$user_id = $_POST['userid'];
 
@@ -65,23 +70,47 @@ class CommissionsController extends AppController
 			}
 
 			if ($user_id>=0)
-
 			{
-
 				if ($user_id>0) $this->User->id = $user_id;
 
 				$this->data['User']['start_date'] = date('Y-m-d',strtotime($this->data['User']['start_date']));
 				$this->data['User']['end_date'] = date('Y-m-d',strtotime($this->data['User']['end_date']));
-
+				
 				$this->User->save($this->data);
 
-
-
-				if ($user_id==0)
+				
+				if ($user_id==0 && $loggedUser == 6)
 
 				{
-
 					$user_id = $this->User->getLastInsertId();
+					
+					$db->_execute("INSERT INTO ace_iv_locations (type,`number`) VALUES ('tech',".$user_id.")");
+					if($_POST['pending_tech'] == 1) 
+					{
+						$db->_execute("update ace_rp_users set is_active='2' where id=".$user_id);
+						$url = $this->G_URL.BASE_URL."/login";
+	        			$link = '<a href='\.$url.\' target="_blank">Click Here</a>'; 
+						
+						$subject = 'Pro Ace Heating & Air Conditioning Ltd';
+						$msg = '<p>Dear {first_name} {last_name},</p>
+								<p>Please find the login&nbsp;details to fill the form:</p>
+								<p>&nbsp;</p>
+								<p><strong>URl&nbsp;</strong>:&nbsp;{link}</p>
+								<p>Login Id : {login_id}</p>
+								<p>Password: {password}</p>
+								<p>&nbsp;</p>
+								<p>Thank you,</p>
+								<p>Pro Ace Heating &amp; Air Conditioning Ltd<br />Tel: 604-293-3770<br />&nbsp;<a href="https://www.acecare.ca"><img src="https://www.acecare.ca/wp-content/uploads/2018/08/newacelogooptimized.png" alt="" width="461" height="81" /></a></p>
+								<p>&nbsp;</p>
+								<p>&nbsp;</p>';
+						$msg = str_replace('{first_name}', $this->data['User']['first_name'], $msg);
+						$msg = str_replace('{link}', $link, $msg);
+		                $msg = str_replace('{last_name}', $this->data['User']['last_name'], $msg);
+		                $msg = str_replace('{login_id}','<b>'.$this->data['User']['username'].'</b>', $msg);
+		                $msg = str_replace('{password}','<b>'.$this->data['User']['password'].'</b>', $msg);
+						
+						$this->Common->sendEmailMailgun($this->data['User']['email'],$subject,$msg);
+				}
 
 					$db->_execute("insert into ace_rp_users_roles(user_id, role_id) values(".$user_id.",1)");
 
@@ -110,17 +139,16 @@ class CommissionsController extends AppController
 		if($user_id > 0)
 
 		{
-
 			$this->User->id = $user_id;
 
 			$user_details = $this->User->read();
 
-		 if (empty($user_details['User']['end_date']) || $user_details['User']['end_date'] == "0000-00-00")
+		 if (empty($user_details['User']['end_date']) || $user_details['User']['end_date'] == "1969-12-31")
                 $user_details['User']['end_date'] = date('d M Y');
             else
                 $user_details['User']['end_date'] = date('d M Y', strtotime($user_details['User']['end_date']));
 
-            if (empty($user_details['User']['start_date']) || $user_details['User']['start_date'] == "0000-00-00")
+            if (empty($user_details['User']['start_date']) || $user_details['User']['start_date'] == "1969-12-31")
                 $user_details['User']['start_date'] = date('d M Y');
             else
                 $user_details['User']['start_date'] = date('d M Y', strtotime($user_details['User']['start_date']));
@@ -201,8 +229,7 @@ class CommissionsController extends AppController
 		else
 
 			$user_commissions = array();
-
-
+	
 		while ($row = mysql_fetch_array($result, MYSQL_ASSOC))
 
 		{
@@ -231,7 +258,6 @@ class CommissionsController extends AppController
 		}
 
 		// $this->Common->printData($user_commissions);
-
 		return $user_commissions;
 
 	}
@@ -243,6 +269,7 @@ class CommissionsController extends AppController
 	function _calculate(&$order, &$comm_settings)
 
 	{
+		
 		//Set up persons' rows
 
 		$rows_persons = array(); //1,2 - technitians; 3,4 - sources
@@ -338,7 +365,7 @@ class CommissionsController extends AppController
 			$prc_var='alone';
 
 				
-
+		// Loki: if method will be 
 		$rows_persons[3] = array(
 
 			'tech_num' => 3,
@@ -347,7 +374,7 @@ class CommissionsController extends AppController
 
 			'id' => $order['booking_source_id'],
 
-			'commission_type' => 0,
+			'commission_type' => ($order['t1_method'] == 2) ? 2 :0,
 
 			'src_type' => $prc_var,
 
@@ -371,7 +398,7 @@ class CommissionsController extends AppController
 
 			'id' => $order['booking_source2_id'],
 
-			'commission_type' => 0,
+			'commission_type' => ($order['t1_method'] == 2) ? 2 :0,
 
 			'src_type' => $prc_var,
 
@@ -398,7 +425,7 @@ class CommissionsController extends AppController
 
 		$order['appl'] = array('0' => 0, '1' => 0);
 
-
+		// $this->Common->printData($rows_persons);
 
 		//Calculate technitians' commissions for the EXTRA SALES (in the current job order)
 
@@ -414,6 +441,7 @@ class CommissionsController extends AppController
 
 		// Loki- Show commission only for the Done jobs and not have estimate paymnet type.
 	    // if($order['estimate_sent'] == 1 && $order['order_status'] ==  5) {
+		
  		if($order['order_status_id'] ==  5 && $order['payment_method_type'] != 11 ) {
 			// Live part_req = 81, local = 70
 			if($order['order_type_id'] == 81)
@@ -434,11 +462,13 @@ class CommissionsController extends AppController
 
 			   $query_items = "
 
-				select sum(if(i.iv_type_id != 1,(oi.price-oi.tech_purchase_price)*oi.quantity-oi.discount+oi.addition,0)) sell_service,
+				select sum(if(i.iv_type_id != 1,(if(i.iv_category_id = 59,tech_purchase_price, oi.price-oi.price_purchase))*oi.quantity-oi.discount+oi.addition,0)) sell_service,
 
-					sum(if(i.iv_type_id = 1,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) sell_appl,
+					sum(if(i.iv_type_id = 1,(if(i.iv_category_id = 59,tech_purchase_price, oi.price))*oi.quantity-oi.discount+oi.addition,0)) sell_appl,
 
-					sum(if(i.iv_category_id = 37,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) labour_install,
+					sum(if(i.iv_category_id = 59,tech_purchase_price,0)) parts_total,
+					oi.class sale_class	,
+					sum(if(i.iv_category_id = 58,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) labour_install,
 
 					oi.class sale_class
 
@@ -454,26 +484,27 @@ class CommissionsController extends AppController
 
 			} else {
 
-			$query_items = "select sum(if(i.is_appliance!=1,(oi.price-oi.price_purchase)*oi.quantity-oi.discount+oi.addition+oi.tech-oi.tech_minus,0)) sell_service,
+			// $query_items = "select sum(if(i.is_appliance!=1,(oi.price-oi.price_purchase)*oi.quantity-oi.discount+oi.addition+oi.tech-oi.tech_minus,0)) sell_service,
 
-					sum(if(i.is_appliance=1,oi.price*oi.quantity-oi.discount+oi.addition,0)) sell_appl,
+			// 		sum(if(i.is_appliance=1,oi.price*oi.quantity-oi.discount+oi.addition,0)) sell_appl,
 
-					oi.class sale_class
+			// 		oi.class sale_class
 
-				from ace_rp_order_items oi, ace_rp_items i
+			// 	from ace_rp_order_items oi, ace_rp_items i
 
-			   where i.id=oi.item_id and i.is_appliance!=3 
+			//    where i.id=oi.item_id and i.is_appliance!=3 
 
-				   and oi.order_id=" .$order['id'] ."
+			// 	   and oi.order_id=" .$order['id'] ."
 
-			   group by oi.class";
+			//    group by oi.class";
 		// Edited by Maxim Kudryavtsev - exclude membership cards from commisions	
 
 		/*local labour category = 38, live = 37*/
-		$query_items = "select sum(if(i.iv_type_id != 1,(oi.price-oi.price_purchase)*oi.quantity-oi.discount+oi.addition,0)) sell_service,
+		$query_items = "select sum(if(i.iv_type_id != 1 && i.iv_category_id != 59 , (oi.price-oi.price_purchase)*oi.quantity-oi.discount+oi.addition,0)) sell_service,
 			
-			sum(if(i.iv_type_id = 1,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) sell_appl,	
-			sum(if(i.iv_category_id = 37,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) labour_install,
+			sum(if(i.iv_type_id = 1 && i.iv_category_id != 59, (oi.price)*oi.quantity-oi.discount+oi.addition,0)) sell_appl,	
+			sum(if(i.iv_category_id = 58,(oi.price)*oi.quantity-oi.discount+oi.addition,0)) labour_install,
+			sum(if(i.iv_category_id = 59,tech_purchase_price,0)) parts_total,
 			oi.class sale_class	
 			from ace_rp_order_items oi left join ace_iv_items i on oi.item_id = i.id 
 			where oi.order_id=" .$order['id'] ." 
@@ -493,16 +524,19 @@ class CommissionsController extends AppController
 
 		{
 
-			$order['job'][$row_items['sale_class']]=$row_items['sell_service'];
+			$order['job'][$row_items['sale_class']]= $row_items['sell_service'];
 
-			$order['appl'][$row_items['sale_class']]=$row_items['sell_appl'];
+			$order['appl'][$row_items['sale_class']]= $row_items['sell_appl'];
 			
-			$order['install_labour'][$row_items['sale_class']]=$row_items['labour_install'];
+			$order['parts'][$row_items['sale_class']]= $row_items['parts_total'];
+			
+			$order['install_labour'][$row_items['sale_class']]= $row_items['labour_install'];
 
 			$order['total'][$row_items['sale_class']]=$row_items['sell_service']+$row_items['sell_appl'];
 
 		}		
-
+	
+		// $this->Common->printData($order); die();
 		$num_of_sources = 1;
 
 		if ($rows_persons[3]['id']&&$rows_persons[4]['id']) $num_of_sources = 2;
@@ -568,12 +602,27 @@ class CommissionsController extends AppController
 					else $prc = $comm_settings[$rows_persons[$x]['id']]['Source'][$src_type];
 
 			}
-
 			
 
-			$rows_persons[$x]['sales_job_comm'] = $order['job'][$sale_class] * ($prc/100);			
-
+			if($x ==1 || $x ==2)
+			{
+				$rows_persons[$x]['sales_job_comm'] = $order['job'][$sale_class] * ($prc/100);			
+			} else {
+				if(($rows_persons[1]['id'] != $rows_persons[$x]['id']) && ($rows_persons[2]['id'] != $rows_persons[$x]['id']))
+				{
+					$rows_persons[$x]['source_job_comm'] = $order['job'][$sale_class] * ($prc/100);	
+				}
+			}
 			$rows_persons[$x]['sales_job_prc'] = $prc;
+			
+
+			
+			if($x == 1 || $x == 2)
+			{
+				$prcnt = $comm_settings[$rows_persons[$x]['id']]['Parts'][$src_type];
+				$rows_persons[$x]['part_comm'] = ($order['parts'][0] + $order['parts'][1]) * ($prcnt/100);			
+			}
+
 
 
 			// For the helper 10+10 the percent for appliences should be always 2
@@ -631,11 +680,22 @@ class CommissionsController extends AppController
 				elseif ($rows_persons[$x]['commission_type']==2) 
 
 				{
-					$prc = $comm_settings[$rows_persons[$x]['id']]['Fixed'][$rows_persons[$x]['prc_type']][$order['order_type_id']];
+					// $prc = $comm_settings[$rows_persons[$x]['id']]['Fixed'][$rows_persons[$x]['prc_type']][$order['order_type_id']];
 
-					// $rows_persons[$x]['booking_comm'] = $prc;
-					$rows_persons[$x]['booking_comm'] = ($order['install_labour'][0] + $order['install_labour'][1]) * ($prc/100);
-					$order['total'][0] =  $order['install_labour'][0] + $order['install_labour'][1];
+					// // $rows_persons[$x]['booking_comm'] = $prc;
+					// $rows_persons[$x]['booking_comm'] = ($order['install_labour'][0] + $order['install_labour'][1]) * ($prc/100);
+					if($x == 1 || $x == 2){
+						//print_r($comm_settings[$rows_persons[$x]['id']]['Fixed'][$rows_persons[$x]['prc_type']]);
+						$prc = $comm_settings[$rows_persons[$x]['id']]['Fixed'][$rows_persons[$x]['prc_type']][$order['order_type_id']];
+						$rows_persons[$x]['labour_comm'] = ($order['install_labour'][0] + $order['install_labour'][1]) * ($prc/100);
+						
+					} else {
+						$prc = $comm_settings[$rows_persons[$x]['id']]['Appliance'][$rows_persons[$x]['prc_type']][$order['order_type_id']];
+						$rows_persons[$x]['sales_appl_comm'] = $order['install_labour'][0]  * ($prc/100);
+						$rows_persons[$x]['sales_job_comm'] = 0;
+					}
+					$rows_persons[$x]['sales_job_comm'] = 0;
+					$order['total'][0] =  $order['install_labour'][0];
 				}
 
 				// 3. Tech paid per job
@@ -731,10 +791,9 @@ class CommissionsController extends AppController
 
 											+ $rows_persons[$x]['sales_appl_comm']
 
-											+ $rows_persons[$x]['redo_penalty'];
-
-		}
-
+											+ $rows_persons[$x]['redo_penalty'] + $rows_persons[$x]['part_comm']+$rows_persons[$x]['source_job_comm'] + $rows_persons[$x]['labour_comm'];
+										}
+		
 			
 
 		// Apply the redo penalty for the sources if the job type is 'redo'
@@ -815,22 +874,35 @@ class CommissionsController extends AppController
 
 		{
 
-			$rows_persons[$row_ver['tech_num']]['booking_comm']=$row_ver['booking_comm'];
+			 if($rows_persons[$row_ver['tech_num']]['commission_type'] != 2)
+            {
+                $rows_persons[$row_ver['tech_num']]['booking_comm']=$row_ver['booking_comm'];
 
-			$rows_persons[$row_ver['tech_num']]['sales_job_comm']=$row_ver['sales_job_comm'];
+                $rows_persons[$row_ver['tech_num']]['sales_job_comm']=$row_ver['sales_job_comm'];
 
-			$rows_persons[$row_ver['tech_num']]['sales_appl_comm']=$row_ver['sales_appl_comm'];
+                $rows_persons[$row_ver['tech_num']]['sales_appl_comm']=$row_ver['sales_appl_comm'];
 
-			$rows_persons[$row_ver['tech_num']]['driving_comm']=$row_ver['driving_comm'];
+                // $rows_persons[$row_ver['tech_num']]['driving_comm']=$row_ver['driving_comm'];
 
-			$rows_persons[$row_ver['tech_num']]['redo_penalty']=$row_ver['redo_penalty'];
+                // $rows_persons[$row_ver['tech_num']]['redo_penalty']=$row_ver['redo_penalty'];
 
-			$rows_persons[$row_ver['tech_num']]['helper_ded']=$row_ver['helper_ded'];
+                // $rows_persons[$row_ver['tech_num']]['helper_ded']=$row_ver['helper_ded'];
 
-			$rows_persons[$row_ver['tech_num']]['total_comm']=$row_ver['total_comm'];
+                // $rows_persons[$row_ver['tech_num']]['total_comm']=$row_ver['total_comm'];
 
-			$rows_persons[$row_ver['tech_num']]['adjustment']=$row_ver['adjustment'];
-			$rows_persons[$row_ver['tech_num']]['verified'] = 'checked';
+                // $rows_persons[$row_ver['tech_num']]['adjustment']=$row_ver['adjustment'];
+            }
+            	$rows_persons[$row_ver['tech_num']]['driving_comm']=$row_ver['driving_comm'];
+
+                $rows_persons[$row_ver['tech_num']]['redo_penalty']=$row_ver['redo_penalty'];
+
+                $rows_persons[$row_ver['tech_num']]['helper_ded']=$row_ver['helper_ded'];
+
+                $rows_persons[$row_ver['tech_num']]['total_comm']= $row_ver['driving_comm'] + $row_ver['redo_penalty'] + $row_ver['helper_ded']+$row_ver['adjustment']+$rows_persons[$row_ver['tech_num']]['booking_comm']+ $rows_persons[$row_ver['tech_num']]['driving_comm']	+ $rows_persons[$row_ver['tech_num']]['sales_job_comm'] + $rows_persons[$row_ver['tech_num']]['sales_appl_comm']
+					+ $rows_persons[$row_ver['tech_num']]['redo_penalty'] + $rows_persons[$row_ver['tech_num']]['part_comm']+$rows_persons[$row_ver['tech_num']]['source_job_comm'] + $rows_persons[$row_ver['tech_num']]['labour_comm'];
+
+                $rows_persons[$row_ver['tech_num']]['adjustment']= $row_ver['adjustment'];
+            	$rows_persons[$row_ver['tech_num']]['verified'] = 'checked';
 			// if(!empty($row_ver['tech_confirm']) || $row_ver['tech_confirm'] != '')
 			// {
 			// 	if($row_ver['tech_confirm'] != NULL && $row_ver['tech_confirm'] == 1)
@@ -842,6 +914,9 @@ class CommissionsController extends AppController
 			// 	}	
 			// }
 		}
+
+		// $this->Common->printData($rows_persons);
+
 		$query_comm = "select * from ace_rp_tech_comm_confirm where order_id=".$order['id'];
 
 		$result_comm = $db->_execute($query_comm);
@@ -857,7 +932,6 @@ class CommissionsController extends AppController
 		}
 	}
 		return array($rows_persons, $tech_comm_confirm);
-
 	}
 
 
@@ -893,7 +967,7 @@ class CommissionsController extends AppController
 
 			$nextPage = 1;
 
-			
+			$fromTech = isset($_GET['fromTech']) ? $_GET['fromTech'] : 0 ;
 
 			if(isset($_GET['page'])){
 
@@ -953,6 +1027,25 @@ class CommissionsController extends AppController
 				$fdate = ($this->params['url']['ffromdate'] != '' ? $this->params['url']['ffromdate']: date("Y-m-d"));
 			}
 			
+			if($this->Common->getLoggedUserRoleID() == 1)
+			{
+				$today = date("Y-m-d");
+				$fromDate = $_GET['ffromdate'];
+				if($fromDate != ''){
+					$fromDate = date("Y-m-d",strtotime($_GET['ffromdate']));
+				}
+				// echo "<pre>";
+				// print_r($_GET);
+				// print_r($fromDate); die;
+				if($fromDate > $today)
+				{
+					echo "<script>
+					alert('You can not see future jobs.');
+					window.history.back();
+					</script>";
+					exit();
+				}
+			}
 
 			$tdate = ($this->params['url']['ftodate'] != '' ? $this->params['url']['ftodate']: date("Y-m-d") );
 
@@ -1031,7 +1124,6 @@ class CommissionsController extends AppController
 				elseif ($job_option==2)
 
 					$sqlConditions .= " AND order_status_id IN (1,5) AND a.booking_date = '".$this->Common->getMysqlDate($fdate)."'"; 			
-
 			
 
 			if(($techid > 0)&&(!$cur_ref))
@@ -1049,6 +1141,10 @@ class CommissionsController extends AppController
 			if($cur_ref)
 
 				$sqlConditions .= " AND a.order_number = '".$cur_ref."'"; 
+
+			if($fromTech == 1 && $_SESSION['user']['role_id'] == 1){
+				$sqlConditions .= " AND a.payment_method_type != 11"; 
+			}
 			//The route visibility was added on 2011-04-17. All jobs before this date are excluded.
 
 			if($this->Common->getMysqlDate($fdate) > $this->Common->getMysqlDate("2011-04-17") && $this->Common->getLoggedUserRoleID()==1) {				
@@ -1157,7 +1253,7 @@ class CommissionsController extends AppController
 				$sqlConditions
 				ORDER BY a.job_date desc 
 				$sqlPaging";
-
+				
 			$result = $db->_execute($query);
 			$tech_comm_conf = array();
 			while($row = mysql_fetch_array($result, MYSQL_ASSOC))
@@ -1711,8 +1807,11 @@ class CommissionsController extends AppController
 	function techSummary()
 
 	{
-
 		$this->layout="list";
+		$db =& ConnectionManager::getDataSource('default');
+
+		// echo "<pre>";
+		// print_r($this->params['url']); die;
 
 		if (($_SESSION['user']['role_id'] == 1) || ($_SESSION['user']['role_id'] == 4) || ($_SESSION['user']['role_id'] == 6)) 
 
@@ -1722,7 +1821,10 @@ class CommissionsController extends AppController
 
 			if (!$job_option) $job_option = 1;
 
+			$pay_period = isset($this->params['url']['pay_period_id']) ? $this->params['url']['pay_period_id'] : 0;
 			
+			$check_pay = isset($this->params['url']['check_pay']) ? $this->params['url']['check_pay'] : 0;
+
 
 			//**********
 
@@ -1730,6 +1832,24 @@ class CommissionsController extends AppController
 
 			//Convert date from date picker to SQL format
 
+		if($check_pay == 1){
+
+				if($pay_period > 0)
+				{
+					$query = "select * from ace_rp_pay_periods where id=".$pay_period;
+
+					$result = $db->_execute($query);
+
+					$row = mysql_fetch_array($result, MYSQL_ASSOC);
+
+					$fdate = date("Y-m-d", strtotime($row['start_date']));
+					$tdate = date("Y-m-d", strtotime($row['end_date']));
+				} else {
+					$fdate = date("Y-m-d");
+					$tdate = date("Y-m-d");
+				}
+
+		} else {
 			if ($this->params['url']['ffromdate'] != '')
 
 				$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
@@ -1747,7 +1867,8 @@ class CommissionsController extends AppController
 			else
 
 				$tdate = date("Y-m-d");
-
+		}
+			
 	
 
 			//Pick today's date if no date
@@ -1772,7 +1893,9 @@ class CommissionsController extends AppController
 
 			}
 
-						
+			$this->User->id = $techid;
+
+			$tech_details = $this->User->read();	
 
 			//The list of all technicians in the system. We'll need it anyway
 
@@ -1808,7 +1931,7 @@ class CommissionsController extends AppController
 
 			//**********	
 
-			$db =& ConnectionManager::getDataSource('default');
+			
 
 			if ($job_option==1)
 
@@ -1848,7 +1971,7 @@ class CommissionsController extends AppController
 
 				$sqlConditions .= " AND (a.booking_source_id=".$techid." OR a.booking_source2_id=".$techid.") ";
 
-
+				$sqlConditions .= " AND a.payment_method_type != 110000000";
 
 			$orders = array();
 
@@ -1873,6 +1996,10 @@ class CommissionsController extends AppController
 							 a.t1_method,
 
 							 a.t2_method,
+							 
+							 a.payment_method_type,
+							 
+							 a.payment_status,
 
 							
 
@@ -1911,6 +2038,9 @@ class CommissionsController extends AppController
 			while($row = mysql_fetch_array($result, MYSQL_ASSOC))
 
 			{
+				if($row['payment_method_type']==11 && $row['payment_status']!=1 ){
+					continue;
+				}
 
 				//Transfer all the fields from the query result
 
@@ -2023,14 +2153,19 @@ class CommissionsController extends AppController
 			}
 
 			
-
 			ksort($summary);			
 
 			$this->set("summary", $summary);
+			
+			$this->set("tech_details", $tech_details);
 
 			$this->set("job_option", $job_option);
 
 			$this->set("techid", $techid);
+			
+			$this->set("pay_period", $pay_period);
+			
+			$this->set("check_pay", $check_pay);
 
 			$this->set('allTechnician', $allTechnicians);
 
@@ -2041,6 +2176,7 @@ class CommissionsController extends AppController
 
 			$this->set('next_tdate', date("d M Y", strtotime($fdate) + 24*60*60));
 
+			$this->set('allPayPeriods', $this->Lists->PayPeriods(1));
 
 
 			if($fdate!='')
@@ -2180,7 +2316,8 @@ class CommissionsController extends AppController
 				$comm_settings[$cur_id] = $this->getCommissionSettings($cur_id);
 
 
-
+			$sqlConditions .= " AND a.payment_method_type != 11";
+			
 			$query = "
 
 				SELECT a.id, a.job_date, a.order_number, a.order_type_id, a.order_status_id,
@@ -2567,10 +2704,16 @@ class CommissionsController extends AppController
 		$helper_ded = $_GET['helper_ded'];
 
 		$adjustment = $_GET['adjustment'];
+		
+		$part_comm = $_GET['part_comm'];
+		
+		$labour_comm = $_GET['labour_comm'];
+		
+		$source_job_comm = $_GET['source_job_comm'];
 
 		$total_comm = 0+$booking_comm+$sales_job_comm+$sales_appl_comm+
 
-										$driving_comm+$redo_penalty+$helper_ded+$adjustment;
+										$driving_comm+$redo_penalty+$helper_ded+$adjustment+$part_comm+ $source_job_comm + $labour_comm;
 
 		$user_id = $this->Common->getLoggedUserID();
 
@@ -2578,20 +2721,18 @@ class CommissionsController extends AppController
 
 		//Delete previous records
 
-		// $db->_execute("DELETE FROM ace_rp_orders_comm WHERE order_id=".$order_id." and tech_num=".$tech_num);
+		$db->_execute("DELETE FROM ace_rp_orders_comm WHERE order_id=".$order_id." and tech_num=".$tech_num);
 
 		//Save new data
 	  $db->_execute("INSERT INTO ace_rp_orders_comm (order_id, tech_num, booking_comm,
 
-													sales_job_comm, sales_appl_comm, driving_comm,
+			sales_job_comm, sales_appl_comm, driving_comm,redo_penalty, total_comm, helper_ded, adjustment, part_comm,source_job_comm,labour_comm,user_id)
 
-													redo_penalty, total_comm, helper_ded, adjustment, user_id)
+	 VALUES ('".$order_id."','".$tech_num."','".$booking_comm."',
 
-									 VALUES ('".$order_id."','".$tech_num."','".$booking_comm."',
+				'".$sales_job_comm."','".$sales_appl_comm."','".$driving_comm."',
 
-												'".$sales_job_comm."','".$sales_appl_comm."','".$driving_comm."',
-
-												'".$redo_penalty."','".$total_comm."','".$helper_ded."','".$adjustment."','".$user_id."')");
+				'".$redo_penalty."','".$total_comm."','".$helper_ded."','".$adjustment."','".$part_comm."','".$source_job_comm."','".$labour_comm."','".$user_id."')");
 
 		exit;
 
@@ -2659,8 +2800,6 @@ class CommissionsController extends AppController
 
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 
-
-
 		$sort = $_GET['sort'];
 
 		$order = $_GET['order'];
@@ -2672,14 +2811,16 @@ class CommissionsController extends AppController
 		$conditions = "where is_active=1";
 
 		$ShowInactive = $_GET['ShowInactive'];
-
-		if ($ShowInactive) $conditions = "";
+		
+		if ($ShowInactive) $conditions = "where is_active=0";
+		
+		$ShowNewTech = $_GET['ShowNewTech'];
 
 		
 
 		$query = "select u.id, u.first_name, u.last_name, c.name commission_type, u.is_active, u.phone
 
-								from ace_rp_users u
+								,u.tech_inventory from ace_rp_users u
 
 								inner join ace_rp_users_roles r on u.id=r.user_id and r.role_id=1
 
@@ -2705,11 +2846,43 @@ class CommissionsController extends AppController
 
 		}
 
+		$condition1 = "where is_active=2";
+		
+		$query1 = "select u.id, u.first_name, u.last_name, c.name commission_type, u.is_active, u.phone
+
+								from ace_rp_users u
+
+								inner join ace_rp_users_roles r on u.id=r.user_id and r.role_id=1
+
+								left outer join ace_rp_commissions_roles c on u.commission_type=c.id
+
+							".$condition1."
+
+							 order by ".$order.' '.$sort;
+
 		
 
+		$items1 = array();
+
+		$result = $db->_execute($query1);
+
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+
+		{
+
+			foreach ($row as $k => $v)
+
+			  $items1[$row['id']][$k] = $v;
+
+		}
+
 		$this->set('ShowInactive', $ShowInactive);
+		
+		$this->set('ShowNewTech', $ShowNewTech);
 
 		$this->set('items', $items);
+		
+		$this->set('items1', $items1);
 
 		$this->set('comm_roles', $this->Lists->ListTable('ace_rp_commissions_roles'));
 
@@ -2717,29 +2890,38 @@ class CommissionsController extends AppController
 
 
 
-	// AJAX method for activation/deactivation of an item
+	// AJAX method for activation/deactivation of an Technician
 
 	function changeActive()
 
 	{
-
 		$item_id = $_GET['item_id'];
 
 		$is_active = $_GET['is_active'];
-
-
 
 		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
 
 		$db->_execute("update ace_rp_users set is_active='".$is_active."' where id=".$item_id);
 
+		exit;
+	}
 
+	// AJAX method for activation/deactivation of technician for inventory.
+
+	function changeActiveInventory()
+
+	{
+		$tech_id = $_GET['item_id'];
+
+		$is_active = $_GET['is_active'];
+
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+
+		$db->_execute("update ace_rp_users set tech_inventory='".$is_active."' where id=".$tech_id);
 
 		exit;
 
 	}
-
-	
 
 	// AJAX. Method generates HTML code for the calendar
 
@@ -3098,7 +3280,76 @@ class CommissionsController extends AppController
 
 	}
 
-	
+	function chartreport(){
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+		$this->layout = "blank";
+		$query = "select a.*
+				  from ace_rp_users as a, ace_rp_users_roles as b
+				 where a.id=b.user_id and a.is_active=1 and b.role_id in (1)
+				 order by a.first_name";
+		$result = $db->_execute($query);
+		$allTechnicians= array();
+		$date1 =$_REQUEST['date1'];
+		$date2 =$_REQUEST['date2'];
+		
+		$result_ids = array();
+		if(isset($_REQUEST['date'])){
+			$date = $_REQUEST['date'];
+		}
+		else {
+			$date = date('Y-m-d',strtotime("-1 days"));
+		}
+		
+		if(isset($_REQUEST['date1']) && isset($_REQUEST['date2']) ){
+			$date_sql="(job_date BETWEEN '$date1' AND '$date2')";
+		}
+		else {
+			$date_sql="job_date='$date'";
+		}
+		
+		
+		while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+			$allTechnicians[]=$row;
+			$id1=$row['id'];
+			$query1 = "select id from ace_rp_orders where job_technician1_id=$id1 and $date_sql";
+			
+			$result1 = $db->_execute($query1);
+			
+			while($row1 = mysql_fetch_array($result1, MYSQL_ASSOC)) {
+				
+				$order_id = $row1['id'];
+				
+				$query2="select price,quantity,class from ace_rp_order_items where order_id=$order_id";
+				
+				$result2 = $db->_execute($query2);
+				
+					while($row2 = mysql_fetch_array($result2, MYSQL_ASSOC)) {
+				
+				
+			
+							$result_ids[] = array(
+					   
+					   'id' =>$row['id'],
+					   'price'=>($row2['price']*$row2['quantity'])+$row2['addition'],
+					   'class'=>$row2['class'],
+					   
+					   );
+					   
+			}
+			
+			}
+					   
+					   
+    
+			
+			
+		}
+		$this->set('allTechnicians', $allTechnicians);
+		
+		$this->set('result_ids', $result_ids);
+		
+		
+	}
 
 	function commissionSettings($id) {
 
@@ -3564,6 +3815,7 @@ class CommissionsController extends AppController
 		}
 		exit();
 	}
+	
 	public function saveTechCommission()
 	{
 		$data = $_POST;
@@ -3669,8 +3921,9 @@ class CommissionsController extends AppController
 	
 		// error_reporting(E_ALL);
 		$ch = curl_init();
-		//curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
-		curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailcheck.php");
+		curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/mailcheck.php");
+		// curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
+		// curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailcheck.php");
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".$body."&FROM=".$from);
 		
@@ -3755,6 +4008,480 @@ class CommissionsController extends AppController
 			return $invoiceArray;
 			exit();
 		}
+		exit();
+	}
+
+	function deleteTech()
+	{
+		$tech_id = $_GET['tech_id'];
+
+		$is_active = $_GET['is_active'];
+
+
+
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+
+		$db->_execute("DELETE FROM ace_rp_users  where id=".$tech_id);
+
+		exit;
+
+	}
+
+	function sendTechinvoice()
+	{
+		$wcb_amount = $_POST['wcb_amount'];
+		$subtotal_amount = $_POST['subtotal_amount'];
+		$gst_amount = $_POST['gst_amount'];
+		$total_amount = $_POST['total_amount'];
+		$techId = $_POST['techId'];
+		$to_email = $_POST['to_email'];
+		$pay_period = $_POST['pay_period'];
+		$ffromdate = $_POST['ffromdate'];
+		$ftodate = $_POST['ftodate'];
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+
+		$this->User->id = $techId;
+		$tech_details = $this->User->read();	
+		$settings = $this->Setting->find(array('title'=>'tech_invoice'));
+        $template = $settings['Setting']['valuetxt'];
+        $subject = $settings['Setting']['subject'];
+
+        $msg = $template;
+
+        // print_r($msg); die;
+        $msg = str_replace('{company_name}',$tech_details['User']['company_name'] , $msg);
+        $msg = str_replace('{tech_name}', $tech_details['User']['first_name'].' '.$tech_details['User']['last_name'], $msg);
+        $msg = str_replace('{address}',$tech_details['User']['address'] , $msg);
+        $msg = str_replace('{city}',$tech_details['User']['city'] , $msg);
+        $msg = str_replace('{post_code}',$tech_details['User']['postal_code'] , $msg);
+        $msg = str_replace('{phone_number}',$tech_details['User']['phone'], $msg);
+        $msg = str_replace('{email}',$tech_details['User']['email'] , $msg);
+        $msg = str_replace('{gst_num}',$tech_details['User']['gst_number'] , $msg);
+        $msg = str_replace('{wcb_num}',$tech_details['User']['wcb_number'], $msg);
+        $msg = str_replace('{isssue_date}', date("d/m/Y"), $msg);
+        $msg = str_replace('{invoice_num}',$tech_details['User']['invoice_num'] , $msg);
+        $msg = str_replace('{desription}', '', $msg);
+        $msg = str_replace('{from}', date("d/m/Y",strtotime($ffromdate)), $msg);
+        $msg = str_replace('{to}', date("d/m/Y",strtotime($ftodate)), $msg);
+        $msg = str_replace('{sub_total}', $subtotal_amount, $msg);
+        $msg = str_replace('{gst_amt}',$gst_amount , $msg);
+        $msg = str_replace('{total_amount}',$total_amount, $msg);
+        // $res = $this->Tcpdf->createPdf($msg);
+        $result = $this->Mpdf->createPdf($msg);
+        $orgFile = $this->G_URL."/acesys/app/webroot/tech-invoice/".$result;
+        $msgBody = '<p>Hi,</p>
+                                <p>Please find the attached Invoice.</p>
+                                <p>&nbsp;</p>
+                                <p>Thank you,</p>
+                                <p>Pro Ace Heating &amp; Air Conditioning Ltd<br />Tel: 604-293-3770<br />&nbsp;<a href="https://www.acecare.ca"><img src="https://www.acecare.ca/wp-content/uploads/2018/08/newacelogooptimized.png" alt="" width="461" height="81" /></a></p>
+                                <p>&nbsp;</p>
+                                <p>&nbsp;</p>';
+        $res = $this->Common->sendEmailMailgun($to_email,$subject,$msgBody,null,$orgFile);
+        
+        if (strpos($res, '@acecare') !== false) 
+        {
+        	$db->_execute("UPDATE ace_rp_users set invoice_num = invoice_num+1 WHERE id=".$techId);
+         	$response  = array("res" => "1");
+            echo json_encode($response);   
+        } else 
+        {
+           $response  = array("res" => "2");
+           echo json_encode($response);
+        }
+        exit();
+	}
+
+	function printTechInvoice()
+	{
+		$wcb_amount = $_POST['wcb_amount'];
+		$subtotal_amount = $_POST['subtotal_amount'];
+		$gst_amount = $_POST['gst_amount'];
+		$total_amount = $_POST['total_amount'];
+		$techId = $_POST['techId'];
+		$to_email = $_POST['to_email'];
+		$pay_period = $_POST['pay_period'];
+		$ffromdate = $_POST['ffromdate'];
+		$ftodate = $_POST['ftodate'];
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+
+		$this->User->id = $techId;
+		$tech_details = $this->User->read();	
+		$settings = $this->Setting->find(array('title'=>'tech_invoice'));
+        $template = $settings['Setting']['valuetxt'];
+        $subject = $settings['Setting']['subject'];
+
+        $msg = $template;
+        $msg = str_replace('{company_name}',$tech_details['User']['company_name'] , $msg);
+        $msg = str_replace('{tech_name}', $tech_details['User']['first_name'].' '.$tech_details['User']['last_name'], $msg);
+        $msg = str_replace('{address}',$tech_details['User']['address'] , $msg);
+        $msg = str_replace('{city}',$tech_details['User']['city'] , $msg);
+        $msg = str_replace('{post_code}',$tech_details['User']['postal_code'] , $msg);
+        $msg = str_replace('{phone_number}',$tech_details['User']['phone'], $msg);
+        $msg = str_replace('{email}',$tech_details['User']['email'] , $msg);
+        $msg = str_replace('{gst_num}',$tech_details['User']['gst_number'] , $msg);
+        $msg = str_replace('{wcb_num}',$tech_details['User']['wcb_number'], $msg);
+        $msg = str_replace('{isssue_date}', date("d/m/Y"), $msg);
+        $msg = str_replace('{invoice_num}',$tech_details['User']['invoice_num'] , $msg);
+        $msg = str_replace('{desription}', '', $msg);
+        $msg = str_replace('{from}', date("d/m/Y",strtotime($ffromdate)), $msg);
+        $msg = str_replace('{to}', date("d/m/Y",strtotime($ftodate)), $msg);
+        $msg = str_replace('{sub_total}', $subtotal_amount, $msg);
+        $msg = str_replace('{gst_amt}',$gst_amount , $msg);
+        $msg = str_replace('{total_amount}',$total_amount, $msg);
+       
+       echo $msg;
+        exit();
+	}
+
+	function techPurchase()
+	{
+		$this->layout="list";
+		$this->set("loggedUserIsTech",0);
+		if (($_SESSION['user']['role_id'] == 1) ) { // TECHNICIAN=1
+
+			//show data only for current technician
+
+			$techid = $this->Common->getLoggedUserID();
+			$this->set("loggedUserIsTech",1);
+
+		}
+		if($check_pay == 1){
+
+				if($pay_period > 0)
+				{
+					$query = "select * from ace_rp_pay_periods where id=".$pay_period;
+
+					$result = $db->_execute($query);
+
+					$row = mysql_fetch_array($result, MYSQL_ASSOC);
+
+					$fdate = date("Y-m-d", strtotime($row['start_date']));
+					$tdate = date("Y-m-d", strtotime($row['end_date']));
+				} else {
+					$fdate = date("Y-m-d");
+					$tdate = date("Y-m-d");
+				}
+
+		} else {
+			if ($this->params['url']['ffromdate'] != '')
+
+				$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
+
+			else
+
+				$fdate = date("Y-m-d");
+
+	
+
+			if ($this->params['url']['ftodate'] != '')
+
+				$tdate = date("Y-m-d", strtotime($this->params['url']['ftodate']));
+
+			else
+
+				$tdate = date("Y-m-d");
+		}
+
+		$allTechnicians = $this->Lists->Technicians();
+		$this->set('allTechnician', $allTechnicians);
+		$this->set('techid', $techid);
+		$this->set('allPayPeriods', $this->Lists->PayPeriods(1));
+		$this->set('fdate', date("d M Y", strtotime($fdate)));
+		$this->set('tdate', date("d M Y", strtotime($tdate)));	
+		$this->set('purchaseDate', date("d M Y"));	
+		$this->set('prev_fdate', date("d M Y", strtotime($fdate) - 24*60*60));
+		$this->set('next_tdate', date("d M Y", strtotime($fdate) + 24*60*60));
+	}
+
+	function saveTechPurchaseItem()
+	{	
+		$data = $_POST;
+		$items = $_POST['itemName'];
+		$itemImages = $_FILES['sortpic1'];
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+		$techid = $data['ftechid'];
+		if($this->Common->getLoggedUserRoleID() == 1)
+		{
+			$techid = $this->Common->getLoggedUserID();
+		}
+		foreach ($items as $key => $value) {
+			if(empty($data['itemStatus'][$key])){
+				$status = 2;
+			} else {
+				$status = $data['itemStatus'][$key];
+			}
+			$imageName = '';
+			if(!empty($itemImages['name'][$key]))
+			{
+				$imageName = $this->Common->uploadTechPurchaseImage($itemImages['name'][$key],$itemImages['tmp_name'][$key]);
+			}
+			$purchaseDate = date("Y-m-d", strtotime($data['purchaseDate'][$key]));
+			$query = "INSERT INTO ace_rp_tech_purchase_item (tech_id,item_name,quantity,price,paid_by,purchase_date,image,status,invoice_num) VALUES (".$techid.",'".$value."',".$data['itemQuantity'][$key].",".$data['itemPrice'][$key].",'".$data['itemPaidBy'][$key]."','".$purchaseDate."','".$imageName."',".$status.",'".$data['invoiceNum'][$key]."')";
+
+			$res = $db->_execute($query);
+		}
+		if($res)
+		{
+			$response  = array("res" => "1");
+           	echo json_encode($response);	
+		}
+		exit();
+	}
+
+	function getTechPurchaseItems()
+	{	
+		$this->layout="blank";  
+		$techid = $_GET['ftechid'];
+		$to = date("Y-m-d",strtotime($_GET['to']));
+		$from = date("Y-m-d",strtotime($_GET['from']));
+		$status = $_GET['status'];
+		$itemInvoiceNum = $_GET['itemInvoiceNum'];
+		$condition = "";
+		$this->set("loggedUserIsTech",0);
+		if (($_SESSION['user']['role_id'] == 1) ) { // TECHNICIAN=1
+			//show data only for current technician
+			$this->set("loggedUserIsTech",1);
+
+		}
+		if($status > 0){
+			$condition = "and status=".$status;
+		}
+
+		if(!empty($itemInvoiceNum)){
+			$condition .= "and invoice_num='".$itemInvoiceNum."'";
+		}
+
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+
+		$query = "SELECT * FROM ace_rp_tech_purchase_item where tech_id = ".$techid." and purchase_date BETWEEN '$from' and '$to' $condition";
+
+		$res = $db->_execute($query);
+		$items = array();
+		while ($row = mysql_fetch_array($res)) {
+			
+			$items[] = $row;
+		}
+
+		$this->set('items',$items);
+	}
+
+	function sendTechPurchaseInvoice()
+	{
+		$pst_amount = 0;
+		$subtotal_amount = 0;
+		$gst_amount = 0;
+		$total_amount =0;
+		$techId = $_POST['techId'];
+		$to_email =  $_POST['to_email'];
+		$ffromdate = date("Y-m-d", strtotime($_POST['ffromdate']));
+		$ftodate = date("Y-m-d", strtotime($_POST['ftodate']));
+		$status =  $_POST['status'];
+		$itemInvoiceNum = $_POST['invoiceNum'];
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+
+		$this->User->id = $techId;
+		$tech_details = $this->User->read();	
+		$settings = $this->Setting->find(array('title'=>'tech_purchase_invoice'));
+        $template = $settings['Setting']['valuetxt'];
+        $subject = $settings['Setting']['subject'];
+        if($status > 0){
+			$condition = "  status=".$status;
+		}
+
+		if(!empty($itemInvoiceNum)){
+			$condition .= " and invoice_num='".$itemInvoiceNum."'";
+		}
+        $msg = $template;
+        $msg = str_replace('{company_name}',$tech_details['User']['company_name'] , $msg);
+        $msg = str_replace('{tech_name}', $tech_details['User']['first_name'].' '.$tech_details['User']['last_name'], $msg);
+        $msg = str_replace('{Purchased_by}', $tech_details['User']['first_name'].' '.$tech_details['User']['last_name'], $msg);
+        $msg = str_replace('{address}',$tech_details['User']['address'] , $msg);
+        $msg = str_replace('{city}',$tech_details['User']['city'] , $msg);
+        $msg = str_replace('{post_code}',$tech_details['User']['postal_code'] , $msg);
+        $msg = str_replace('{phone_number}',$tech_details['User']['phone'], $msg);
+        $msg = str_replace('{email}',$tech_details['User']['email'] , $msg);
+        $msg = str_replace('{isssue_date}', date("d/m/Y"), $msg);
+        $msg = str_replace('{invoice_num}',($tech_details['User']['invoice_num'] + 1) , $msg);
+        // $msg = str_replace('{from}', date("d/m/Y",strtotime($ffromdate)), $msg);
+        // $msg = str_replace('{to}', date("d/m/Y",strtotime($ftodate)), $msg);
+        
+
+        $query = "SELECT * FROM ace_rp_tech_purchase_item where tech_id = ".$techId." and purchase_date BETWEEN '$ffromdate' and '$ftodate'".$condition;
+
+		$res = $db->_execute($query);
+		$itemRows = '';
+		$grandTotal = 0;
+		while ($row = mysql_fetch_array($res)) {
+			$pst_amount = 0;
+			$subtotal_amount = 0;
+			$gst_amount = 0;
+			$total_amount =0;
+
+			$subtotal_amount = number_format ($row['price'] *$row['quantity'],2);
+			$gst_amount = number_format ((($subtotal_amount * 5)/100),2);
+			$pst_amount = number_format ((($subtotal_amount * 7)/100),2);
+			$total_amount = number_format ($subtotal_amount + $gst_amount + $pst_amount,2);
+			$grandTotal = number_format ($grandTotal + $total_amount,2);
+			$itemRows .= '<tr>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$row['item_name'].'</td>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$row['quantity'].'</td>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$row['price'].'</td>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$subtotal_amount.'</td>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$gst_amount.'</td>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$pst_amount.'</td>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$total_amount.'</td>';	
+			$itemRows .= '</tr>';	
+
+		}  
+		
+		$msg = str_replace('{items_data}',$itemRows, $msg);
+		$msg = str_replace('{total_amount}',$grandTotal, $msg);
+
+		$msgBody = '<p>Hi,</p>
+                                <p>Please find the attached Invoice.</p>
+                                <p>&nbsp;</p>
+                                <p>Thank you,</p>
+                                <p>Pro Ace Heating &amp; Air Conditioning Ltd<br />Tel: 604-293-3770<br />&nbsp;<a href="https://www.acecare.ca"><img src="https://www.acecare.ca/wp-content/uploads/2018/08/newacelogooptimized.png" alt="" width="461" height="81" /></a></p>
+                                <p>&nbsp;</p>
+                                <p>&nbsp;</p>';
+		$result = $this->Mpdf->createPdf($msg);
+        $orgFile = $this->G_URL."/acesys/app/webroot/tech-invoice/".$result;
+    	// $orgFile = $this->G_URL."/acesys/app/webroot/contract/".$res;
+
+        $res = $this->Common->sendEmailMailgun($to_email,$subject,$msgBody,null,$orgFile);
+        
+        if (strpos($res, '@acecare') !== false) 
+        {
+        	$db->_execute("UPDATE ace_rp_users set invoice_num = invoice_num+1 WHERE id=".$techId);
+         	$response  = array("res" => "1");
+            echo json_encode($response);   
+        } else 
+        {
+           $response  = array("res" => "2");
+           echo json_encode($response);
+        }
+        exit();
+	}
+
+	function updateTechPurchaseItem()
+	{
+		// echo  "<pre>";
+		// print_r($_POST); die;
+		$data = $_POST;
+		$itemIds = $_POST['itemId'];
+		$itemImages = $_FILES['sortpic1'];
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+		$techid = $data['ftechid'];
+		foreach ($itemIds as $key => $value) {
+			
+			if(!empty($data['itemName'][$key])){			
+				$purchaseDate = date("Y-m-d", strtotime($data['purchaseDate'][$key]));
+				
+				$res = $db->_execute("UPDATE ace_rp_tech_purchase_item set item_name = '".$data['itemName'][$key]."', quantity=".$data['itemQuantity'][$key].", price=".$data['itemPrice'][$key].",paid_by='".$data['itemPaidBy'][$key]."', purchase_date = '".$purchaseDate."',status = ".$data['itemStatus'][$key].", invoice_num = '".$data['invoiceNum'][$key]."' where id=".$key);
+			}
+		}
+		if($res)
+		{
+			$response  = array("res" => "1");
+           	echo json_encode($response);	
+		}
+		exit();
+
+	}
+
+	function deleteItemImage()
+	{	$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+		$id = $_GET['id'];
+		$imageName = $_GET['imageName'];
+		$filename = ROOT.'/app/webroot/tech-purchase-image/'.$imageName;
+        $query = "UPDATE ace_rp_tech_purchase_item set image = '' where id =".$id."";
+        $result = $db->_execute($query);
+        if (file_exists($filename)) 
+        {
+            unlink($filename);
+        } 
+
+        if($result)	
+        {
+        	$response  = array("res" => "1");
+           	echo json_encode($response);
+        }
+
+        exit();
+	}
+
+	function printTechItemInvoice()
+	{
+		$pst_amount = 0;
+		$subtotal_amount = 0;
+		$gst_amount = 0;
+		$total_amount =0;
+		$techId = $_POST['techId'];
+		$to_email =  $_POST['to_email'];
+		$status =  $_POST['status'];
+		$itemInvoiceNum = $_POST['itemInvoiceNum'];
+		$ffromdate = date("Y-m-d", strtotime($_POST['ffromdate']));
+		$ftodate = date("Y-m-d", strtotime($_POST['ftodate']));
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+
+		if($status > 0){
+			$condition = " and status=".$status;
+		}
+		if(!empty($itemInvoiceNum)){
+			$condition .= " and invoice_num='".$itemInvoiceNum."'";
+		}
+		$this->User->id = $techId;
+		$tech_details = $this->User->read();	
+		$settings = $this->Setting->find(array('title'=>'tech_purchase_invoice'));
+        $template = $settings['Setting']['valuetxt'];
+        $subject = $settings['Setting']['subject'];
+
+        $msg = $template;
+        $msg = str_replace('{company_name}',$tech_details['User']['company_name'] , $msg);
+        $msg = str_replace('{tech_name}', $tech_details['User']['first_name'].' '.$tech_details['User']['last_name'], $msg);
+        $msg = str_replace('{Purchased_by}', $tech_details['User']['first_name'].' '.$tech_details['User']['last_name'], $msg);
+        $msg = str_replace('{address}',$tech_details['User']['address'] , $msg);
+        $msg = str_replace('{city}',$tech_details['User']['city'] , $msg);
+        $msg = str_replace('{post_code}',$tech_details['User']['postal_code'] , $msg);
+        $msg = str_replace('{phone_number}',$tech_details['User']['phone'], $msg);
+        $msg = str_replace('{email}',$tech_details['User']['email'] , $msg);
+        $msg = str_replace('{isssue_date}', date("d/m/Y"), $msg);
+        $msg = str_replace('{invoice_num}',($tech_details['User']['invoice_num'] + 1) , $msg);
+        // $msg = str_replace('{from}', date("d/m/Y",strtotime($ffromdate)), $msg);
+        // $msg = str_replace('{to}', date("d/m/Y",strtotime($ftodate)), $msg);
+        
+
+        $query = "SELECT * FROM ace_rp_tech_purchase_item where tech_id = ".$techId." and purchase_date BETWEEN '$ffromdate' and '$ftodate'".$condition;
+		$res = $db->_execute($query);
+		$itemRows = '';
+		$grandTotal = 0;
+		while ($row = mysql_fetch_array($res)) {
+			$pst_amount = 0;
+			$subtotal_amount = 0;
+			$gst_amount = 0;
+			$total_amount =0;
+
+			$subtotal_amount = number_format ($row['price'] *$row['quantity'],2);
+			$gst_amount = number_format ((($subtotal_amount * 5)/100),2);
+			$pst_amount = number_format ((($subtotal_amount * 7)/100),2);
+			$total_amount = number_format ($subtotal_amount + $gst_amount + $pst_amount,2);
+			$grandTotal = number_format ($grandTotal + $total_amount,2);
+			$itemRows .= '<tr>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$row['item_name'].'</td>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$row['quantity'].'</td>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$row['price'].'</td>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$subtotal_amount.'</td>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$gst_amount.'</td>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$pst_amount.'</td>';	
+			$itemRows .= '<td style="border:1px solid black; text-align: center;">'.$total_amount.'</td>';	
+			$itemRows .= '</tr>';	
+
+		}  
+		
+		$msg = str_replace('{items_data}',$itemRows, $msg);
+		$msg = str_replace('{total_amount}',$grandTotal, $msg);
+
+		echo $msg;
 		exit();
 	}
 }

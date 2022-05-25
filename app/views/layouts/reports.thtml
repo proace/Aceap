@@ -1,4 +1,13 @@
 <?php
+if($_COOKIE['acecare'])
+{
+	$id = session_regenerate_id();
+	$new_sessionid = session_id();
+	$db =& ConnectionManager::getDataSource('default');
+    $query1 = "UPDATE ace_rp_users set session_id = '".$new_sessionid."' where id =".$_COOKIE['acecare'];     
+    $result = $db->_execute($query1);
+}
+
 if ((isset($this->params['url']['logout'])) && ( $this->params['url']['logout'] == "1" ))
 {
 	unset($_SESSION['user']);
@@ -41,6 +50,12 @@ if ((isset($this->params['url']['logout'])) && ( $this->params['url']['logout'] 
 <!--[if lt IE 7.]>
 <script defer type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/pngfix.js"></script>
 <![endif]-->
+<script type="text/javascript">
+		function loadBooking(orderId)
+		{
+    		document.location.href='<?=BASE_URL?>/orders/editBooking?order_id='+orderId+'&rurl=orders%2FscheduleView%3F';
+		}
+</script>
 </head>
 
 <body>

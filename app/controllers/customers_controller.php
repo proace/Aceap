@@ -1252,21 +1252,48 @@ $h .= ' <tr>
 	}
 
 	//Loki: save images 
-	function saveImages()
+function saveImages()
 	{
+		$db =& ConnectionManager::getDataSource('default');
 		$customerId = $_POST['data']['Customer']['id'];
+		
+		
+		$order_id = $_POST['data']['Order']['id'];
+		
+		$label=$_POST['label_images'];
+		
+		$date=$_POST['dates_images'];
+		
+		
 		$images = $_FILES['sortpic1'];
 		$config = $this->User->useDbConfig;
+		if($label==""){
+        
+			 $get_label = "select label from ace_rp_user_part_images where customer_id='$customerId' and date_created='$date_image' limit 1";
+			
+           $result_label = $db->_execute($get_label);
+         
+		  while($row = mysql_fetch_array($result_label, MYSQL_ASSOC))
+				{
+					 $item_name = $row['label'];
+			
+				}
+            $label = $item_name;
+         
+		}
 		if(!empty($customerId))
 		{
+			
 			foreach ($images['name'] as $key => $value) {
 	                if($images['error'][$key] == 0){
-	                    $imageResult = $this->Common->uploadPhoto($value,$images['tmp_name'][$key] ,0 ,$config , 1, $customerId);
+	                    $imageResult = $this->Common->uploadPhoto($value,$images['tmp_name'][$key] ,$order_id ,$config , 1, $customerId,0,$date,$label);
 	                }
 	             }  
 	          echo $imageResult;
 	          exit();
 		}
+		
+		exit();
 
 	}
 

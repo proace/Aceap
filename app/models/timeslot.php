@@ -1,10 +1,10 @@
-<?php
-
-class Timeslot extends AppModel
-{
-	var $name = 'Timeslot';
-
-	var $validate = array();
-}
-
-?>
+<?php
+
+class Timeslot extends AppModel
+{
+	var $name = 'Timeslot';
+
+	var $validate = array();
+}
+
+?>

@@ -1,0 +1,175 @@
+<?php
+//echo "<pre>";
+//print_r($result_ids);
+//die();
+function search_revisions($dataArray, $search_value, $key_to_search, $other_matching_value = null, $other_matching_key = null) {
+    // This function will search the revisions for a certain value
+    // related to the associative key you are looking for.
+    $keys = array();
+    foreach ($dataArray as $key => $cur_value) {
+        if ($cur_value[$key_to_search] == $search_value) {
+            if (isset($other_matching_key) && isset($other_matching_value)) {
+                if ($cur_value[$other_matching_key] == $other_matching_value) {
+                    $keys[] = $key;
+                }
+            } else {
+                // I must keep in mind that some searches may have multiple
+                // matches and others would not, so leave it open with no continues.
+                $keys[] = $key;
+            }
+        }
+    }
+    return $keys;
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<link rel="stylesheet" href="https://unpkg.com/purecss@2.0.5/build/pure-min.css" integrity="sha384-LTIDeidl25h2dPxrB2Ekgc9c7sEC3CWGM6HeFmuDNUjX76Ert4Z4IY714dhZHPLd" crossorigin="anonymous">
+<style>
+    th{
+    
+    text-align:center;
+    
+    
+    
+    }
+</style>
+<body>
+ <?php
+ $date1 = $_REQUEST['date1'];
+if(isset($_REQUEST['date2'])){
+			$date = $_REQUEST['date2'];
+           
+		}
+		else {
+			$date = date('Y-m-d',strtotime("-1 days"));
+       
+		}
+ 
+ ?>
+ 
+ <div style="padding: 10px;">
+  <form method="get">
+  <label for="date">From:
+<input id="date1" name="date1" type="date" value="<?= $date1 ?>">
+</label>
+ <label for="date">To:
+<input id="date" name="date2" type="date" value="<?= $date ?>">
+</label>
+ <button>Update</button>
+ </div>
+ </form>
+ <br>
+<table class="pure-table pure-table-horizontal">
+    <thead>
+        <tr>
+            <th>Tecnician</th>
+            <th>Booking</th>
+            <th>Sales</th>
+            <th>Total Revenue</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        foreach($allTechnicians as $val=> $allTechnician){
+            $tech = $allTechnician['id'];
+            $get_data = search_revisions($result_ids,$tech,'id',1,'class');
+            $get_data1 = search_revisions($result_ids,$tech,'id',0,'class');
+            $sum = 0;
+            $sum1 = 0;
+            $counter = 0;
+            foreach ($result_ids as $result_id){
+               if(in_array($counter,$get_data1)){
+                $sum += $result_id[ 'price' ];
+               }
+               if(in_array($counter,$get_data)){
+                $sum1 += $result_id[ 'price' ];
+               }
+                
+                $counter++;
+                
+            }
+            
+            if($sum==0 && $sum1==0 ){
+             continue;
+             
+            }
+            
+            $images1 = $allTechnician['binary_picture'];
+            $year = substr($images1, 0, 4);
+        $mon = substr($images1, 4, 2);
+        $day = substr($images1, 6, 2);
+        $name = $year.'/'.$mon.'/'.$day.'/'.$images1;
+        if(empty($images1)){
+            $src="";
+            
+        }
+        else {
+            $name11 = ROOT_URL.'/upload_photos/'.$name;
+            $src="<img src='$name11' style='height:30px;width:30px;    border-radius: 50px;'>";
+        }
+            
+            ?>
+        
+        <tr class="pure-table-odd">
+            <td class="<?= $get_data1 ?>">
+            <?= $src?>
+            <div style="width: 74%;
+    float: right;
+    margin-top: 5%;"><?= $allTechnician['first_name']." ".$allTechnician['last_name'] ?>
+            </div>
+            </td>
+            <td>
+                <?= "$".$sum ?>
+                
+                
+            </td>
+            <td>
+                <?= "$".$sum1 ?>
+                
+            </td>
+            <td><?
+            
+            $sum3 = $sum+$sum1;
+            
+            $sum4  = $sum3+0.05*$sum3;
+            
+            echo "$".$sum4;
+            
+            ?></td>
+        </tr>
+             
+      <?php   }
+        ?>
+        
+        
+    </tbody>
+</table>
+
+
+<script>
+  function changed(args) {
+    var value = args.value;
+    
+    var url = window.location.href;
+    
+    if( url.indexOf('?') >= 0){
+        var sign= "&";
+    }
+    else {
+        var sign= "?"; 
+    }
+
+   url += sign+'date='+value;
+
+window.location.href = url;
+    
+  }  
+    
+</script>
+
+</body>
+</html>

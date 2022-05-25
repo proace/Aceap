@@ -1,0 +1,10 @@
+<?php foreach($subCategory as $subCat) {
+?>
+<li><a title="More"  class="link_sub_branch" selected-cat-id="<?=$categoryId?>" sub-cat-id="<?=$subCat['id']?>"><?php echo $subCat['name'] ?> </a>
+     <ul class="hidden" id="sub-cat-items-<?=$subCat['id']?>"></ul>
+</li> 
+<?php } ?>
+<br>
+<li><a title="More"  class="inactive_link_sub_branch" selected-cat-id="<?=$categoryId?>">InActive</a>
+     <ul id="sub-cat-items-inactive-<?=$categoryId?>" ></ul>
+</li>   

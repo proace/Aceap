@@ -35,8 +35,8 @@
         <div class="row">
           <div class="col-xs-4">
             <address>
-              102-3855 Henning Dr.<br />
-              Burnaby, BC V5C 6N3<br />
+              101-3993 Henning Dr.<br />
+              Burnaby, BC V5C6P7<br />
               Tel: 604-293-3770 &nbsp;&nbsp;Fax: 604-293-3773
             </address>
           </div><!-- /.col -->
@@ -158,10 +158,10 @@
 				<?php } ?>
                 <tr>
                 	<td rowspan="5" class="top-border">
-                    <b>Additional Job Notes</b>
+                   <!--  <b>Additional Job Notes</b>
                     <p class="text-muted well well-sm no-shadow" style="margin-top: 10px;">
 					<div contenteditable><?php echo $obj['Order']['job_notes_technician'];?>&nbsp;</div>
-                    </p>
+                    </p> -->
                     <b>Tech 1:</b> <?php echo $obj['Technician1']['first_name'];?>&nbsp;<?php echo $obj['Technician1']['last_name'];?>
             <!--    <b>Tech 2:</b> <?php echo $obj['Technician2']['first_name'];?>&nbsp;<?php echo $obj['Technician2']['last_name'];?>  -->
                     </td>

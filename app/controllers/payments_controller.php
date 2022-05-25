@@ -1,5 +1,5 @@
 <? ob_start();
-// error_reporting(E_PARSE  ^ E_ERROR );
+
 class PaymentsController extends AppController
 {
 	//To avoid possible PHP4 problemfss
@@ -22,6 +22,7 @@ class PaymentsController extends AppController
 		$amount_search = $_GET['amount_search'];
 		$sort = $_GET['sort'];
 		$order = $_GET['order'];
+		$payStatus = $_GET['payment_status'];
 		if ($this->params['url']['ffromdate'] != '')
 			$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
 		else
@@ -37,8 +38,14 @@ class PaymentsController extends AppController
 			$sqlConditions .= " and o.job_date >= '".$this->Common->getMysqlDate($fdate)."'"; 
 		if($tdate != '')
 			$sqlConditions .= " and o.job_date <= '".$this->Common->getMysqlDate($tdate)."'";
-		if ($payment_type)
+		if ($payment_type != 1000 && $payment_type !=''){
 			$sqlConditions .= " and exists (select * from ace_rp_payments p where p.idorder=o.id and p.payment_method='$payment_type')";
+		}else if ($payment_type == 1000){
+			$sqlConditions .= " and NOT EXISTS (select * from ace_rp_payments p where p.idorder=o.id)";
+		}
+		if($payStatus > 0){
+			$sqlConditions .= " and cp.payment_status =".$payStatus;
+		}
 		if ($auth_search)
 			$sqlConditions .= " and exists (select * from ace_rp_payments p where p.idorder=o.id and p.auth_number='$auth_search')";	
 				
@@ -61,7 +68,8 @@ class PaymentsController extends AppController
 										 FROM ace_rp_payments p
 										 LEFT JOIN ace_rp_payment_methods pm
 										 ON p.payment_method = pm.id
-										 WHERE p.idorder = o.id) method
+										 WHERE p.idorder = o.id) method,
+										 cp.payment_status,cp.card_num
 							  from ace_rp_orders o
 								left outer join ace_rp_order_types as jt on ( o.order_type_id = jt.id ) 
 							  left outer join ace_rp_customers c on o.customer_id=c.id
@@ -69,8 +77,10 @@ class PaymentsController extends AppController
 							  left outer join ace_rp_users t2 on o.job_technician2_id=t2.id
 							  left outer join ace_rp_users t3 on o.verified_by_id=t3.id
 							  left outer join ace_rp_order_statuses s on s.id=o.order_status_id
-							 where order_status_id in (1,5) $sqlConditions 
+							  LEFT JOIN ace_rp_creditcard_payment_details cp ON cp.order_id = o.id AND cp.id = (SELECT MAX(id) FROM ace_rp_creditcard_payment_details where order_id = o.id)
+							 where order_status_id in (1,2,3,4,5) $sqlConditions 
 							 order by $order $sort";
+		// print_r($query); die;
 		$query2 = "select id, name, price, quantity from ace_rp_order_items where 1=1 $sqlConditions order by $order $sort";
 		
 		$redo = array();
@@ -166,6 +176,7 @@ class PaymentsController extends AppController
 		$this->set('tdate', date("d M Y", strtotime($tdate)));
 		$this->set('payment_type', $payment_type);
 		$this->set('job_type', $job_type);
+		$this->set('payStatus', $payStatus);
 		$this->set('allPaymentTypes', $this->Lists->ListTable('ace_rp_payment_methods'));
 		$this->set('allJobTypes', $this->Lists->ListTable('ace_rp_order_types'));
 	
@@ -194,8 +205,10 @@ class PaymentsController extends AppController
 
 	function savePayment()
 	{
+		$jobNotes = isset($_REQUEST['jobNotes']) ? $_REQUEST['jobNotes'] : '';
 		$email = $_REQUEST['email'];
 		$send_receipt = $_REQUEST['sendReceipt'];
+		$sendReviewEmail = $_REQUEST['sendReviewEmail'];
 		$order_id = $_REQUEST['order_id'];
 		$orderNum = $_REQUEST['orderNum'];
 		$customerId = $_REQUEST['customerId'];
@@ -207,7 +220,7 @@ class PaymentsController extends AppController
 		$note = $_REQUEST['notes'];
 		$file 	= isset($_FILES['payment_image'])? $_FILES['payment_image'] : null;
 		$loggedUserId 	= $this->Common->getLoggedUserID();
-		$anchor = '<a href="'.BASE_URL.'/orders/editBooking?order_id='.$order_id.'&rurl=orders%2FscheduleView%3F">'.$orderNum.'</a>';
+		$anchor = '<a class="open-payment-page" orderId='.$order_id.' data-url="'.BASE_URL.'/orders/editBooking?order_id='.$order_id.'&rurl=orders%2FscheduleView%3F" style="cursor: pointer;color: blue;">'.$orderNum.'</a>';
 		$message = 'Please collect payment for '.$anchor;
 		$toDate = date('Y-m-d');
 		$fromDate = date('Y-m-d H:i:s');
@@ -234,7 +247,7 @@ class PaymentsController extends AppController
 
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		//$payment_date = date("Y-m-d", strtotime($dat['payment_date']));
-		$query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`payment_method_type` =".$method." WHERE arc.id=".$order_id."";
+		$query_order_up = "UPDATE `ace_rp_orders` as `arc` set `arc`.`paid_by` =".$method."  WHERE arc.id=".$order_id."";
 		$up_order = $db->_execute($query_order_up);
 
 		$query="select * from ace_rp_payments where idorder='".$order_id."'";
@@ -249,7 +262,7 @@ class PaymentsController extends AppController
 			$query = "UPDATE  ace_rp_payments set creator ='".$creator."',payment_method='".$method."',payment_date='".$date."' ,paid_amount='".$amount."',payment_type='".$payment_type."', notes='".$note."' where idorder='".$order_id."'";	
 		}				
 		$res = $db->_execute($query);
-		if($res == 1 && $show_message == 1) 
+		/*if($res == 1 && $show_message == 1) 
 		{
 			$query = "SELECT id from ace_rp_users where role_id = 6";
 			$res = $db->_execute($query);
@@ -270,7 +283,7 @@ class PaymentsController extends AppController
 			$query = $query.$values;
 			$db->_execute($query);
 
-		}
+		}*/
 		if($send_receipt == 1){
 			$orgFile = null;
 			$currentDate = date('Y-m-d');
@@ -290,10 +303,11 @@ class PaymentsController extends AppController
 				{
 					$is_sent = 0;
 				}
-				$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id) values (".$order_id.",'','','".$currentDate."',".$is_sent.",'".$msg."', '".$res."')";
+				$query = "INSERT INTO ace_rp_reminder_email_log (order_id, customer_id, job_type, sent_date, is_sent, message, message_id,subject) values (".$order_id.",'','','".$currentDate."',".$is_sent.",'".$msg."', '".$res."','".$subject."')";
 				$result = $db->_execute($query);	
 			}
 		}
+	
 		echo 'ok';
 		exit;
 	}
@@ -420,7 +434,7 @@ class PaymentsController extends AppController
 		
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$query = "select p.id, m.id payment_method_id, m.name payment_method,
-										 p.paid_amount, p.payment_date, p.auth_number
+										 p.paid_amount, p.payment_date, p.auth_number, m.color
 								from ace_rp_payments p
 								left outer join ace_rp_payment_methods m on m.id=p.payment_method
 							 where p.idorder='$order_id'";
@@ -430,7 +444,7 @@ class PaymentsController extends AppController
 			$total_p += 1*$row_p['paid_amount'];
 			
 			$res .= "<tr>\n";
-			$res .= "<td>&nbsp;{$row_p['payment_method']}</td>";
+			$res .= "<td style='color:#{$row_p['color']}'>&nbsp;{$row_p['payment_method']}</td>";
 			$res .= "<td>".$this->HtmlAssist->prPrice($row_p['paid_amount'])."</td>";
 			// $res .= "<td>Auth.#;{$row_p['auth_number']}</td>";
 			if ($actions) {
@@ -535,6 +549,24 @@ class PaymentsController extends AppController
 		$result = $db->_execute($query);
 		exit();
 	}
+	function changePaymentTypeActive()
+	{
+		$jobTypeId = $_GET['jobtype_id'];
+		$isActive = $_GET['is_active'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "UPDATE ace_rp_payment_methods set show_method = ".$isActive." WHERE id=".$jobTypeId."";
+		$result = $db->_execute($query);
+		exit();
+	}
+	function changeTechPaymentType()
+	{
+		$jobTypeId = $_GET['jobtype_id'];
+		$isActive = $_GET['is_active'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "UPDATE ace_rp_payment_methods set show_tech_method = ".$isActive." WHERE id=".$jobTypeId."";
+		$result = $db->_execute($query);
+		exit();
+	}
 	// Loki : show the add payment page. Don't remov this function
 	function showAddPaymentTypePage()
 	{
@@ -591,6 +623,19 @@ class PaymentsController extends AppController
 		$this->set('methods', $row);
 	}
 	
+	function editPaymentType($id)
+	{	
+		$db =& ConnectionManager::getDataSource('default');	
+		$category = array();
+		if($id) {
+			$query = "SELECT * from ace_rp_payment_methods where id=".$id;
+			$result = $db->_execute($query);
+			$row = mysql_fetch_array($result, MYSQL_ASSOC);
+		} else {
+			$row = array("id"=>"", "name"=>"");
+		}
+		$this->set('methods', $row);
+	}
 
 	function updatePaymentMethod()
 	{
@@ -608,6 +653,23 @@ class PaymentsController extends AppController
 		exit();
 	}
 
+	function updatePaymentType(){
+		$id = $_POST['methodId'];
+		$name = $_POST['methodName'];
+		$color = !empty($_POST['color']) ? $_POST['color'] : NULL;
+		$db =& ConnectionManager::getDataSource('default');
+		if(!empty($id))
+		{
+			$query = "UPDATE ace_rp_payment_methods set name ='".$name."', color = '".$color."' WHERE id=".$id;
+			$result = $db->_execute($query);			
+		} 
+		// else {
+		// 	$query = "INSERT INTO ace_rp_payment_methods (name) VALUES ('".$name."')";
+		// 	$result = $db->_execute($query);		
+		// }
+		exit();
+	}
+
 	function deletePaymentMethod()
 	{
 			$data = $_POST['typeIds'];
@@ -619,8 +681,10 @@ class PaymentsController extends AppController
 	}
 	//Loki: Save invoice paid details.
 	function addInvoicePayment()
-	{
-		$invoiceIds = $_POST['invoiceIds'];
+	{		
+		$jobRefnum 	= ($_POST['refNum'] !='undefined') ? $_POST['refNum'] : 0 ;
+		$invoiceNum = $_POST['invoiceNum'];
+		$invoiceIds = explode (",", $_POST['invoiceIds']);
 		$methodId 	= $_POST['methodId'];
 		$payDate 	= $_POST['payDate'];
 		$notes 		= $_POST['notes'];
@@ -631,6 +695,7 @@ class PaymentsController extends AppController
 		$totalRemainingAmount = ($remainingAmount - $paidAmount);
 		$photoImage = isset($_FILES['fileval'])? $_FILES['fileval'] : null;
 		$imageName = '';
+		
 		if ($payDate != '' || !empty($payDate))
 		{
 			$payDate = date("Y-m-d", strtotime($payDate));
@@ -651,13 +716,15 @@ class PaymentsController extends AppController
         }
 		$db =& ConnectionManager::getDataSource('default');
 
-		$query = "INSERT INTO ace_iv_invoice_history (invoice_id, status_id, pay_date, payment_method, paid_amount,paid_by,notes, invoice_image) VALUES (".$invoiceIds.",".$statusId.",'".$payDate."',".$methodId.", ".$paidAmount.",".$agentId.",'".$notes."', '".$imageName."')";
-		$result = $db->_execute($query);
-		if($result){
-			$db->_execute("UPDATE ace_iv_invoice set remaining_amount = ".$totalRemainingAmount.", status_id=".$statusId." where invoice_id =".$invoiceIds);
-			$response  = array("res" => "1");
-            echo json_encode($response);
+		foreach ($invoiceIds as $invoiceId) {
+			$query = "INSERT INTO ace_iv_invoice_history (invoice_id, status_id, pay_date, payment_method, paid_amount,paid_by,notes, invoice_image,job_ref_num,invoice_num) VALUES (".$invoiceId.",".$statusId.",'".$payDate."',".$methodId.", ".$paidAmount.",".$agentId.",'".$notes."', '".$imageName."','".$jobRefnum."','".$invoiceNum."')";
+			$result = $db->_execute($query);
+			if($result){
+				$db->_execute("UPDATE ace_iv_invoice set remaining_amount = ".$totalRemainingAmount.", status_id=".$statusId." where invoice_id =".$invoiceId);
+			}
 		}
+		$response  = array("res" => "1");
+	    echo json_encode($response);
 		exit();
 	}
 

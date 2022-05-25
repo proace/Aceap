@@ -744,6 +744,25 @@ class PagesController extends AppController{
 
     }
 
+  function message23(){
+        
+        
+            
+			$ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/get_con.php");
+            curl_setopt($ch, CURLOPT_POST, 1);
+            
+            // receive server response ...
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec ($ch);//exit;
+            
+ 
+            print_r($response);
+        
+  exit;
+ 
+ }
+
     // Loki: Set message frame
     function message() 
     {   
@@ -779,9 +798,10 @@ class PagesController extends AppController{
                 $res = '';
                 while($row = mysql_fetch_array($result, MYSQL_ASSOC))
                 {
-                    $res .= '<div class=" textus-ConversationListItem-link textus-ConversationListItem-preview" onclick="showMessageHistory('.$row["phone_number"].')" page_num="'.$pageNo.'">
+                    $phoneNum = str_replace("-","",$row["phone_number"]);
+                    $res .= '<div class=" textus-ConversationListItem-link textus-ConversationListItem-preview" onclick="showMessageHistory('.$phoneNum.')" page_num="'.$pageNo.'">
                         <input type="hidden" id="message_id" value="'.$row['id'].'">
-                        <h4 class="textus-ConversationListItem-contactName">'.$row["phone_number"].'</h4>
+                        <h4 class="textus-ConversationListItem-contactName">'.$phoneNum.'</h4>
                         <div class="textus-ConversationListItem-previewDetails"><span class="textus-ConversationListItem-previewMessage">'. $row["message"].'
                         </div>
                      </div>';
@@ -795,6 +815,20 @@ class PagesController extends AppController{
     //Loki: Show page to user for service review
     function showUserReview()
     {
+        $db =& ConnectionManager::getDataSource("default");    
+        if($_REQUEST['s']==5){
+            
+            //we get five star so redirect to google
+            $order_id = $_REQUEST['order_id'];
+            $rating=5;
+            $mail = $_REQUEST['email'];
+            //send mail
+            $db->_execute("UPDATE ace_rp_orders set office_rating = $rating where id = '$order_id'");
+            $this->redirect("orders/saveUserReviewResponse/?order_id=$order_id&rating=5&email=$mail");
+            
+            echo "<script>window.location.href='/acesys/index.php/orders/saveUserReviewResponse/?order_id=$order_id&rating=5&email=$mail'</script>";
+            exit;
+        }
         $this->set("email", $_GET['email']);
         $this->set("phone_number", $_GET['phone_number']);
     }

@@ -149,7 +149,17 @@ class Order extends AppModel
 													'conditions'	=> '',
 													'dependent'		=> true,
 													'foreignKey'	=> 'order_id'
-									)
+									),
+							'InstallationItem' => array('className' 	=> 'OrderInstallationItem',
+													'dependent'		=> true,
+													'order'    	=> 'id ASC',
+													'foreignKey'	=> 'order_id'
+							),
+							'CreditcardPaymentDetails' => array('className'    	=> 'CreditcardPaymentDetails',
+																'conditions'    => '',
+																'order'    	=> '',
+																'foreignKey'   	=> 'order_id'
+							)
 				);
 
 	 
@@ -208,7 +218,7 @@ class Order extends AppModel
 					 permit_applied_date, permit_applied_user,
 					 permit_applied_method, permit_result, permit_number,
 					 
-					 change_user_id, change_date, change_time, opercode) 
+					 change_user_id, change_date, change_time, opercode,estimator,payment_method_type) 
 				select t.id, t.branch, t.order_status_id, t.order_substatus_id,
 				   t.order_type_id, t.order_number,
 				
@@ -235,7 +245,7 @@ class Order extends AppModel
 					 t.permit_applied_date, t.permit_applied_user,
 					 t.permit_applied_method, t.permit_result, t.permit_number,
 					 
-					 " .$_SESSION['user']['id'] .", now(), current_time(), 2
+					 " .$_SESSION['user']['id'] .", now(), current_time(), 2,t.estimator, t.payment_method_type
 				from ace_rp_orders t where t.id=".$id;
 			$db->_execute($query);
 		}

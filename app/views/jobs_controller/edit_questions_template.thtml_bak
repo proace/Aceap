@@ -1,0 +1,859 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Edit Questions Template</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            paddin: 0;
+            margin: 0;
+        }
+        
+        .add_tech_response_button {
+            background: #8eff1e;
+        }
+        
+        .hide {
+            display: none;
+        }
+        
+        .rank {
+            width: 30px;
+            text-align: right;
+        }
+        
+        .value {
+            width: 200px;
+        }
+        
+        .response {
+            /* width:300px; */
+            width: 50%;
+        }
+        
+        .suggestion {
+            /* width:300px; */
+            width: 50%;
+        }
+        
+        .decision {
+            /* width:300px; */
+            width: 50%;
+        }
+        
+        .delete_box {
+            /* background-color:#C00; */
+            color: #C00;
+            padding: 4px 1px 2px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        li {
+            margin-top: 2px;
+        }
+        
+        .add_mode {
+            /* background-color: #201c4a; */
+            color: #fff;
+            border: 1px solid #201c4a;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+        
+        .notify_box {
+            background-color: #090;
+            color: #9F0;
+            padding: 4px 1px 2px;
+            border-radius: 5px;
+        }
+        
+        #menu_bar {
+            position: fixed;
+            background-color: #666;
+            width: 100%;
+            height: 25px;
+            border-bottom: 2px solid #999;
+            padding-top: 5px;
+            top: 0;
+        }
+        
+        #template {
+            margin-top: 30px;
+        }
+        
+        #OrderTypeName {
+            margin-left: 5px;
+        }
+        
+        .add_response_button {
+            background-color: #0d3f68;
+        }
+        
+        .add_decision_button {
+            background-color: #13609d;
+        }
+        
+        .add_suggestion_button {
+            background-color: #116597;
+        }
+        
+        .add_reminder_button {
+            background-color: #1669ad;
+        }
+        
+        .add_tech_response_button {
+            background-color: #d0e7f9;
+            color: #717374;
+        }
+        
+        .jobType {
+            width: 12%;
+        }
+        
+        #OrderTypeName {
+            width: 13%;
+        }
+        
+        .add_text_response {
+            background-color: #0d3f68;
+        }
+        
+        .add_condition_button {
+            background-color: #13609d;
+        }
+    </style>
+    <!--<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>-->
+    <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+    <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+    <script type="text/javascript">
+        var index = 0;
+        $(function() {
+            changeMode($("#input_mode").val());
+
+            // $(".copy_dropdown").live("click", function() {
+            //     console.log('here');
+            //     var row = $(this).parent().parent().clone();
+            //     tableBody = $("#question_body")
+            //     console.log(row);
+            //     $(tableBody).after(row);
+            // });
+
+            $("#input_mode").change(function() {
+                changeMode($(this).val());
+            });
+
+            $("#add_dropdown_button").click(function() {
+                var i = 'n' + getIndex();
+                row = "";
+                row += '<tr>';
+                row += '	<td><input type="text" class="rank" name="data[questions][' + i + '][rank]" /></td>';
+                row += '	<td><input type="checkbox" class="for_office" name="data[questions][' + i + '][for_office]" value="1" /></td>';
+                row += '	<td><input type="checkbox" class="for_tech" name="data[questions][' + i + '][for_tech]" value="1" /></td>';
+                row += '	<td><input type="checkbox" class="for_sale" name="data[questions][' + i + '][for_sale]" value="1" /></td>';
+                row += '	<td><input type="checkbox" class="for_print" name="data[questions][' + i + '][for_print]" value="1" /></td>';
+                row += '	<td><input type="checkbox" class="for_estimate" name="data[questions][' + i + '][for_estimate]" value="1" /></td>';
+                row += '	<td><input type="checkbox" class="is_permanent" name="data[questions][' + i + '][is_permanent]" value="1" /></td>';
+                row += '	<td><input type="text" class="value" name="data[questions][' + i + '][value]" /></td>';
+                row += '	<td>dropdown<input type="hidden" value="dropdown" name="data[questions][' + i + '][type]" /></td>';
+                row += '	<input type="hidden" value="<?php echo $item_id ?>" name="data[questions][' + i + '][order_type_id]" />';
+                row += '	<td>';
+                row += '		<ol class="question_div">';
+                row += '			<li>';
+                row += '				<input type="hidden" class="array" value="data[questions][' + i + ']" />';
+                row += '				<input type="button" value="Response" class="add_response_button ' + getMode("add") + ' add_mode" />';
+                row += '				<input type="button" value="Tech Response +" class="add_tech_response_button ' + getMode("add") + ' add_mode" />';
+                row += '			</li>';
+                row += '		</ol>';
+                row += '	</td>';
+                row += '	<td><span class="delete_box delete_mode"><i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" class="delete_this" name="data[questions][' + i + '][delete_this]" value="1" /></span></td>';
+                row += '</tr>';
+                $("#question_body").prepend(row);
+            });
+
+            $("#add_text_button").click(function() {
+                var i = 'n' + getIndex();
+                var i2 = 'n' + getIndex();
+                row = "";
+                row += '<tr>';
+                row += '	<td><input type="text" class="rank" name="data[questions][' + i + '][rank]" /></td>';
+                row += '	<td><input type="checkbox" class="for_office" name="data[questions][' + i + '][for_office]" value="1" /></td>';
+                row += '	<td><input type="checkbox" class="for_tech" name="data[questions][' + i + '][for_tech]" value="1" /></td>';
+                row += '	<td><input type="checkbox" class="for_sale" name="data[questions][' + i + '][for_sale]" value="1" /></td>';
+                row += '	<td><input type="checkbox" class="for_print" name="data[questions][' + i + '][for_print]" value="1" /></td>';
+                row += '	<td><input type="checkbox" class="for_estimate" name="data[questions][' + i + '][for_estimate]" value="1" /></td>';
+                row += '	<td><input type="checkbox" class="is_permanent" name="data[questions][' + i + '][is_permanent]" value="1" /></td>';
+                row += '	<td><input type="text" class="value" name="data[questions][' + i + '][value]" /></td>';
+                row += '	<td>text<input type="hidden" value="text" name="data[questions][' + i + '][type]" /></td>';
+                row += '	<input type="hidden" value="<?php echo $item_id ?>" name="data[questions][' + i + '][order_type_id]" />';
+                row += '	<td>';
+                row += '		<ol class="question_div">';
+                row += '			<li>Default &nbsp; &nbsp; &nbsp; &nbsp;';
+                row += '				<input type="hidden" class="response" value="Default" name="data[questions][' + i + '][responses][' + i2 + '][value]" />';
+                row += '				<input type="hidden" class="array" value="data[questions][' + i + '][responses][' + i2 + ']" />';
+                row += '				<input type="button" value="Suggestion" class="add_suggestion_button ' + getMode("add") + ' add_mode" />';
+                row += '				<ul></ul>';
+                row += '			</li>';
+                row += '			<li>';
+                row += '				<input type="hidden" class="array" value="data[questions][' + i + ']" />';
+                row += '				<input type="button" value="Conditional" class="add_condition_button ' + getMode("add") + ' add_mode" />';
+                row += ' </li> <input type="hidden" class="array" value="data[questions][' + i + ']" /> <li><input type="button" value="Add Text Response" class="add_text_response ' + getMode("add") + ' add_mode" />';
+                row += '<input type="hidden" class="array" value="data[questions][' + i + ']" /><input type="button" value="Tech Response +" class="add_tech_response_button ' + getMode("add") + ' add_mode" />';
+                row += '			</li>';
+                row += '		</ol>';
+                row += '	</td>';
+                row += '	<td><span class="delete_box delete_mode"><i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" class="delete_this" name="[new]data[questions][' + i + '][for_office]" /></span></td>';
+                row += '</tr>';
+                $("#question_body").prepend(row);
+            });
+
+            $(".add_response_button").live("click", function() {
+                //var response = prompt("Enter response:","?");
+                var response = "?";
+                if (response != null) {
+                    array = $(this).prev(".array").val();
+                    var i = array + '[responses][n' + getIndex() + ']';
+                    row = '';
+                    row += '<li>';
+                    row += '	<span class="delete_box ' + getMode("delete") + ' delete_mode">';
+                    row += '    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" class="" name="' + i + '[delete_this]" value="1" />';
+                    row += '	</span>';
+                    row += '	<input type="text" class="response" value="' + response + '" name = "' + i + '[value]" />';
+                    row += '	<input type="hidden" class="array" value="' + i + '" />';
+                    row += '	<input type="button" value="Suggestion" class="add_suggestion_button ' + getMode("add") + ' add_mode" />';
+                    row += '	<ul></ul>';
+                    row += '</li>';
+
+                    // $(this).parent().after(row);
+                    $(this).parent().before(row);
+                }
+            });
+
+            $(".add_tech_response_button").live("click", function() {
+                //var response = prompt("Enter response:","?");
+                var response = "?";
+                if (response != null) {
+                    array = $(this).prev(".array").val();
+                    var i = array + '[techresponses][n' + getIndex() + ']';
+                    row = '';
+                    row += '<li>';
+                    row += '	<span class="delete_box ' + getMode("delete") + ' delete_mode">';
+                    row += '    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" class="" name="' + i + '[delete_this]" value="1" />';
+                    row += '	</span>';
+                    row += '	<input type="text" class="response" value="' + response + '" name = "' + i + '[value]" />';
+                    row += '	<input type="hidden" class="array" value="' + i + '" />';
+                    row += '	<ul></ul>';
+                    row += '</li>';
+
+                    $(this).after(row);
+                }
+            });
+
+            $(".add_suggestion_button").live("click", function() {
+                //var suggestion = prompt("Enter Suggestion:","?");
+                var suggestion = "?";
+                var i = 'n' + getIndex();
+                if (suggestion != null) {
+                    array = $(this).prev(".array").val();
+                    var i = array + '[suggestions][n' + getIndex() + ']';
+                    row = '';
+                    row += '<li>';
+                    row += '	<span class="delete_box ' + getMode("delete") + ' delete_mode">';
+                    row += '    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" class="" name="' + i + '[delete_this]" value="1" />';
+                    row += '	</span>';
+                    row += '	<input type="text" class="suggestion" value="' + suggestion + '" name="' + i + '[value]" />';
+                    row += '	<input type="hidden" class="array" value="' + i + '" />';
+                    row += '	<input type="button" value="Decision" title="Add Decision" class="add_decision_button ' + getMode("add") + ' add_mode" />';
+                    row += '	<ul></ul>';
+                    row += '</li>';
+
+                    $(this).next().append(row);
+                }
+            });
+
+            $(".add_condition_button").live("click", function() {
+                var d = "";
+
+                array = $(this).prev(".array").val();
+                var i = array + '[responses][n' + getIndex() + ']';
+
+                d += '<select class="operation" name="' + i + '[operation_id]">';
+                d += '<option value="1">equal to</option>';
+                d += '<option value="2">greater than</option>';
+                d += '<option value="3">greater than or equal to</option>';
+                d += '<option value="4">less than</option>';
+                d += '<option value="5">less than or equal to</option>';
+                d += '<option value="6">not equal to</option>';
+                d += '<option value="7">10% less or equal to</option>';
+                d += '</select>';
+
+                d += '<select class="which" name="' + i + '[which_id]">';
+                d += '<option value="1">this</option>';
+                d += '<option value="2">question #</option>';
+                d += '</select>';
+
+                row = '';
+                row += '<li>';
+                row += '	<span class="delete_box ' + getMode("delete") + ' delete_mode">';
+                row += '    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" class="" name="' + i + '[delete_this]" value="1" />';
+                row += '	</span>';
+                row += '    if [text] is ' + d + ' ';
+                row += '	<input type="text" class="value" name="' + i + '[value]" />';
+                row += '	<input type="hidden" class="array" value="' + i + '" />';
+                row += '	<input type="button" value="Suggestion" class="add_suggestion_button ' + getMode("add") + ' add_mode" />';
+                row += '	<ul></ul>';
+                row += '</li>';
+
+                $(this).parent().before(row);
+            });
+
+            $(".add_decision_button").live("click", function() {
+                //var decision = prompt("Enter Decision:","?");
+                var decision = "?";
+                var i = 'n' + getIndex();
+                if (decision != null) {
+                    array = $(this).prev(".array").val();
+                    var i = array + '[decisions][n' + getIndex() + ']';
+                    row = '';
+                    row += '<li>';
+                    row += '	<span class="delete_box ' + getMode("delete") + ' delete_mode">';
+                    row += '    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" class="" name="' + i + '[delete_this]" value="1" />';
+                    row += '	</span>';
+                    row += '	<input type="text" class="decision" value="' + decision + '" name="' + i + '[value]" />';
+                    // row += '	<span class="notify_box '+getMode("add")+' add_mode">';		
+                    // row += '	Notify<input type="checkbox" value="1" class="notify_admin" title="Notify Admin" />';
+                    // row += '	</span>';
+                    row += '	<input type="hidden" class="array" value="' + i + '" />';
+                    row += '	<input type="button" value="Code" class="add_reminder_button ' + getMode("add") + ' add_mode" />';
+                    row += '	<ul></ul>';
+                    row += '</li>';
+
+                    $(this).next().append(row);
+                }
+            });
+
+            $(".add_text_response").live("click", function() {
+
+                //var decision = prompt("Enter Decision:","?");
+                var text_response = "?";
+                var i = 'n' + getIndex();
+                // if(text_response != null) {
+                array = $(this).prev(".array").val();
+                var i = array + '[text_response][n' + getIndex() + ']';
+                row = '';
+                row += '<li>';
+                row += '	<span class="delete_box ' + getMode("delete") + ' delete_mode">';
+                row += '    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" class="" name="' + i + '[delete_this]" value="1" />';
+                row += '	</span>';
+                row += '	<input type="text" class="decision" value="' + text_response + '" name="' + i + '[value]" />';
+                row += '	<ul></ul>';
+                row += '</li>';
+                // console.log($(this).next());
+                // $(this).next().append(row);		
+                $(this).parent().after(row);
+                // }
+            });
+            $(".add_reminder_button").live("click", function() {
+                //var decision = prompt("Enter Decision:","?");
+                var reminder = "?";
+                var i = 'n' + getIndex();
+                if (reminder != null) {
+                    array = $(this).prev(".array").val();
+                    var i = array + '[reminders][n' + getIndex() + ']';
+                    row = '';
+
+                    row += '<li>';
+                    row += '	<span class="delete_box ' + getMode("delete") + ' delete_mode">';
+                    row += '    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" class="" name="' + i + '[delete_this]" value="1" />';
+                    row += '	</span>';
+                    row += '	<input type="text" class="reminder" value="' + reminder + '" name="' + i + '[value]" />';
+                    row += '	<input type="hidden" class="array" value="' + i + '" />';
+                    //row += '	<input type="button" value="Add Reminder" title="Add Reminder" class="add_reminder_button '+getMode("add")+' add_mode" />';
+                    row += '	<ul></ul>';
+
+                    $(this).next().append(row);
+                }
+            });
+
+            $("#preview_save").click(function() {
+                $("#questions_template").attr("action", "<?=BASE_URL;?>/jobs/saveQuestionsTemplate?item_id=<?php echo $item_id ?>&preview=1");
+                $("#submit_save").attr("disabled", "disabled");
+                $(this).attr("disabled", "disabled");
+                $("#questions_template").submit();
+            });
+
+            $("span.delete_mode").live("click", function() {
+
+                if ($(this).children("input").is(":checked")) {
+                    $(this).parent("li").addClass("hide");
+                } else {
+
+                }
+            });
+
+            $(".question_type").change(function() {
+
+                //alert($(this).parent().html());
+                //alert($(this).parent("td").next().html());
+                var row = '';
+
+                var i = $(this).parent("td").prev(".question_id").val();
+
+                if ($(this).val() == "dropdown") {
+                    var i2 = 'n' + getIndex();
+                    row += '		<ol class="question_div">';
+                    row += '			<li>';
+                    row += '				<input type="hidden" class="array" value="data[questions][' + i + ']" />';
+                    row += '				<input type="button" value="Response" class="add_response_button ' + getMode("add") + ' add_mode" />';
+
+                    row += '			</li>';
+                    row += '			<li>';
+                    row += '				<input type="button" value="Tech Response +" class="add_tech_response_button ' + getMode("add") + ' add_mode" />';
+                    row += '			</li>';
+                    row += '		</ol>';
+                } else if ($(this).val() == "text") {
+                    var i2 = 'n' + getIndex();
+                    row += '		<ol class="question_div">';
+                    row += '			<li>Default &nbsp; &nbsp; &nbsp; &nbsp;';
+                    row += '				<input type="hidden" class="response" value="Default" name="data[questions][' + i + '][responses][' + i2 + '][value]" />';
+                    row += '				<input type="hidden" class="array" value="data[questions][' + i + '][responses][' + i2 + ']" />';
+                    row += '				<input type="button" value="Suggestion" class="add_suggestion_button ' + getMode("add") + ' add_mode" />';
+                    row += '				<ul></ul>';
+                    row += '			</li>';
+                    row += '			<li>';
+                    row += '				<input type="hidden" class="array" value="data[questions][' + i + ']" />';
+                    row += '				<input type="button" value="Conditional" class="add_condition_button ' + getMode("add") + ' add_mode" />';
+                    row += '		</li> <input type="hidden" class="array" value="data[questions][' + i + ']" /> <li><input type="button" value="Add Text Response" class="add_text_response ' + getMode("add") + ' add_mode" />';
+                    row += '			</li>';
+                    row += '			<li>';
+                    row += '<input type="hidden" class="array" value="data[questions][' + i + ']" /><input type="button" value="Tech Response +" class="add_tech_response_button ' + getMode("add") + ' add_mode" />';
+                    row += '			</li>';
+                    row += '		</ol>';
+                }
+                $(this).parent("td").next().html(row);
+            });
+
+        });
+
+        function changeMode(v) {
+            switch (v) {
+                case "add":
+                    $(".add_mode").removeClass("hide");
+                    $(".delete_mode").addClass("hide");
+                    $(".duplicate_mode").addClass("hide");
+                    break;
+
+                case "delete":
+                    $(".add_mode").addClass("hide");
+                    $(".delete_mode").removeClass("hide");
+                    $(".duplicate_mode").addClass("hide");
+                    break;
+
+                case "duplicate":
+                    $(".add_mode").addClass("hide");
+                    $(".delete_mode").addClass("hide");
+                    $(".duplicate_mode").removeClass("hide");
+                    break;
+
+                case "free":
+                    $(".add_mode").removeClass("hide");
+                    $(".delete_mode").removeClass("hide");
+                    $(".duplicate_mode").removeClass("hide");
+                    break;
+            }
+        }
+
+        function getMode(val) {
+            if ($("#input_mode").val() == val || $("#input_mode").val() == "free") {
+                return "";
+            } else {
+                return "hide";
+            }
+        }
+
+        function getIndex() {
+            return index++;
+        }
+        $(document).ready(function() {
+            $('.reminder').datepicker();
+        });
+    </script>
+
+</head>
+
+<body>
+
+    <form id="questions_template" name="questions_template" action="<?=BASE_URL;?>/jobs/saveQuestionsTemplate?item_id=<?php echo $item_id ?>&preview=0" method="post">
+        <div id="menu_bar">
+            <input type="text" id="OrderTypeName" value="<?php echo $order_type['name'] ?>" name="data[OrderType][name]">
+            <select id="OrderTypeCategoryId" name="data[OrderType][category_id]">
+	<?php foreach($categories as $category) { ?>
+		<?php if($category['id'] == $order_type['category_id']) { ?>
+            <option selected="selected" value="<?php echo $category['id'] ?>"><?php echo $category['name'] ?></option>
+        <?php } else { ?>
+            <option value="<?php echo $category['id'] ?>"><?php echo $category['name'] ?></option>
+        <?php } ?>
+    <?php } ?>
+</select>
+            <!-- <select name="data[OrderType][jobtype_id]" class="jobType">
+<option value="">Transfer to</option>
+    <?php foreach($jobType as $item) { ?>
+    <option value="<?php echo $item['id']; ?>"><?php echo $item['name']; ?></option>
+    <?php } ?>
+</select> -->
+            <input type="button" value="Dropdown Question +" id="add_dropdown_button" />
+            <input type="button" value="Text Question +" id="add_text_button" />
+            <select id="input_mode">
+	<option value="free">Free</option>
+	<option value="add">Add</option>    
+    <option value="delete">Delete</option>
+    <option value="duplicate">Duplicate</option>
+</select>
+            <input type="submit" id="submit_save" value="Save" />
+            <input type="button" id="preview_save" value="Save&Preview" />
+        </div>
+        <table border="1" id="template">
+            <tr>
+                <!--<th>id</th>-->
+                <th>#</th>
+                <th>Office</th>
+                <th>Tech</th>
+                <th>Sale</th>
+                <th>Print</th>
+                <th>Estimate</th>
+                <th>Permanent</th>
+                <th>Question</th>
+                <th>Type</th>
+                <th></th>
+                <th>Delete</th>
+                <th>Add</th>
+            </tr>
+            <tbody id="question_body">
+                <?php foreach($questions as $question_id => $question) { ?>
+                <tr>
+                    <!--<td><?php echo $question['id'] ?></td>-->
+                    <td><input type="text" class="rank" name="data[questions][<?php echo $question_id ?>][rank]" value="<?php echo $question['rank'] ?>" /></td>
+                    <?php $for_office = $question['for_office']==1?'checked="checked"':''; ?>
+                    <td><input type="checkbox" <?php echo $for_office ?> class="for_office" name="data[questions][
+                        <?php echo $question_id ?>][for_office]" value="1" /></td>
+                    <?php $for_tech = $question['for_tech']==1?'checked="checked"':''; ?>
+                    <td><input type="checkbox" <?php echo $for_tech ?> class="for_tech" name="data[questions][
+                        <?php echo $question_id ?>][for_tech]" value="1" /></td>
+                    <?php $for_sale = $question['for_sale']==1?'checked="checked"':''; ?>
+                    <td><input type="checkbox" <?php echo $for_sale ?> class="for_sale" name="data[questions][
+                        <?php echo $question_id ?>][for_sale]" value="1" /></td>
+                    <?php $for_print = $question['for_print']==1?'checked="checked"':''; ?>
+                    <td><input type="checkbox" <?php echo $for_print ?> class="for_print" name="data[questions][
+                        <?php echo $question_id ?>][for_print]" value="1" /></td>
+                    <?php $for_estimate = $question['for_estimate']==1?'checked="checked"':''; ?>
+                    <td><input type="checkbox" <?php echo $for_estimate ?> class="for_estimate" name="data[questions][
+                        <?php echo $question_id ?>][for_estimate]" value="1" /></td>
+                    <?php $is_permanent = $question['is_permanent']==1?'checked="checked"':''; ?>
+                    <td><input type="checkbox" <?php echo $is_permanent ?> class="is_permanent" name="data[questions][
+                        <?php echo $question_id ?>][is_permanent]" value="1" /></td>
+                    <td><input type="text" class="value" name="data[questions][<?php echo $question_id ?>][value]" value="<?php echo $question['value'] ?>" /></td>
+
+                    <?php if($question['type'] == 'dropdown') { ?>
+                    <input type="hidden" value="<?php echo $item_id ?>" name="data[questions][<?php echo $question_id ?>][order_type_id]" />
+                    <input type="hidden" value="<?php echo $question_id ?>" class="question_id" />
+                    <td>
+                        <?php if(count($responses[$question_id]) == 0) { ?>
+                        <select class="question_type" name="data[questions][<?php echo $question_id ?>][type]">
+            	<option selected="selected" value="dropdown">Dropdown</option>
+                <option value="text">Text</option>
+            </select>
+                        <?php } else { ?> Dropdown
+                        <input type="hidden" value="<?php echo $question['type'] ?>" name="data[questions][<?php echo $question_id ?>][type]" />
+                        <?php } ?>
+                    </td>
+                    <td>
+                        <ol class="question_div">
+                            <?php foreach($responses[$question_id] as $response_id => $response) { ?>
+                            <li>
+                                <span class="delete_box delete_mode">
+                    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][delete_this]" value="1" />
+                    </span>
+                                <input type="text" class="response" value="<?php echo $response['value'] ?>" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][value]" />
+                                <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>]" />
+                                <input type="button" value="Suggestion" class="add_suggestion_button add_mode" />
+
+                                <ul>
+                                    <?php foreach($suggestions[$response_id] as $suggestion_id => $suggestion) { ?>
+                                    <li>
+                                        <span class="delete_box delete_mode">                            
+                            <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][delete_this]" value="1" />
+                            </span>
+                                        <input type="text" class="suggestion" value="<?php echo $suggestion['value'] ?>" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][value]" />
+                                        <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>]" />
+                                        <input type="button" value="Decision" title="Add Decision" class="add_decision_button add_mode" />
+                                        <ul>
+                                            <?php foreach($decisions[$suggestion_id] as $decision_id => $decision) { ?>
+                                            <li>
+                                                <span class="delete_box delete_mode">
+                                    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][delete_this]" value="1" />
+                                    </span>
+                                                <input type="text" class="decision" value="<?php echo $decision['value'] ?>" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][value]"
+                                                />
+                                                <?php $notify = $decision['notify']==1?'checked="checked"':''; ?>
+                                                <!-- <span class="notify_box add_mode">
+                                    Notify<input type="checkbox" <?php echo $notify ?> value="1" class="notify_admin" title="Notify Admin" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][notify]" />
+                                    </span> -->
+                                                <!----jack hutson------------>
+                                                <ul>
+                                                    <?php 
+								 if(count($reminders[$decision_id]) >0){
+								 $reminder_id=$reminders[$decision_id]['id'];
+								 $reminder_value=$reminders[$decision_id]['value'];
+								 
+								 ?>
+                                                    <li>
+                                                        <span class="delete_box delete_mode">
+                                    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][reminders][<?php echo $reminder_id ?>][delete_this]" value="1" />
+                                    </span>
+                                                        <input type="text" class="reminder" value="<?php echo $reminder_value; ?>" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][reminders][<?php echo $reminder_id;?>][value]"
+                                                        />
+
+                                                    </li>
+                                                    <?php } ?>
+                                                </ul>
+                                                <!------------------------->
+                                            </li>
+                                            <?php } //END foreach($decisions[$suggestion_id] as $decision_id => $decision) ?>
+                                        </ul>
+                                    </li>
+                                    <?php } //END foreach($suggestions[$response_id] as $suggestion_id => $suggestion) ?>
+                                </ul>
+                            </li>
+                            <?php } //END foreach($response[$question_id] as $response_id => $response) ?>
+                            <li>
+                                <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>]" />
+                                <input type="button" value="Response" class="add_response_button add_mode" />
+
+                            </li>
+                            <li>
+                                <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>]" />
+                                <input type="button" value="Tech Response +" class="add_tech_response_button add_mode" />
+                            </li>
+                            <?php foreach($techresponses[$question_id] as $techresponse_id => $techresponse) { ?>
+                            <li>
+                                <span class="delete_box delete_mode">
+                    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][techresponses][<?php echo $techresponse_id ?>][delete_this]" value="1" />
+                    </span>
+                                <input type="text" class="response" value="<?php echo $techresponse['value'] ?>" name="data[questions][<?php echo $question_id ?>][techresponses][<?php echo $techresponse_id ?>][value]" />
+                                <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>][techresponses][<?php echo $techresponse_id ?>]" />
+                            </li>
+                            <?php } ?>
+
+                        </ol>
+                    </td>
+                    <?php } //END if($question['type'] == 'dropdown') ?>
+
+                    <?php if($question['type'] == 'text') { ?>
+                    <input type="hidden" value="<?php echo $item_id ?>" name="data[questions][<?php echo $question_id ?>][order_type_id]" />
+                    <input type="hidden" value="<?php echo $question_id ?>" class="question_id" />
+                    <td>
+                        <?php if(count($responses[$question_id]) == 1) { ?>
+                        <select class="question_type" name="data[questions][<?php echo $question_id ?>][type]">
+            	<option value="dropdown">Dropdown</option>
+                <option selected="selected" value="text">Text</option>
+            </select>
+                        <?php } else { ?> Text
+                        <input type="hidden" value="<?php echo $question['type'] ?>" name="data[questions][<?php echo $question_id ?>][type]" />
+                        <?php } ?>
+                    </td>
+                    <td>
+                        <ol class="question_div">
+                            <?php foreach($responses[$question_id] as $response_id => $response) { ?>
+                            <?php if($response['value'] == 'Default') { ?>
+                            <li>Default &nbsp; &nbsp; &nbsp; &nbsp;
+                                <input type="hidden" class="response" value="Default" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][value]" />
+                                <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>]" />
+                                <input type="button" value="Suggestion" class="add_suggestion_button add_mode" />
+                                <ul>
+                                    <?php foreach($suggestions[$response_id] as $suggestion_id => $suggestion) { ?>
+                                    <li>
+                                        <span class="delete_box delete_mode">
+                            <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][delete_this]" value="1" />
+                            </span>
+                                        <input type="text" class="suggestion" value="<?php echo $suggestion['value'] ?>" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][value]" />
+                                        <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>]" />
+                                        <input type="button" value="Decision" title="Add Decision" class="add_decision_button add_mode" />
+                                        <ul>
+                                            <?php foreach($decisions[$suggestion_id] as $decision_id => $decision) { ?>
+                                            <li>
+                                                <span class="delete_box delete_mode">
+                                    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][delete_this]" value="1" />
+                                    </span>
+                                                <input type="text" class="decision" value="<?php echo $decision['value'] ?>" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][value]"
+                                                />
+                                                <?php $notify = $decision['notify']==1?'checked="checked"':''; ?>
+                                                <!-- <span class="notify_box add_mode">
+                                    Notify<input type="checkbox" <?php echo $notify ?> value="1" class="notify_admin" title="Notify Admin" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][notify]" />
+                                    </span> -->
+                                                <!----jack hutson------------>
+                                                <ul>
+                                                    <?php 
+								 if(count($reminders[$decision_id]) >0){
+								 $reminder_id=$reminders[$decision_id]['id'];
+								 $reminder_value=$reminders[$decision_id]['value'];
+								 
+								 ?>
+                                                    <li>
+                                                        <span class="delete_box delete_mode">
+                                    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][reminders][<?php echo $reminder_id ?>][delete_this]" value="1" />
+                                    </span>
+                                                        <input type="text" class="reminder" value="<?php echo $reminder_value; ?>" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][reminders][<?php echo $reminder_id;?>][value]"
+                                                        />
+
+                                                    </li>
+                                                    <?php } ?>
+                                                </ul>
+                                                <!------------------------->
+                                            </li>
+                                            <?php } //END foreach($decisions[$suggestion_id] as $decision_id => $decision) ?>
+                                        </ul>
+
+
+
+                                    </li>
+                                    <?php } //END foreach($suggestions[$response_id] as $suggestion_id => $suggestion) ?>
+
+                                </ul>
+                            </li>
+                            <?php } else { ?>
+                            <li>
+                                <span class="delete_box delete_mode">
+                    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][delete_this]" value="1" />
+                    </span> if [text] is
+                                <select class="operation" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][operation_id]">
+                    <?php foreach($operations as $operation_id => $operation) { ?>
+                    	<?php if($operation_id == $response['operation_id']) { ?>
+                        <option value="<?php echo $operation_id ?>" selected="selected"><?php echo $operation['name'] ?></option>
+                        <?php } else { ?>
+                        <option value="<?php echo $operation_id ?>"><?php echo $operation['name'] ?></option>
+                        <?php } ?>
+                    <?php } ?>                    
+                    </select>
+                                <select class="which" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][which_id]">
+                    <?php foreach($which as $which_id => $w) { ?>
+                    	<?php if($which_id == $response['which_id']) { ?>
+                        <option value="<?php echo $which_id ?>" selected="selected"><?php echo $w['name'] ?></option>
+                        <?php } else { ?>
+                        <option value="<?php echo $which_id ?>"><?php echo $w['name'] ?></option>
+                        <?php } ?>
+                    <?php } ?>                    		
+                    </select>
+                                <input type="text" class="value" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][value]" value="<?php echo $response['value'] ?>" />
+                                <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>]" />
+                                <input type="button" value="Suggestion" class="add_suggestion_button add_mode" />
+
+                                <ul>
+                                    <?php foreach($suggestions[$response_id] as $suggestion_id => $suggestion) { ?>
+                                    <li>
+                                        <span class="delete_box delete_mode">
+                            <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][delete_this]" value="1" />
+                            </span>
+                                        <input type="text" class="suggestion" value="<?php echo $suggestion['value'] ?>" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][value]" />
+                                        <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>]" />
+                                        <input type="button" value="Decision" title="Add Decision" class="add_decision_button add_mode" />
+                                        <ul>
+                                            <?php foreach($decisions[$suggestion_id] as $decision_id => $decision) { ?>
+                                            <li>
+                                                <span class="delete_box delete_mode">
+                                    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][delete_this]" value="1" />
+                                    </span>
+                                                <input type="text" class="decision" value="<?php echo $decision['value'] ?>" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][value]"
+                                                />
+                                                <?php $notify = $decision['notify']==1?'checked="checked"':''; ?>
+                                                <!-- <span class="notify_box add_mode">
+                                    Notify<input type="checkbox" <?php echo $notify ?> value="1" class="notify_admin" title="Notify Admin" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][notify]" />
+                                    </span> -->
+                                            </li>
+                                            <?php } //END foreach($decisions[$suggestion_id] as $decision_id => $decision) ?>
+                                        </ul>
+                                    </li>
+                                    <?php } //END foreach($suggestions[$response_id] as $suggestion_id => $suggestion) ?>
+                                </ul>
+                            </li>
+
+                            <?php } //END if($response['value'] == 'Default') ?>
+
+                            <li>
+                                <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>]" />
+                                <input type="button" value="Add Text Response" class="add_text_response add_mode" />
+
+                                <ul>
+                                    <?php foreach($text_responses[$response_id] as $text_response_id => $text_response) { 
+                    		?>
+                                    <li>
+                                        <span class="delete_box delete_mode">
+                            <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][text_response][delete_this]" value="1" />
+                            </span>
+                                        <input type="text" class="suggestion" value="<?php echo $text_response['value'] ?>" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][text_response][<?php echo $text_response_id ?>][value]" />
+                                        <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][text_response][<?php echo $text_response_id ?>]" />
+
+                                    </li>
+                                    <?php }?>
+                                </ul>
+                            </li>
+                            <?php } //END foreach($response[$question_id] as $response_id => $response) ?>
+                            <li>
+                                <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>]" />
+                                <input type="button" value="Conditional" class="add_condition_button add_mode" />
+                                <!--   <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>]" />
+                    <input type="button" value="Add Tech Dropdown Response" class="add_tech_response_button add_mode" /> -->
+                                <ul>
+                                    <?php foreach($decisions[$suggestion_id] as $decision_id => $decision) { ?>
+                                    <li>
+                                        <span class="delete_box delete_mode">
+                                    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][delete_this]" value="1" />
+                                    </span>
+                                        <input type="text" class="decision" value="<?php echo $decision['value'] ?>" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][value]"
+                                        />
+                                        <?php $notify = $decision['notify']==1?'checked="checked"':''; ?>
+                                        <!-- <span class="notify_box add_mode">
+                                    Notify<input type="checkbox" <?php echo $notify ?> value="1" class="notify_admin" title="Notify Admin" name="data[questions][<?php echo $question_id ?>][responses][<?php echo $response_id ?>][suggestions][<?php echo $suggestion_id ?>][decisions][<?php echo $decision_id ?>][notify]" />
+                                    </span> -->
+                                    </li>
+                                    <?php } //END foreach($decisions[$suggestion_id] as $decision_id => $decision) ?>
+                                </ul>
+                            </li>
+                            <li>
+                                <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>]" />
+                                <input type="button" value="Tech Response +" class="add_tech_response_button add_mode" />
+                            </li>
+                            <?php foreach($techresponses[$question_id] as $techresponse_id => $techresponse) { ?>
+                            <li>
+                                <span class="delete_box delete_mode">
+                    <i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" title="Delete this entry" name="data[questions][<?php echo $question_id ?>][techresponses][<?php echo $techresponse_id ?>][delete_this]" value="1" />
+                    </span>
+                                <input type="text" class="response" value="<?php echo $techresponse['value'] ?>" name="data[questions][<?php echo $question_id ?>][techresponses][<?php echo $techresponse_id ?>][value]" />
+                                <input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>][techresponses][<?php echo $techresponse_id ?>]" />
+                            </li>
+                            <?php } ?>
+                            <!--   <li>
+                  	<input type="hidden" class="array" value="data[questions][<?php echo $question_id ?>]" />
+                    <input type="button" value="Add Tech Dropdown Response" class="add_tech_response_button add_mode" />
+                  </li> -->
+                        </ol>
+                    </td>
+                    <?php } //END if($question['type'] == 'text') ?>
+
+                    <td><span class="delete_box delete_mode"><i class="fa fa-trash" aria-hidden="true"></i><input type="checkbox" class="delete_this" name="data[questions][<?php echo $question_id ?>][delete_this]" value="1" /></span></td>
+
+                </tr>
+                <?php } //END foreach($questions as $question_id => $question) ?>
+
+            </tbody>
+        </table>
+
+    </form>
+    <pre><?php //print_r($responses) ?></pre>
+</body>
+
+</html>

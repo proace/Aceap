@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Calls | Invoice</title>
+  <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+  <!-- Bootstrap 3.3.2 -->
+  <link href="http://acecare.ca/responsive2/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+  <!-- Font Awesome Icons -->
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet"
+    type="text/css" />
+  <!-- Ionicons -->
+  <link href="http://code.ionicframework.com/ionicons/2.0.0/css/ionicons.min.css" rel="stylesheet" type="text/css" />
+  <!-- Theme style -->
+  <link href="http://acecare.ca/responsive2/dist/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+  <style>
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact !important;
+      }
+
+      .table-invoice .bg-grey {
+        background-color: #CCC;
+        /*background-image:url(http://acecare.ca/responsive2/dist/img/bg-grey.png);*/
+      }
+    }
+    tfoot td{
+      text-align:right;
+    }
+     tfoot td
+    {
+       border-top: 1px solid black !important;
+    }
+ 
+
+@media print {
+.page-break { display: block; page-break-after: always; }
+}
+
+@media print {
+    table tr td {
+        vertical-align: middle;
+    }
+}
+@media print {
+    table tr td {
+        vertical-align: middle;
+    }
+    
+}
+@media print {
+   .sheet {
+      /* firefox, safari extra page fix */
+      width: 100% !important;
+      height: 100% !important;
+      page-break-after: auto !important;
+   }
+}
+
+
+
+    <?php $border=1;
+
+    ?>.table-invoice {
+      border-top: <?php echo $border ?>px solid black;
+      border-right: <?php echo $border ?>px solid black;
+      border-bottom: <?php echo $border ?>px solid black;
+    }
+
+    .table-invoice th {
+      border-left: <?php echo $border ?>px solid black !important;
+      border-bottom: <?php echo $border ?>px solid black !important;
+    }
+
+    .table-invoice td {
+      border-bottom: none !important;
+      border-left: <?php echo $border ?>px solid black;
+    }
+
+    
+
+    .table-invoice td.top-border {
+      border-top: solid black !important;
+      border-width: <?php echo $border ?>px !important;
+    }
+
+    .table-invoice td.bottom-border {
+      border-bottom: solid black !important;
+      border-width: <?php echo $border ?>px !important;
+    }
+
+    .table-invoice td.left-border {
+      border-left: solid black !important;
+      border-width: <?php echo $border ?>px !important;
+    }
+
+    .table-invoice td.right-border {
+      border-right: solid black !important;
+      border-width: <?php echo $border ?>px !important;
+    }
+
+    .table-invoice .bg-grey img {
+      width: 100%;
+      height: 30px;
+    }
+
+    .table-invoice .bg-grey .text-alignment {
+      position: absolute;
+      padding: 5px;
+      padding-left: 34%;
+    }
+  </style>
+</head>
+<!-- <?php $obj =  $orders[0]; ?> -->
+
+<body>
+
+  <div class="wrapper">
+    <!-- Main content -->
+    <?php
+    
+      $orrder = 1;
+      $orrderpayment = 1;
+      foreach($orders as $obj) { ?>
+    <?php if($_GET['printtype'] == 1){ ?>
+    <section class="invoice page-break">
+      <!-- title row -->
+      <div class="row">
+        <div class="col-xs-12">
+          <!--http://acesys.ace1.ca/app/webroot/img/print_ace2.png-->
+          <!--style="width:700px;padding-left:5px;margin-left: -50px;"-->
+          <img class="center-block" src="http://www.acecare.ca/wp-content/uploads/2017/10/newacelogo.png" />
+          <br /><br>
+        </div>
+      </div><!-- /.row -->
+      <div class="row">
+        <div class="col-xs-4">
+          <address>
+            101-3993 Henning Dr.<br />
+            Burnaby, BC V5C6P7<br />
+            Tel: 604-293-3770 &nbsp;&nbsp;Fax: 604-293-3773
+          </address>
+        </div><!-- /.col -->
+        <div class="col-xs-4">
+          <h3><?php //echo $obj['Type']['name'];?></h3>
+        </div><!-- /.col -->
+        <div class="col-xs-4 pull-right">
+          <b>Date:</b> <?php echo date("M, d Y", strtotime($obj['Order']['job_date']));?><br />
+          <b>GST:</b> 896625589<br />
+          <b>REF:</b> <?php echo $obj['Order']['order_number'];?><br />
+          <b>Time:</b> <?php echo date('ga', strtotime($obj['Order']['job_time_beg']));?> -
+          <?php echo date('ga', strtotime($obj['Order']['job_time_end']));?><br />
+          <!--<b>HK:</b> <?php echo $history_keys[$obj['Order']['customer_id']] ?>-->
+        </div><!-- /.col -->
+      </div><!-- /.row -->
+
+      <!-- info row -->
+      <div class="row invoice-info">
+        <div class="col-sm-4 invoice-col">
+          <address>
+            <strong>Bill to:</strong><br>
+            <?php echo $obj['Customer'][0]['first_name'];?> <?php echo $obj['Customer'][0]['last_name'];?><br>
+            <?php echo $obj['Customer'][0]['address_unit']?> <?php echo $obj['Customer'][0]['address_street_number']?>
+            <?php echo $obj['Customer'][0]['address_street']?><br>
+            <?php echo $obj['Customer'][0]['city'];?> <?php echo $obj['Customer'][0]['postal_code'];?>
+
+          </address>
+        </div><!-- /.col -->
+        <div class="col-sm-4 invoice-col">
+
+        </div><!-- /.col -->
+        <div class="col-sm-4 invoice-col">
+
+        </div><!-- /.col -->
+      </div><!-- /.row -->
+
+      <?php if($obj['Type']['id'] ==58) {?>
+      <div class="row invoice-info">
+        <div class="col-sm-12">
+          <small>
+            <p>
+
+              Pro Ace Heating and Mechanical is eager for the opportunity to offer our services to you. We have been in
+              business for seventeen years, with over seventy five thousand residential, commercial and industrial
+              clients served, and a proven track record of success and distinction in the heating and cooling industry.
+              Our licensed technicians have years of experience and training that sets them apart, to offer you, our
+              valued client, the highest quality of service.
+            </p>
+            <p>
+              Our promise is to deliver an exceptional installation with quality and care, and to ensure that your
+              heating and cooling system meets every need required. Heating and cooling is what we do for a living.
+            </p>
+          </small>
+        </div><!-- /.col -->
+      </div><!-- /.row -->
+      <?php } ?>
+
+      <!-- Table row -->
+      <div class="row">
+        <div class="col-xs-12 table-responsive">
+          <table class="table table-invoice">
+            <thead>
+              <tr>
+                <th class="text-center bg-grey" colspan="2">
+                  <div class="">Item</div>
+                </th>
+                <th class="text-center bg-grey">
+                  <div class="">Quantity</div>
+                </th>
+                <th class="text-center bg-grey">
+                  <div class="">Rate</div>
+                </th>
+                <th class="text-center bg-grey">
+                  <div class="">Amount</div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php
+				//Mixing booking items and coupons
+				$arr = array();
+				$index=0;
+				foreach ($obj['BookingItem'] as $item)
+				{
+					$arr[$index]=array();
+					$arr[$index]['name']=$item['name'];
+					$arr[$index]['quantity']=$item['quantity'];
+					$arr[$index]['price']=($item['price']*$item['quantity']-1*$item['discount']+1*$item['addition'])/$item['quantity'];
+					$arr[$index]['print_it']=$item['print_it'];
+					$index++;
+				}
+				foreach ($obj['BookingCoupon'] as $item)
+				{
+					$arr[$index]=array();
+					$arr[$index]['name']=$item['name'];
+					$arr[$index]['quantity']=1;
+					$arr[$index]['price']=-$item['price'];
+					$index++;
+				}
+
+				//No more then 5 items
+				$subtotal = 0;
+					$flag = 1;
+				$cnt=count($arr);
+				for ($i=0;$i<$cnt;$i++)
+				{
+					$item = $arr[$i];
+         $price = $item['price']-$item['discount'];
+							
+				?>
+              <tr>
+                <td colspan="2" class="left-border">
+                  <div contenteditable><?php echo $item['name'];?></div>
+                </td>
+                <td class="text-center left-border" style="text-align:center;">
+                  <div contenteditable><?php echo $item['quantity'];?></div>
+                </td>
+                <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+                  <div contenteditable><?php if($price > 0) echo number_format($price, 2, '.', '');?>
+                  </div>
+                </td>
+                <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+                  <div contenteditable>
+                    <?php
+								if($_GET['total'] != "no") {
+									$total_prc=$item['price']*$item['quantity'];
+									if ($total_prc!=0) echo number_format(round($total_prc,2), 2, '.', '');
+								}
+							?>
+                  </div>
+                </td>
+              </tr>
+              <?php
+						$subtotal += $total_prc;
+					
+				}
+				?>
+              <?php for($i = $cnt; $i < 10; $i++) { ?>
+              <tr>
+                <td colspan="2" class="left-border">
+                  <div contenteditable>&nbsp;</div>
+                </td>
+                <td class="text-center left-border" style="text-align:center;">
+                  <div contenteditable>&nbsp;</div>
+                </td>
+                <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+                  <div contenteditable>&nbsp;</div>
+                </td>
+                <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+                  <div contenteditable>&nbsp;</div>
+                </td>
+              </tr>
+              <?php } ?>
+              <tr>
+                <td rowspan="5" class="top-border">
+                  <!-- <b>Notes</b>
+                    <p class="text-muted well well-sm no-shadow" style="margin-top: 10px;">
+                    <?php foreach($notes as $note) { ?>
+                    <div><?php echo $note;?></div>
+                    <?php } ?>
+
+
+                    </p> -->
+                  <b>Tech 1:</b>
+                  <?php echo $obj['technician'][0]['first_name'];?>&nbsp;<?php echo $obj['technician'][0]['last_name'];?>
+                  <!--  <b>Tech 2:</b> <?php echo $obj['Technician2']['first_name'];?>&nbsp;<?php echo $obj['Technician2']['last_name'];?>  -->
+                </td>
+                <?php 
+                    $payment =  $obj['Order']['paid_amount'];
+                    $gst =  $payment *.0476190476;
+                    $subtotal = $payment - $gst;?>
+                <td class="text-right right-border top-border">Subtotal</td>
+                <td class="top-border right-border bg-grey"></td>
+                <td class="top-border right-border bg-grey"></td>
+                <td class="text-right top-border bg-grey">
+                  <div contenteditable><?php if($_GET['total'] != "no") echo number_format($subtotal, 2, '.', ''); ?>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-right right-border">GST 5%</td>
+                <td class="top-border right-border bg-grey"></td>
+                <td class="top-border right-border bg-grey"></td>
+                <td class="text-right top-border bg-grey">
+                  <div contenteditable><?php if($_GET['total'] != "no") echo number_format($gst, 2, '.', ''); ?></div>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-right right-border"><b>Total</b></td>
+                <td class="top-border right-border bg-grey"></td>
+                <td class="top-border right-border bg-grey"></td>
+                <td class="text-right top-border bg-grey">
+                  <div contenteditable><?php if($_GET['total'] != "no") echo number_format($payment, 2, '.', ''); ?>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-right right-border">Deposit</td>
+                <td class="top-border right-border bg-grey"></td>
+                <td class="top-border right-border bg-grey"></td>
+                <td class="text-right top-border bg-grey">
+                  <div contenteditable>&nbsp;</div>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-right right-border">Remaining</td>
+                <td class="top-border bottom-border right-border bg-grey"></td>
+                <td class="top-border bottom-border right-border bg-grey"></td>
+                <td class="text-right top-border bottom-border bg-grey">
+                  <div contenteditable>&nbsp;</div>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div><!-- /.col -->
+      </div><!-- /.row -->
+      <div class="row invoice-info">
+        <!-- /.col -->
+      </div>
+      <!--/.row-->
+      <div class="row invoice-info">
+        <div class="col-sm-12 text-center">
+          <strong>THANK YOU FOR YOUR BUSINESS!</strong>
+        </div><!-- /.col -->
+        
+      </div>
+      <!--/.row-->
+    </section><!-- /.content -->
+    <?php }?>
+
+    <?php }?>
+
+
+    <?php 
+        if($_GET['printtype'] == 2){
+        ?>
+
+    <div class="col-xs-12 table-responsive">
+      <table class="table table-invoice summery-invoice">
+        <thead>
+          <tr>
+            <th class="text-center bg-grey" colspan="2">
+              <div class=""> Date</div>
+            </th>
+            <th class="text-center bg-grey">
+              <div class="">Ref
+
+                <?php if($ordertype == 1){ ?>
+                <!--<a
+                  href="<?=BASE_URL;?>/technicians/invoiceprint?paymenttype=<?php echo $paymenttype ;?>&todate=<?php echo $todate ;?>&fromdate=<?php echo $fromdate ;?>&printtype=<?php echo $printtype ;?>&ordertype=<?php if($ordertype != '') { echo $ordertype;}else{ echo $orrder; }?>&refto=<?php echo $refto;?>&reffrom=<?php echo $reffrom;?>  ">
+                  <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-up-circle-fill"
+                    fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd"
+                      d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z" />
+                  </svg>
+                </a>-->
+                <?php } elseif($ordertype == 2) { ?>
+                <!--<a
+                  href="<?=BASE_URL;?>/technicians/invoiceprint?paymenttype=<?php echo $paymenttype ;?>&todate=<?php echo $todate ;?>&fromdate=<?php echo $fromdate ;?>&printtype=<?php echo $printtype ;?>&ordertype=<?php if($ordertype != '') { echo $ordertype;}else{ echo $orrder; }?>&refto=<?php echo $refto;?>&reffrom=<?php echo $reffrom;?>  ">
+                  <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-down-circle-fill"
+                    fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd"
+                      d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5z" />
+                  </svg></a>-->
+                <?php } else{ ?>
+                <!--<a
+                  href="<?=BASE_URL;?>/technicians/invoiceprint?paymenttype=<?php echo $paymenttype ;?>&todate=<?php echo $todate ;?>&fromdate=<?php echo $fromdate ;?>&printtype=<?php echo $printtype ;?>&ordertype=<?php if($ordertype != '') { echo $ordertype;}else{ echo $orrder; }?>&refto=<?php echo $refto;?>&reffrom=<?php echo $reffrom;?>  ">
+                  <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-up-circle-fill"
+                    fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd"
+                      d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z" />
+                  </svg>
+                  <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-down-circle-fill"
+                    fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd"
+                      d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5z" />
+                  </svg>
+                </a>-->
+                <?php } ?>
+              </div>
+            </th>
+            <th class="text-center bg-grey">
+              <div class="">Sub Total</div>
+            </th>
+            <th class="text-center bg-grey">
+              <div class="">Gst</div>
+            </th>
+            <th class="text-center bg-grey">
+              <div class="">Payment
+                <?php if($payment_order == 1){ ?>
+                <!--<a
+                  href="<?=BASE_URL;?>/technicians/invoiceprint?paymenttype=<?php echo $paymenttype ;?>&todate=<?php echo $todate ;?>&fromdate=<?php echo $fromdate ;?>&printtype=<?php echo $printtype ;?>&payment_order=<?php if($payment_order != '') { echo $payment_order;}else{ echo $orrderpayment; }?>&refto=<?php echo $refto;?>&reffrom=<?php echo $reffrom;?>  ">
+                  <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-up-circle-fill"
+                    fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd"
+                      d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z" />
+                  </svg>
+                </a>-->
+                <?php } else{ ?>
+                <!--<a
+                  href="<?=BASE_URL;?>/technicians/invoiceprint?paymenttype=<?php echo $paymenttype ;?>&todate=<?php echo $todate ;?>&fromdate=<?php echo $fromdate ;?>&printtype=<?php echo $printtype ;?>&payment_order=<?php if($payment_order != '') { echo $payment_order;}else{ echo $orrderpayment; }?>&refto=<?php echo $refto;?>&reffrom=<?php echo $reffrom;?>  ">
+                  <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-down-circle-fill"
+                    fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd"
+                      d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5z" />
+                  </svg>
+                </a>-->
+                <?php }?>
+                
+              </div>
+            </th>
+            <th>method</th>
+            <th class="text-center bg-grey">
+              <div class="">Technician</div>
+            </th>
+          </tr>
+        </thead>
+         
+        <form method="get" target="_blank" action="<?=BASE_URL;?>/technicians/invoiceprint">
+        <tbody>
+          <?php
+          $gst_sum=0;
+          $total_sum=0;
+          $sub_total_sum=0;
+          foreach($orders as $obj) { ?>
+          
+            <?php
+            //Mixing booking items and coupons
+            $arr = array();
+            $index=0;
+            foreach ($obj['BookingItem'] as $item)
+            {
+                $arr[$index]=array();
+                $arr[$index]['name']=$item['name'];
+                $arr[$index]['quantity']=$item['quantity'];
+                $arr[$index]['price']=($item['price']*$item['quantity']-1*$item['discount']+1*$item['addition'])/$item['quantity'];
+                $arr[$index]['print_it']=$item['print_it'];
+                $index++;
+            }
+            foreach ($obj['BookingCoupon'] as $item)
+            {
+                $arr[$index]=array();
+                $arr[$index]['name']=$item['name'];
+                $arr[$index]['quantity']=1;
+                $arr[$index]['price']=-$item['price'];
+                $index++;
+            }
+               //No more then 5 items
+                $subtotal = 0;
+                $flag = 1;
+                $cnt=count($arr);
+                $payment =  $obj['Order']['paid_amount'];
+                $mul = 0.0476190476;
+                $gst =  $payment * $mul;
+                $subtotal = $payment - $gst;
+            ?>
+
+            <tr>
+              <td colspan="2" class="left-border">
+                <?php echo date("M, d Y", strtotime($obj['Order']['job_date']));?>
+              
+              </td>
+              <td class="text-center left-border" style="text-align:center;">
+              <div contenteditable><?php echo $obj['Order']['order_number'];?></div>
+              </td>
+              <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+                <div contenteditable><?php if($subtotal > 0) echo number_format($subtotal, 2, '.', '');?> </div>
+              </td>
+              <?php
+              $gst_sum+=$gst;
+              $total_sum+=$payment;
+              $sub_total_sum+=$subtotal;
+              ?>
+              <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+                <div contenteditable><?php if($gst != "no") echo number_format($gst, 2, '.', ''); ?></div>
+              </td>
+              <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+                <div contenteditable><?php if($payment > 0) echo number_format($payment, 2, '.', '');?></div>
+              </td>
+              <td>
+                <?= $obj['Order']['payment_method_name'] ?>
+              </td>
+              <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+                <div contenteditable>
+                  <?php echo $obj['technician'][0]['first_name'];?>
+                </div>
+              </td>
+            </tr>
+            <?php
+            ?>
+          
+          <?php } ?>
+          </tbody>
+        <tfoot>
+    <tr>
+      <td style="text-align:left;" colspan="2"><b>Total Invoice</b></td>
+      <td></td>
+      <td><?=  number_format($sub_total_sum, 2, '.', '');  ?></td>
+      <td><?=  number_format($gst_sum, 2, '.', ''); ?></td>
+      <td><?=  number_format($total_sum, 2, '.', '')  ?></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tfoot>
+        </form>
+        
+      </table>
+    </div><!-- /.col -->
+    <?php }?>
+    <?php if(empty($orders)){ ?>
+    <h2 style="text-align:center">
+      </p>No data found</h2>
+    <?php   } ?>
+  </div><!-- /.row -->
+
+  </div><!-- ./wrapper -->
+  <!-- AdminLTE App -->
+  <!--<script src="http://acecare.ca/responsive2/dist/js/app.min.js" type="text/javascript"></script>-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    $('#selectall').click(function(event) {   
+    if(this.checked) {
+        // Iterate each checkbox
+        $(':checkbox').each(function() {
+            this.checked = true;                        
+        });
+    } else {
+        $(':checkbox').each(function() {
+            this.checked = false;                       
+        });
+    }
+});
+  </script>
+</body>
+
+</html>

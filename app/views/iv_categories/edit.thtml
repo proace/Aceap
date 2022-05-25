@@ -16,11 +16,13 @@
     <input type="hidden" name="fromAdd" value="<?=$fromAdd?>">
     <table>
     	<tr>
-        	<td><label>Category Name</label></td>
+        	<td><label><b>Category Name</label></b></td>
             <td><?php echo $html->input('IvCategory/name')?></td>
+        </tr>
+        <tr>  
             <td><?php echo $html->submit('Save') ?></td>
             <td><input type="button" value="Cancel" class="button_cancel" /></td>
-        </tr>                
+        </tr>               
     </table>        
 </form>
 </body>

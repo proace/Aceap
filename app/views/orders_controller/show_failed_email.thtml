@@ -78,6 +78,21 @@ table th {
 table thead th:nth-child(4){
   width: 30%;
 }
+.btn1{
+    float:left;
+    padding: 5px;
+    margin-right: 5px;
+    background: #F5F5F5;
+    border-top: 2px solid white;
+    border-left: 2px solid white;
+    border-bottom: 2px solid #A7A6AA;
+    border-right: 2px solid #A7A6AA;
+    /*font-size: 12px;*/
+    font-weight: bold;
+    width: 56px;
+    height: 13px;
+    margin-bottom: 2px;
+}
 .btn{
     float:right;
     padding: 5px;
@@ -100,12 +115,25 @@ table thead th:nth-child(4){
     padding: 5px;
     text-align: center;
 }
+.button1{
+    float: left;
+    width: 55px;
+    height: 13px;
+    margin-right: 5px;
+    padding: 5px;
+    text-align: center;
+}
 </style>
 </head>
 <body>
+  <a class="btn1" href="<?=BASE_URL?>/orders/showFailedEmail?status=0">Failed</a>
+  <a class="btn1" href="<?=BASE_URL?>/orders/showFailedEmail?status=1">Accepted</a>
+  <!-- <input type="button" name="Failed" class="getMail btn1" value="Failed" btn-val="0">
+  <input type="button" name="Accepted" class="getMail btn1" value="Accepted" btn-val="1"> -->
 <table >
     <tr >
-        <th>No.</th>
+        <th>Order Id</th>
+        <th>Date</th>
         <th>Name</th>
         <th>Email</th>
         <th>Subject</th>
@@ -115,19 +143,21 @@ table thead th:nth-child(4){
         <?php $i=1; foreach ($emails as $email):        
         ?>
         <tr>
-            <td><?=$i?></td>
+            <!-- <td><?=$i?></td> -->
+            <td><a href="<?=BASE_URL?>/orders/editBooking?order_id=<?=$email['order_id']?>"><?=$email['order_number']?></a></td>
+            <td><?=$email['status_date']?></td>
             <td><?=$email['first_name'].' '.$email['last_name']?></td>
             <td><?=$email['email']?></td>
             <td><?=$email['subject']?></td>
             <td class="word_combine"><?=$email['reason']?></td>
-            <td><input type="checkbox" class="delete_email" name="markCheck[]" value="<?=$email['id']?>" ></td>
+            <td><input type="checkbox" class="delete_email" name="markCheck[]" value="<?=$email['email_id']?>" ></td>
         </tr>
         <?php $i++; endforeach; ?>
     <?php if($totalPages > 1){?>
         <div style="margin-top: 10px;">
             <?php $j = 1;
             for( $j; $j <= $totalPages; $j++){ ?>
-                <a class="currentSelected <?php echo ($pageNo == $j) ? active :'' ?>" href="<?=BASE_URL?>/orders/showFailedEmail?page_no=<?=$j?>"><?php echo $j ?></a>   
+                <a class="currentSelected <?php echo ($pageNo == $j) ? active :'' ?>" href="<?=BASE_URL?>/orders/showFailedEmail?page_no=<?=$j?>&status=<?=$status?>"><?php echo $j ?></a>   
             <?php } ?>
         </div>
     <?php }?>

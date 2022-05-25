@@ -7,39 +7,35 @@ class IvCategoriesController extends AppController
 	var $name = 'IvCategories';
 
 	var $tablePrefix = 'ace_iv_'; 
+	
+	var $uses = array('OrderType','IvCategory', 'IvSubCategory', 'IvMidCategory');
 
 	var $components = array('HtmlAssist', 'Common', 'Lists');
 
 	#Loki: show all item categories
 	function showItemCategory()
 	{				
-		$db =& ConnectionManager::getDataSource('default');	
-		$query = "SELECT * from ace_iv_categories";
-
-		$items = array();
-		$result = $db->_execute($query);
-		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
-		{
-			foreach ($row as $k => $v)
-			  $items[$row['id']][$k] = $v;
-		}
-		
-		$this->set('itemCategories', $items);
+		$allCat = $this->IvCategory->findAll();
+		$this->set('itemCategories', $allCat);
 	}
 	function showItemSubCategory()
 	{			
-		$db =& ConnectionManager::getDataSource('default');	
-		$query = "SELECT scat.*, cat.name as catName from ace_iv_sub_categories scat JOIN ace_iv_categories cat ON scat.category_id = cat.id order by cat.name";
-
-		$items = array();
-		$result = $db->_execute($query);
-		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+		if(isset($_GET['showArchive']) && $_GET['showArchive'] == 1)
 		{
-			foreach ($row as $k => $v)
-			  $items[$row['id']][$k] = $v;
+			$archive = 1;
+			$allSubCat = $this->IvSubCategory->findAll(array("IvSubCategory.is_hide" => 1));	
+		} else {
+			$archive = 0;
+			$allSubCat = $this->IvSubCategory->findAll(array("IvSubCategory.is_hide" => 0));	
 		}
-		
-		$this->set('itemSubCategories', $items);
+
+		$this->set('itemSubCategories', $allSubCat);
+		$this->set('showArchive', $archive);
+	}
+	function showItemMidCategory()
+	{			
+		$allMidCat = $this->IvMidCategory->findAll();		
+		$this->set('itemMidCategories', $allMidCat);
 	}
 	function editSubCategory($id)
 	{	
@@ -47,6 +43,32 @@ class IvCategoriesController extends AppController
 		$category = array();
 		if($id) {
 			$query = "SELECT * from ace_iv_sub_categories where id=".$id;
+			$result = $db->_execute($query);
+			$row = mysql_fetch_array($result, MYSQL_ASSOC);
+		} else {
+			$row = array("id"=>"", "name"=>"", "category_id"=>"");
+		}
+		$query1 = "SELECT * from ace_iv_mid_categories";
+			$result1 = $db->_execute($query1);
+			$category = array();		
+			while($row1 = mysql_fetch_array($result1, MYSQL_ASSOC))
+			{
+				foreach($row1 as $k => $v)
+				{
+				  $category[$row1['id']][$k] = $v;
+				}	
+			}
+		$this->set('job_types', $this->HtmlAssist->table2array($this->OrderType->findAll(array("OrderType.flagactive",1)), 'id', 'name'));
+		$this->set('subCategory', $row);
+		$this->set('categories', $category);
+	}
+
+	function editMidCategory($id)
+	{	
+		$db =& ConnectionManager::getDataSource('default');	
+		$category = array();
+		if($id) {
+			$query = "SELECT * from ace_iv_mid_categories where id=".$id;
 			$result = $db->_execute($query);
 			$row = mysql_fetch_array($result, MYSQL_ASSOC);
 		} else {
@@ -62,11 +84,13 @@ class IvCategoriesController extends AppController
 				  $category[$row1['id']][$k] = $v;
 				}	
 			}
-		$this->set('subCategory', $row);
+		$this->set('midCategory', $row);
 		$this->set('categories', $category);
 	}
+
 	function addSubCategory($id)
 	{	
+		$jobType = !empty($this->data['job_type'][0]) ? $this->data['job_type'][0] : 0 ;
 		$allCatIds = $_POST['allCatId'];
 		$catId = $_POST['catId'];
 		$name = $_POST['catName'];
@@ -74,7 +98,7 @@ class IvCategoriesController extends AppController
 		$db =& ConnectionManager::getDataSource('default');	
 		if(!empty($subCatId) || $subCatId != '')
 		{
-			$query = "UPDATE ace_iv_sub_categories set name='".$name[0]."',category_id=".$allCatIds[0]." where id=".$subCatId;
+			$query = "UPDATE ace_iv_sub_categories set name='".$name[0]."',category_id=".$allCatIds[0].", job_type = '".$jobType."' where id=".$subCatId;
 			$result = $db->_execute($query);
 		} else {
 			foreach($name as $key => $val)
@@ -84,7 +108,7 @@ class IvCategoriesController extends AppController
 				{
 					$sort = 999;
 				}
-				$query = "INSERT into ace_iv_sub_categories (name,category_id,sort) VALUES ('".$val."', ".$allCatIds[$key].",".$sort.")";	
+				$query = "INSERT into ace_iv_sub_categories (name,category_id,sort,job_type) VALUES ('".$val."', ".$allCatIds[$key].",".$sort.", ".$jobType.")";	
 				$result = $db->_execute($query);
 			}
 			
@@ -97,12 +121,76 @@ class IvCategoriesController extends AppController
 			}
 		exit();
 	}
+
+	function addMidCategory($id)
+	{	
+		$allCatIds = $_POST['allCatId'];
+		$catId = $_POST['catId'];
+		$name = $_POST['catName'];
+		$midCatId = $_POST['midCatId'];
+		$db =& ConnectionManager::getDataSource('default');	
+		if(!empty($midCatId) || $midCatId != '')
+		{
+			$query = "UPDATE ace_iv_mid_categories set name='".$name[0]."',category_id=".$allCatIds[0]." where id=".$midCatId;
+			$result = $db->_execute($query);
+		} else {
+			foreach($name as $key => $val)
+			{
+				$sort = 0;
+				if($val == 'Inactive' || $val == 'inactive')
+				{
+					$sort = 999;
+				}
+				$query = "INSERT into ace_iv_mid_categories (name,category_id,sort) VALUES ('".$val."', ".$allCatIds[$key].",".$sort.")";	
+				$result = $db->_execute($query);
+			}
+			
+		}
+		if($result)
+			{
+				echo "<script>opener.location.reload();
+				window.close();</script>";
+		 			exit();
+			}
+		exit();
+	}
+
 	function deleteSubCategory()
+	{
+		$data = $_POST['typeIds'];
+		$ids = implode(',', $data);
+		$db =& ConnectionManager::getDataSource('default');
+		$query = "DELETE from  ace_iv_sub_categories WHERE id IN (".$ids.")";
+		$result = $db->_execute($query);
+		exit();
+	}
+
+	function hideSubCategory()
+	{
+		$data = $_POST['typeIds'];
+		$ids = implode(',', $data);
+		$db =& ConnectionManager::getDataSource('default');
+		$query = "update  ace_iv_sub_categories set is_hide=1 WHERE id IN (".$ids.")";
+		$result = $db->_execute($query);
+		exit();
+	}
+	function hideShowSubCategory()
+	{
+		$id = $_POST['typeId'];
+		$show = $_POST['isHide'];
+		
+		$db =& ConnectionManager::getDataSource('default');
+		$query = "update  ace_iv_sub_categories set is_hide=".$show." WHERE id =".$id;
+		$result = $db->_execute($query);
+		exit();
+	}
+
+	function deleteMidCategory()
 	{
 			$data = $_POST['typeIds'];
 			$ids = implode(',', $data);
 			$db =& ConnectionManager::getDataSource('default');
-			$query = "DELETE from  ace_iv_sub_categories WHERE id IN (".$ids.")";
+			$query = "DELETE from  ace_iv_mid_categories WHERE id IN (".$ids.")";
 			$result = $db->_execute($query);
 			exit();
 	}
@@ -125,7 +213,7 @@ class IvCategoriesController extends AppController
 			exit();
 	}
 	function edit($fromAdd = 0) {
-
+		// error_reporting(E_ALL);
 		$this->layout = 'blank';	
 
 		if (empty($this->data['IvCategory'])) {    
@@ -135,6 +223,7 @@ class IvCategoriesController extends AppController
 			$this->data = $this->IvCategory->read();	
 
 			$this->set("fromAdd", $fromAdd);
+			$this->set('job_types', $this->HtmlAssist->table2array($this->OrderType->findAll(array("OrderType.flagactive",1)), 'id', 'name'));
 		}
 
 	}
@@ -146,7 +235,7 @@ class IvCategoriesController extends AppController
 			$this->IvCategory->id = $id;    
 
 			$cat = $this->IvCategory->read();	
-			// print_r($cat['IvCategory']['id']); die;
+			$this->set('job_types', $this->HtmlAssist->table2array($this->OrderType->findAll(array("OrderType.flagactive",1)), 'id', 'name'));
 			$this->set("cat", $cat['IvCategory']);
 		}
 
@@ -154,7 +243,6 @@ class IvCategoriesController extends AppController
 
 	function updateCategory()
 	{
-		error_reporting(E_ALL);
 		$id = $_POST['catId'];
 		$name = $_POST['catName'];
 		$db =& ConnectionManager::getDataSource('default');

@@ -1,4 +1,4 @@
-<?
+<? ob_start();
 //error_reporting(1);
 #define("DEBUG",2);
 class Queries {
@@ -58,32 +58,31 @@ class Queries {
 	}
 	// MZ:
 	// Function same as SearchParts, with modification to only return active items.
-	function SearchActiveParts($needle) {
+	/*function SearchActiveParts($needle) {
 		$limit = 15;
-		// $query = "SELECT i.id id, i.name name, i.selling_price price
-		// 	FROM ace_iv_items i
-		// 	LEFT JOIN ace_iv_suppliers s 
-		// 	ON i.iv_supplier_id = s.id
-		// 	WHERE 
-		// 		((i.name LIKE \"%$needle%\"
-		// 		OR i.model LIKE \"%$needle%\")
-		// 		AND i.active='1')
-		// 	LIMIT $limit";
+	
 
-		// $query = "SELECT i.id id, i.name name, i.selling_price price, i.supplier_price purchase_price
+		// $query = "SELECT i.id id,i.brand,i.model, i.name name, i.selling_price price, i.supplier_price purchase_price, i.category_id, i.sku, i.sub_category_id
 		// 	FROM iv_items_labeled2 i
-		// 	WHERE i.sub_category_id  IN (SELECT id FROM  `ace_iv_sub_categories` WHERE name ='".$needle."')";
+		// 	JOIN ace_iv_sub_categories sub ON i.sub_category_id  = sub.id
+		// 	WHERE active = 1 and sub.name != 'Inactive' and i.name LIKE \"%$needle%\"";
 
-		$query = "SELECT i.id id,i.brand,i.model, i.name name, i.selling_price price, i.supplier_price purchase_price, i.category_id, i.sku, i.sub_category_id
+		$query = "SELECT i.id id,i.brand,i.model, i.name name, i.selling_price price, i.supplier_price purchase_price, i.category_id, i.sku, i.sub_category_id, techItem.quantity
 			FROM iv_items_labeled2 i
-			WHERE active = 1 and i.name LIKE \"%$needle%\"";
+			JOIN ace_iv_sub_categories sub ON i.sub_category_id  = sub.id  
+			LEFT JOIN ace_rp_tech_inventory_item techItem ON i.id  = techItem.item_id AND techItem.tech_id = 0
+			WHERE active = 1 and sub.name != 'Inactive' and i.name LIKE \"%$needle%\"";
+
 		$results = $this->connection->_execute($query);
+		$techArr = $this->Lists->inventoryTech();
 		$response = array();
 		while ($row = mysql_fetch_assoc($results)) {
 				$response[] = $row;
 			 }
+		echo "<pre>";
+		print_r($response); die;
 		return $response;
-	}
+	}*/
 	function SearchPartsFromSuppliers($needle,$supplier_id) {
 		$limit = 15;
 		$query = "SELECT *, i.id id, i.name name, i.selling_price price, sk.sku sku
@@ -116,7 +115,7 @@ class InventoriesController extends AppController
 	//To avoid possible PHP4 problems
 	var $name = "Inventories";
 
-	var $uses = array('Item', 'User', 'InventoryLocation', 'InventoryState', 'InventoryChange', 'ItemCategory', 'Inventory', 'IvItem');
+	var $uses = array('Item', 'User', 'InventoryLocation', 'InventoryState', 'InventoryChange', 'ItemCategory', 'Inventory', 'IvItem','TechInventoryItem');
 
 	var $helpers = array('Time','Ajax','Common');
 	var $components = array('HtmlAssist', 'RequestHandler','Common','Lists');
@@ -125,6 +124,43 @@ class InventoriesController extends AppController
 	var $pagesToDisplay=10;
 	var $beforeFilter = array('checkAccess');
 
+
+	function getInventoryTechQty($item_id)
+	{
+		$data = $this->TechInventoryItem->findAll(array('TechInventoryItem.item_id' => $item_id),array('tech_id','quantity'));
+		return $data;
+	}
+
+	function SearchActiveParts($needle) {
+		$limit = 15;
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$query = "SELECT i.id id,i.brand,i.model, i.name name, i.selling_price price, i.supplier_price purchase_price, i.category_id, i.sku, i.sub_category_id
+			FROM iv_items_labeled2 i
+			JOIN ace_iv_sub_categories sub ON i.sub_category_id  = sub.id
+			WHERE active = 1 and sub.name != 'Inactive' and i.name LIKE \"%$needle%\"";
+
+		// $query = "SELECT i.id id,i.brand,i.model, i.name name, i.selling_price price, i.supplier_price purchase_price, i.category_id, i.sku, i.sub_category_id, techItem.quantity
+		// 	FROM iv_items_labeled2 i
+		// 	JOIN ace_iv_sub_categories sub ON i.sub_category_id  = sub.id  
+		// 	LEFT JOIN ace_rp_tech_inventory_item techItem ON i.id  = techItem.item_id AND techItem.tech_id = 0
+		// 	WHERE active = 1 and sub.name != 'Inactive' and i.name LIKE \"%$needle%\"";
+
+		// $query = "SELECT i.id id,i.brand,i.model, i.name name, i.selling_price price, i.supplier_price purchase_price, i.category_id, i.sku, i.sub_category_id, techItem.quantity, group_concat(techItem.tech_id,'-',techItem.quantity) as tech_id
+		// 	FROM iv_items_labeled2 i
+		// 	JOIN ace_iv_sub_categories sub ON i.sub_category_id  = sub.id  
+		// 	LEFT JOIN ace_rp_tech_inventory_item techItem ON i.id  = techItem.item_id 
+		// 	WHERE active = 1 and sub.name != 'Inactive' and i.name LIKE \"%$needle%\" group by i.id"; 
+
+		$results = $db->_execute($query);
+		$techArr = $this->Lists->inventoryTech();
+		$response = array();
+		while ($row = mysql_fetch_assoc($results)) {
+				$row['tech_data'] = $this->getInventoryTechQty($row['id']);	
+				$response[] = $row;
+			 }
+		$response['tech'] = $techArr;
+		return $response;
+	}
 	function checkAccess() {
 
 		// We must authenticate the user manually,
@@ -409,7 +445,9 @@ class InventoriesController extends AppController
 	
 	function supplies(){
 		$this->layout="list";
-		
+		$userRole = $this->Common->getLoggedUserRoleID();
+		$userID = $this->Common->getLoggedUserID();
+
 		if ($this->params['url']['ffromdate'] != '')
 			$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate']));
 		else
@@ -432,7 +470,9 @@ class InventoriesController extends AppController
 		
 		
 		$sqlConditions = "";
-			
+		if($userRole == 1){
+			$sqlConditions .= " AND invoice.created_by = ".$userID."";
+		}
 		if ($search_supplier && strlen($search_supplier) > 0){
 			$sqlConditions .= " AND suppliers.name LIKE '%{$search_supplier}%' ";
 		}
@@ -485,7 +525,8 @@ class InventoriesController extends AppController
 			// select info for each invoice, as well as SUM for all items in that invoice.
 			// we use GROUP BY which selects all items in an invoice then groups them together in a single row, which allows us to add
 			// the price for all those items into total_price for that invoice
-			$query = "SELECT invoice.po_number, invoice.remaining_amount, invoice.doc_type, invoice.invoice AS invoice_number, movements.id AS invoice_id, invoice.status_id AS status_id,
+			
+			/*$query = "SELECT ord.id as org_ord_id,ord.invoice_id as invid,invoice.po_number,invoice.order_id, invoice.remaining_amount, invoice.doc_type, invoice.invoice AS invoice_number, movements.id AS invoice_id, invoice.status_id AS status_id,
 			  suppliers.name AS supplier_name, movements.date, (SUM(assets.regular_price) - (SELECT  SUM( s1.price )
                                     FROM (
                                             SELECT (
@@ -494,18 +535,45 @@ class InventoriesController extends AppController
                                             FROM  `ace_iv_assets` 
                                             GROUP BY movement_id,item_id
                                         ) AS s1 WHERE s1.movement_id = invoice_id)) as total_price, invoice.pay_date,
-		 	  invoice.reference_no, invoice.paid_amount, payment_method.name as payment_type, CONCAT(users.first_name, ' ',users.last_name ) as tech_name, ins.status as invoice_status, CONCAT(tech_users.first_name, ' ',tech_users.last_name ) as location_name
+		 	  invoice.reference_no, invoice.paid_amount, payment_method.name as payment_type, CONCAT(users.first_name, ' ',users.last_name ) as tech_name, ins.status as invoice_status, CONCAT(tech_users.first_name, ' ',tech_users.last_name ) as location_name, CONCAT(purch_user.first_name, ' ',purch_user.last_name ) as order_by
 			  FROM ace_iv_movements movements
 			  LEFT JOIN ace_iv_assets assets ON movements.asset_id = assets.asset_id
-			  LEFT JOIN ace_iv_locations locations ON movements.from_location_id = locations.id
-			  LEFT JOIN ace_rp_suppliers suppliers ON locations.number = suppliers.id
+			  LEFT JOIN ace_rp_suppliers suppliers ON movements.from_location_id = suppliers.id
 			  LEFT JOIN ace_iv_invoice invoice ON movements.id = invoice.invoice_id
 			  LEFT JOIN ace_rp_purchase_payment_method payment_method ON invoice.payment_method = payment_method.id
 			  LEFT JOIN ace_rp_users users ON invoice.agent_id = users.id
-			  LEFT JOIN ace_iv_locations to_locations ON movements.to_location_id = to_locations.id
-			  LEFT JOIN ace_rp_users tech_users ON to_locations.number = tech_users.id
+			  LEFT JOIN ace_rp_users tech_users ON movements.to_location_id = tech_users.id
+			  LEFT JOIN ace_rp_users purch_user ON invoice.created_by = purch_user.id
 			  LEFT JOIN ace_iv_invoice_status  ins ON invoice.status_id = ins.id
-			  WHERE locations.type = 'Supplier' {$searchCondition}
+			  LEFT JOIN ace_rp_orders ord ON invoice.order_id = ord.order_number
+			  WHERE 1=1 {$searchCondition}
+			  {$dateConditions} 
+			  {$sqlConditions}
+			  GROUP BY movements.id
+			";*/
+
+			$query = "SELECT invoice.po_number,invoice.order_id,ord.id as order_no, invoice.remaining_amount, invoice.doc_type, invoice.invoice AS invoice_number, movements.id AS invoice_id, invoice.status_id AS status_id,
+			  suppliers.name AS supplier_name, movements.date, (SUM(assets.regular_price) - (SELECT  SUM( s1.price )
+                                    FROM (
+                                            SELECT (
+                                            regular_price * refund_quantity
+                                            ) AS price,movement_id
+                                            FROM  `ace_iv_assets` 
+                                            GROUP BY movement_id,item_id
+                                        ) AS s1 WHERE s1.movement_id =invoice.invoice_id)) as total_price, invoice.pay_date,
+		 	  invoice.reference_no, invoice.paid_amount, payment_method.name as payment_type, CONCAT(users.first_name, ' ',users.last_name ) as tech_name, ins.status as invoice_status, CONCAT(tech_users.first_name, ' ',tech_users.last_name ) as location_name, CONCAT(purch_user.first_name, ' ',purch_user.last_name ) as order_by
+			  FROM ace_iv_movements movements
+			  LEFT JOIN ace_iv_assets assets ON movements.asset_id = assets.asset_id
+			  LEFT JOIN ace_rp_suppliers suppliers ON movements.from_location_id = suppliers.id
+			  LEFT JOIN ace_iv_invoice invoice ON movements.id = invoice.invoice_id
+			  LEFT JOIN ace_rp_purchase_payment_method payment_method ON invoice.payment_method = payment_method.id
+			  LEFT JOIN ace_rp_users users ON invoice.agent_id = users.id
+			  LEFT JOIN ace_rp_users tech_users ON movements.to_location_id = tech_users.id
+			  LEFT JOIN ace_rp_users purch_user ON invoice.created_by = purch_user.id
+			  LEFT JOIN ace_iv_invoice_status  ins ON invoice.status_id = ins.id
+			  LEFT JOIN ace_rp_orders ord ON invoice.order_id = ord.order_number
+			  
+			  WHERE 1=1 {$searchCondition}
 			  {$dateConditions} 
 			  {$sqlConditions}
 			  GROUP BY movements.id
@@ -697,6 +765,19 @@ class InventoriesController extends AppController
 		$items = array();
 		$sort = $_GET['sort'];
 		$order = $_GET['order'];
+		$techid = isset($_GET['ftechid']) ? $_GET['ftechid'] : -1;
+		$booking = isset($_GET['booking']) ? $_GET['booking'] : '';
+		$part_name = isset($_GET['part_name']) ? $_GET['part_name'] : '';
+		$status = isset($_GET['status']) ? $_GET['status'] : -1;
+		$limit = 50;
+		// $total_pages = 0;
+		$pageNo = isset($_GET['currentPage']) ? $_GET['currentPage'] : 1;
+		if($pageNo == 0)
+		{
+			$pageNo	= 1;
+		}
+		$record_index= ($pageNo-1) * $limit;      
+		
 		if (!$order) $order = 'movements.date desc';
 	
 		$this->layout="list";
@@ -708,90 +789,85 @@ class InventoriesController extends AppController
 		if ($this->params['url']['ffromdate'] != '')
 			$fdate = date("Y-m-d", strtotime($this->params['url']['ffromdate'])) . ' 00:00:00';
 		else
-			$fdate = date("Y-m-d") . ' 00:00:00';
+			$fdate = date("Y-m-d");
 
 		if ($this->params['url']['ftodate'] != '')
 			$tdate = date("Y-m-d", strtotime($this->params['url']['ftodate'])) . ' 23:59:59';
 		else
-			$tdate = date("Y-m-d") . ' 23:59:59';
-		
-		/*$sqlConditions = "move_to.type = 'Customer'";
-		// ^ that makes it only return sales
-		//$sqlConditions = "1=1";
+			$tdate = date("Y-m-d");
+
 		$date_start = $this->Common->getMysqlDate($fdate);
 		$date_end = $this->Common->getMysqlDate($tdate);
-		$sqlConditions .= " AND (movements.date BETWEEN '$date_start' AND '$date_end')"; 
-		
-		if ($_GET['part']){
-			$sqlConditions .= " AND items.model LIKE \"{$_GET['part']}\"";
+		$sqlConditions = "(item_history.item_date BETWEEN '$date_start' AND '$date_end')"; 
+
+		if ($_GET['part_name']){
+			$sqlConditions .= " AND item.name LIKE '%{$_GET['part_name']}%'";
+		}
+		if ($_GET['status'] && $_GET['status'] != -1){
+			$sqlConditions .= " AND item_history.status = {$_GET['status']}";
 		}
 		if ($_GET['booking']){
-			$sqlConditions .= " AND orders.order_number={$_GET['booking']}";
+			$sqlConditions .= " AND item_history.job_ref_num={$_GET['booking']}";
 		}
 		
 		if ($_GET['ftechid'] && $_GET['ftechid'] != -1){
-			$sqlConditions .= " AND move_from.type = \"User\" AND move_from.number = \"{$_GET['ftechid']}\"";
-		}*/
+			$sqlConditions .= " AND {$_GET['ftechid']} IN(item_history.paid_by,item_history.assigned_by,item_history.sold_by,item_history.received_by)";
+		}
 		
-		/*
-		* BUILD QUERY
-		*/
-		/*$query = "
-				SELECT DISTINCT *, COUNT(assets.item_id) as quantity
-						
-				FROM ace_iv_movements movements
-				
-				LEFT JOIN ace_iv_locations   move_to	ON movements.to_location_id = move_to.id
-				LEFT JOIN ace_iv_locations   move_from	ON movements.from_location_id = move_from.id
-				LEFT JOIN ace_iv_assets      assets   	ON movements.asset_id		= assets.asset_id 
-				LEFT JOIN ace_iv_items	     items    	ON assets.item_id           = items.id			
-				LEFT JOIN ace_iv_items_sold	 items_sold ON items_sold.movement_id = movements.id AND items_sold.asset_id = movements.asset_id
-				LEFT JOIN ace_rp_orders 	 orders 	ON items_sold.order_id = orders.id
-				
-				WHERE ({$sqlConditions})
-				GROUP BY movements.id, move_to.id, assets.item_id
-				ORDER BY movements.date
-		";*/
+		$query = "SELECT item_history.*,sold_user.first_name as sold_by,
+		received_user.first_name as received_by,paid_user.first_name as paid_by,assigned_user.first_name as assigned_by, supplier.name as supplier_name, item_status.name as status_name, item.name as item_name, item.auto_sku,order_d.id as order_id
+			FROM ace_iv_invoice_item_history item_history
+			LEFT JOIN ace_rp_users sold_user ON item_history.sold_by = sold_user.id
+			LEFT JOIN ace_rp_users received_user ON item_history.received_by = received_user.id
+			LEFT JOIN ace_rp_users assigned_user ON item_history.assigned_by = assigned_user.id
+			LEFT JOIN ace_rp_users paid_user ON item_history.paid_by = paid_user.id
+			LEFT JOIN ace_rp_suppliers supplier ON item_history.supplier = supplier.id
+			LEFT JOIN ace_rp_item_status item_status ON item_history.status = item_status.id
+			LEFT JOIN iv_items_labeled2 item ON item_history.item_id = item.id
+			LEFT JOIN ace_rp_orders order_d ON item_history.job_ref_num = order_d.order_number
+			WHERE $sqlConditions group by item_history.item_id,item_history.status,order_d.id order by item_history.id asc  LIMIT $record_index, $limit";
 
-		$date_start = $this->Common->getMysqlDate($fdate);
-		$date_end = $this->Common->getMysqlDate($tdate);
-		$sqlConditions = "(movements.date BETWEEN '$date_start' AND '$date_end') AND users.id='-1'"; 
-
-		$query = "
-				SELECT DISTINCT *, COUNT(assets.item_id) as quantity
-						
-				FROM ace_rp_users users, ace_iv_movements movements
-				
-				LEFT JOIN ace_iv_locations   move_to	ON movements.to_location_id = move_to.id
-				LEFT JOIN ace_iv_locations   move_from	ON movements.from_location_id = move_from.id
-				LEFT JOIN ace_iv_assets      assets   	ON movements.asset_id		= assets.asset_id 
-				LEFT JOIN ace_iv_items	     items    	ON assets.item_id           = items.id			
-				LEFT JOIN ace_iv_items_sold	 items_sold ON items_sold.movement_id = movements.id AND items_sold.asset_id = movements.asset_id
-				LEFT JOIN ace_rp_orders 	 orders 	ON items_sold.order_id = orders.id
-				
-				WHERE $sqlConditions
-				GROUP BY movements.id, move_to.id, assets.item_id
-				ORDER BY movements.date
-		";
 		/*
 		* BUILD ITEMS
 		*/
-		$result = $db->_execute($query);
-		$c = mysql_num_fields( $result );
-		while($item = mysql_fetch_row($result)){
-			$doc = array();
-			for($i=0;$i<$c;$i+=1) {
-				$doc[mysql_field_table( $result, $i ).".".mysql_field_name( $result, $i )] = $item[$i]; }
-			$query = "SELECT * FROM ace_rp_users WHERE id = {$doc["movements.user_id"]}";
-			$r = mysql_fetch_assoc( $db->_execute($query) );
-			$doc["tech"] = $r["first_name"]." ".$r["last_name"];
-			$items[] = $doc;
-		}
 
+		// print_r($query);; die;
+		$result = $db->_execute($query);
+		
+		while($row = mysql_fetch_array($result)){
+			$items[] = $row;
+		}
+		$query1 = "SELECT count(*)	FROM ace_iv_invoice_item_history item_history
+			LEFT JOIN ace_rp_users sold_user ON item_history.sold_by = sold_user.id
+			LEFT JOIN ace_rp_users received_user ON item_history.received_by = received_user.id
+			LEFT JOIN ace_rp_users assigned_user ON item_history.assigned_by = assigned_user.id
+			LEFT JOIN ace_rp_users paid_user ON item_history.paid_by = paid_user.id
+			LEFT JOIN ace_rp_suppliers supplier ON item_history.supplier = supplier.id
+			LEFT JOIN ace_rp_item_status item_status ON item_history.status = item_status.id
+			LEFT JOIN iv_items_labeled2 item ON item_history.item_id = item.id
+			LEFT JOIN ace_rp_orders order_d ON item_history.job_ref_num = order_d.order_number
+			WHERE $sqlConditions group by item_history.item_id,item_history.status,order_d.id";
+		
+		$result1 = $db->_execute($query1);
+		$row1 = mysql_fetch_array($result1);  
+		$total_records = $row1[0];
+
+		// print_r($row1); die;
+		// print_r($total_records); die;
+    	//  echo $total_records;
+		$total_pages = ceil($total_records / $limit);  
+
+		// echo "<pre>";
+		// print_r($items); die;
 		/*
 		* STUFF TO RETURN TO THE PAGE VIEW (techs.thtml)
 		*/
-		$this->set('documents', $items);
+		$this->set('totalPages', $total_pages);
+		$this->set('currentPage', $pageNo);
+		$this->set('booking', $booking);
+		$this->set('part_name', $part_name);
+		$this->set('status', $status);
+		$this->set('items', $items);
 		$this->set('locations', $allTechs);
 		$this->set('techid', $techid);
 		$this->set('prev_fdate', date("d M Y", strtotime($fdate) - 24*60*60));
@@ -823,32 +899,43 @@ class InventoriesController extends AppController
 			$doc_id = $this->params['url']['invoice_id'];
 			$refund = 1;
 		}
-		$docdate = date('d M Y');
-		$doc_type = $_REQUEST['type'];
+		$fromBooking = isset($_GET['fromBooking']) ? $_GET['fromBooking'] :0;
+		$fromTech = isset($_GET['fromTech']) ? $_GET['fromTech'] :0;
+		$docdate = isset($_GET['doc_date']) ? $_GET['doc_date'] : date('d M Y');
+		$doc_type = isset($_GET['type']) ? $_GET['type'] : $_REQUEST['type'];
 		$item_id = $_REQUEST['item_id'];
-		$invoice_number = '';
-		$order_number = '';
-		$supplier_id = '';
-		$tech_id = '';
+		$invoice_number = isset($_GET['invoiceId']) ? $_GET['invoiceId'] :'';
+		$order_number = $_GET['orderId'];
+		// $order_number = isset($_GET['orderId']) ? $_GET['orderId'] :'';
+		$supplier_id = isset($_GET['supplierId']) ? $_GET['supplierId'] :'';
+		$supplierInfo = isset($_GET['supplierInfo']) ? $_GET['supplierInfo'] :'';
+		$tech_id = isset($_GET['techId']) ? $_GET['techId'] :'';
+		$bookItems = isset($_GET['orderItems']) ? json_decode(stripslashes($_GET['orderItems']),true) :array();
 		$items = array();
 		$paidDate = date("Y-m-d");
-		
 		$allDocTypes = $this->GetDocTypes();
-		$allSuppliers = $this->Lists->ListTable('ace_rp_suppliers');
+		// $allSuppliers = $this->Lists->ListTable('ace_rp_suppliers');
+		$allSuppliers = $this->Lists->ListTable('ace_rp_suppliers','',array('name','city'));
 		$allLocations = $this->GetLocations();
 		
+
+		// $methods = $this->HtmlAssist->table2array($this->PurchasePaymentMethod->findAll(), 'id', 'name');
+
+		// echo "<pre>";
+		// print_r($methods);
+
 		$trucks = $this->Lists->Technicians(true);		
 		if(empty($doc_id)){
-			$getPo = $db->_execute("SELECT * FROM ace_rp_invoice_po_number WHERE  `invoice_id` = ( SELECT MAX(  `invoice_id` ) FROM ace_rp_invoice_po_number);");
+			
+			$getPo = $db->_execute("SELECT * FROM ace_rp_invoice_po_number WHERE  `invoice_id` = ( SELECT MAX(  `invoice_id` ) FROM ace_rp_invoice_po_number where po_number > 2020100);");
 			$getPoResult = mysql_fetch_assoc($getPo);
 			$last_po_number = $getPoResult['po_number'];
 			$new_po_number = $getPoResult['po_number']+1;
 			$this->set("last_po_number", $last_po_number);
 			$this->set("new_po_number", $new_po_number);
-		}
+		} 
 		if ($view)
 		{
-
 			$getPo = $db->_execute("SELECT * FROM ace_rp_invoice_po_number WHERE  `invoice_id` =".$doc_id."");
 			$getPoResult = mysql_fetch_assoc($getPo);
 			$this->set("new_po_number", $getPoResult['po_number']);
@@ -869,11 +956,10 @@ class InventoriesController extends AppController
 				// refunds (price per item for refunds is in a different table)
 				$is_view_refund = 1;
 				$query = "
-					SELECT movements.*, assets.*, items.model, items.name, locations.number, locations.type, refunds.refund_regular_price, sku.sku
+					SELECT movements.*, assets.*, items.model, items.name, refunds.refund_regular_price, sku.sku
 					FROM ace_iv_movements movements
 					LEFT JOIN ace_iv_assets assets ON movements.asset_id = assets.asset_id
 					LEFT JOIN ace_iv_items items ON assets.item_id = items.id
-					LEFT JOIN ace_iv_locations locations ON movements.to_location_id = locations.id
 					LEFT JOIN ace_iv_refund_price refunds ON assets.asset_id = refunds.asset_id
 					LEFT JOIN ace_iv_sku sku ON assets.item_id = sku.item_id AND movements.from_location_id = sku.supplier_id
 					WHERE movements.id = $doc_id
@@ -882,22 +968,23 @@ class InventoriesController extends AppController
 			else {
 				// invoices
 				$query = "
-					SELECT  movements.*, assets.*, items.model, items.name, locations.number, locations.type, sku.sku
+					SELECT  movements.*, assets.*, items.model, items.name,  sku.sku
 					FROM ace_iv_movements movements
 					LEFT JOIN ace_iv_assets assets ON movements.asset_id = assets.asset_id
 					LEFT JOIN ace_iv_items items ON assets.item_id = items.id
-					LEFT JOIN ace_iv_locations locations ON movements.to_location_id = locations.id
 					LEFT JOIN ace_iv_sku sku ON assets.item_id = sku.item_id AND movements.from_location_id = sku.supplier_id
 					WHERE movements.id = $doc_id
 				";
 				if (!isset($_GET['view_transaction'])){
 					$this->set('can_save_purchase', 1);
-					$query2 = "SELECT inv.*,suppliers.name as supplier_name, CONCAT(users.first_name, ' ',users.last_name ) as agent_name, CONCAT(return_user.first_name, ' ',return_user.last_name ) as return_by , payment_method.name as payment_type FROM ace_iv_invoice inv 
+					$query2 = "SELECT inv.*,suppliers.name as supplier_name, CONCAT(users.first_name, ' ',users.last_name ) as agent_name, CONCAT(return_user.first_name, ' ',return_user.last_name ) as return_by , payment_method.name as payment_type ,
+					tech_pay.name as tech_method1
+					FROM ace_iv_invoice inv 
 					LEFT JOIN ace_iv_movements mv ON mv.id = inv.invoice_id
-					LEFT JOIN ace_iv_locations locations ON mv.from_location_id = locations.id
-			  		LEFT JOIN ace_rp_suppliers suppliers ON locations.number = suppliers.id
+			  		LEFT JOIN ace_rp_suppliers suppliers ON mv.from_location_id = suppliers.id
 			  		LEFT JOIN ace_rp_users users ON inv.agent_id = users.id
 					LEFT JOIN ace_rp_users return_user ON inv.returned_by = return_user.id
+					LEFT JOIN ace_rp_purchase_payment_method tech_pay ON inv.tech_pay_method = tech_pay.id
 					LEFT JOIN ace_rp_purchase_payment_method payment_method ON inv.payment_method = payment_method.id
 					WHERE invoice_id = '{$doc_id}'";
 					$invoiceDetails = array();
@@ -907,20 +994,43 @@ class InventoriesController extends AppController
 					if($row = mysql_fetch_array($result, MYSQL_ASSOC)){
 						$invoice_number = $row['invoice'];
 						$supplierName = $row['supplier_name'];
+						$supplierInfo = $row['supplier_info'];
 						$invoiceDetails = $row;
 						if(!empty($row['invoice_image'])){
 							$invoiceImageArr[] = $row['invoice_image'];				
 						}
+						if(!empty($row['tech_pay_image']))
+						{
+							$invoiceImageArr[] = $row['tech_pay_image'];	
+						}
 					}
+
+					$query1 = "SELECT ih.*, invs.status as status_name,
+					ppm.name as payment_method_name, CONCAT(return_user.first_name, ' ',return_user.last_name) as return_user,
+					CONCAT(paid_by.first_name, ' ',paid_by.last_name) as paid_user
+					from ace_iv_invoice_history ih 
+					LEFT JOIN ace_iv_invoice_status invs ON invs.id = ih.status_id
+					LEFT JOIN ace_rp_purchase_payment_method ppm ON ppm.id = ih.payment_method
+					LEFT JOIN ace_rp_users return_user ON return_user.id = ih.returned_by
+					LEFT JOIN ace_rp_users paid_by ON paid_by.id = ih.paid_by 
+				 	where ih.invoice_id=".$doc_id." AND ih.status_id = 5 order by ih.id desc";
+					$result1 = $db->_execute($query1);
+					$row = mysql_fetch_array($result1, MYSQL_ASSOC);
+					$this->set("response",$row);
 				}
 			}
+
+			// echo "<pre>";
+			// print_r($row); die;
+
+			
 			$result = $db->_execute($query);
 			$num=0;
 			while($row = mysql_fetch_array($result, MYSQL_ASSOC)){
-				if ($row['type'] == "User") $row['type'] = 'tech';
-				if ($row['type'] == "Warehouse") $row['type'] = 'warehouse';
+				// if ($row['type'] == "User") $row['type'] = 'tech';
+				// if ($row['type'] == "Warehouse") $row['type'] = 'warehouse';
 				
-				$row['item_location'] = $row['type'] . ':' . $row['number'];
+				$row['item_location'] = 'tech' . ':' . $row['to_location_id'];
 				unset($row['type']);
 				unset($row['number']);
 				if ($row['refund_regular_price']) {
@@ -930,8 +1040,9 @@ class InventoriesController extends AppController
 				$items[] = $row;
 			}
 			
-			$new_items = array();
-			$temp_items = $items;
+
+			// $new_items = array();
+			// $temp_items = $items;
 
 			// Get All Invoices
 			//Loki: Get the refund items quantity:
@@ -944,40 +1055,40 @@ class InventoriesController extends AppController
 			}
 			//Merge existing results
 			
-			foreach($items as $key => $item){
-				$qty = 1;
-				$match = false;
-				$add = true;
+			// foreach($items as $key => $item){
+			// 	$qty = 1;
+			// 	$match = false;
+			// 	$add = true;
 				
-				foreach($temp_items as $key2 => $temp_item){
-					//Check other items for non-unique fields to find the grouping ones
-					if ($temp_item['item_id'] == $item['item_id']
-						&& $temp_item['model'] == $item['model']
-						&& $temp_item['purchase_price'] == $item['purchase_price']
-						&& $temp_item['regular_price'] == $item['regular_price']
-						&& $temp_item['item_location'] == $item['item_location']
-						&& $key2 != $key){
+			// 	foreach($temp_items as $key2 => $temp_item){
+			// 		//Check other items for non-unique fields to find the grouping ones
+			// 		if ($temp_item['item_id'] == $item['item_id']
+			// 			&& $temp_item['model'] == $item['model']
+			// 			&& $temp_item['purchase_price'] == $item['purchase_price']
+			// 			&& $temp_item['regular_price'] == $item['regular_price']
+			// 			&& $temp_item['item_location'] == $item['item_location']
+			// 			&& $key2 != $key){
 						
-						if (!$temp_items[$key2]['ignore']){
-							//echo $item['item_id'] . '['. $key .'] match with ' . $key2 . '<br/>';
-							$qty++;
-							$temp_items[$key2]['ignore'] = true;
-						}else{
-							$add = false;
-							break;
-						}
-					}else if ($key2 == $key){
-						$temp_items[$key2]['ignore'] = true;
-					}
-				}
+			// 			if (!$temp_items[$key2]['ignore']){
+			// 				//echo $item['item_id'] . '['. $key .'] match with ' . $key2 . '<br/>';
+			// 				$qty++;
+			// 				$temp_items[$key2]['ignore'] = true;
+			// 			}else{
+			// 				$add = false;
+			// 				break;
+			// 			}
+			// 		}else if ($key2 == $key){
+			// 			$temp_items[$key2]['ignore'] = true;
+			// 		}
+			// 	}
 				
-				if ($add){
-					$item['qty'] = $qty;
-					$new_items[] = $item;
-				}
-			}
+			// 	if ($add){
+			// 		$item['qty'] = $qty;
+			// 		$new_items[] = $item;
+			// 	}
+			// }
 			
-			$items = $new_items;
+			// $items = $new_items;
 			//Loki: Get the refund items quantity:
 			$query = "SELECT SUM(quantity) as refunded_quantity , item_id FROM  `ace_iv_invoice_refund_items` WHERE  `Invoice_id` =".$doc_id." GROUP BY item_id";
 			$quantityData = array();
@@ -1204,26 +1315,36 @@ class InventoriesController extends AppController
 				  $methods[$row1['id']][$k] = $v;
 				}	
 			}
-		$this->set('invoiceImageArr', $invoiceImageArr);
-		$this->set('invoiceDetails', $invoiceDetails);
-		$this->set('quantityData', $quantityData);
+
+		$this->set('categories', $this->Lists->IvMidCategories());
+		$this->set('subCategories', $this->Lists->IvSubCategories(62));
 		$this->set('booking_sources', $this->Lists->BookingSources());		
 		$this->set('trucks', $trucks);
 		$this->set('methods', $methods);
 		$this->set('paidDate', date("d M Y", strtotime($paidDate)));
 		$this->set('supplierName', $supplierName);
+		$this->set('supplierInfo', $supplierInfo);
 		$this->set('items', $items);		
+		$this->set('bookItems',json_encode($bookItems));		
+		$this->set('fromBooking', $fromBooking);		
+		$this->set('fromTech', $fromTech);		
 		$this->set('docdate', date('d M Y', strtotime($docdate)));
 		$this->set('invoice_number', $invoice_number);
 		$this->set('status', $status);	
 		$this->set('doc_id', $doc_id);		
+		$this->set('supplier_id', $supplier_id);		
 		$this->set('note', $note);		
 		$this->set('doc_type', $doc_type);
 		$this->set('order_number', $order_number);
+		$this->set('invoiceDetails', $invoiceDetails);
+		$this->set('invoiceImageArr', $invoiceImageArr);
 		$this->set('doctype', $allDocTypes[$doc_type]);
 		$this->set('doctypes', $this->Common->getSelector($allDocTypes,'doctype',$doc_type));
+		$this->set('inventoryTechnician',$this->Lists->inventoryTech());
+
 		if (($doc_type==1)||($doc_type==5) || ($doc_type==7))
 			$this->set('suppliers', $this->Common->getSelector($allSuppliers,'supplier',$supplier_id));
+		 // $this->set('allSuppliers',$this->Lists->ListTable('ace_rp_suppliers','',array('name','city')));
 		else
 			$this->set('suppliers', $this->Common->getSelector($allLocations,'supplier',$supplier_id));
 		$this->set('locations', $this->Common->getSelector($allLocations,'location',$tech_id));
@@ -1232,12 +1353,92 @@ class InventoriesController extends AppController
 		}
 	}
 
+	/*Loki:get inventory items with tech quantity*/
+	
+function searchItems()
+	{
+		$this->layout = 'blank';
+
+		$needle = $_GET['query'];
+		$classId = $_GET['classId'];
+		
+		$db =& ConnectionManager::getDataSource('default');
+		
+		$query = "SELECT i.*, techItem.quantity as stock
+			FROM iv_items_labeled2 i
+			JOIN ace_iv_sub_categories sub ON i.sub_category_id  = sub.id
+			LEFT JOIN ace_rp_tech_inventory_item techItem ON i.id  = techItem.item_id AND techItem.tech_id = 231433
+			WHERE active = 1 and i.category_id != 39 and sub.name != 'Inactive' and i.name LIKE \"%$needle%\"";
+		
+		$result = $db->_execute($query);
+		$inventoryTechnician = $this->Lists->inventoryTech();
+
+		while($row = mysql_fetch_array($result))
+		{
+			$images1 =  $row['image'];
+			if(!empty($images1)){
+				
+			
+		$year = substr($images1, 0, 4);
+        $mon = substr($images1, 4, 2);
+        $day = substr($images1, 6, 2);
+        $name = $year.'/'.$mon.'/'.$day.'/'.$images1;
+		$dir = str_replace('index.php/inventories','',dirname($_SERVER['REQUEST_URI']));
+		$src = $dir."/upload_photos/$name";
+			$image="<img id='' style='height:30px;width:30px' class='invoice-openImg order-images' src='$src'>";
+			}
+			else {
+				$image="";
+				
+			}
+			
+			$row['tech_data'] = $this->getInventoryTechQty($row['id']);
+			$tableRows .= "<tr id='ajax_item_result_template_".$classId." style='display:none'>
+				<input type='hidden' class='stock_".$classId."' val='".$row['stock']."'>
+				 <td class='markup_percent_".$classId."' style='display:none'>". $row['markup_percent']."</td>
+				  <td class='tech_percent_".$classId."' style='display:none'>". $row['tech_percent']."</td>
+			    <td class='name_".$classId."'>".htmlentities(stripslashes($row['name']), ENT_QUOTES)."</td>
+			    <td class='model_".$classId."'>". $row['model']."</td>
+			    <td class='sku_".$classId."'>". $row['sku']."</td>
+			    <td class='price_".$classId."' >". $row['selling_price']."</td>
+			    <td style='display:none;'' class='item_id_".$classId."' >".$row['id']."</td>
+			    <td class='purchase_price_".$classId."'>".$row['supplier_price']."</td>
+				<td class='purchase_price_".$classId."'>".$image."</td>
+			    <td style='display:none;' class='category_id_".$classId."'>".$row['category_id']."</td>";
+
+			foreach ($inventoryTechnician as $tech1 => $value1){
+			$tableRows .= "<td class='warehouse_".$value1['id']."_".$classId."'>";
+		     if(!empty($row['tech_data'])){
+		     foreach ($row['tech_data'] as $tech2 => $value2){
+		        if($value1['id'] == $value2['TechInventoryItem']['tech_id'] ) {
+		         	$tableRows .= $value2['TechInventoryItem']['quantity'];
+		         } 
+			 	}
+			 } 
+			 $tableRows .= "</td>";
+			}
+			 
+			$tableRows .= "<td class='remove_item_".$classId."'><input type='checkbox' name='delete_item' class='delete_items' item-id='".$row['id']."' item-class='".$classId."'/></td>
+    		<td class='brand_".$classId."' style='display:none'>". $row['brand_name']."</td>
+    		<td class='sub_category_id_".$classId."' style='display:none'>".$row['sub_category_id']."</td>";
+			 $tableRows .= "</tr>";			
+
+		}
+		
+		print json_encode($tableRows);
+		exit();
+		// $this->set('inventoryTechnician',$this->Lists->inventoryTech());
+
+		// $this->set('classId', $classId);
+		// $this->set('items', $items);
+	}
+	
 	function ajaxItems() {
 		$queries = new Queries($this);
 		$active = isset($_GET['active']) ? $_GET['active'] : null;
 		if ($active) {
 			if(!empty($_GET['query'])){
-				print json_encode($queries->SearchActiveParts($_GET['query']));
+				print json_encode($this->SearchActiveParts($_GET['query']));
 			} else {
 				$response = array();
 				print json_encode($response);
@@ -1251,16 +1452,50 @@ class InventoriesController extends AppController
 			print json_encode($queries->SearchParts($_GET['query']));
 		}
 	}
+
+	/*Loki: Assign purchase items to technician.*/
+	function saveTechItems($items){
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$now = date('Y-m-d');
+		$item_tech = explode(':', $items['location']);
+		$checkExisting = "SELECT * FROM ace_rp_tech_inventory_item where tech_id = ".$item_tech[1]." AND item_id =".$items['item_id']."";
+			$executeRes = $db->_execute($checkExisting);
+			$row = mysql_fetch_array($executeRes, MYSQL_ASSOC);
+			if(!empty($row)) {
+				$newQuantity = $items['quantity'] + $row['quantity'];
+				$res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = ".$newQuantity." where id = ".$row['id']."");
+			} else{
+				$query = "INSERT INTO ace_rp_tech_inventory_item (tech_id, item_id, quantity, updated_date) VALUES (".$item_tech[1].",".$items['item_id'].", ".$items['quantity'].", '".$now."')";
+				$res = $db->_execute($query);
+			}
+	}
+	/*Loki: add items into history table
+		status: 1 = purchase, 2 = sold, 3 = received
+	*/
+	function invoiceItemHistory($item,$invoice_number,$doc_id,$supplier_id,$ref_num,$paid_by){
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$now = date('Y-m-d');
+		$item_tech = explode(':', $item['location']);
+
+		$job_ref_num = !empty($ref_num) ? $ref_num : 0;
+
+		$db->_execute("INSERT INTO ace_iv_invoice_item_history (quantity,item_id,purchase_price,job_ref_num,Invoice_num,received_by, supplier,item_date,invoice_id,status,paid_by) VALUES (".$item['quantity'].",".$item['item_id'].",".$item['price'].",'".$job_ref_num."','".$invoice_number."',".$item_tech[1].",".$supplier_id.",'".$now."',".$doc_id.",1,".$paid_by.")");
+	}
+
 	function saveDoc(){
-		
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$assets = array();
 		$doc_id = $this->data['doc_id'];
 		$original_invoice_id = $this->data['doc_id']; // for refund
 		$doc_type = $this->data['doc_type'];
 		$supplier_id = $this->data['supplier'];
+		$supplier_info = $this->data['supplier_info'];
 		$invoice_number = $this->data['invoice_number'];
 		$do_save = (isset($_POST['enable_save']))? $_POST['enable_save'] : null;
+		$fromBooking = isset($_POST['fromBooking']) ? $_POST['fromBooking'] : 0;
+		$fromTech = isset($_POST['fromTech']) ? $_POST['fromTech'] : 0;
+		$techPayMethod = isset($_POST['techPayMethod']) ? $_POST['techPayMethod'] : 0;
+		$orderId = $this->data['order_id'];
 		$order_number = $this->data['order_number'];
 		$location = $this->data['location'];
 		$note = $this->data['note'];
@@ -1270,19 +1505,57 @@ class InventoriesController extends AppController
 		$refundDate = date("Y-m-d", strtotime($this->data['refund_date']));
 		$total_purchase_amount = (isset($_POST['totalPurchaseAmount']))? $_POST['totalPurchaseAmount'] : null;
 		$photoImage = isset($_FILES['sortpic1'])? $_FILES['sortpic1'] : null;
+		$photoImage5 = isset($_FILES['sortpic5'])? $_FILES['sortpic5'] : null;
 		$imageName = '';
 		$po_number = isset($this->data['po_number']) ? $this->data['po_number'] : null ;
-		
+		$purchasePaidBy = isset($this->data['purchase_paid_by']) ? $this->data['purchase_paid_by'] : null ;
+		$loggedUser = $this->Common->getLoggedUserID();
+
 		if ($do_save == 1){
 			//echo 'Perform Update';
 			$items = $_POST['data']['items'];
+
 			if (isset($_POST['invoice'])){
 				$invoice = $_POST['invoice'];
 			}
 			if($status_id == 9){
 				$status_id = 5;
 			}
-			foreach($items as $item){			
+			
+			foreach($items as $item){		
+				$newItems[] = $item;
+				$techId = explode(':', $item['location']);
+				$oldTech = explode(':', $item['old_location']);
+
+				if($techId[1] == $oldTech[1]){					
+					if($item['quantity'] > $item['old_qty'])
+					{
+						$addQty = $item['quantity'] - $item['old_qty'];
+						$qry = "UPDATE ace_rp_tech_inventory_item set quantity = quantity + ".$addQty." where item_id = ".$item['item_id']." AND tech_id=".$techId[1];
+						$res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = quantity + ".$addQty." where item_id = ".$item['item_id']." AND tech_id=".$techId[1]);
+					} else if($item['quantity'] < $item['old_qty']){
+						$removeQty = $item['old_qty'] - $item['quantity'];
+						$res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = quantity - ".$removeQty." where item_id = ".$item['item_id']." AND tech_id=".$techId[1]);
+					}
+				}
+				
+				if($techId[1] != $oldTech[1]){
+					$now = date('Y-m-d');
+					$checkExisting = $db->_execute("SELECT * FROM ace_rp_tech_inventory_item where tech_id = ".$techId[1]." AND item_id =".$item['item_id']."");
+					$row = mysql_fetch_array($checkExisting, MYSQL_ASSOC);
+					if(!empty($row))
+					{
+						$res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = quantity + ".$item['quantity']." where item_id = ".$item['item_id']." AND tech_id=".$techId[1]);
+					} else {
+						$db->_execute("INSERT INTO ace_rp_tech_inventory_item (tech_id, item_id, quantity, updated_date) VALUES (".$techId[1].",".$item['item_id'].", ".$item['quantity'].", '".$now."')");
+					}
+					
+					$res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = quantity - ".$item['quantity']." where item_id = ".$item['item_id']." AND tech_id=".$oldTech[1]);
+
+					 $db->_execute("UPDATE ace_iv_movements set to_location_id = ".$techId[1]." where asset_id = ".$item['asset_id']."");
+				}
+				// Update Location
+
 				//Update Item Info
 				
 				// Update SKU
@@ -1295,29 +1568,40 @@ class InventoriesController extends AppController
 				}
 				
 				//Update price
-				if (isset($item['price'])){
 					$query = "
-						UPDATE ace_iv_assets SET regular_price = '{$item['price']}', refund_quantity = '{$item['refund_quantity']}'
+						UPDATE ace_iv_assets SET regular_price = '{$item['price']}', refund_quantity = '{$item['refund_quantity']}', qty = {$item['quantity']}, purchase_price = {$item['price']}
 						WHERE item_id = '{$item['item_id']}' AND movement_id = '{$item['movement_id']}'
 					";
 					$db->_execute($query);
-				}
 				
 				//Update Invoice
 				if (isset($invoice)){
 					$query = "
-						UPDATE ace_iv_invoice SET invoice = '{$invoice}', status_id = '{$status_id}'
+						UPDATE ace_iv_invoice SET invoice = '{$invoice}', status_id = '{$status_id}', purchase_paid_by = '{$purchasePaidBy}'
 						WHERE invoice_id = '{$doc_id}'
 					";
 					$db->_execute($query);
 				}
+
+				$db->_execute("UPDATE ace_iv_invoice_item_history set quantity = '".$item['quantity']."', purchase_price=".$item['price']."  where item_id = ".$item['item_id']." and invoice_id=".$doc_id);
+				 $db->_execute("UPDATE ace_iv_items set name = '".$item['name']."', sku='".$item['part_number']."',supplier_price = ".$item['price']."  where id = ".$item['item_id']."");
+				 $db->_execute("UPDATE iv_items_labeled2 set name = '".$item['name']."', sku='".$item['part_number']."',supplier_price = ".$item['price']."  where id = ".$item['item_id']."");
 			}
-			$this->redirect('inventories/'.$_REQUEST['rurl']);
+			if($fromBooking == 2){
+				$newArray = json_encode($newItems);
+				echo "<script>
+				window.returnPurchaseItem=".$newArray.";
+				window.close();
+				</script>";
+			} else {
+				$this->redirect('inventories/'.$_REQUEST['rurl']);
+			}
 		}
 		
 		// For everything that isn't a movement/refund type
 		// Which should only be for purchasing items??
 		if ($doc_type != 2 && $doc_type != 5 && !$do_save) {
+
 			$query = "SELECT MAX(id) as last_id FROM ace_iv_movements";
 			$result = $db->_execute($query);
 			$results = mysql_fetch_array($result, MYSQL_ASSOC);
@@ -1328,38 +1612,42 @@ class InventoriesController extends AppController
 				$doc_id = $results['last_id'] + 1;
 			}
 			
-			
-			//From Location (which supplier purchased from)
-			$query = "SELECT id FROM ace_iv_locations WHERE type = 'Supplier' AND number = '$supplier_id'";
-			$result = $db->_execute($query);
-			$results = mysql_fetch_array($result, MYSQL_ASSOC);
-			$from_location_id = $results['id'];
-			
-			foreach ($this->data['items'] as $cur){
-				if($doc_type == 1 || $doc_type == 7) {
-					// $doc_type 1 = purchase
-					//Add the items to the inventory
-					for($i = 0; $i < $cur['quantity']; $i++){
-						$location_data = $this->GetLocationIDFromString($cur['location']);
-						// store $assets array for insertion into movements table
-						$asset = array();
-						// store into assets table
-						// $this->Common->itemTransaction($cur['item_id'], $cur['purchase_price'], $cur['price'], $to_location_id);
-						$this->Common->itemTransaction($doc_id, $cur['item_id'],$cur['name'],$cur['quantity'],$cur['price'],$cur['purchase_price'],'',$location_data["id"],$moveDate);
-						$asset['id'] = $this->Common->itemAssetTransaction($cur['item_id'],$cur['purchase_price'], $cur['price']);
-						$asset['location_name'] = $location_data["number"];
-						$asset['location_type'] = $location_data["type"];
-						$asset['location_id'] = $location_data["id"];
-						$assets[] = $asset;
+			$from_location_id = $supplier_id;
+			if($doc_type == 1 || $doc_type == 7) {
+				foreach ($this->data['items'] as $cur){	
+				if($cur['sub_cat_id'] == 16)
+				// if($cur['sub_cat_id'] == 23)
+             	{
+             		// Local catId = 37, sub cat = 26, cat=8,sub=34
+             		//Live catId = 36, sub cat = 101
+             		$db->_execute("INSERT INTO ace_iv_items (sku,name, description1, description2,efficiency, model,  iv_category_id, iv_brand_id, iv_supplier_id, supplier_price, selling_price, regular_price, active, iv_sub_category_id) VALUES ('".$cur['sku']."', '".mysql_real_escape_string($cur['name'])."', '','', '','',".$cur['new_cat_id'].",'','".$supplierId."', '".$cur['price']."','".$cur['price']."','','1', ".$cur['new_sub_cat_id'].")"); 
+             		$lastinsertID = $db->lastInsertId();
+             		 $item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active, sub_category_id, sub_category_name) VALUES ('".$cur['sku']."',".$lastinsertID.", '".mysql_real_escape_string($cur['name'])."', '','', '','','' ,'One Time Purchase' ,'' ,".$cur['new_cat_id'].",'','".$supplier_id."', '".$cur['price']."','".$cur['price']."','','1', ".$cur['new_sub_cat_id'].", 'Inactive')";
+               		$res = $db->_execute($item_label2);   
+               		$cur['item_id'] = $lastinsertID;   
+               		$cur['sub_cat_id'] = $cur['new_sub_cat_id'];   
+               		$cur['cat_id'] = $cur['new_cat_id'];   
+             	}
+             			$cur['invoiceId'] = $doc_id;
+						$this->saveTechItems($cur);
 						
-						//echo "<pre>";print_r($cur);echo "</pre>";
-						
-						// store or update SKU for this item / supplier
+						$this->invoiceItemHistory($cur,$invoice_number,$doc_id,$supplier_id,$order_number,$purchasePaidBy);
+						// $doc_type 1 = purchase
+						//Add the items to the inventory
+							$location_data = $this->GetLocationIDFromString($cur['location']);
+							$fromLocation = explode(':', $cur['location']);
+							// store $assets array for insertion into movements table
+							$asset = array();
+							// store into assets table
+							$this->Common->itemTransaction($doc_id, $cur['item_id'],$cur['name'],$cur['quantity'],$cur['price'],$cur['purchase_price'],'',$location_data["id"],$moveDate);
+							$asset['id'] = $this->Common->itemAssetTransaction($cur['item_id'],$cur['purchase_price'], $cur['price'],$cur['quantity']);
+							$asset['location_id'] = $fromLocation[1];
+							$assets[] = $asset;
+							
+							$this->_store_sku($cur['item_id'], $supplier_id, $cur['sku']);
 
-						// $this->_store_sku($cur['item_id'], $from_location_id, $cur['sku']);
-						$this->_store_sku($cur['item_id'], $supplier_id, $cur['sku']);
+							$newItems[] = $cur;
 					}
-				}
 			}
 			
 			//Add the assets as a movement
@@ -1394,17 +1682,43 @@ class InventoriesController extends AppController
 			        move_uploaded_file($photoImage['tmp_name'], ROOT."/app/webroot/purchase-invoice-images/".$imageName);
 			    }
 	        }
+	        //Loki: For technician payment image.
+			if(!empty($photoImage5['name']))
+	        {       
+	            $path = $photoImage5['name'];
+				$ext = pathinfo($path, PATHINFO_EXTENSION);
+				$imageName1 = date('Ymdhis', time()).'_'.$path.'.'.$ext;
+				if ( 0 < $file['error'] ) {
+	        		// echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
+			    } else {
+			        move_uploaded_file($photoImage5['tmp_name'], ROOT."/app/webroot/purchase-invoice-images/".$imageName1);
+			    }
+	        }
+	        
 			if($doc_type == 7)	
 			{
-				$query = "INSERT INTO ace_iv_invoice (invoice_id, invoice, status_id, pay_date, reference_no, refund_invoice_id, returned_by, supplier_rep, refund_time	, payment_method,doc_type, total_purchase_amount,remaining_amount,invoice_image, po_number ) VALUES ('{$doc_id}', '{$this->data['invoice_number']}','{$status_id}', '{$refundDate}','{$this->data['ref_no']}', '{$this->data['returned_invoice']}', '{$this->data['Returned_by']}', '{$this->data['supplier_rep']}', '{$this->data['refund_time']}', '{$this->data['payment_method']}', '{$doc_type}', '{$total_purchase_amount}','{$total_purchase_amount}', '{$imageName}', '{$po_number}')";
+				$query = "INSERT INTO ace_iv_invoice (invoice_id, invoice, status_id, pay_date, reference_no, refund_invoice_id, returned_by, supplier_rep, refund_time	, payment_method,doc_type, total_purchase_amount,remaining_amount,invoice_image, po_number,supplier_info,created_by) VALUES ('{$doc_id}', '{$this->data['invoice_number']}','{$status_id}', '{$refundDate}','{$this->data['ref_no']}', '{$this->data['returned_invoice']}', '{$this->data['Returned_by']}', '{$this->data['supplier_rep']}', '{$this->data['refund_time']}', '{$this->data['payment_method']}', '{$doc_type}', '{$total_purchase_amount}','{$total_purchase_amount}', '{$imageName}', '{$po_number}' ,'{$supplier_info}','{$loggedUser}')";
 				$res = $db->_execute($query);
 			} else {
-				$query = "INSERT INTO ace_iv_invoice (invoice_id, invoice, status_id, doc_type, total_purchase_amount,remaining_amount,invoice_image, po_number) VALUES ('{$doc_id}', '{$this->data['invoice_number']}','6', '{$doc_type}', '{$total_purchase_amount}','{$total_purchase_amount}', '{$imageName}', '{$po_number}')";
+				$query = "INSERT INTO ace_iv_invoice (invoice_id, invoice, status_id, doc_type, total_purchase_amount,remaining_amount,invoice_image, po_number,supplier_info,tech_pay_method, tech_pay_image, order_id,purchase_paid_by,created_by) VALUES ('{$doc_id}', '{$this->data['invoice_number']}','6', '{$doc_type}', '{$total_purchase_amount}','{$total_purchase_amount}', '{$imageName}', '{$po_number}','{$supplier_info}','{$techPayMethod}','{$imageName1}','{$order_number}','{$purchasePaidBy}','{$loggedUser}')";
 				$db->_execute($query);
 
 			}
 			$db->_execute("INSERT INTO ace_rp_invoice_po_number (invoice_id, po_number) VALUES ('{$doc_id}', '{$po_number}')");
-			$this->redirect('inventories/'.$_REQUEST['rurl']);
+			if($fromBooking == 1 || $fromBooking == 2){
+				$newArray = json_encode($newItems);
+				echo "<script>
+				window.returnPurchaseItem=".$newArray.";
+				window.purchase='".$supplier_id.",".$invoice_number."';
+				window.close();
+				</script>";
+			}else if($fromTech == 1){
+				$this->redirect('orders/invoiceTablet');
+			}
+			else {
+				$this->redirect('inventories/'.$_REQUEST['rurl']);
+			}
+			// $this->redirect('inventories/supplies');
 		} 
 		//-----------
 		
@@ -1654,21 +1968,103 @@ class InventoriesController extends AppController
 	//reuseable item = 26, parts=8
 	function editDefault()
 	{
-		$categoryId = isset($_GET['category_id']) ? $_GET['category_id'] : 8;
+		// error_reporting(E_ALL);
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$fromUser = isset($_GET['from_user']) ? $_GET['from_user'] : 0;
 		$this->layout="list";
 		$allTechnicians = $this->Lists->Technicians();
-
-		$query = "SELECT * FROM iv_items_labeled2 WHERE category_id = ".$categoryId." AND active = 1";
-		$result  = $db->_execute($query);
+		$now = date("d M Y");
 		$items = array();
-		while($row = mysql_fetch_array($result)) {
-			$items[] = $row;
+		if($fromUser > 0)
+		{		
+			// $query = "SELECT it.quantity,il.* FROM  ace_rp_tech_inventory_item it 
+			// 		JOIN iv_items_labeled2 il ON it.item_id = il.id WHERE il.tech_default = 1 AND il.active = 1 AND it.tech_id =".$fromUser." order by il.name";
+			$query = "SELECT it.quantity,il.* FROM  ace_rp_tech_inventory_item it 
+					JOIN iv_items_labeled2 il ON it.item_id = il.id WHERE it.tech_id =".$fromUser." order by il.name";
+
+			$result  = $db->_execute($query);
+			while($row = mysql_fetch_array($result)) {	
+				if($row['quantity'] > 0)
+				{
+					$items[] = $row;
+				}
+			}
+			$techArr = $this->Lists->inventoryTech($fromUser);
+			
+		} else {		
+			$query = "SELECT * FROM iv_items_labeled2 WHERE tech_default = 1 AND active = 1";
+			$result  = $db->_execute($query);
+			while($row = mysql_fetch_array($result)) {
+				$row['tech_data'] = $this->getInventoryTechQty($row['id']);	
+				$items[] = $row;
+			}
+			$techArr = $this->Lists->inventoryTech();
 		}
+
+		$this->set('inventoryTechnician', $techArr);		
+		$this->set('fdate', $now);		
+		$this->set('fromUser', $fromUser);		
 		$this->set('items', $items);		
 		$this->set('allTechnicians', $allTechnicians);		
 	}
+	/*Loki: move item to tech.
+		Category: reuseable item = 26, parts=8, One time item: 37
+	*/
+	function moveTechItem()
+		{
+			// $categoryId = isset($_GET['category_id']) ? $_GET['category_id'] : 8;
+			$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+			$this->layout="list";
+			$techId = isset($_GET['techId']) ? $_GET['techId'] :0;
+			$fromBooking = isset($_GET['fromBooking']) ? $_GET['fromBooking'] :0;
+			$bookingItems = $_GET['bookingItems'];
+			$search = isset($_GET['search']) ? $_GET['search'] :'';
+			$allTechnicians = $this->Lists->Technicians();
+			$now = date("d M Y");
+			$limit = 50;
+			// $total_pages = 0;
+			// $pageNo = isset($_GET['currentPage']) ? $_GET['currentPage'] : 1;
+			// if($pageNo == 0)
+			// {
+			// 	$pageNo	= 1;
+			// }
+			// $record_index = ($pageNo-1) * $limit;      
+			
+			if ($_GET['search']){
+					$sqlConditions .= " AND i.name LIKE '%{$_GET['search']}%'";
+			}
 
+			if($fromBooking == 1){
+				
+				$query = "SELECT i.* FROM iv_items_labeled2 i
+				JOIN ace_iv_sub_categories sub ON i.sub_category_id  = sub.id
+				WHERE i.id IN (".$bookingItems.")".$sqlConditions;
+			} else {
+				$query = "SELECT i.* FROM iv_items_labeled2 i
+				JOIN ace_iv_sub_categories sub ON i.sub_category_id  = sub.id
+				WHERE i.category_id NOT IN (1,37) AND sub.name != 'Inactive' AND i.active = 1".$sqlConditions;
+
+				// $query = "SELECT i.* FROM iv_items_labeled2 i
+				// JOIN ace_iv_sub_categories sub ON i.sub_category_id  = sub.id
+				// WHERE i.category_id IN (8,26,36) AND sub.name != 'Inactive' AND i.active = 1";
+			}
+
+			$result  = $db->_execute($query);
+			$items = array();
+			while($row = mysql_fetch_array($result)) {
+				$row['tech_data'] = $this->getInventoryTechQty($row['id']);	
+				$items[] = $row;
+			}
+			$techArr = $this->Lists->inventoryTech();
+			
+			$this->set('techId', $techId);		
+			$this->set('fromBooking', $fromBooking);		
+			$this->set('search', $search);		
+			$this->set('inventoryTechnician', $techArr);		
+			$this->set('fdate', $now);		
+			$this->set('items', $items);		
+			$this->set('allTechnicians', $allTechnicians);		
+		}
 	function saveDefault()
 	{
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
@@ -2066,7 +2462,8 @@ class InventoriesController extends AppController
 			$parts = explode(" ",$str); } // might be "type number"
 		if (count($parts)==1) {
 			$parts[1] = "0"; } // assume 0 if no num can be determined
-		$type = $this->BestLocationType($parts[0]);
+		//$type = $this->BestLocationType($parts[0]);
+		$type = $parts[0];
 		$number = (int)$parts[1];
 		$query = "SELECT id FROM ace_iv_locations WHERE type = '$type' AND number = $number";
 		$result = $db -> _execute( $query );
@@ -2092,20 +2489,30 @@ class InventoriesController extends AppController
 		}
 	}
 	//This function get all the invoice history and show.
-	function ShowInvoiceHistory()
+	function showInvoiceHistory()
 	{
 		$invoiceId = $_GET['invoiceId'];
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
-		$query = "SELECT ih.*, invs.status as status_name from ace_iv_invoice_history ih LEFT JOIN ace_iv_invoice_status invs ON invs.id = ih.status_id where ih.invoice_id=".$invoiceId." order by ih.id desc";
+		$query = "SELECT ih.*, invs.status as status_name,
+		ppm.name as payment_method_name, CONCAT(return_user.first_name, ' ',return_user.last_name) as return_user,
+			CONCAT(paid_by.first_name, ' ',paid_by.last_name) as paid_user
+			from ace_iv_invoice_history ih 
+			LEFT JOIN ace_iv_invoice_status invs ON invs.id = ih.status_id
+			LEFT JOIN ace_rp_purchase_payment_method ppm ON ppm.id = ih.payment_method
+			LEFT JOIN ace_rp_users return_user ON return_user.id = ih.returned_by
+			LEFT JOIN ace_rp_users paid_by ON paid_by.id = ih.paid_by 
+		 	where ih.invoice_id=".$invoiceId." order by ih.id desc";
 
+		 	// print_r($query); die;
 		$result = $db->_execute($query);
 		$response = array();
 		while($row = mysql_fetch_array($result, MYSQL_ASSOC))
 		{
 			$response[] = $row; 
 		}
-		print json_encode($response);
-		exit();
+		$this->set("response",$response);
+		//print json_encode($response);
+		
 	}
 
 	// Loki: Show the full history details 
@@ -2135,11 +2542,29 @@ class InventoriesController extends AppController
 		$this->set("response",$response);
 	}
 
-	// Loki: Create purchase invoice for one time purchased items.
+	
+	function addTransferItem()
+    {
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $techId = !empty($_POST['techId']) ? $_POST['techId'] : 0;
+        $orderItems = $_POST['data']['Order']['BookingItem'];
+        $items = array();
+ 
+        foreach ($orderItems as $key => $value) {
+             if($value['order_status'] == 1){ 
+	                $items[]       = $value['item_id'];
+             }
+         }
+          $response  = array("res" => "1", "poData" => $_POST, "itemArray" => $items );
+          echo json_encode($response);
+         exit();
+     }
+
     function createPurchaseInvoice()
     {
-    	// $this->Common->printData($_POST);
+    	// error_reporting(E_ALL);
         $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $orderInvoiceExist = $_POST['orderInvoiceExist'];
         $supplierName = $_POST['supplier_name'];
         $supplierId = $_POST['data']['Order']['app_ordered_supplier_id'];
         $invoiceId = $_POST['data']['Order']['invoice_id'];
@@ -2160,104 +2585,56 @@ class InventoriesController extends AppController
         
         foreach ($orderItems as $key => $value) {
              if($value['order_status'] == 1){
-             	//local sub_cat_id = 23, live local sub_cat_id = 16
-             	if($value['sub_category_id'] == 16)
-             	{
-             		// Local catId = 37, sub cat = 26
-             		//Live catId = 36, sub cat = 101
-             		$db->_execute("INSERT INTO ace_iv_items (sku,name, description1, description2,efficiency, model,  iv_category_id, iv_brand_id, iv_supplier_id, supplier_price, selling_price, regular_price, active, iv_sub_category_id) VALUES ('".$value['part_number']."', '".$value['name']."', '','', '','','36','','".$supplierId."', '".$value['price_purchase']."','".$value['price']."','','1', '101')"); 
-             		$lastinsertID = $db->lastInsertId();
-             		 $item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active, sub_category_id, sub_category_name) VALUES ('".$_POST['itemSku'][$key]."',".$lastinsertID.", '".$value['name']."', '','', '','','' ,'One Time Purchase' ,'".$supplierName."' ,'36','','".$supplierId."', '".$value['price_purchase']."','".$value['price']."','','1', '101', 'Inactive')";
-               		$res = $db->_execute($item_label2);   
-               		$itemId = $lastinsertID;
-             	
-             	} else {
-	                $itemId = $value['item_id'];
-             	}
-                
-                	$items[$i]['name']            = $value['name'];
+                	$items[$i]['class']           = $value['class'];
+                	$items[$i]['name']            = stripcslashes($value['name']);
 	                $items[$i]['sku']             = $value['part_number'];
-	                $items[$i]['quantity']        = $value['quantity'];
-	                $items[$i]['purchase_price']  = $value['price_purchase'];
+	                $items[$i]['qty']        	  = $value['quantity'];
+	                $items[$i]['price_purchase']  = $value['price_purchase'];
 	                $items[$i]['selling_price']   = $value['price'];
-	                $items[$i]['supplier_name']   = $supplierName;
 	                $items[$i]['supplier_id']     = $supplierId;
-	                $items[$i]['item_id']         = $itemId;
-	                $items[$i]['location']        = $locationData;
+	                $items[$i]['item_id']         = $value['item_id'];
+	                $items[$i]['item_location']   = $locationData;
+	                $items[$i]['catId']        	  = $value['item_category_id'];
+	                $items[$i]['subCatId']        = $value['sub_category_id'];
+	                $items[$i]['item_markup_percent']        = $value['item_markup_percent'];
+	                $items[$i]['item_tech_percent']        = $value['item_tech_percent'];
 	                $i++;
-                $db->_execute("UPDATE ace_rp_order_items SET order_status = 1 WHERE id =".$value['order_item_id']."");
+                //$db->_execute("UPDATE ace_rp_order_items SET order_status = 1 WHERE id =".$value['order_item_id']."");
              }
          }
+         
+          $response  = array("res" => "1", "poData" => $_POST, "itemArray" => $items);
+          echo json_encode($response);
+         exit();
+     }
 
-        // $items['imageName'] = '5e09df690cbb3.png';
-        // $items['supplier_name'] = 'emco';
-        //  $items['invoice_id'] = '12345';     
-        
-       	$query = "SELECT MAX(id) as last_id FROM ace_iv_movements";
-		$result = $db->_execute($query);
-		$results = mysql_fetch_array($result, MYSQL_ASSOC);
-		if ($results['last_id'] == NULL) {
-			$doc_id = 1;
-		}
-		else {
-			$doc_id = $results['last_id'] + 1;
-		}
-            
-        //From Location (which supplier purchased from)
-        $query = "SELECT id FROM ace_iv_locations WHERE type = 'Supplier' AND number = '$supplierId'";
-        $result = $db->_execute($query);
-        $results = mysql_fetch_array($result, MYSQL_ASSOC);
-        $from_location_id = $results['id'];
-        $total_purchase_amount = 0;
-    	
-        foreach ($items as $cur){
-        	$total_purchase_amount = $total_purchase_amount + ($cur['quantity'] * $cur['purchase_price']);
-            //Add the items to the inventory
-            for($j = 0; $j < $cur['quantity']; $j++){
-                $location_data = $this->GetLocationIDFromString($cur['location']);
-                // store $assets array for insertion into movements table
-                $asset = array();
-                // store into assets table
-                $this->Common->itemTransaction($doc_id, $cur['item_id'],$cur['name'],$cur['quantity'],$cur['selling_price'],$cur['purchase_price'],'',$location_data["id"],$moveDate);
-                $asset['id'] = $this->Common->itemAssetTransaction($cur['item_id'],$cur['purchase_price'], $cur['purchase_price']);
-                $asset['location_name'] = $location_data["number"];
-                $asset['location_type'] = $location_data["type"];
-                $asset['location_id'] = $location_data["id"];
-                $assets[] = $asset;
-                $this->_store_sku($cur['item_id'], $supplierId, $cur['sku']);
-            }
-        	
+     /*Loki: add new purchase item for booking.*/
+     function addNewPurchaseItem()
+     {
+     	$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $orderInvoiceExist = $_POST['orderInvoiceExist'];
+        $supplierName = $_POST['supplier_name'];
+        $supplierId = $_POST['data']['Order']['app_ordered_supplier_id'];
+        $invoiceId = $_POST['data']['Order']['invoice_id'];
+        $techId = !empty($_POST['techId']) ? $_POST['techId'] : 0;
+        $orderId = $_POST['data']['Order']['id'];
+        $orderNum = $_POST['poNumber'];
+        $imageName = $_POST['orderInvoiceImage'];
+        $orderItems = $_POST['data']['Order']['BookingItem'];
+        $items = array();
+        $moveDate = date("Y-m-d");
+        $doc_type = 1;
+        $i = 0;
+        if($techId == 0){
+        	$locationData = 'warehouse:'.$techId.'';
+        } else {
+        	$locationData = 'tech:'.$techId.'';
         }
-        //Add the assets as a movement
-        foreach ($assets as $asset){
-            $date = date("Y-m-d G:i:s");
-            $userID = (integer)$this->Common->getLoggedUserID();
-            $query = "INSERT INTO ace_iv_movements (id, asset_id, from_location_id, to_location_id, date, user_id)
-                        VALUES ('$doc_id', '{$asset['id']}', '$from_location_id', '{$asset['location_id']}', '$date', '$userID')";
-            $db->_execute($query);
-            
-            // update movement_id in ace_iv_assets for this asset
-            $query = "UPDATE ace_iv_assets SET movement_id = {$doc_id} WHERE asset_id = '{$asset['id']}'";
-            $db->_execute($query);
-        }
-         $items['imageName'] =  $imageName;
-         $items['supplier_name'] = $supplierName;
-         $items['invoice_id'] = $invoiceId;
-       
-        $query = "INSERT INTO ace_iv_invoice (invoice_id, invoice, status_id, doc_type, total_purchase_amount,remaining_amount,invoice_image, po_number) VALUES ('{$doc_id}', '{$invoiceId}','6', '{$doc_type}', '{$total_purchase_amount}','{$total_purchase_amount}', '{$imageName}', '{$orderNum}')";
-        $result  = $db->_execute($query);
-        if($result)
-        {
-        	 //echo json_encode($items);
-        	/*Update order status to purchased*/
-        	$db->_execute("UPDATE ace_rp_orders SET purchase_order_status = 1 WHERE id =".$orderId."");
-        	$response  = array("res" => "1");
-            echo json_encode($response);
-            exit();
-        } 
-        exit();
-    }
 
+         $response  = array("res" => "1", "poData" => $_POST, "itemArray" => $items );
+          echo json_encode($response);
+         exit();
+     }
     /*Loki: Get tech inventory data*/
     function techInventory(){
     	$this->layout = "blank";
@@ -2344,13 +2721,55 @@ class InventoriesController extends AppController
     //Loki: Add tech default inventory items
     function saveTechDefaultInventory()
     {	
-    	$now = date("Y-m-d");
-		$techArray = json_decode(stripslashes($_POST['technician']), true);
-		$itemArray = json_decode(stripslashes($_POST['items']), true);
+    	//$now = date("Y-m-d");
+		$techArray = json_decode(stripslashes($_POST['toTech']), true);
+		$itemArray = json_decode(stripslashes($_POST['items']), true);		
+		$fromTech = $_POST['fromTech'];		
+		$tdate = date("Y-m-d", strtotime($_POST['tdate']));		
+
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		foreach ($techArray as $key => $value) 
 		{
 			foreach ($itemArray as $itemKey => $itemValue) {
+					/*Loki: Check item exist in the inventory and update the quantity.*/
+					$checkExisting = "SELECT * FROM ace_rp_tech_inventory_item where tech_id = ".$value." AND item_id =".$itemValue['item_id']."";
+					$executeRes = $db->_execute($checkExisting);
+					$row = mysql_fetch_array($executeRes, MYSQL_ASSOC);
+					if(!empty($row)) {
+						$newQuantity = $itemValue['item_quantity'] + $row['quantity'];
+						$res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = ".$newQuantity.",show_default = 1 where id = ".$row['id']."");
+					} else{
+						$query = "INSERT INTO ace_rp_tech_inventory_item (tech_id, item_id, quantity, updated_date,show_default) VALUES (".$value.",".$itemValue['item_id'].", ".$itemValue['item_quantity'].", '".$tdate."',1)";
+						$res = $db->_execute($query);
+					}
+					
+					$res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = quantity - ".$itemValue['item_quantity']." where item_id = ".$itemValue['item_id']." AND tech_id=".$fromTech);
+
+					$history = $db->_execute("INSERT INTO ace_iv_invoice_item_history (quantity,item_id,purchase_price,received_by,item_date,assigned_by,status) VALUES (".$itemValue['item_quantity'].",".$itemValue['item_id'].",".$itemValue['purchase_price'].",".$value.",'".$tdate."',".$fromTech.",3)");
+				}	
+		}
+		if($history){
+			$response  = array("res" => "OK");
+            echo json_encode($response);
+		}
+		exit();
+    }
+    /*Loki: Move items to tech inventory*/
+      function moveItemToTechInventory()
+    {	
+    	error_reporting(E_ALL);
+    	//$now = date("Y-m-d");
+		$techArray = json_decode(stripslashes($_POST['toTech']), true);
+		$itemArray = json_decode(stripslashes($_POST['items']), true);		
+		$fromTech = $_POST['fromTech'];		
+		$fromBooking = $_POST['fromBooking'];		
+		$tdate = date("Y-m-d", strtotime($_POST['tdate']));		
+
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		foreach ($techArray as $key => $value) 
+		{
+			foreach ($itemArray as $itemKey => $itemValue) {
+					/*Loki: Check item exist in the inventory and update the quantity.*/
 					$checkExisting = "SELECT * FROM ace_rp_tech_inventory_item where tech_id = ".$value." AND item_id =".$itemValue['item_id']."";
 					$executeRes = $db->_execute($checkExisting);
 					$row = mysql_fetch_array($executeRes, MYSQL_ASSOC);
@@ -2358,14 +2777,24 @@ class InventoriesController extends AppController
 						$newQuantity = $itemValue['item_quantity'] + $row['quantity'];
 						$res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = ".$newQuantity." where id = ".$row['id']."");
 					} else{
-						$query = "INSERT INTO ace_rp_tech_inventory_item (tech_id, item_id, quantity, updated_date) VALUES (".$value.",".$itemValue['item_id'].", ".$itemValue['item_quantity'].", '".$now."')";
+						$query = "INSERT INTO ace_rp_tech_inventory_item (tech_id, item_id, quantity, updated_date) VALUES (".$value.",".$itemValue['item_id'].", ".$itemValue['item_quantity'].", '".$tdate."')";
 						$res = $db->_execute($query);
 					}
+					
+					$res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = quantity - ".$itemValue['item_quantity']." where item_id = ".$itemValue['item_id']." AND tech_id=".$fromTech);
+
+					$history = $db->_execute("INSERT INTO ace_iv_invoice_item_history (quantity,item_id,purchase_price,received_by,item_date,assigned_by,status) VALUES (".$itemValue['item_quantity'].",".$itemValue['item_id'].",".$itemValue['purchase_price'].",".$value.",'".$tdate."',".$fromTech.",3)");
 				}	
 		}
-		if($res){
-			$response  = array("res" => "OK");
-            echo json_encode($response);
+		if($history){
+			if($fromBooking == 1)
+			{
+				$response  = array("res" => "KO");
+	            echo json_encode($response);
+			}else {
+				$response  = array("res" => "OK");
+	            echo json_encode($response);
+			}
 		}
 		exit();
     }
@@ -2390,5 +2819,143 @@ class InventoriesController extends AppController
 		}
     	exit();
     }
+
+     //Loki: remove purhcse invoice image
+     function removeInvoiceImage()
+    {
+        $id = $_POST['oid'];
+        $imgPath = $_POST['imgPath'];
+        $rootPath = getcwd();
+        unlink($rootPath.'/app/webroot/purchase-invoice-images/'.$imgPath);
+        $db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+        $query = "UPDATE ace_iv_invoice set invoice_image = '' where invoice_id =".$id;
+        $res = $db->_execute($query);
+        if ($res) {
+            $response  = array("res" => "OK");
+            echo json_encode($response);
+            exit();
+        }
+        exit();     
+    }
+
+    /*Loki: get all the items of technician.*/
+    function getTechItems()
+    {
+    	$loggedUser = $this->Common->getLoggedUserID();
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$this->layout="list";
+		$now = date("d M Y");
+		$query = "SELECT li.sku, li.name, li.model,li.brand,li.supplier_price,li.selling_price,ti.item_id, ti.quantity FROM ace_rp_tech_inventory_item ti
+		JOIN iv_items_labeled2 li ON ti.item_id = li.id
+		WHERE tech_id=".$loggedUser;
+		$result  = $db->_execute($query);
+		$items = array();
+		while($row = mysql_fetch_array($result)) {
+			$row['tech_data'] = $this->getInventoryTechQty($row['item_id']); 
+			$items[] = $row;
+		}
+		$techArr = $this->Lists->inventoryTech();
+        $this->set('inventoryTechnician', $techArr);    
+		$this->set('items', $items);		
+	
+    }
+
+    function deleteInvoice()
+	{
+		$invoiceId = $_POST['invoiceId'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+		$deleteInvoice = $db->_execute("DELETE FROM ace_iv_invoice WHERE invoice_id=".$invoiceId);
+		$deleteMovement = $db->_execute("DELETE FROM ace_iv_movements WHERE id=".$invoiceId);
+		$deleteItems = $db->_execute("DELETE FROM ace_iv_invoice_item_history  WHERE invoice_id=".$invoiceId);
+		if ($deleteItems) {
+            $response  = array("res" => "1");
+            echo json_encode($response);
+            exit();
+        }		
+		exit();
+	}
+
+	/*Loki: Delete transaction history*/
+	function deleteItemTransaction()
+	{
+		$transactionId = $_GET['transactionId'];
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+
+		$deleteItems = $db->_execute("DELETE FROM ace_iv_invoice_item_history WHERE id=".$transactionId);
+		
+		if ($deleteItems) {
+            $response  = array("res" => "1");
+            echo json_encode($response);
+            exit();
+        }		
+		exit();
+	}
+
+	/*Loki: Transfer item default quantity */
+	function transferItemQty()
+	{
+		$now = date('Y-m-d');
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$bookItems = json_decode(stripslashes($_POST['items']), true);
+		foreach ($bookItems as $key => $value) {
+			$checkExisting = "SELECT * FROM ace_rp_tech_inventory_item where tech_id = 231433 AND item_id =".$value['item_id']."";
+			$executeRes = $db->_execute($checkExisting);
+			$row = mysql_fetch_array($executeRes, MYSQL_ASSOC);
+			if(!empty($row)) {
+				$newQuantity = $value['default_qty'] + $row['quantity'];
+				$res = $db->_execute("UPDATE ace_rp_tech_inventory_item set quantity = ".$newQuantity." where id = ".$row['id']."");
+			} else{
+				$query = "INSERT INTO ace_rp_tech_inventory_item (tech_id, item_id, quantity, updated_date) VALUES (231433,".$value['item_id'].", ".$value['default_qty'].", '".$now."')";
+				$res = $db->_execute($query);
+			}
+		}
+		if($res)
+		{
+			 $response  = array("res" => "1");
+             echo json_encode($response);
+            exit();
+		}
+	}
+
+	/*Loki: Transfer itemss to packes*/
+	function transferPackage()
+	{
+		$now = date('Y-m-d');
+		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
+		$bookItems = json_decode(stripslashes($_POST['items']), true);
+		$packages = json_decode(stripslashes($_POST['packages']), true);
+		
+		foreach ($packages as $key => $value) 
+		{
+			foreach ($bookItems as $itemKey => $itemValue) {
+				$db->_execute("INSERT INTO ace_iv_items (sku,name, description1, description2,efficiency, model,  iv_category_id, iv_brand_id, iv_supplier_id, supplier_price, selling_price, regular_price, active, iv_sub_category_id,ref_item_id,default_quantity) VALUES ('".$itemValue['sku']."', '".mysql_real_escape_string($itemValue['name'])."', '','', '','',39,'','".$itemValue['supplier_id']."', '".$itemValue['supplier_price']."','".$itemValue['selling_price']."','','1', ".$value.",".$itemValue['item_id'].",".$itemValue['default_qty'].")"); 
+             		$lastinsertID = $db->lastInsertId();
+             		 $item_label2 = "INSERT INTO iv_items_labeled2 (sku,id,name, description1, description2,efficiency, model, brand, category, supplier,  category_id, brand_id, supplier_id, supplier_price, selling_price, regular_price, active, sub_category_id,ref_item_id,default_quantity) VALUES ('".$itemValue['sku']."',".$lastinsertID.", '".mysql_real_escape_string($itemValue['name'])."', '','', '','','' ,'Package' ,'' ,39,'','".$itemValue['supplier_id']."', '".$itemValue['supplier_price']."','".$itemValue['selling_price']."','','1', ".$value.",".$itemValue['item_id'].",".$itemValue['default_qty'].")";
+               		$res = $db->_execute($item_label2);   					
+			}	
+		}
+		if($res)
+		{
+			 $response  = array("res" => "1");
+             echo json_encode($response);
+            exit();
+		}
+	}
+
+	function getStockQty()
+	{
+		$techId = explode(':', $_GET['techId']);
+		$orgTechId = $techId[1];
+		$itemId = $_GET['itemId'];
+		$techItem = $this->TechInventoryItem->query("SELECT quantity FROM ace_rp_tech_inventory_item Where item_id = ".$itemId." and tech_id =".$orgTechId);
+            
+        $item['count'] = $techItem[0]['ace_rp_tech_inventory_item']['quantity'];
+
+        $response  = array("res" => $item['count']);
+		echo json_encode($response);
+		exit;
+	}
+	
 }
 ?>

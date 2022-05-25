@@ -52,13 +52,13 @@ function CheckForMessages()
 			var method = '<? if ($common->getLoggedUserRoleID() == "1") echo 'techBooking'; else echo 'editBooking';?>';
 			if (ShownMessage!=val['id']){
 			 ShownMessage=val['id'];
-			 if (val['file_link']!=null) 
+			 if (val['file_link']!=null)
 				$.jGrowl("<a target='main_view' href='<?=BASE_URL?>/orders/"+method+"?order_id="+val['file_link']+"'>Open file</a><br/>"+val['txt'],
 					{header: "From: "+val['from']+"&nbsp;<a href='#' onclick='respond("+val['from_user']+","+val['file_link']+")'>(Reply)</a>&nbsp;<a href='#' onclick='forward(\""+val['txt']+"\","+val['file_link']+")'>(Forward)</a>",
 					 close:function(){$.post("<?=BASE_URL;?>/messages/ReadMessage?message_id="+val['id']);},sticky:true,glue:'before'}
 				 );
 			 else
-				if (val['customer_link']!=null) 
+				if (val['customer_link']!=null)
 				 $.jGrowl("<a target='main_view' href='<?=BASE_URL?>/orders/"+method+"?customer_id="+val['customer_link']+"'>Open file</a><br/>"+val['txt'],
 					{header: "From: "+val['from']+"&nbsp;<a href='#' onclick='respond("+val['from_user']+")'>(Reply)</a>&nbsp;<a href='#' onclick='forward(\""+val['txt']+"\")'>(Forward)</a>",
 					 close:function(){$.post("<?=BASE_URL;?>/messages/ReadMessage?message_id="+val['id']);},sticky:true,glue:'before'}
@@ -75,27 +75,27 @@ function CheckForMessages()
 }
 function respond(to_user_id, order_id)
 {
-  var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id="+order_id+"&to_user_id="+to_user_id,'', 
+  var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id="+order_id+"&to_user_id="+to_user_id,'',
   "width=450, height=350, left=300, top=200");
 }
 function forward(text, order_id)
 {
-  var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id="+order_id+"&text="+text,'', 
+  var answer = window.open("<?=BASE_URL?>/messages/EditMessage?order_id="+order_id+"&text="+text,'',
   "width=450, height=350, left=300, top=200");
 }
 function showMessages()
 {
-  var answer = window.open("<?=BASE_URL?>/messages/ShowMessages",'', 
+  var answer = window.open("<?=BASE_URL?>/messages/ShowMessages",'',
   "width=600, height=350,left=300, top=200");
 }
 function createMessage()
 {
-  var answer = window.open("<?=BASE_URL?>/messages/EditMessage",'', 
+  var answer = window.open("<?=BASE_URL?>/messages/EditMessage",'',
   "width=450, height=350, left=300, top=200");
 }
 function openMap()
 {
-  window.open("<?=ROOT_URL?>/training/Maps/map.html",'', 
+  window.open("<?=ROOT_URL?>/training/Maps/map.html",'',
   "width=800, height=500, left=300, top=200");
 }
 <?php
@@ -111,7 +111,7 @@ parent.window.tabMode = 'bookings';
 <?php
 if( $_SESSION['user']['id'] > 0 ) {
 	$linkPrefix = "";
-	
+
 	$aMenu = $common->getMenuItems();
 	$tabs = $aMenu['tabs'];
 	$menu = $aMenu['content'];
@@ -130,10 +130,10 @@ if( $_SESSION['user']['id'] > 0 ) {
 	$idx = 1;
 	$on_off = "";
 	foreach ($menu as $tab)
-	{ 
+	{
 		echo "<div id='tabA$idx' class='tab_sm' style='$on_off'>";
 		foreach ($tab as $tbi)
-		{ 
+		{
 			echo "<div class='icon'>";
 			$img = ROOT_URL."/app/webroot/img/".$tbi['img'];
 			$url = $linkPrefix.$tbi['url'];

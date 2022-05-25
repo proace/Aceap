@@ -8,7 +8,7 @@ class UsersController extends AppController
 	//To avoid possible PHP4 problems
 	var $name = "UsersController";
 
-	var $uses = array('User','Role','Userrole', 'Order', 'Commission', 'Setting','InventoryLocation','TruckMap');
+	var $uses = array('User','Role','Userrole', 'Order', 'Commission', 'Setting','InventoryLocation','TruckMap','TechQualification');
 
 	var $helpers = array('Time','Ajax','Common');
 	var $components = array('HtmlAssist', 'RequestHandler','Common','Lists');
@@ -29,6 +29,7 @@ class UsersController extends AppController
   
 	function edit()
 	{
+		$db =& ConnectionManager::getDataSource('default');
 
 		$id = $_REQUEST['id'];
 		$roleID = $_REQUEST['roleId'];
@@ -56,10 +57,28 @@ class UsersController extends AppController
 			
 			$msg = $this->Setting->find(array('title'=>'portfolio_template'));
 			$portfolio = $msg['Setting']['valuetxt'];
+			$portfolio = $msg['Setting']['valuetxt'];
+			$images1 = $this->data['User']['binary_picture'];
+                  $year = substr($images1, 0, 4);
+        $mon = substr($images1, 4, 2);
+        $day = substr($images1, 6, 2);
+        $name = $year.'/'.$mon.'/'.$day.'/'.$images1;
+       if(empty($images1)){
+          $name="";
+          
+          $src="";
+  $img="";
+        }
+        else {
+          $src=ROOT_URL.'/upload_photos/'.$name;
+  
+  
+          
+        }
 			
 			$portfolio = str_replace("{first_name}", $this->data['User']['first_name'], $portfolio);
 			$portfolio = str_replace("{last_name}", $this->data['User']['last_nam1'], $portfolio);			
-			$portfolio = str_replace("{techphoto}", $this->data['User']['binary_picture'], $portfolio);
+			$portfolio = str_replace("{techphoto}", $src, $portfolio);
 			$portfolio = str_replace("{qualifications}", $this->data['User']['qualifications'], $portfolio);
 			$portfolio = str_replace("{experience}", $this->data['User']['experience'], $portfolio);
 			$portfolio = str_replace("{skills}", $this->data['User']['skills'], $portfolio);
@@ -71,7 +90,42 @@ class UsersController extends AppController
 
 		}
 		else if (!empty($this->data['User']))
-		{	
+		{
+			if(!empty($_FILES['upload_image']['name'])){
+			
+			$file_name = $_FILES['upload_image']['name'];
+			
+			$file_tmpname = $_FILES['upload_image']['tmp_name'];
+		
+		date_default_timezone_set('America/Los_Angeles');
+
+		$year = date('Y', time());
+		if (!file_exists($year)) {
+			mkdir('upload_photos/'.$year, 0755);
+		}
+		$month = date('Y/m', time());
+		if (!file_exists($month)) {
+			mkdir('upload_photos/'.$month, 0755);
+		}
+
+		$day = date('Y/m/d', time());
+		if (!file_exists($day)) {
+			mkdir('upload_photos/'.$day, 0755);
+		}
+		$path = $file_name;
+		$ext = pathinfo($path, PATHINFO_EXTENSION);
+		
+
+			$name = date('Ymdhis', time()).'_'.rand().$path;
+		
+			
+		if ( 0 < $file['error'] ) {
+	        echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
+	    } else {
+	        move_uploaded_file($file_tmpname, 'upload_photos/'.$day.'/'.$name);
+			$db->_execute("UPDATE ace_rp_users set binary_picture = '$name' WHERE id = ".$this->data['User']['id']."");
+	    }
+		}
 			$userId = $this->data['User']['id'];
 			$isValid = true;
 			$dbObj = new DatabaseConnection();
@@ -105,14 +159,12 @@ class UsersController extends AppController
 					}
 				}
 			} else {
-				$db =& ConnectionManager::getDataSource('default');
 				$query = "select username from ace_rp_users where id=".$userId."";
 				$result = $db->_execute($query);
 				if($row = mysql_fetch_array($result)) {
 				$oldUserName = $row['username'];
 				$query = "UPDATE lh_users SET username ='".$userName."', password ='".$hashed_password."' WHERE username ='".$oldUserName."'";
 				$result = mysqli_query($connectionObj,$query);
-
 				// $query1 = "UPDATE Customers SET ContactName = 'Alfred Schmidt', City= 'Frankfurt' WHERE CustomerID = 1";
 					
 				}
@@ -137,7 +189,7 @@ class UsersController extends AppController
 				$this->User->invalidate('phone'); $isValid=false;
 			}
 			if($this->data['User']['extension_id'] == ''){
-				$this->User->invalidate('extension_id'); $isValid=false;
+				$this->User->invalidate('extension_id');
 			}
 			
 			//$this->data['Role']['user_id'] = $this->data['User']['id'];
@@ -153,7 +205,6 @@ class UsersController extends AppController
 			if( $this->data['User']['id'] == '' && $this->Common->getLoggedUserRoleID() == 3) {
 				$this->data['User']['telemarketer_id'] = $this->Common->getLoggedUserID();
 			}
-			
 			//Validate & Validate
 			if($isValid)
 			{
@@ -228,7 +279,7 @@ class UsersController extends AppController
 					//And render the edit view code
 					$this->render();
 				}
-			}
+			} 
 		}
 		
 		$items = $this->Role->findAll();
@@ -1177,8 +1228,16 @@ $h .= ' 		<tr>
 		$firstName = $_POST['firstName'];
 		$lastName = $_POST['lastName'];  
 		$customerId = $_POST['cusId'];
+		$postal_code=$_POST['postal_code'];
+		$street_no=$_POST['street_no'];
+		$street_name=$_POST['street_name'];
+		$city=$_POST['city'];
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
- 		$query = "UPDATE ace_rp_customers set phone='".$phone."', first_name='".$firstName."', last_name='".$lastName."', email= '".$email."', cell_phone='".$cellPhone."' where id=".$customerId;
+ 		$query = "UPDATE ace_rp_customers set phone='".$phone."', first_name='".$firstName."',
+		last_name='".$lastName."', email= '".$email."', cell_phone='".$cellPhone."',
+		address_street_number='".$street_no."',address_street='".$street_name."',
+		city='".$city."',postal_code='".$postal_code."'
+		where id=".$customerId;
  		$result = $db->_execute($query);
  		if ($result) {
  			$response  = array("res" => "OK");
@@ -1255,9 +1314,279 @@ $h .= ' 		<tr>
 		$techId = $_POST['techId'];
 		$this->User->id = $techId;
 		$userData = $this->User->read();
-		$response  = array("res" => $userData['User']['commission_percentage']);
+		$response  = array("tech" => $userData['User']['commission_percentage'], "parts" => $userData['User']['parts_commission_percentage']);
 		echo json_encode($response);
 		exit();
+	}
+
+	/*Loki: Get inactive technician details and save it.*/
+	function inactiveTechDetails($user_id = null)
+	{
+		if (!empty($this->data))
+		{
+			// $this->Common->printData($user_id);
+
+			// $user_id = $_POST['userid'];
+
+			$categories = $this->Lists->ListTable('ace_rp_order_types','category_id=2 and show_tech_commission = 1');
+
+			$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+			
+			if ($user_id>=0)
+
+			{
+				if ($user_id>0) $this->User->id = $user_id;
+
+				$this->data['User']['start_date'] = date('Y-m-d',strtotime($this->data['User']['start_date']));
+				$this->data['User']['end_date'] = date('Y-m-d',strtotime($this->data['User']['end_date']));
+
+				$this->User->save($this->data);
+
+				if ($user_id==0)
+
+				{
+					$user_id = $this->User->getLastInsertId();					
+					$db->_execute("insert into ace_rp_users_roles(user_id, role_id) values(".$user_id.",1)");
+				}
+
+			}
+
+ 			if(!empty($_POST['qa']))
+ 			{
+ 				foreach ($_POST['qa'] as $key => $value) {
+ 					$value['tech_id'] = $user_id;
+ 					$value['qualification_id'] = $value['id'];
+ 					$this->TechQualification->save($value);
+ 				}
+ 			}
+		
+			$this->redirect('/users/inactiveTechDetails/'.$user_id);
+
+		}
+
+		if($user_id > 0)
+
+		{
+
+
+			$this->User->id = $user_id;
+
+			$user_details = $this->User->read();
+
+		 	if (empty($user_details['User']['end_date']) || $user_details['User']['end_date'] == "1969-12-31")
+                $user_details['User']['end_date'] = date('d M Y');
+            else
+                $user_details['User']['end_date'] = date('d M Y', strtotime($user_details['User']['end_date']));
+
+            if (empty($user_details['User']['start_date']) || $user_details['User']['start_date'] == "1969-12-31")
+                $user_details['User']['start_date'] = date('d M Y');
+            else
+                $user_details['User']['start_date'] = date('d M Y', strtotime($user_details['User']['start_date']));
+		}
+
+		//Default user - view only
+
+		$access_method = 'disabled';
+
+		//Ali, Sanaz, Maria Flor and Anthony - full access
+
+		if (
+		($this->Common->getLoggedUserID()==44851)
+		  ||($this->Common->getLoggedUserID()==58613)
+		  ||($this->Common->getLoggedUserID()==52249)
+		  ||($this->Common->getLoggedUserID()==68476)
+		  ||($this->Common->getLoggedUserID()==231307)
+		  )
+			$access_method = '';
+
+		//Set variables for the page
+		$this->set('access_method',$access_method);
+
+		// $this->set('comm_records',$this->getCommissionSettings($user_id));
+		$this->set('job_types',$this->Lists->ListTable('ace_rp_order_types','category_id=2 and show_tech_commission = 1'));
+
+		$this->set('comm_roles',$this->Lists->ListTable('ace_rp_commissions_roles'));
+
+		$this->set('comm_types',$this->Lists->ListTable('ace_rp_commissions_types'));
+
+		$this->set('comm_statuses',array(0 => 'Tech', 1=>'Installer'));
+
+		$this->set('user_id', $user_id);
+
+		$this->set('user_details', $user_details);
+
+		$this->set("ismobile", $this->Session->read("ismobile"));
+	}
+
+	//Loki: Get the Review technician contract template content
+	function getReviewContractContent()
+	{
+		// error_reporting(E_ALL);
+		$user_id = $_GET['user_id'];
+		// $user_id 		= 231396;
+		$this->User->id = $user_id;
+		$user_details 	= $this->User->read();
+		$techQualification = $user_details['TechQualification'];
+		$user_commmisssion = $this->getCommissionSettings($user_id);
+		$techData  = $user_details['User'];
+		$settings 		= $this->Setting->find(array('title'=>'pdf_template'));
+		$template 		= $settings['Setting']['valuetxt'];
+		
+		$template 		= str_replace('{first_name}',$techData['first_name'],$template );
+		$template 		= str_replace('{phone}', $techData['phone'],$template );
+		$template 		= str_replace('{last_name}', $techData['last_name'],$template );
+		$template 		= str_replace('{cell_phone}', $techData['cell_phone'],$template );
+		$template 		= str_replace('{address}', $techData['address'],$template );
+		$template 		= str_replace('{email}', $techData['email'],$template );
+		$template 		= str_replace('{city}', $techData['city'],$template );
+		$template 		= str_replace('{login}', $techData['username'],$template );
+		$template 		= str_replace('{postal}', $techData['postal_code'],$template );
+		$template 		= str_replace('{password}', $techData['password'],$template );
+		$template 		= str_replace('{strat_date}', $techData['start_date'],$template );
+		$template 		= str_replace('{license}', $techData['license'],$template );
+		$template 		= str_replace('{bank_name}', $techData['bank_name'],$template );
+		$template 		= str_replace('{bank_branch}', $techData['bank_branch'],$template );
+		$template 		= str_replace('{gst_num}', $techData['gst_number'],$template );
+		$template 		= str_replace('{dl_num}', $techData['driving_license_number'],$template );
+		$template 		= str_replace('{wcb_num}', $techData['wcb_number'],$template );
+		$template 		= str_replace('{truck_model}', $techData['truck_model'],$template );
+		$template 		= str_replace('{exp_date}', $techData['end_date'],$template );
+		$template 		= str_replace('{truck_plate_num}', $techData['truck_plate_number'],$template );
+		$template 		= str_replace('{company_name}', $techData['company_name'],$template );
+		
+		$template 		= str_replace('{part_a_comm}', $user_commmisssion['Parts']['alone'],$template );
+		$template 		= str_replace('{part_w_comm}', $user_commmisssion['Parts']['w_tech'],$template );
+		
+		$template 		= str_replace('{install_labour_a_comm}', $user_commmisssion['Fixed']['alone'][39],$template );
+		$template 		= str_replace('{app_labour_a_comm}', $user_commmisssion['Appliance']['alone'][39],$template );
+		$template 		= str_replace('{install_labour_w_comm}', $user_commmisssion['Fixed']['w_tech'][39],$template );
+		$template 		= str_replace('{app_labour_w_comm}', $user_commmisssion['Appliance']['w_tech'][39],$template );
+		
+		$template 		= str_replace('{book_a_comm}', $user_commmisssion['Booking']['alone'],$template );
+		$template 		= str_replace('{up_a_comm}', $user_commmisssion['Sales']['alone'],$template );
+		$template 		= str_replace('{book_w_comm}', $user_commmisssion['Booking']['w_tech'],$template );
+		$template 		= str_replace('{up_w_comm}', $user_commmisssion['Sales']['w_tech'],$template );
+		
+		$template 		= str_replace('{book_otr_a_comm}', $user_commmisssion['Source']['alone'],$template );
+		$template 		= str_replace('{book_otr_w_comm}', $user_commmisssion['Source']['w_tech'],$template );
+		$template 		= str_replace('{time_a}', $user_commmisssion['Time']['alone'],$template );
+		$template 		= str_replace('{driving_a}', $user_commmisssion['Driving']['alone'],$template );
+		$template 		= str_replace('{perjob_a}', $user_commmisssion['PerJob']['alone'],$template );
+		$template 		= str_replace('{penalty_a}', $user_commmisssion['RedoPenalty']['alone'],$template );
+		
+		$template 		= str_replace('{time_w}', $user_commmisssion['Time']['w_tech'],$template );
+		$template 		= str_replace('{perjob_w}', $user_commmisssion['PerJob']['w_tech'],$template );
+		
+		$template 		= str_replace('{driving_w}', $user_commmisssion['Driving']['w_tech'],$template );
+		$template 		= str_replace('{penalty_w}', $user_commmisssion['RedoPenalty']['w_tech'],$template );
+		
+		$template 		= str_replace('{ductless_s}', $techQualification[0]['service'],$template );
+		$template 		= str_replace('{ductless_r}', $techQualification[0]['repair'],$template );
+		$template 		= str_replace('{ductless_i}', $techQualification[0]['installation'],$template );
+		$template 		= str_replace('{ac_s}', $techQualification[2]['service'],$template );
+		$template 		= str_replace('{ac_r}', $techQualification[2]['repair'],$template );
+		$template 		= str_replace('{ac_i}', $techQualification[2]['installation'],$template );
+		
+		$template 		= str_replace('{boiler_s}',$techQualification[3]['service'],$template );
+		$template 		= str_replace('{boiler_r}', $techQualification[3]['repair'],$template );
+		$template 		= str_replace('{boiler_i}', $techQualification[3]['installation'],$template );
+		
+		$template 		= str_replace('{furnace_s}', $techQualification[4]['service'],$template );
+		$template 		= str_replace('{furnace_r}', $techQualification[4]['repair'],$template );
+		$template 		= str_replace('{furnace_i}', $techQualification[4]['installation'],$template );
+		$template 		= str_replace('{hot_s}', $techQualification[5]['service'],$template );
+		$template 		= str_replace('{hot_r}', $techQualification[5]['repair'],$template );
+		$template 		= str_replace('{hot_i}', $techQualification[5]['installation'],$template );
+		
+		$template 		= str_replace('{tankless_s}', $techQualification[6]['service'],$template );
+		$template 		= str_replace('{tankless_r}',$techQualification[6]['repair'],$template );
+		$template 		= str_replace('{tankless_i}', $techQualification[6]['installation'],$template );
+		
+		$template 		= str_replace('{fireplace_s}',$techQualification[7]['service'],$template );
+		$template 		= str_replace('{fireplace_r}',$techQualification[7]['repair'],$template );
+		$template 		= str_replace('{fireplace_i}', $techQualification[7]['installation'],$template );
+		
+		$template 		= str_replace('{airduct_s}', $techQualification[8]['service'],$template );
+		$template 		= str_replace('{airduct_r}', $techQualification[8]['repair'],$template );
+		$template 		= str_replace('{airduct_i}', $techQualification[8]['installation'],$template );
+		
+		$template 		= str_replace('{roof_s}', $techQualification[9]['service'],$template );
+		$template 		= str_replace('{roof_r}', $techQualification[9]['repair'],$template );
+		$template 		= str_replace('{roof_i}', $techQualification[9]['installation'],$template );
+		
+		$template 		= str_replace('{sheet_s}', $techQualification[10]['service'],$template );
+		$template 		= str_replace('{sheet_r}', $techQualification[10]['repair'],$template );
+		$template 		= str_replace('{sheet_i}', $techQualification[10]['installation'],$template );
+		
+		$template 		= str_replace('{water_s}', $techQualification[11]['service'],$template );
+		$template 		= str_replace('{water_r}',$techQualification[11]['repair'],$template );
+		$template 		= str_replace('{water_i}', $techQualification[11]['installation'],$template );
+		
+		$template 		= str_replace('{estimate_s}', $techQualification[12]['service'],$template );
+		$template 		= str_replace('{estimate_r}', $techQualification[12]['repair'],$template );
+		$template 		= str_replace('{estimate_i}', $techQualification[12]['installation'],$template );
+		
+		// echo $template; die;
+		$response  		= array("msgBody" => $template);
+		echo json_encode($response);
+		exit();
+	}
+
+	function getCommissionSettings($user_id)
+	{		
+
+		$comm_types = $this->Lists->ListTable('ace_rp_commissions_types');
+
+		
+
+		$db =& ConnectionManager::getDataSource($this->Commission->useDbConfig);
+
+		$result = $db->_execute("SELECT * FROM ace_rp_commissions WHERE user_id=".$user_id);
+
+		
+
+		//For the selected technitian we have to apply default first
+
+		if ($user_id)
+
+			$user_commissions = $this->getCommissionSettings(0);
+
+		else
+
+			$user_commissions = array();
+
+
+		while ($row = mysql_fetch_array($result, MYSQL_ASSOC))
+
+		{
+
+			//Normally commission depends on the partner
+
+			if ($row['partner_role_id'])
+
+				$partner = 'w_tech';
+
+			else
+
+				$partner = 'alone';
+
+			//Appliances sales and Fixed rate installer's commissions are also divided by job type
+
+			if (($row['commission_type_id']==3)||($row['commission_type_id']==6))
+			{
+				$user_commissions[$comm_types[$row['commission_type_id']]][$partner][$row['category_id']] = floatval($row['commission']);
+			}
+			else{
+				$user_commissions[$comm_types[$row['commission_type_id']]][$partner] = floatval($row['commission']);
+			}
+
+
+		}
+
+		// $this->Common->printData($user_commissions);
+
+		return $user_commissions;
+
 	}
 }
 ?>

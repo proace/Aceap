@@ -1,0 +1,69 @@
+<?php 
+$grandTotal = 0;
+foreach ($items as $key => $value) {
+		$qty = $value['quantity'];
+		$price = $value['price'];	
+		$subtotal = number_format ($price *$qty,2);
+		$gst = number_format ((($subtotal * 5)/100),2);
+		$pst = number_format ((($subtotal * 7)/100),2);
+		$total = number_format ($subtotal + $gst + $pst,2);
+
+		$grandTotal = number_format($grandTotal + $total,2);
+
+		$disable = ($value['status'] == 1) ? 'disabled' : '';
+	?>
+	<tr>
+		<input type="hidden" name="itemId[<?=$value['id']?>]" value="<?=$value['id']?>">
+		<td><input <?=$disable?> class="name" type="text" name="itemName[<?=$value['id']?>]" value="<?=$value['item_name']?>"></td>
+		<td><input <?=$disable?> type="text" class="purchaseDate" name="purchaseDate[<?=$value['id']?>]" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event,1);" onkeydown="return false;" value="<?= date('d M Y',strtotime($value['purchase_date']))?>"></td>
+		<td><input <?=$disable?> class="quantity" type="text" name="itemQuantity[<?=$value['id']?>]" value="<?=$value['quantity']?>"></td>
+		<td><input <?=$disable?> class="price" type="text" name="itemPrice[<?=$value['id']?>]" value="<?=$value['price']?>"></td>
+		<td><span class="subTotal"><?=$subtotal?></span></td>
+		<td><input class="invoiceNum" type="text" name="invoiceNum[<?=$value['id']?>]" value="<?=$value['invoiceNum']?>"></td>
+		<td><span class="gst"><?=$gst?></span></td>
+		<td><span class="pst"><?=$pst?></span></td>
+		<td><span class="total"><?=$total?></span></td>
+		<td><input <?=$disable?> class="paidBy" type="text" name="itemPaidBy[<?=$value['id']?>]" value="<?=$value['paid_by']?>"></td>
+		
+		<td>
+			<?php if(!empty($value['image'])){
+				$imagePath = '/acesys/app/webroot/tech-purchase-image/'.$value['image'];
+				?>
+				 <div  style="position: relative; padding:0; width: 30px;"> 
+                    <span style="position:absolute;right: 0;"><img style="height: 15px;width: 12px;" class="delete-image" row-id="<?=$value['id']?>" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" image-name="<?php echo $value['image']; ?>"></span>
+                    <img class="openImg" class="img" src="<?php echo $imagePath; ?>" style="max-height: 100px; max-width: 100%; height: 50px; width: 50px;">                     
+                </div>
+	    	<?php } ?>
+
+		</td>
+		<td>
+			<?php if($value['status'] == 1){?>
+				Paid
+			<?php } elseif ($value['status'] == 2) { ?>
+				Not Paid
+			<?php } else { ?>
+				Rejected
+			<?php } ?>
+
+		</td>
+		
+		<?php if($loggedUserIsTech == 0){?>
+			<td>
+			<select name="itemStatus[<?=$value['id']?>]" id="status">
+				<option value=1 <? if ($value['status']==1) echo 'selected=1';?>>Paid</option>
+				<option value=2 <? if ($value['status']==2) echo 'selected=1';?>>Not Paid</option>
+				<option value=3 <? if ($value['status']==3) echo 'selected=1';?>>Rejected</option>
+      		</select>
+		</td>
+		<?php } else {?>
+			<input type="hidden" name="itemStatus[<?=$value['id']?>]" value="<?=$value['status']?>">
+		<?php } ?>
+	</tr>
+<?php } ?>
+
+<tr>
+	<td colspan="11"></td>
+	<td><b>Total:</b></td>
+	<td><b><?php echo $grandTotal ?></b></td>
+</tr>
+

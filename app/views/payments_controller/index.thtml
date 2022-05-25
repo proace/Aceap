@@ -17,6 +17,7 @@
         var id = $(this).attr("orderId");
         var imgPath = $(this).attr("image-name");
         var imageNo = $(this).attr("image-nu");
+        console.log("imageno=", imageNo);
         $.ajax({
         url: '<?=BASE_URL?>/orders/removePaymentImage',
         dataType: 'html',
@@ -86,12 +87,13 @@ function InvoiceSubmitted(order_id, el){
 	<tr>
 		<td class="sectionTitle">Payments</td>
 		<td>
-			<?php if ($common->getLoggedUserID()==44851) { ?>
+<!-- 			<?php if ($common->getLoggedUserID()==44851) { ?>
       <input type="button" onclick="document.location.href='<?=BASE_URL?>/payments/ManagerView'" value="Compare with techs" class="buttons">
-			<?php } ?>
+			<?php } ?> -->
 		&nbsp;Payment method:&nbsp;
 			<select name="payment_type" id="payment_type" onchange="document.viewform.submit();">
-				<option value=""></option>
+        <option value="" <?php echo  ('' == $payment_type ? ' selected' : '') ?> >All</option>
+				<option value="1000" <?php echo  (1000 == $payment_type ? ' selected' : '') ?> >Not Checked</option>
 				<? 
 				foreach($allPaymentTypes as $k => $v) {
 					echo '<option value="'.$k.'"'.( $k == $payment_type ? ' selected' : '').'>'.$v.'</option>';
@@ -107,7 +109,13 @@ function InvoiceSubmitted(order_id, el){
 		&nbsp;Amount:&nbsp;
 			<input name="amount_search" id="amount_search">
 		</td>
-		<td rowspan=2>
+    <td>Payment Status</td>
+    <td><select name="payment_status">
+      <option value="0">---</option>
+      <option <?php echo ($payStatus == 1)? 'selected' : '' ?> value="1">Approved</option>
+      <option <?php echo ($payStatus == 2)? 'selected' : '' ?> value="2">Declined</option>
+    </select></td>
+		<!-- <td rowspan=2>
 				<table cellpadding=0 cellspacing=0 border=1>
 				<tr><th>&nbsp;</th><th>jobs</th><th>redo</th><th>followup</th><th>install</th></tr>
 				<tr>
@@ -132,7 +140,7 @@ function InvoiceSubmitted(order_id, el){
 								<td align=center><?=$install['canceled']?></td>
 				</tr>
 				</table>
-		</td>
+		</td> -->
 	</tr>
   <tr>
 		<td colspan=4>
@@ -154,19 +162,21 @@ function InvoiceSubmitted(order_id, el){
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
     <tr>
         <th width="50px"><a href="javascript:setOrder('order_number');">REF #</a></th>
-        <th width="100px"><a href="javascript:setOrder('order_status');">Status</a></th>
+        <!-- <th width="100px"><a href="javascript:setOrder('order_status');">Status</a></th> -->
         <th width="100px"><a href="javascript:setOrder('job_type_name');">Job Type</a></th>
         <th width="100px"><a href="javascript:setOrder('tech1_name');">Tech 1</a></th>
-        <th width="100px"><a href="javascript:setOrder('tech2_name');">Tech 2</a></th>
+        <!-- <th width="100px"><a href="javascript:setOrder('tech2_name');">Tech 2</a></th> -->
         <th width="100px"><b>Amount</b></th>
         <th width="60px"><b>Method</b></th>
         <th width="100px"><b>Payment Image</b></th>
         <th width="100px">Tech 1 Comm</th>
-        <th width="100px">Tech 2 Comm</th>
+        <!-- <th width="100px">Tech 2 Comm</th> -->
         <th width="100px">Confirmed By</th>
-        <th width="100px">Balance</th>
+        <th width="100px">Payment Status</th>
+        <th width="100px">Card Number</th>
+        <!-- <th width="100px">Balance</th>
         <th width="100px">Invoice submitted</th>
-		<th  width="50px">Booked items</th>
+		<th  width="50px">Booked items</th> -->
     </tr>
 		
         <?php $r=1;
@@ -185,10 +195,10 @@ function InvoiceSubmitted(order_id, el){
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">
 								<a href="<?=BASE_URL?>/orders/editBooking?order_id=<?php echo $obj['id'].'&rurl='.urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING'])?>"><?=$obj['order_number']?></a>
 				</td>
-      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['order_status']?></td>
+      	<!-- <td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['order_status']?></td> -->
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['job_type_name']?></td>
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech1_name']?></td>
-      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech2_name']?></td>
+      	<!-- <td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech2_name']?></td> -->
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>"><?=(1*$obj['total']==0)?'&nbsp;':$HtmlAssist->prPrice($obj['total'])?></td>
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['tech_payments']?></td>
         <td rowspan=<?=$cnt?> style="background:<?=$bg?>">
@@ -200,13 +210,31 @@ function InvoiceSubmitted(order_id, el){
              <?php }?>    
         </td>
         <td rowspan=<?=$cnt?> style="background:<?=$bg?>"><?=$obj['tech1_comm']?></td>
-        <td rowspan=<?=$cnt?> style="background:<?=$bg?>"><?=$obj['tech2_comm']?></td>
+        <!-- <td rowspan=<?=$cnt?> style="background:<?=$bg?>"><?=$obj['tech2_comm']?></td> -->
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>"><?=$obj['confirmed_by']?></td>
-      	<td rowspan=<?=$cnt?> style="background:<?=$bg?>; color:<?=$bal_color?>"><?=(1*$balance==0)?'&nbsp;':$HtmlAssist->prPrice($balance)?></td>
+      <!-- 	<td rowspan=<?=$cnt?> style="background:<?=$bg?>; color:<?=$bal_color?>"><?=(1*$balance==0)?'&nbsp;':$HtmlAssist->prPrice($balance)?></td>
       	<td rowspan=<?=$cnt?> style="background:<?=$bg?>;">
 						<input type='checkbox' <?php if ($obj['invoice_submitted']) echo 'checked'; ?> onclick='InvoiceSubmitted(<?=$obj['id']?>, this);'/>
 				</td>
-		<td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['name']?></td>
+    <td rowspan=<?=$cnt?> style="background:<?=$bg?>">&nbsp;<?=$obj['name']?></td> -->
+    <?php if($obj['payment_status'] == 1){ 
+            $payState = 'Approved';
+            $paycolor = 'Green';
+        } else if($obj['payment_status'] == 2){
+            $paycolor = 'Red';
+            $payState = 'Declined';
+        }else if($obj['payment_status'] == 3){
+            $payState = 'Authorization';
+            $paycolor = 'Green';
+        }else if($$obj['payment_status'] == 4){
+            $paycolor = 'Red';
+            $payState = 'Not Authorized';
+        }else {
+          $payState = '';
+        }
+    ?>
+		<td rowspan=<?=$cnt?> style="background:<?=$bg?>; color:<?=$paycolor?>">&nbsp;<?=$payState?></td>
+    <td rowspan=<?=$cnt?> style="background:<?=$bg?>; color:<?=$paycolor?>">&nbsp;<?=$obj['card_num']?></td>
     </tr>
     <? } ?>
 </table>

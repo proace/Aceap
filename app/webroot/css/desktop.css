@@ -1,662 +1,662 @@
-html, body {
-	margin:0;
-	padding:0;
-	height:100%;
-	overflow:hidden;
-	font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
-	font-size:90%;
-}
-
-a {
-	cursor:pointer;	
-}
-
-input[type=text], select, textarea {
-	border:1px solid #888888;
-	font-weight:bold;
-	color:#333333;
-	font-size:90%;
-	font-family:Arial, Helvetica, sans-serif;
-}
-
-.navigation {
-	position:fixed;
-	top:0;
-	width:100%;
-}
-
-.navigation .link {
-	width:800px;
-	margin:0 auto;
-}
-
-.navigation .link ul {
-	padding:0;
-	margin:0;
-	list-style:none;
-}
-
-.navigation .link li{
-	display:block;
-	float:left;
-	text-align:center;
-}
-
-.navigation .border1 {
-	background-color:#333333;
-	border-bottom:1px solid #000000;
-}
-
-.navigation .link li a {
-	display:block;
-	width:100px;
-	padding:12px 0 12px 0;	
-	text-decoration:none;
-	color:#999999;
-	font-weight:bold;
-}
-
-#myaccount, #logout {
-	float:right;	
-}
-
-#myaccount a {	
-	width:150px;	
-}
-
-.navigation .link li a:link,
-.navigation .link li a:visited {
-
-}
-
-.clear_this {
-	clear:both;	
-}
-
-.navigation .link li a:hover,
-.navigation .link li a:active {
-	color:#ffffff;
-	font-weight:bold;
-	background-color:#444444;
-}
-
-.navigation .sub {
-	clear:both;
-	width:800px;
-	margin:0 auto;	
-}
-
-.navigation .sub ul {
-	padding:0;
-	margin:0;
-}
-
-.navigation .sub li{
-	list-style:none;
-}
-
-.navigation .sub li.title{
-	float:left;
-	width:100px;
-}
-
-.navigation .border2 {
-	background-color:#888888;
-	border-top:1px solid #999999;
-	border-bottom:1px solid #999999;
-	/* for IE */
-	filter:alpha(opacity=100);
-	/* CSS3 standard */
-	opacity:1.00;	
-}
-
-.navigation .title {
-	padding:12px 0 4px 0;
-}
-
-.navigation .title ul {	
-	padding-left:20px;
-}
-
-.navigation .sub li a{
-	display:block;
-	width:100px;		
-	text-decoration:none;
-	color:#333333;
-}
-
-.navigation .sub li li {
-	list-style:square;
-}
-
-.navigation .sub li a:hover,
-.navigation .sub li a:active {
-	color:#cccccc;
-}
-
-.navigation .sub h2 {
-	font-size:100%;
-	padding:0;
-	margin:0;	
-}
-
-.navigation .link h1 {
-	font-size:100%;
-	padding:0;
-	margin:0 auto;
-}
-
-#link_schedule:before {
-	content: url(../img/iconset_coquette/clock.png);
-	position:relative;
-	top:3px;
-	margin-right:1px;
-}
-
-#link_telemboard:before {
-	content: url(../img/iconset_coquette/chart.png);
-	position:relative;
-	top:3px;
-	margin-right:1px;
-}
-
-#link_links:before {
-	content: url(../img/iconset_coquette/folder_full.png);
-	position:relative;
-	top:3px;
-	margin-right:1px;
-}
-
-#link_myaccount:before {
-	content: url(../img/iconset_coquette/user.png);
-	position:relative;
-	top:3px;
-	margin-right:1px;	
-}
-
-#link_logout:before {
-	content: url(../img/iconset_coquette/exit.png);
-	position:relative;
-	top:3px;
-	margin-right:1px;	
-}
-
-#heading_booking {
-	padding-left:20px;
-	background:transparent url(../img/iconset_coquette/folder_accept.png) no-repeat center left;	
-}
-
-#heading_inventory {
-	padding-left:20px;
-	background:transparent url(../img/iconset_coquette/tag_green.png) no-repeat center left;	
-}
-
-#heading_reports {
-	padding-left:20px;
-	background:transparent url(../img/iconset_coquette/chart_pie.png) no-repeat center left;	
-}
-
-#heading_admin {
-	padding-left:20px;
-	background:transparent url(../img/iconset_coquette/lock.png) no-repeat center left;	
-}
-
-#heading_technicians {
-	padding-left:20px;
-	background:transparent url(../img/iconset_coquette/users.png) no-repeat center left;	
-}
-
-.main_view {
-	width:100%;	
-	padding-top:40px;
-	border:none;
-}
-
-.sidebar ul {
-	position:fixed;
-	left:0;
-	top:25%;
-	padding:0;
-	margin:0;
-	background-color:#999999;
-	padding-top:2px;
-	padding-bottom:2px;
-	-moz-border-radius-bottomright:6px;
-	-moz-border-radius-topright:6px;
-	border-bottom-right-radius:6px;
-	border-top-right-radius:6px;
-}
-
-.sidebar ul li a {
-	margin: 2px 3px 2px -97px;
-	width:124px;
-	height:24px;
-	display:block;
-}
-
-#side_search {
-	background:transparent url("../img/iconset_coquette/edit_find24x24.png") no-repeat top right;
-}
-
-#side_bookings {
-	background:transparent url("../img/iconset_coquette/sound24x24.png") no-repeat top right;
-}
-
-#side_routes {
-	background:transparent url("../img/iconset_coquette/truck24x24.png") no-repeat top right;
-}
-
-#side_messages {
-	background:transparent url("../img/iconset_coquette/mail24x24.png") no-repeat top right;
-}
-
-#bubble_search {
-	position:fixed;
-	top:25%;
-	left:30px;
-	min-width:280px;
-	min-height:200px;
-	
-}
-
-#bubble_search div .field {
-	padding:6px;
-	background-color:#222222;
-	-moz-border-radius:3px;
-	border-radius:3px;
-}
-
-#bubble_search div .field select {
-	width:65px;
-	margin:0 2px;
-}
-
-#bubble_search div .field input[type=text]{
-	width:100px;
-}
-
-#bubble_search div .field input[type=button]{
-	width:55px;
-}
-
-#bubble_search .results {
-	margin-left:16px;
-	width:260px;		
-	background-color:#222222;
-	padding:0 6px 6px 6px;
-	position:relative;
-	top:-4px;
-	-moz-border-radius-bottomright:3px;
-	-moz-border-radius-bottomleft:3px;
-	border-bottom-right-radius:3px;	
-	border-bottom-left-radius:3px;
-}
-
-#bubble_search .results table {
-	background-color:#eeeeee;	
-	width:400px;
-	min-height:200px;
-	-moz-border-radius:3px;
-	border-radius:3px;
-}
-
-#bubble_search .results .scroller {
-	max-height:300px;	
-	overflow:auto;
-}
-
-.ui_arrow_left {
-	background:transparent url("../img/iconset_coquette/triangle_left.png") no-repeat center left;
-	padding-left:16px;
-}
-
-#bubble_bookings {
-	position:fixed;
-	top:25%;
-	left:30px;
-	min-width:280px;
-	min-height:200px;
-	margin-top:28px;
-}
-
-#bubble_bookings div .field {
-	padding:6px;
-	background-color:#222222;
-	-moz-border-radius:3px;
-	border-radius:3px;
-}
-
-#bubble_bookings .results table {
-	background-color:#eeeeee;	
-	width:100%;
-	height:500px;
-	-moz-border-radius:3px;
-	border-radius:3px;
-}
-
-#bubble_bookings .results .scroller {
-	max-height:300px;	
-	overflow:auto;
-}
-
-#bubble_bookings div .field h1 {
-	color:#999999;
-	font-weight:bold;
-	font-size:100%;
-	margin:0;
-}
-
-#bubble_bookings .results {
-	margin-left:16px;
-	width:260px;		
-	background-color:#222222;
-	padding:0 6px 6px 6px;
-	position:relative;
-	top:-4px;
-	-moz-border-radius-bottomright:3px;
-	-moz-border-radius-bottomleft:3px;
-	border-bottom-right-radius:3px;	
-	border-bottom-left-radius:3px;
-}
-
-#bubble_routes {
-	position:fixed;
-	top:25%;
-	left:30px;
-	min-width:280px;
-	min-height:200px;
-	margin-top:56px;
-}
-
-#bubble_routes div .field {
-	padding:6px;
-	background-color:#222222;
-	-moz-border-radius:3px;
-	border-radius:3px;
-}
-
-#bubble_routes div .field a {
-	display:block;
-	background-color:#ffffff;
-	float:right;
-}
-
-#bubble_routes .results table {
-	background-color:#eeeeee;	
-	width:inherit;
-	height:500px;
-	-moz-border-radius:3px;
-	border-radius:3px;
-}
-
-#bubble_routes .results .scroller {
-	max-height:300px;	
-	overflow:auto;
-}
-
-#bubble_routes div .field h1 {
-	color:#999999;
-	font-weight:bold;
-	font-size:100%;
-	margin:0;
-}
-
-#bubble_routes .results {
-	margin-left:16px;
-	width:260px;		
-	background-color:#222222;
-	padding:0 6px 6px 6px;
-	position:relative;
-	top:-4px;
-	-moz-border-radius-bottomright:3px;
-	-moz-border-radius-bottomleft:3px;
-	border-bottom-right-radius:3px;	
-	border-bottom-left-radius:3px;
-}
-
-#bubble_messages {
-	position:fixed;
-	top:25%;
-	left:30px;
-	min-width:280px;
-	min-height:200px;
-	margin-top:80px;
-}
-
-#bubble_messages div .field {
-	padding:6px;
-	background-color:#222222;
-	-moz-border-radius:3px;
-	border-radius:3px;
-}
-
-#bubble_messages .results table {
-	background-color:#eeeeee;	
-	width:100%;
-	height:500px;
-	-moz-border-radius:3px;
-	border-radius:3px;
-}
-
-#bubble_messages .results .scroller {
-	max-height:300px;	
-	overflow:auto;
-}
-
-#bubble_messages div .field h1 {
-	color:#999999;
-	font-weight:bold;
-	font-size:100%;
-	margin:0;
-}
-
-#bubble_messages .results {
-	margin-left:16px;
-	width:260px;		
-	background-color:#222222;
-	padding:0 6px 6px 6px;
-	position:relative;
-	top:-4px;
-	-moz-border-radius-bottomright:3px;
-	-moz-border-radius-bottomleft:3px;
-	border-bottom-right-radius:3px;	
-	border-bottom-left-radius:3px;
-}
-
-
-#bubble_routes div .field a[title='Trackem Settings'] {
-	display:block;
-	float:left;
-	background:transparent url("../img/iconset_coquette/process.png") no-repeat bottom center;	
-	height:16px;
-	width:26px;
-}
-
-#bubble_routes div .field a:hover {
-	background-color:#333333;	
-}
-
-#bubble_messages h1, #bubble_routes h1 {
-	float:left;
-	padding:0 3px;
-}
-
-#bubble_messages div .field a[title='New Message'] {
-	display:block;
-	float:left;
-	background:transparent url("../img/iconset_coquette/mail_send.png") no-repeat bottom center;	
-	height:16px;
-	width:26px;
-}
-
-#bubble_messages div .field a[title='History'] {
-	display:block;
-	float:left;
-	background:transparent url("../img/iconset_coquette/mail_receive.png") no-repeat bottom center;	
-	height:16px;
-	width:26px;
-}
-
-#bubble_messages div .field a:hover {
-	background-color:#333333;	
-}
-
-#bubble_messages div .field a[title='Close Messages'] {
-	display:block;
-	float:right;
-	background:transparent url("../img/iconset_coquette/close.png") no-repeat center right;	
-	height:16px;
-	width:16px;
-}
-
-#bubble_routes div .field a[title='Close Routes'] {
-	display:block;
-	float:right;
-	background:transparent url("../img/iconset_coquette/close.png") no-repeat center right;	
-	height:16px;
-	width:16px;
-}
-
-#bubble_search div .field a[title='Close Search'] {
-	display:block;
-	float:right;
-	background:transparent url("../img/iconset_coquette/close.png") no-repeat center right;	
-	height:16px;
-	width:16px;
-}
-
-.stat_messages {
-	cursor:pointer;
-}
-
-.notice {
-	float:right;
-	background-color:#ffcc00;
-	min-width:13px;
-	font-size:70%;	
-	padding:1px;
-	text-align:center;
-	-moz-border-radius:6px;
-	border-radius:6px;
-	font-weight:bold;
-}
-
-table.list {
-	border:1px solid #333333;
-	padding:0;	
-	border-collapse: collapse;	
-	clear:both;
-}
-
-table.list th {
-	background-color:#333333;
-	color:#cccccc;
-	margin:0;
-	padding:2px 7px;
-}
-
-table.list td {
-	margin:0;
-	padding:2px 7px;
-	text-align:center;
-	border:1px solid #dddddd;
-}
-
-table.list td.right {
-	text-align:right;
-}
-
-table.list td.left {
-	text-align:left;
-}
-
-table.list td.center {
-	text-align:center;
-}
-
-table.list tr.item {
-	cursor:pointer;
-}
-
-table.list tr.odd {
-	background-color:#ffffff;
-}
-
-table.list tr.even {	
-	background-color:#ffedcf;
-}
-
-table.list tr.hovered {	
-	background-color:#dddddd;
-}
-
-table.list tr.callback_ready {
-	background-color:#ffcccc;	
-}
-
-table.list a {
-	text-decoration:none;
-	color:#333333;	
-}
-
-div.message_balloon {
-	font-size:90%;
-	color:#cccccc;
-}
-
-div.message_balloon div.message{
-	border:1px solid #333333;
-	padding:4px;
-	margin:1px;
-	color:#333333;
-	background-color:#eeeeee;
-	-moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    -khtml-border-radius: 4px;
-    border-radius: 4px;
-}
-
-div.message_balloon div.footer {
-	margin-bottom:8px;
-}
-
-div.message_balloon div.callback_date {
-	margin-top:8px;
-}
-
-div.message_balloon strong{
-	font-size:90%;
-	color:#000000;
-	text-decoration:underline;
-}
-
-div.message_balloon div.actions a {
-	font-size:80%;
-	display:block;
-	background-color:#cccccc;
-	color:#333333;
-	float:right;
-	padding:1px;
-	margin:1px;
-	-moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    -khtml-border-radius: 4px;
-    border-radius: 4px;
-	text-transform:uppercase;
-	text-decoration:none;
-}
-
-div.message_balloon div.actions a:hover {
-	color:#ffffff;
-	background-color:#333333;
-}
-
-span[title='Landline'] {
-	padding-left:16px;
-	background:transparent url("../img/iconset_coquette/landline.png") no-repeat left;	
-}
-
-span[title='Mobile'] {
-	padding-left:16px;
-	background:transparent url("../img/iconset_coquette/smartphone.png") no-repeat left;	
+html, body {
+	margin:0;
+	padding:0;
+	height:100%;
+	overflow:hidden;
+	font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+	font-size:90%;
+}
+
+a {
+	cursor:pointer;	
+}
+
+input[type=text], select, textarea {
+	border:1px solid #888888;
+	font-weight:bold;
+	color:#333333;
+	font-size:90%;
+	font-family:Arial, Helvetica, sans-serif;
+}
+
+.navigation {
+	position:fixed;
+	top:0;
+	width:100%;
+}
+
+.navigation .link {
+	width:800px;
+	margin:0 auto;
+}
+
+.navigation .link ul {
+	padding:0;
+	margin:0;
+	list-style:none;
+}
+
+.navigation .link li{
+	display:block;
+	float:left;
+	text-align:center;
+}
+
+.navigation .border1 {
+	background-color:#333333;
+	border-bottom:1px solid #000000;
+}
+
+.navigation .link li a {
+	display:block;
+	width:100px;
+	padding:12px 0 12px 0;	
+	text-decoration:none;
+	color:#999999;
+	font-weight:bold;
+}
+
+#myaccount, #logout {
+	float:right;	
+}
+
+#myaccount a {	
+	width:150px;	
+}
+
+.navigation .link li a:link,
+.navigation .link li a:visited {
+
+}
+
+.clear_this {
+	clear:both;	
+}
+
+.navigation .link li a:hover,
+.navigation .link li a:active {
+	color:#ffffff;
+	font-weight:bold;
+	background-color:#444444;
+}
+
+.navigation .sub {
+	clear:both;
+	width:800px;
+	margin:0 auto;	
+}
+
+.navigation .sub ul {
+	padding:0;
+	margin:0;
+}
+
+.navigation .sub li{
+	list-style:none;
+}
+
+.navigation .sub li.title{
+	float:left;
+	width:100px;
+}
+
+.navigation .border2 {
+	background-color:#888888;
+	border-top:1px solid #999999;
+	border-bottom:1px solid #999999;
+	/* for IE */
+	filter:alpha(opacity=100);
+	/* CSS3 standard */
+	opacity:1.00;	
+}
+
+.navigation .title {
+	padding:12px 0 4px 0;
+}
+
+.navigation .title ul {	
+	padding-left:20px;
+}
+
+.navigation .sub li a{
+	display:block;
+	width:100px;		
+	text-decoration:none;
+	color:#333333;
+}
+
+.navigation .sub li li {
+	list-style:square;
+}
+
+.navigation .sub li a:hover,
+.navigation .sub li a:active {
+	color:#cccccc;
+}
+
+.navigation .sub h2 {
+	font-size:100%;
+	padding:0;
+	margin:0;	
+}
+
+.navigation .link h1 {
+	font-size:100%;
+	padding:0;
+	margin:0 auto;
+}
+
+#link_schedule:before {
+	content: url(../img/iconset_coquette/clock.png);
+	position:relative;
+	top:3px;
+	margin-right:1px;
+}
+
+#link_telemboard:before {
+	content: url(../img/iconset_coquette/chart.png);
+	position:relative;
+	top:3px;
+	margin-right:1px;
+}
+
+#link_links:before {
+	content: url(../img/iconset_coquette/folder_full.png);
+	position:relative;
+	top:3px;
+	margin-right:1px;
+}
+
+#link_myaccount:before {
+	content: url(../img/iconset_coquette/user.png);
+	position:relative;
+	top:3px;
+	margin-right:1px;	
+}
+
+#link_logout:before {
+	content: url(../img/iconset_coquette/exit.png);
+	position:relative;
+	top:3px;
+	margin-right:1px;	
+}
+
+#heading_booking {
+	padding-left:20px;
+	background:transparent url(../img/iconset_coquette/folder_accept.png) no-repeat center left;	
+}
+
+#heading_inventory {
+	padding-left:20px;
+	background:transparent url(../img/iconset_coquette/tag_green.png) no-repeat center left;	
+}
+
+#heading_reports {
+	padding-left:20px;
+	background:transparent url(../img/iconset_coquette/chart_pie.png) no-repeat center left;	
+}
+
+#heading_admin {
+	padding-left:20px;
+	background:transparent url(../img/iconset_coquette/lock.png) no-repeat center left;	
+}
+
+#heading_technicians {
+	padding-left:20px;
+	background:transparent url(../img/iconset_coquette/users.png) no-repeat center left;	
+}
+
+.main_view {
+	width:100%;	
+	padding-top:40px;
+	border:none;
+}
+
+.sidebar ul {
+	position:fixed;
+	left:0;
+	top:25%;
+	padding:0;
+	margin:0;
+	background-color:#999999;
+	padding-top:2px;
+	padding-bottom:2px;
+	-moz-border-radius-bottomright:6px;
+	-moz-border-radius-topright:6px;
+	border-bottom-right-radius:6px;
+	border-top-right-radius:6px;
+}
+
+.sidebar ul li a {
+	margin: 2px 3px 2px -97px;
+	width:124px;
+	height:24px;
+	display:block;
+}
+
+#side_search {
+	background:transparent url("../img/iconset_coquette/edit_find24x24.png") no-repeat top right;
+}
+
+#side_bookings {
+	background:transparent url("../img/iconset_coquette/sound24x24.png") no-repeat top right;
+}
+
+#side_routes {
+	background:transparent url("../img/iconset_coquette/truck24x24.png") no-repeat top right;
+}
+
+#side_messages {
+	background:transparent url("../img/iconset_coquette/mail24x24.png") no-repeat top right;
+}
+
+#bubble_search {
+	position:fixed;
+	top:25%;
+	left:30px;
+	min-width:280px;
+	min-height:200px;
+	
+}
+
+#bubble_search div .field {
+	padding:6px;
+	background-color:#222222;
+	-moz-border-radius:3px;
+	border-radius:3px;
+}
+
+#bubble_search div .field select {
+	width:65px;
+	margin:0 2px;
+}
+
+#bubble_search div .field input[type=text]{
+	width:100px;
+}
+
+#bubble_search div .field input[type=button]{
+	width:55px;
+}
+
+#bubble_search .results {
+	margin-left:16px;
+	width:260px;		
+	background-color:#222222;
+	padding:0 6px 6px 6px;
+	position:relative;
+	top:-4px;
+	-moz-border-radius-bottomright:3px;
+	-moz-border-radius-bottomleft:3px;
+	border-bottom-right-radius:3px;	
+	border-bottom-left-radius:3px;
+}
+
+#bubble_search .results table {
+	background-color:#eeeeee;	
+	width:400px;
+	min-height:200px;
+	-moz-border-radius:3px;
+	border-radius:3px;
+}
+
+#bubble_search .results .scroller {
+	max-height:300px;	
+	overflow:auto;
+}
+
+.ui_arrow_left {
+	background:transparent url("../img/iconset_coquette/triangle_left.png") no-repeat center left;
+	padding-left:16px;
+}
+
+#bubble_bookings {
+	position:fixed;
+	top:25%;
+	left:30px;
+	min-width:280px;
+	min-height:200px;
+	margin-top:28px;
+}
+
+#bubble_bookings div .field {
+	padding:6px;
+	background-color:#222222;
+	-moz-border-radius:3px;
+	border-radius:3px;
+}
+
+#bubble_bookings .results table {
+	background-color:#eeeeee;	
+	width:100%;
+	height:500px;
+	-moz-border-radius:3px;
+	border-radius:3px;
+}
+
+#bubble_bookings .results .scroller {
+	max-height:300px;	
+	overflow:auto;
+}
+
+#bubble_bookings div .field h1 {
+	color:#999999;
+	font-weight:bold;
+	font-size:100%;
+	margin:0;
+}
+
+#bubble_bookings .results {
+	margin-left:16px;
+	width:260px;		
+	background-color:#222222;
+	padding:0 6px 6px 6px;
+	position:relative;
+	top:-4px;
+	-moz-border-radius-bottomright:3px;
+	-moz-border-radius-bottomleft:3px;
+	border-bottom-right-radius:3px;	
+	border-bottom-left-radius:3px;
+}
+
+#bubble_routes {
+	position:fixed;
+	top:25%;
+	left:30px;
+	min-width:280px;
+	min-height:200px;
+	margin-top:56px;
+}
+
+#bubble_routes div .field {
+	padding:6px;
+	background-color:#222222;
+	-moz-border-radius:3px;
+	border-radius:3px;
+}
+
+#bubble_routes div .field a {
+	display:block;
+	background-color:#ffffff;
+	float:right;
+}
+
+#bubble_routes .results table {
+	background-color:#eeeeee;	
+	width:inherit;
+	height:500px;
+	-moz-border-radius:3px;
+	border-radius:3px;
+}
+
+#bubble_routes .results .scroller {
+	max-height:300px;	
+	overflow:auto;
+}
+
+#bubble_routes div .field h1 {
+	color:#999999;
+	font-weight:bold;
+	font-size:100%;
+	margin:0;
+}
+
+#bubble_routes .results {
+	margin-left:16px;
+	width:260px;		
+	background-color:#222222;
+	padding:0 6px 6px 6px;
+	position:relative;
+	top:-4px;
+	-moz-border-radius-bottomright:3px;
+	-moz-border-radius-bottomleft:3px;
+	border-bottom-right-radius:3px;	
+	border-bottom-left-radius:3px;
+}
+
+#bubble_messages {
+	position:fixed;
+	top:25%;
+	left:30px;
+	min-width:280px;
+	min-height:200px;
+	margin-top:80px;
+}
+
+#bubble_messages div .field {
+	padding:6px;
+	background-color:#222222;
+	-moz-border-radius:3px;
+	border-radius:3px;
+}
+
+#bubble_messages .results table {
+	background-color:#eeeeee;	
+	width:100%;
+	height:500px;
+	-moz-border-radius:3px;
+	border-radius:3px;
+}
+
+#bubble_messages .results .scroller {
+	max-height:300px;	
+	overflow:auto;
+}
+
+#bubble_messages div .field h1 {
+	color:#999999;
+	font-weight:bold;
+	font-size:100%;
+	margin:0;
+}
+
+#bubble_messages .results {
+	margin-left:16px;
+	width:260px;		
+	background-color:#222222;
+	padding:0 6px 6px 6px;
+	position:relative;
+	top:-4px;
+	-moz-border-radius-bottomright:3px;
+	-moz-border-radius-bottomleft:3px;
+	border-bottom-right-radius:3px;	
+	border-bottom-left-radius:3px;
+}
+
+
+#bubble_routes div .field a[title='Trackem Settings'] {
+	display:block;
+	float:left;
+	background:transparent url("../img/iconset_coquette/process.png") no-repeat bottom center;	
+	height:16px;
+	width:26px;
+}
+
+#bubble_routes div .field a:hover {
+	background-color:#333333;	
+}
+
+#bubble_messages h1, #bubble_routes h1 {
+	float:left;
+	padding:0 3px;
+}
+
+#bubble_messages div .field a[title='New Message'] {
+	display:block;
+	float:left;
+	background:transparent url("../img/iconset_coquette/mail_send.png") no-repeat bottom center;	
+	height:16px;
+	width:26px;
+}
+
+#bubble_messages div .field a[title='History'] {
+	display:block;
+	float:left;
+	background:transparent url("../img/iconset_coquette/mail_receive.png") no-repeat bottom center;	
+	height:16px;
+	width:26px;
+}
+
+#bubble_messages div .field a:hover {
+	background-color:#333333;	
+}
+
+#bubble_messages div .field a[title='Close Messages'] {
+	display:block;
+	float:right;
+	background:transparent url("../img/iconset_coquette/close.png") no-repeat center right;	
+	height:16px;
+	width:16px;
+}
+
+#bubble_routes div .field a[title='Close Routes'] {
+	display:block;
+	float:right;
+	background:transparent url("../img/iconset_coquette/close.png") no-repeat center right;	
+	height:16px;
+	width:16px;
+}
+
+#bubble_search div .field a[title='Close Search'] {
+	display:block;
+	float:right;
+	background:transparent url("../img/iconset_coquette/close.png") no-repeat center right;	
+	height:16px;
+	width:16px;
+}
+
+.stat_messages {
+	cursor:pointer;
+}
+
+.notice {
+	float:right;
+	background-color:#ffcc00;
+	min-width:13px;
+	font-size:70%;	
+	padding:1px;
+	text-align:center;
+	-moz-border-radius:6px;
+	border-radius:6px;
+	font-weight:bold;
+}
+
+table.list {
+	border:1px solid #333333;
+	padding:0;	
+	border-collapse: collapse;	
+	clear:both;
+}
+
+table.list th {
+	background-color:#333333;
+	color:#cccccc;
+	margin:0;
+	padding:2px 7px;
+}
+
+table.list td {
+	margin:0;
+	padding:2px 7px;
+	text-align:center;
+	border:1px solid #dddddd;
+}
+
+table.list td.right {
+	text-align:right;
+}
+
+table.list td.left {
+	text-align:left;
+}
+
+table.list td.center {
+	text-align:center;
+}
+
+table.list tr.item {
+	cursor:pointer;
+}
+
+table.list tr.odd {
+	background-color:#ffffff;
+}
+
+table.list tr.even {	
+	background-color:#ffedcf;
+}
+
+table.list tr.hovered {	
+	background-color:#dddddd;
+}
+
+table.list tr.callback_ready {
+	background-color:#ffcccc;	
+}
+
+table.list a {
+	text-decoration:none;
+	color:#333333;	
+}
+
+div.message_balloon {
+	font-size:90%;
+	color:#cccccc;
+}
+
+div.message_balloon div.message{
+	border:1px solid #333333;
+	padding:4px;
+	margin:1px;
+	color:#333333;
+	background-color:#eeeeee;
+	-moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+}
+
+div.message_balloon div.footer {
+	margin-bottom:8px;
+}
+
+div.message_balloon div.callback_date {
+	margin-top:8px;
+}
+
+div.message_balloon strong{
+	font-size:90%;
+	color:#000000;
+	text-decoration:underline;
+}
+
+div.message_balloon div.actions a {
+	font-size:80%;
+	display:block;
+	background-color:#cccccc;
+	color:#333333;
+	float:right;
+	padding:1px;
+	margin:1px;
+	-moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+	text-transform:uppercase;
+	text-decoration:none;
+}
+
+div.message_balloon div.actions a:hover {
+	color:#ffffff;
+	background-color:#333333;
+}
+
+span[title='Landline'] {
+	padding-left:16px;
+	background:transparent url("../img/iconset_coquette/landline.png") no-repeat left;	
+}
+
+span[title='Mobile'] {
+	padding-left:16px;
+	background:transparent url("../img/iconset_coquette/smartphone.png") no-repeat left;	
 }

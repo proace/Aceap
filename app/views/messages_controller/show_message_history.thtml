@@ -1,3 +1,9 @@
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/meio.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/layout.css" rel="stylesheet" type="text/css">
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/media-queries.css" rel="stylesheet" type="text/css">
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
 <script>
 function respond(to_user_id)
 {
@@ -22,6 +28,13 @@ function createMessage()
   "width=450, height=350, left=300, top=200");
     document.forms['viewform'].submit();
 }
+
+$('.open-payment-page').live('click', function(){
+    var orderId = $(this).attr('orderId');
+    window.opener.document.getElementById('org-order-id').value = orderId;
+    window.close();  
+});
+
 </script>
 <style type="text/css">
  .incoming {

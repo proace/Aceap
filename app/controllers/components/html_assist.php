@@ -156,9 +156,12 @@ class HtmlAssistComponent extends Object
 				$tdiff = strtotime($order['job_date'].' '.$order['job_time_end']) - strtotime(date('Y-m-d H:i:s', time() + $settings['Setting']['valuetxt']));
 	
 				$color = '#EAEAEA';	//'gray' - everything all right;
-				if($order['tech_visible_agent'] == 1){
+				if($order['tech_visible_agent'] == 1 ){
 					$color = '#ffff00';
 				}
+                if($order['call_to_book']!= '' || $order['send_estimate']!= '' || $order['order_part']!= '' || $order['job_notes']!= '' ){
+                    $color = '#ffff00';
+                }
 				
 				$minutes = $tdiff / 60; //minutes: time until deadline - negative number = past deadline
 				/*if (($minutes < 0)&&($order['order_substatus_id'] != 7))	//deadline passed! job is late

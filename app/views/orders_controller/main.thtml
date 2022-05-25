@@ -1,0 +1,74 @@
+<?
+//echo $common->getLoggedUserRoleID(); die;
+ if ($common->getLoggedUserRoleID() == 10) { 
+	header('Location: '.ROOT_URL.'/training/start_page_2.html');
+echo "&nbsp";
+	} elseif ($common->getLoggedUserRoleID() == 12) { 
+	header('Location: '.ROOT_URL.'/training/start_page_tech.html');
+echo "&nbsp";
+	} else {
+?>
+<frameset rows = "85, *" frameBorder="1">
+  <frame src="<?=BASE_URL;?>/pages/topbar" scrolling="no" name="topbar" id="topbar" />
+  <? if ($common->getLoggedUserRoleID() == 1 or $common->getLoggedUserRoleID() == 2) { ?>
+	<frame src="<?=BASE_URL;?>/commissions/calculateCommissions" name="main_view" id="main_view" />
+  <? } elseif ($common->getLoggedUserRoleID() == 5) { ?>
+	<frame src="<?=BASE_URL;?>/inventories/index" name="main_view" id="main_view" />
+  <? } else { ?>
+  <frameset id="adjust_size" cols = "230, *, 230" frameBorder="1">
+  	<frameset rows = "90, *" frameBorder="0">
+  		<frame src="<?=BASE_URL;?>/pages/search" name="frame_search" id="frame_search" />
+          <?php if ($common->getLoggedUserRoleID() == 6) { ?>
+  		<frameset rows = "*, 200" frameBorder="1">
+  			<frame src="<?=BASE_URL;?>/pages/browser" name="frame_browser" id="frame_browser" />
+  			<frame src="<?=BASE_URL;?>/messages/index" name="frame_reminder" id="frame_reminder" />
+  		</frameset>
+          <?php } else { ?>
+          <frameset rows = "*, 80" frameBorder="1">
+  			<frame src="<?=BASE_URL;?>/pages/browser" name="frame_browser" id="frame_browser" />
+  			<frame src="<?=BASE_URL;?>/messages/index" name="frame_reminder" id="frame_reminder" />
+  		</frameset>
+          <?php } ?>
+  	</frameset>
+  	<frame src="<?=BASE_URL;?>/orders/scheduleView" name="main_view" id="main_view" />
+    <!-- <frameset rows="50%,25%,25%"> -->
+  <frameset id="adjust_row_size" rows="33%,33%,33%">
+     <frame src="<?=BASE_URL;?>/pages/message" name="frame_search" id="" />
+     <frame src="" name="" id="" />
+     <frame src="" name="" id="" />
+  </frameset>
+<!-- 
+    <frameset rows = "200, *"frameBorder="0">
+      <frame src="<?=BASE_URL;?>/pages/message" name="frame_search" id="" />
+      <frame src="<?=BASE_URL;?>/pages/message" name="frame_search" id="" />
+      <frameset rows = "90, *"frameBorder="0">
+         <frame src="<?=BASE_URL;?>/pages/message" name="frame_search" id="" />
+      </frameset> -->
+    </frameset>
+  </frameset>
+  <? } ?>
+
+  <frameset rows = "85, *" frameBorder="1">
+      <div class="toast-wrap">
+          <div class="toast-boxCard">
+              <div class="toast-header">
+                <button type="button" class="close-toast" data-dismiss="toast" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="toast-body">
+                <p>Hello, world! This is a toast message.</p>
+              </div>
+              <div class="toast-footer">
+                  <button class="btn-toast btn-forwd">Forward</button>
+                  <button class="btn-toast btn-reply">Reply</button>
+                  <a class="btn-toast btn-ref">Refrence</a>
+              </div>
+            </div>
+            <!-- ./ toast-boxCard -->
+        </div>
+        <!-- ./ toast-wrap -->
+  </frameset>
+  
+</frameset><noframes></noframes>
+<? } ?>

@@ -1,0 +1,194 @@
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+.results1{
+	float: left;
+	background: #CCCCCC;
+}
+.results1 th{
+	background: #666666;
+	border-left: 0px solid #FFFFFF;
+	border-top: 0px solid #FFFFFF;
+	font-weight: bold;
+	font-size:10px;
+	font-family:Verdana;
+	color: #FFFFFF;
+}
+.results1 td.cell0{
+	background:  #FFFFFF;
+	height: 30px;
+}
+input,select{
+	width:100%;
+	padding:2px;
+	margin-top:5px;
+}
+</style>
+
+<script language="JavaScript">
+function setTech(route_id, day, tech_num, el){
+	$.get("<?=BASE_URL;?>/tech_schedule/setTech2",
+		{tech_id:el.value, day:day, tech_num:tech_num, route_id:route_id},
+		function(data){document.forms['viewform'].submit();});
+}
+</script>
+
+<form method="GET" name="viewform">
+
+<table border="0" cellspacing="10" cellpadding="0" ><!-- align=left -->
+	<tr>
+		<td class="sectionTitle" colspan="3">Techs Schedule</td>
+	</tr>	
+</table>
+	
+</form>
+
+<table id="restable" class="results1" cellpadding="3" cellspacing="1">
+<tr>
+
+	<th style='width:80px;'>Monday</th>
+	<th style='width:80px;'>Tuesday</th>
+	<th style='width:80px;'>Wednesday</th>
+	<th style='width:80px;'>Thusday</th>
+	<th style='width:80px;'>Friday</th>
+	<th style='width:80px;'>Saturday</th>
+	<th style='width:80px;'>Sunday</th>
+
+</tr>
+	<?php 
+	function getSelector($aSrc, $sControlName, $mCurrentItem, $route, $tech_num, $day)
+	{
+		$sRet = "<select onchange='setTech(\"$route\", \"$day\", $tech_num, this);' style='background:transparent;'>";
+		$selected = "";
+		if (!$mCurrentItem)
+			$selected = "selected='selected'";
+		$sRet.= "<option value='' $selected>&nbsp;</option>";
+	  
+		foreach ($aSrc as $k => $v)
+		{
+			$selected = "";
+			if ($k == $mCurrentItem)
+				$selected = "selected='selected'";
+			$sRet.= "<option value='$k' $selected>$v</option>";
+		}
+		
+		$sRet.= "</select>";
+		
+		return $sRet;
+	}
+
+	
+	$r = 1;
+	foreach ($AllRoutes as $cur)
+	{
+		$class = 'cell'.(++$r%2);
+		echo '<tr>';
+		//echo '<td rowspan=2 class="'.$class.'"><a href="'.BASE_URL.'/routes/editItem?item_id=' .$cur['id'] .'">' .$cur['name'] .'</a></td>';
+		
+		for ($j=0; $j<7; $j++)
+		{
+		    $select = getSelector($AllTechnicians,'tech',$cur['tech1'][$j], $cur['id'], 1, $j+1);
+			echo '<td class="'.$class.'">'.$select.'</td>';
+		}
+		echo '</tr>';
+		
+		
+		for ($j=0; $j<7; $j++)
+		{
+			$day=$j+1;
+		    		echo '<td class="'.$class.'">
+					<input type="text" placeholder="cell phone" class="cell_phone" value="'.$cur['cell_phone'][$j].'">
+					<input type="text" placeholder="email" class="email" value="'.$cur['email'][$j].'">
+					<select name="time_from" class="time_from '.$cur['time_from'][$j].'">
+					'?>
+					
+					
+					<option value="">&nbsp;</option>
+	                    <option <?php if($cur['time_from'][$j]=='20'){echo "selected";} ?> value="20"> 8 PM</option>
+	                    <option <?php if($cur['time_from'][$j]=='21'){echo "selected";} ?> value="21"> 9 PM</option>
+	                    <option <?php if($cur['time_from'][$j]=='22'){echo "selected";} ?> value="22">10 PM</option>
+	                    <option <?php if($cur['time_from'][$j]=='23'){echo "selected";} ?> value="23">11 PM</option>
+	                    <option <?php if($cur['time_from'][$j]=='24'){echo "selected";} ?> value="24">12 PM</option>
+	                    <option <?php if($cur['time_from'][$j]=='25'){echo "selected";} ?> value="25"> 1 AM</option>
+	                    <option <?php if($cur['time_from'][$j]=='26'){echo "selected";} ?> value="26"> 2 AM</option>
+	                    <option <?php if($cur['time_from'][$j]=='27'){echo "selected";} ?> value="27"> 3 AM</option>
+	                    <option <?php if($cur['time_from'][$j]=='28'){echo "selected";} ?> value="28"> 4 AM</option>
+						<option <?php if($cur['time_from'][$j]=='29'){echo "selected";} ?> value="29"> 5 AM</option>
+	                    <option <?php if($cur['time_from'][$j]=='30'){echo "selected";} ?> value="30"> 6 AM</option>
+	                    <option <?php if($cur['time_from'][$j]=='31'){echo "selected";} ?> value="31"> 7 AM</option>
+	                    <option <?php if($cur['time_from'][$j]=='32'){echo "selected";} ?> value="32"> 8 AM</option>
+						<option <?php if($cur['time_from'][$j]=='33'){echo "selected";} ?> value="33"> 9 AM</option>
+						<option <?php if($cur['time_from'][$j]=='34'){echo "selected";} ?> value="34"> 10 AM</option>
+						<option <?php if($cur['time_from'][$j]=='35'){echo "selected";} ?> value="35"> 11 AM</option>
+						<option <?php if($cur['time_from'][$j]=='36'){echo "selected";} ?> value="36"> 12 AM</option>
+						<option <?php if($cur['time_from'][$j]=='13'){echo "selected";} ?> value="13"> 1 PM</option>
+						<option <?php if($cur['time_from'][$j]=='14'){echo "selected";} ?> value="14"> 2 PM</option>
+						<option <?php if($cur['time_from'][$j]=='15'){echo "selected";} ?> value="15"> 3 PM</option>
+						<option <?php if($cur['time_from'][$j]=='16'){echo "selected";} ?> value="16"> 4 PM</option>
+						<option <?php if($cur['time_from'][$j]=='17'){echo "selected";} ?> value="17"> 5 PM</option>
+						<option <?php if($cur['time_from'][$j]=='18'){echo "selected";} ?> value="18"> 6 PM</option>
+						<option <?php if($cur['time_from'][$j]=='19'){echo "selected";} ?> value="19"> 7 PM</option>
+	                   
+					</select>
+					
+					<select name="time_to" class="time_to <?= $cur['time_to'][$j] ?>">
+					<option value="">&nbsp;</option>
+	                    <option <?php if($cur['time_to'][$j]=='20'){echo "selected";} ?> value="20">  8 PM</option>
+	                    <option <?php if($cur['time_to'][$j]=='21'){echo "selected";} ?> value="21">  9 PM</option>
+	                    <option <?php if($cur['time_to'][$j]=='22'){echo "selected";} ?> value="22"> 10 PM</option>
+	                    <option <?php if($cur['time_to'][$j]=='23'){echo "selected";} ?> value="23"> 11 PM</option>
+	                    <option <?php if($cur['time_to'][$j]=='24'){echo "selected";} ?> value="24"> 12 PM</option>
+	                    <option <?php if($cur['time_to'][$j]=='25'){echo "selected";} ?> value="25">  1 AM</option>
+	                    <option <?php if($cur['time_to'][$j]=='26'){echo "selected";} ?> value="26">  2 AM</option>
+	                    <option <?php if($cur['time_to'][$j]=='27'){echo "selected";} ?> value="27"> 3 AM</option>
+	                    <option <?php if($cur['time_to'][$j]=='28'){echo "selected";} ?> value="28">4 AM</option>
+						<option <?php if($cur['time_to'][$j]=='29'){echo "selected";} ?> value="29">5 AM</option>
+	                    <option <?php if($cur['time_to'][$j]=='30'){echo "selected";} ?> value="30">6 AM</option>
+	                    <option <?php if($cur['time_to'][$j]=='31'){echo "selected";} ?> value="31">7 AM</option>
+	                    <option <?php if($cur['time_to'][$j]=='32'){echo "selected";} ?> value="32"> 8 AM</option>
+						<option <?php if($cur['time_to'][$j]=='33'){echo "selected";} ?> value="33"> 9 AM</option>
+						<option <?php if($cur['time_to'][$j]=='34'){echo "selected";} ?> value="34"> 10 AM</option>
+						<option <?php if($cur['time_to'][$j]=='35'){echo "selected";} ?> value="35"> 11 AM</option>
+						<option <?php if($cur['time_to'][$j]=='36'){echo "selected";} ?> value="36"> 12 AM</option>
+						<option <?php if($cur['time_to'][$j]=='13'){echo "selected";} ?> value="13"> 1 PM</option>
+						<option <?php if($cur['time_to'][$j]=='14'){echo "selected";} ?> value="14"> 2 PM</option>
+						<option <?php if($cur['time_to'][$j]=='15'){echo "selected";} ?> value="15"> 3 PM</option>
+						<option <?php if($cur['time_to'][$j]=='16'){echo "selected";} ?> value="16"> 4 PM</option>
+						<option <?php if($cur['time_to'][$j]=='17'){echo "selected";} ?> value="17"> 5 PM</option>
+						<option <?php if($cur['time_to'][$j]=='18'){echo "selected";} ?> value="18"> 6 PM</option>
+						<option <?php if($cur['time_to'][$j]=='19'){echo "selected";} ?> value="19"> 7 PM</option>
+	                   
+					</select>
+			<button data-day="<?= $day ?>" data-id="<?= $cur['id'] ?>" class="update_schedu">update</button>
+			<?php '
+			</td>';
+		}
+		echo '</tr>';
+		
+	}
+	?>
+</table>
+<script>
+$('body').on('click','.update_schedu',function(){
+var parent = $(this).parent();
+var cell_phone = parent.find('.cell_phone').val();
+var email = parent.find('.email').val();
+var time_from = parent.find('.time_from').val();
+var time_to = parent.find('.time_to').val();
+var day = $(this).attr('data-day');
+var id = $(this).attr('data-id');
+
+
+$.ajax({
+                url: '<?=BASE_URL?>/tech_schedule/setTech3',
+                data: {cell_phone:cell_phone,email:email,day:day,id:id,time_from:time_from,time_to:time_to},
+               
+                type: 'GET',                
+                success: function(data) {
+                    console.log(data);
+					location.reload(true);
+                }
+            });
+
+			});
+	
+</script>

@@ -116,8 +116,17 @@ function SelectTech(techId)
 	}
 }
 function GoChangeCommission(){
-	var TechId=document.getElementById("ftechid").value;
+	var check_role="<?php echo $common->getLoggedUserRoleID() ?>";
+		if(check_role==3 || check_role==9 || check_role==1 ){
+var TechId=document.getElementById("ftechid").value;
 	top.frames['main_view'].location.href='<? echo $html->url("/commissions/editTech/"); ?>'+TechId+'?rurl=<?=urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING'])?>';
+}
+else {
+	var TechId=document.getElementById("ftechid").value;
+	window.top.frames['main_view'].src='<? echo $html->url("/commissions/editTech/"); ?>'+TechId+'?rurl=<?=urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING'])?>';
+
+}
+	
 }
 function MarkVerified(job_id,data_in,element, is_tech=null){
     var approvedSum = parseFloat($('#approved-office').attr('value'));
@@ -159,6 +168,9 @@ function Adjust(job_id,data_in,element){
 	$.get("<?=BASE_URL;?>/commissions/setVerified",
 		{order_id:job_id,
 		 tech_num:data_in.tech_num,
+     part_comm:data_in.part_comm,
+     labour_comm:data_in.labour_comm,
+     source_job_comm:data_in.source_job_comm,
  		 booking_comm:data_in.booking_comm,
 		 sales_job_comm:data_in.sales_job_comm,
 		 sales_appl_comm:data_in.sales_appl_comm,
@@ -168,7 +180,78 @@ function Adjust(job_id,data_in,element){
 		 adjustment:val,
 		 total_comm:data_in.total_comm
 	  },
-	  function(data){document.forms['viewform'].submit();});
+	  function(data){
+      location.reload();
+      // document.forms['viewform'].submit();
+    });
+}
+
+//Loki: create helper, redo panalty and driving adjustment.
+function helperAdjust(job_id,data_in,element){
+  val = element.value;
+    $.get("<?=BASE_URL;?>/commissions/setVerified",
+        {order_id:job_id,
+         tech_num:data_in.tech_num,
+         part_comm:data_in.part_comm, 
+         labour_comm:data_in.labour_comm,
+         source_job_comm:data_in.source_job_comm,
+         booking_comm:data_in.booking_comm,
+         sales_job_comm:data_in.sales_job_comm,
+         sales_appl_comm:data_in.sales_appl_comm,
+         redo_penalty:data_in.redo_penalty,
+         driving_comm:data_in.driving_comm,
+         helper_ded:val,
+         adjustment:data_in.adjustment,
+         total_comm:data_in.total_comm
+      },
+      function(data){
+        location.reload();
+        // document.forms['viewform'].submit();
+      });
+}
+function redoAdjust(job_id,data_in,element){
+  val = element.value;
+    $.get("<?=BASE_URL;?>/commissions/setVerified",
+        {order_id:job_id,
+         tech_num:data_in.tech_num,
+         part_comm:data_in.part_comm,
+         labour_comm:data_in.labour_comm,
+         source_job_comm:data_in.source_job_comm,
+         booking_comm:data_in.booking_comm,
+         sales_job_comm:data_in.sales_job_comm,
+         sales_appl_comm:data_in.sales_appl_comm,
+         redo_penalty:val,
+         driving_comm:data_in.driving_comm,
+         helper_ded:data_in.helper_ded,
+         adjustment:data_in.adjustment,
+         total_comm:data_in.total_comm
+      },
+      function(data){
+        location.reload();
+        // document.forms['viewform'].submit();
+      });
+}
+function drivingAdjust(job_id,data_in,element){
+  val = element.value;
+    $.get("<?=BASE_URL;?>/commissions/setVerified",
+        {order_id:job_id,
+         tech_num:data_in.tech_num,
+         part_comm:data_in.part_comm,
+         labour_comm:data_in.labour_comm,
+         source_job_comm:data_in.source_job_comm,
+         booking_comm:data_in.booking_comm,
+         sales_job_comm:data_in.sales_job_comm,
+         sales_appl_comm:data_in.sales_appl_comm,
+         redo_penalty:data_in.redo_penalty,
+         driving_comm:val,
+         helper_ded:data_in.helper_ded,
+         adjustment:data_in.adjustment,
+         total_comm:data_in.total_comm
+      },
+      function(data){
+        location.reload();
+        // document.forms['viewform'].submit();
+      });
 }
 function ChangeTechMethod(job_id,element,tech){
   $.get("<?=BASE_URL;?>/commissions/saveTechMethod",
@@ -180,7 +263,7 @@ function ShowDetails(job_id, item_type){
   	{order_id:job_id,items_type:item_type,enable_actions:0},
 	  function(data){ 
 				$("#dialog_items").html(data);
-				$("#dialog").dialog({ height: 300, width: 450 });
+				$("#dialog").dialog({ height: 300, width: 550 });
   });
 }
 function ShowMessages(job_id, message_to){
@@ -413,19 +496,31 @@ $(document).ready(function()
 <?php if($ismobile == 1) { ?>
 	<a href="<?php echo BASE_URL ?>/pages/mobileMenu" id="return">Back to Main</a>
 <?php } ?>
+<?php if($common->getLoggedUserRoleID() == "1"){
+  $disable = 'disabled';
+  ?>
+<?php } ?>
 <div id="dialog" title="Details" style="display:none;">
   <table id="CurrentItemsTable" cellspacing=0 colspacing=0 class="inResultsBooking">
 		<thead>
 		<tr>
 			<th align=left><b>Booked items</b></th>
+      <th style="width:30px">Whs</th>
+      <th style="width:30px">Tech</th>
+      <th style="width:30px">Part No.</th>
 			<th style="width:30px">Qty</th>
 			<th style="width:50px">Price</th>
             <th style="width:50px">Dis</th>
-			<th style="width:55px">Adj</th>
+			<th style="width:55px">Add</th>
 			<th style="width:55px">Prch</th>
+     
 			<th style="width:55px">Sum</th>
+      <th style="width:55px">order</th>
             <th>&nbsp;</th>
-            <th>&nbsp;</th>
+       <?php if ($common->getLoggedUserRoleID() == "6" || $common->getLoggedUserRoleID() == "1") { ?>
+        <th style="width:50px">Tech</th>
+        <th style="width:50px">Adjt</th>
+      <?php } ?>
 		</tr>
 		</thead>
 		<tbody id="dialog_items">
@@ -487,7 +582,7 @@ $(document).ready(function()
 			&nbsp;&nbsp;
 			<input type="text" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="document.viewform.cur_ref.value=''; scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
 			&nbsp;&nbsp;
-			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_tdate?>'; document.viewform.cur_ref.value=''; document.viewform.submit();" style="font-size: 8pt;">
+			<input type="button" <?=$disable?> value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_tdate?>'; document.viewform.cur_ref.value=''; document.viewform.submit();" style="font-size: 8pt;">
 		</td>
 		<td colspan=2>REF #: 
 			<input name="cur_ref" id="cur_ref" type="text" value="<?=$cur_ref?>" style="font-size: 8pt;">
@@ -522,39 +617,43 @@ $(document).ready(function()
     <tr style="height:25px;">
         <th class="thborder" rowspan=2 width="60" style="background-color:#ffffff;border-left:0px; border-top: 1px solid #9f9f9f;">Reply</th>        
         <th class="thborder" rowspan=2 width="60" style="background-color:#ffffff;border-left:0px; border-top: 1px solid #9f9f9f;">Date</th>        
+        
+        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#caffca;">Booking</th>
+
+        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#caffff;">Extra Sales</th>
+        
         <th class="thborder" rowspan=2 width="60" style="background-color:#ffffff; border-top: 1px solid #9f9f9f;">Job</th> 
              
         <th  class="thborder" rowspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#ffffff;">Tech / <span style="color:red">Source</span></th>
         <th class="thborder" rowspan=2 style="border-top: 1px solid #9f9f9f; background-color:#ffffff;">Commission type</th>
 
-        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#caffca;">Booking</th>
+        <th class="thborder" colspan=4 width="60" style="border-top: 1px solid #9f9f9f; background-color:#53ffff;">Sales Commission</th>
 
-        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#caffff;">Extra Sales</th>
-        <th class="thborder" colspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#53ffff;">Sales Comm</th>
-
-   <!--     <th rowspan=2 width="60" style="background-color:#C5BE97;">Time Payable</th>-->
-        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#80ff80;">Booking Paid</th>
-        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f;background-color:#c0c0c0;">Driving</th>
+        <!--     <th rowspan=2 width="60" style="background-color:#C5BE97;">Time Payable</th>-->
+        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#80ff80;">Booking Commission</th>
+        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#80ff80;">Labour Commission</th>
+        <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f;background-color:#c0c0c0;">Driving or Tip</th>
 
 				<th class="thborder" colspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#ff7d7d;">Deductions</th>
         
         <th class="thborder" rowspan=2 colspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#ffff80;">Adjustment</th>
         <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f; background-color:#ffff80;">Total Comm</th>
+		    <th class="thborder" rowspan=2 width="16" style="border-top: 1px solid #9f9f9f; background-color:#ffff80;"><?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
         <th class="thborder" rowspan=2 width="60" style="border-top: 1px solid #9f9f9f;background-color:#ffff80;">Admin Notes</th>
-		<th class="thborder" rowspan=2 width="16" style="border-top: 1px solid #9f9f9f; background-color:#ffff80;"><?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
-		<th class="thborder" rowspan=2 colspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#dec787;">Payments</th>
+		    <th class="thborder" rowspan=2 colspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#dec787;">Payments</th>
         <th class="thborder" rowspan=2 colspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#dec787;">Payment Type</th>
-		<th class="thborder"rowspan=2 colspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#dec787;">Purchase</th>
-		<th class="thborder" rowspan=2 width="100" style="border-top: 1px solid #9f9f9f;background-color:#dec787;">Tech Notes</th>
-		<th class="thborder" rowspan=2 width="16" style="border-top: 1px solid #9f9f9f;background-color:#dec787;">Confirmed<?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
-		<th class="thborder" rowspan=2 width="16" style="border-top: 1px solid #9f9f9f; background-color:#dec787;">Not Confirmed<?='<img src="'.ROOT_URL.'/app/webroot/img/cross-icon.jpeg" heignt="16 px" width="16 px" >'?></th>
-
+    		<!-- <th class="thborder" rowspan=2 width="100" style="border-top: 1px solid #9f9f9f;background-color:#dec787;">Tech Notes</th> -->
+    		<th class="thborder" rowspan=2 width="16" style="border-top: 1px solid #9f9f9f;background-color:#dec787;">Confirmed<?='<img src="'.ROOT_URL.'/app/webroot/img/icon-vsm-check.png">'?></th>
+    		<th class="thborder" rowspan=2 width="16" style="border-top: 1px solid #9f9f9f; background-color:#dec787;">Not Confirmed<?='<img src="'.ROOT_URL.'/app/webroot/img/cross-icon.jpeg" heignt="16 px" width="16 px" >'?></th>
+            <th class="thborder"rowspan=2 colspan=2 width="100" style="border-top: 1px solid #9f9f9f; background-color:#dec787;">Purchase</th>
     </tr>
     <tr style="height:25px;">
-        <th width="60" style="background-color:#53ffff;">jobs</th>
+        <th width="60" style="background-color:#53ffff;">service</th>
         <th width="60" style="background-color:#53ffff;">appli ances</th>
-				<th width="50" style="background-color:#ff7d7d;">Redo</th>
-				<th width="50" style="background-color:#ff7d7d;">Helper</th>
+        <th width="60" style="background-color:#53ffff;">parts</th>
+        <th width="60" style="background-color:#53ffff;">source</th>
+    		<th width="50" style="background-color:#ff7d7d;">Redo</th>
+    		<th width="50" style="background-color:#ff7d7d;">Helper</th>
     </tr>
 		
 <?php
@@ -579,6 +678,11 @@ $(document).ready(function()
 		$disable_tech[3] = false;
 		$disable_tech[4] = false;
 		$message_to = 0;
+        $disField = '';
+        if($loggedUserIsTech == "1")
+        {
+            $disField = "disabled='disabled'";
+        }
 		
 		// if (($_SESSION['user']['id'] != 44851)&&($_SESSION['user']['id'] != 52249)&&($_SESSION['user']['id'] != 231307)
 		//   &&($_SESSION['user']['id'] != 58613)&&($_SESSION['user']['id'] != 68476))
@@ -594,11 +698,18 @@ $(document).ready(function()
     <tr class="<?= $class ?>">
        <td rowspan="4" style="cursor:pointer;border-right:1px solid #CCCCCC "><input type="checkbox" name="order-reply-id" class= "order-reply-id" tech1-id="<?= $obj['tech1_id']?>" tech2-id="<?= $obj['tech2_id']?>" order-id="<?=$obj['id']?>"></td>
         <td rowspan=4 style="cursor:pointer;border-left:0px">
-			<?php
-			if ($common->getLoggedUserRoleID() == "1") $method = 'techBooking'; else $method = 'editBooking';
-			echo $html->link($obj['job_date'],'/orders/'.$method.'?order_id='.$obj['id'].'&rurl='.urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING']),array("title"=>"Booking date: ".date("Y-m-d",strtotime($obj['job_date']))."  Job date:". date("Y-m-d",strtotime($obj['job_date']))));
-			?>
-		</td>        
+			   <?php
+  			 if ($common->getLoggedUserRoleID() == "1") $method = 'techBooking'; else $method = 'editBooking';
+  			   echo $html->link($obj['job_date'],'/orders/'.$method.'?order_id='.$obj['id'].'&rurl='.urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING']),array("title"=>"Booking date: ".date("Y-m-d",strtotime($obj['job_date']))."  Job date:". date("Y-m-d",strtotime($obj['job_date']))));
+  			   ?>
+		    </td>        
+        <td rowspan=4 align="right" class="booking-com" onclick="ShowDetails(<?=$obj['id']?>, 0) ">
+    			<a href="#"><?=$HtmlAssist->prPrice($obj['total'][0]) ?></a>
+    		</td>
+
+        <td rowspan=4 align="right" class="booking-com" onclick="ShowDetails(<?=$obj['id']?>, 1)">
+								<a href="#"><?=$HtmlAssist->prPrice($obj['total'][1]) ?></a>
+				</td>
         <td rowspan=2 align="center" title="<?="Booking date: ".date("Y-m-d",strtotime($obj['job_date']))."  Job date:". date("Y-m-d",strtotime($obj['job_date']))?>">&nbsp;
         	<?php echo $html->link($obj['order_number'],'/orders/'.$method.'?order_id='.$obj['id'].'& job_date='.$obj["job_date"].'&rurl='.urlencode($this->params['controller'].'/'.$this->params['action'].'?'.$_SERVER['QUERY_STRING']),array("title"=>"Booking date: ".date("Y-m-d",strtotime($obj['job_date']))."  Job date:". date("Y-m-d",strtotime($obj['job_date'])))); ?>
         	<br/><font color="<?=($obj['order_status_id']==5) ? 'green' : 'red'?>"><b><?=$obj['order_status']?></b></font>
@@ -617,31 +728,39 @@ $(document).ready(function()
 			// 	}
 			// else $local_class = 'inactive';
 			?>
-        <td class="<?=$local_class?>" onclick="javascript:SelectTech(<?php echo $obj['job_technician1_id']; ?>);" style="cursor:pointer;">
-			&nbsp;<?php echo ($obj['job_technician1_id'] == $techid) ? '<b> '.$obj['tech1_name'].' </b>' : $obj['tech1_name'];?>
-		</td>
-		<td>
-			<?php 
-			if ($disable_inputs) echo '&nbsp;'.$comm_roles[$rows_persons[1]['commission_type']];
-			else echo $html->selectTag('commtype['.$obj['id'].'][1]', $comm_roles, $rows_persons[1]['commission_type'], array('onchange'=>'ChangeTechMethod('.$obj['id'].',this,1)'));
-			?>
-		</td>
+      <td class="<?=$local_class?>" onclick="javascript:SelectTech(<?php echo $obj['job_technician1_id']; ?>);" style="cursor:pointer;">
+  			&nbsp;<?php echo ($obj['job_technician1_id'] == $techid) ? '<b> '.$obj['tech1_name'].' </b>' : $obj['tech1_name'];?>
+  		</td>
+  		<td>
+  			<?php 
+  			if ($disable_inputs) echo '&nbsp;'.$comm_roles[$rows_persons[1]['commission_type']];
+  			else echo $html->selectTag('commtype['.$obj['id'].'][1]', $comm_roles, $rows_persons[1]['commission_type'], array('onchange'=>'ChangeTechMethod('.$obj['id'].',this,1)'), $disField);
+  			?>
+  		</td>
         
-        <td rowspan=4 align="right" class="booking-com" onclick="ShowDetails(<?=$obj['id']?>, 0) ">
-			<a href="#"><?=$HtmlAssist->prPrice($obj['total'][0]) ?></a>
-		</td>
-
-        <td rowspan=4 align="right" class="booking-com" onclick="ShowDetails(<?=$obj['id']?>, 1)">
-								<a href="#"><?=$HtmlAssist->prPrice($obj['total'][1]) ?></a>
-				</td>
 				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[1]['sales_job_comm']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['sales_job_comm'])?>&nbsp;</td>
 				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[1]['sales_appl_comm']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['sales_appl_comm'])?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[1]['booking_comm']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['booking_comm'])?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[1]['driving_comm']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['driving_comm']) ?>&nbsp;</td>
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[1]['part_comm']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['part_comm'])?>&nbsp;</td>
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[1]['source_job_comm']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['source_job_comm'])?>&nbsp;</td>
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[1]['booking_comm']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['booking_comm'])?>&nbsp;</td>
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[1]['labour_comm']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['labour_comm'])?>&nbsp;</td>
+				<td class="<?=$name_class?> <?=$local_class?>" align="right">
+                <?php
+                    $drivingPrice1 = ($rows_persons[1]['driving_comm']==0||$disable_tech[1])?'':$rows_persons[1]['driving_comm'];
+                     echo '<input type="text" style="width:40" '.$disField.' value="'.$drivingPrice1.'" onchange=\'drivingAdjust('.$obj['id'].','.json_encode($rows_persons[1]).',this);\'/>'; ?>
+                </td>
         
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[1]['redo_penalty']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['redo_penalty'])?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[1]['helper_ded']==0||$disable_tech[1])?'':$HtmlAssist->prPrice($rows_persons[1]['helper_ded'])?>&nbsp;</td>
-
+				<td class="<?=$name_class?> <?=$local_class?>" align="right">
+                    <?php
+                    $redoPrice1 = ($rows_persons[1]['redo_penalty']==0||$disable_tech[1])?'':$rows_persons[1]['redo_penalty'];
+                     echo '<input type="text" style="width:40" '.$disField.' value="'.$redoPrice1.'" onchange=\'redoAdjust('.$obj['id'].','.json_encode($rows_persons[1]).',this);\'/>'; ?>
+                </td>
+				<td class="<?=$name_class?> <?=$local_class?>" align="right">
+            
+                    <?php
+                    $helperPrice1 = ($rows_persons[1]['helper_ded']==0||$disable_tech[1])?'':$rows_persons[1]['helper_ded'];
+                     echo '<input type="text" style="width:40" '.$disField.' value="'.$helperPrice1.'" onchange=\'helperAdjust('.$obj['id'].','.json_encode($rows_persons[1]).',this);\'/>'; ?>
+                </td>
 				<td>
                 <!-- <?php
                     if ($rows_persons[1]['verified']&&!$disable_tech[1]) {
@@ -650,8 +769,10 @@ $(document).ready(function()
                      }else{ ?>
                       &nbsp;
                     <?php } ?>
-				 -->  <?php
-					 echo '<input type="text" style="width:40" value="'.$rows_persons[1]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[1]).',this);\'/>'; ?>
+				 -->  
+
+                 <?php
+					 echo '<input type="text" style="width:40" '.$disField.' value="'.$rows_persons[1]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[1]).',this);\'/>'; ?>
 				</td>
 				<?php
 					if(!empty($tech_comm_conf[$obj['id']][1]['tech_verified']) || $tech_comm_conf[$obj['id']][1]['tech_verified'] != '')
@@ -674,18 +795,20 @@ $(document).ready(function()
 				
 			<!-- 	<td rowspan="4"><input  type="text" id="adminCommonNotes" name="techCommArr[<?php echo $obj['id'] ?>][admin-notes]" placeholder="Notes" value="<?php echo $obj['admin_notes']?>">
 				</td> -->
-				    <td rowspan="4"><textarea id="adminCommonNotes" name="techCommArr[<?php echo $obj['id'] ?>][admin-notes]" placeholder="Notes" value="<?php echo $obj['admin_notes']?>"><?php echo $obj['admin_notes']?></textarea>
+      <?php if(($obj['job_technician1_id'] == $techid) && !empty($techid)) {
+        if ($rows_persons[1]['verified'])
+            $approved_sum = $approved_sum + $rows_persons[1]['total_comm'];
+        ?>
+    <?php } ?>
+    <td>
+    <?php if(!empty($rows_persons[1]['total_comm']) || $rows_persons[1]['total_comm'] != '') { ?>
+      <input type="checkbox" loki ="1" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[1]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[1]);?>,this);'/>
+    <?php } ?> 
+    </td>
+				    
+        <td rowspan="4"><textarea id="adminCommonNotes" name="techCommArr[<?php echo $obj['id'] ?>][admin-notes]" placeholder="Notes" value="<?php echo $obj['admin_notes']?>"><?php echo $obj['admin_notes']?></textarea>
                 </td>
-				<?php if(($obj['job_technician1_id'] == $techid) && !empty($techid)) {
-                    if ($rows_persons[1]['verified'])
-                        $approved_sum = $approved_sum + $rows_persons[1]['total_comm'];
-                    ?>
-                <td>
-				  <input type="checkbox" loki ="1" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[1]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[1]);?>,this);'/>
-				</td>
-                <?php } else {?>
-                   <td></td>
-                    <?php } ?>
+			
 				<td rowspan="4" colspan="2" width="100">
 				
                     <?php
@@ -706,14 +829,7 @@ $(document).ready(function()
 				</td>
                 <td rowspan="4" colspan="2" width="100"><b><?php echo $obj['payment_type'] ?><b></td>
 				
-
-                <td rowspan="4" colspan="2" width="100">
-					<?php foreach ($obj['invoices'] as $key => $val) {
-                        $imgPath = ROOT_URL.'/app/webroot/purchase-invoice-images/'.$val;
-                            echo '<img class="openImg1" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height:50px; width: 50px;">';
-                    } ?>
-			     </td>
-                <td><textarea type="text" name="techCommArr[<?php echo $obj['id'] ?>][tech-notes]" placeholder="Notes" value="<?php echo $obj['tech_notes']?>"><?php echo $obj['tech_notes']?></textarea></td>
+               <!--  <td><textarea type="text" name="techCommArr[<?php echo $obj['id'] ?>][tech-notes]" placeholder="Notes" value="<?php echo $obj['tech_notes']?>"><?php echo $obj['tech_notes']?></textarea></td> -->
  				<?php if(!empty($rows_persons[1]['total_comm']) || $rows_persons[1]['total_comm'] != '') {?>
                     <td width="100">
     				  <input id="techverify_1_<?=$obj['order_number']?>" class="techVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][1]['tech_verified'];?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,1,this, 1, <?=($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->totalPrPrice($rows_persons[1]['total_comm']) ?>);' comm_val="<?=$rows_persons[1]['total_comm']?>" order_id="<?=$obj['order_number']?>" seq_no="1"/>
@@ -728,6 +844,12 @@ $(document).ready(function()
                 <?php } else {?>
                     <td></td>
                 <?php } ?>
+                 <td rowspan="4" colspan="2" width="100">
+                    <?php foreach ($obj['invoices'] as $key => $val) {
+                        $imgPath = ROOT_URL.'/app/webroot/purchase-invoice-images/'.$val;
+                            echo '<img class="openImg1" src="'.$imgPath.'" style="max-height: 100px; max-width: 100%; height:50px; width: 50px;">';
+                    } ?>
+                 </td>
     </tr>
     <tr class="<?=$class?>">
 				<?php
@@ -747,27 +869,35 @@ $(document).ready(function()
 				<td>
 				  <?php 
 					if ($disable_inputs) echo '&nbsp;'.$comm_roles[$rows_persons[2]['commission_type']];
-					else echo $html->selectTag('commtype['.$obj['id'].'][2]', $comm_roles, $rows_persons[2]['commission_type'], array('onchange'=>'ChangeTechMethod('.$obj['id'].',this,2)'));
+					else echo $html->selectTag('commtype['.$obj['id'].'][2]', $comm_roles, $rows_persons[2]['commission_type'], array('onchange'=>'ChangeTechMethod('.$obj['id'].',this,2)'), $disField);
 					?>
 				</td>
 				
 				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[2]['sales_job_comm']==0||$disable_tech[2])?'':$HtmlAssist->prPrice($rows_persons[2]['sales_job_comm'])?>&nbsp;</td>
 				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[2]['sales_appl_comm']==0||$disable_tech[2])?'':$HtmlAssist->prPrice($rows_persons[2]['sales_appl_comm'])?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[2]['booking_comm']==0||$disable_tech[2])?'':$HtmlAssist->prPrice($rows_persons[2]['booking_comm'])?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[2]['driving_comm']==0||$disable_tech[2])?'':$HtmlAssist->prPrice($rows_persons[2]['driving_comm']) ?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[2]['redo_penalty']==0||$disable_tech[2])?'':$HtmlAssist->prPrice($rows_persons[2]['redo_penalty'])?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[2]['helper_ded']==0||$disable_tech[2])?'':$HtmlAssist->prPrice($rows_persons[2]['helper_ded'])?>&nbsp;</td>
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[2]['part_comm']==0||$disable_tech[2])?'':$HtmlAssist->prPrice($rows_persons[2]['part_comm'])?>&nbsp;</td>
+				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[2]['source_job_comm']==0||$disable_tech[2])?'':$HtmlAssist->prPrice($rows_persons[2]['source_job_comm'])?>&nbsp;</td>
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[2]['booking_comm']==0||$disable_tech[2])?'':$HtmlAssist->prPrice($rows_persons[2]['booking_comm'])?>&nbsp;</td>
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[2]['labour_comm']==0||$disable_tech[2])?'':$HtmlAssist->prPrice($rows_persons[2]['labour_comm'])?>&nbsp;</td>
+				<td class="<?=$name_class?> <?=$local_class?>" align="right">
+                <?php
+                    $drivingPrice2 = ($rows_persons[2]['driving_comm']==0||$disable_tech[2])?'':$rows_persons[2]['driving_comm'];
+                     echo '<input type="text" style="width:40" '.$disField.' value="'.$drivingPrice2.'" onchange=\'drivingAdjust('.$obj['id'].','.json_encode($rows_persons[2]).',this);\'/>'; ?>
+                </td>
+				<td class="<?=$name_class?> <?=$local_class?>" align="right">
+                   <?php
+                    $redoPrice2 = ($rows_persons[2]['redo_penalty']==0||$disable_tech[2])?'':$rows_persons[2]['redo_penalty'];
+                     echo '<input type="text" style="width:40" '.$disField.' value="'.$redoPrice2.'" onchange=\'redoAdjust('.$obj['id'].','.json_encode($rows_persons[2]).',this);\'/>'; ?>
+                </td>
+				<td class="<?=$name_class?> <?=$local_class?>" align="right">
+                    <?php
+                    $helperPrice2 = ($rows_persons[2]['helper_ded']==0||$disable_tech[2])?'':$rows_persons[2]['helper_ded'];
+                     echo '<input type="text" style="width:40" '.$disField.' value="'.$helperPrice2.'" onchange=\'helperAdjust('.$obj['id'].','.json_encode($rows_persons[2]).',this);\'/>'; ?>            
+                </td>
 
 				<td>
-				 <!--  <?php
-					if ($rows_persons[2]['verified']&&!$disable_tech[2]) {
-					if ($disable_inputs) echo '&nbsp;<b>'.$rows_persons[2]['adjustment'].'</b>';
-					else echo '<input type="text" style="width:40" value="'.$rows_persons[2]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[2]).',this);\'/>';
-					}else{ ?>
-					  &nbsp;
-					<?php } ?> -->
                     <?php 
-                    echo '<input type="text" style="width:40" value="'.$rows_persons[2]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[2]).',this);\'/>';
+                    echo '<input type="text" style="width:40" '.$disField.' value="'.$rows_persons[2]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[2]).',this);\'/>';
                     ?>
 				</td>
 				<?php
@@ -791,15 +921,16 @@ $(document).ready(function()
 				<? }?>
         <td id="comm_val_2_<?=$obj['order_number']?>" class="<?=$name_class?> <?=$local_class?>" align="right" commision_val= "<?=($rows_persons[2]['total_comm']==0||$disable_tech[2])?'':$rows_persons[2]['total_comm']?>"><?=($rows_persons[2]['total_comm']==0||$disable_tech[2])?'':$HtmlAssist->prPrice($rows_persons[2]['total_comm']) ?>&nbsp;</td>
 				<td>
-                <?php if(($obj['job_technician2_id'] == $techid) && !empty($techid)) { 
-                    if ($rows_persons[2]['verified'])
-                    $approved_sum = $approved_sum + $rows_persons[2]['total_comm'];
-                    ?>
-				
-				  <input type="checkbox" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[2]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[2]);?>,this);'/>
-                <?php }?>
-                </td>
-				<td></td>
+          <?php if(($obj['job_technician2_id'] == $techid) && !empty($techid)) { 
+              if ($rows_persons[2]['verified'])
+              $approved_sum = $approved_sum + $rows_persons[2]['total_comm'];
+              ?>
+				 <?php }?>
+          <?php if(!empty($rows_persons[2]['total_comm']) || $rows_persons[2]['total_comm'] != '') { ?>
+				    <input type="checkbox" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[2]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[2]);?>,this);'/>
+          <?php }?>
+          </td>
+				<!-- <td></td> -->
 				<?php if(!empty($rows_persons[2]['total_comm']) || $rows_persons[2]['total_comm'] != ''){?>
                     <td width="100">
     				  <input id="techverify_2_<?=$obj['order_number']?>" class="techVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][2]['tech_verified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,2,this, 1, <?=($rows_persons[2]['total_comm']==0||$disable_tech[2])?'':$HtmlAssist->totalPrPrice($rows_persons[2]['total_comm']) ?>);' comm_val="<?=$rows_persons[2]['total_comm']?>" order_id="<?=$obj['order_number']?>" seq_no="2"/>
@@ -837,10 +968,26 @@ $(document).ready(function()
 				
 				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[3]['sales_job_comm']==0||$disable_tech[3])?'':$HtmlAssist->prPrice($rows_persons[3]['sales_job_comm'])?>&nbsp;</td>
 				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[3]['sales_appl_comm']==0||$disable_tech[3])?'':$HtmlAssist->prPrice($rows_persons[3]['sales_appl_comm'])?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[3]['booking_comm']==0||$disable_tech[3])?'':$HtmlAssist->prPrice($rows_persons[3]['booking_comm'])?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[3]['driving_comm']==0||$disable_tech[3])?'':$HtmlAssist->prPrice($rows_persons[3]['driving_comm']) ?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[3]['redo_penalty']==0||$disable_tech[3])?'':$HtmlAssist->prPrice($rows_persons[3]['redo_penalty'])?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[3]['helper_ded']==0||$disable_tech[3])?'':$HtmlAssist->prPrice($rows_persons[3]['helper_ded'])?>&nbsp;</td>
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[3]['part_comm']==0||$disable_tech[3])?'':$HtmlAssist->prPrice($rows_persons[3]['part_comm'])?>&nbsp;</td>
+				
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[3]['source_job_comm']==0||$disable_tech[3])?'':$HtmlAssist->prPrice($rows_persons[3]['source_job_comm'])?>&nbsp;</td>
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[3]['booking_comm']==0||$disable_tech[3])?'':$HtmlAssist->prPrice($rows_persons[3]['booking_comm'])?>&nbsp;</td>
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[3]['labour_comm']==0||$disable_tech[3])?'':$HtmlAssist->prPrice($rows_persons[3]['labour_comm'])?>&nbsp;</td>
+				<td class="<?=$name_class?> <?=$local_class?>" align="right">
+                     <?php
+                    $drivingPrice3 = ($rows_persons[3]['driving_comm']==0||$disable_tech[3])?'':$rows_persons[3]['driving_comm'];
+                     echo '<input type="text" style="width:40" '.$disField.' value="'.$drivingPrice3.'" onchange=\'drivingAdjust('.$obj['id'].','.json_encode($rows_persons[3]).',this);\'/>'; ?>
+                </td>
+				<td class="<?=$name_class?> <?=$local_class?>" align="right">
+                  <?php
+                    $redoPrice3 = ($rows_persons[3]['redo_penalty']==0||$disable_tech[3])?'':$rows_persons[3]['redo_penalty'];
+                     echo '<input type="text" style="width:40" '.$disField.' value="'.$redoPrice3.'" onchange=\'redoAdjust('.$obj['id'].','.json_encode($rows_persons[3]).',this);\'/>'; ?>
+                </td>
+				<td class="<?=$name_class?> <?=$local_class?>" align="right">
+                    <?php
+                    $helperPrice3 = ($rows_persons[3]['helper_ded']==0||$disable_tech[3])?'':$rows_persons[3]['helper_ded'];
+                     echo '<input type="text" style="width:40" '.$disField.' value="'.$helperPrice3.'" onchange=\'helperAdjust('.$obj['id'].','.json_encode($rows_persons[3]).',this);\'/>'; ?>
+                </td>
 				
 				<td>
 				<?php
@@ -861,7 +1008,7 @@ $(document).ready(function()
 					  &nbsp;
 					<?php } ?> -->
                     <?php 
-                        echo '<input type="text" style="width:40" value="'.$rows_persons[3]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[3]).',this);\'/>';
+                        echo '<input type="text" style="width:40" '.$disField.' value="'.$rows_persons[3]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[3]).',this);\'/>';
                     ?>
 				</td>
         <? if (!$message_to) {?>
@@ -876,16 +1023,18 @@ $(document).ready(function()
         <td id="comm_val_3_<?=$obj['order_number']?>"  class="<?=$name_class?> <?=$local_class?>" align="right" commision_val= "<?=($rows_persons[3]['total_comm']==0||$disable_tech[3])?'':$rows_persons[3]['total_comm']?>"><?=($rows_persons[3]['total_comm']==0||$disable_tech[3])?'':$HtmlAssist->prPrice($rows_persons[3]['total_comm']) ?>&nbsp;</td>
 		      
 				<td>
-                <?php if(($obj['booking_source_id'] == $techid) && !empty($techid)) {
-                    if ($rows_persons[3]['verified'])
-                    $approved_sum = $approved_sum + $rows_persons[3]['total_comm'];
+        <?php if(($obj['booking_source_id'] == $techid) && !empty($techid)) {
+            if ($rows_persons[3]['verified'])
+            $approved_sum = $approved_sum + $rows_persons[3]['total_comm'];
 
-                ?>
+        ?>
+      <?php } ?>
+      <?php if(!empty($rows_persons[3]['total_comm']) || $rows_persons[3]['total_comm'] != '') { ?>
 				  <input type="checkbox" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[3]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[3]);?>,this);'/>
-				<?php } ?>
-                </td>
+		  <?php } ?>
+       </td>
                 
-				<td></td>
+				<!-- <td></td> -->
             <?php if(!empty($rows_persons[3]['total_comm']) || $rows_persons[3]['total_comm'] != ''){?>
 			<td width="100">
 				  <input id="techverify_3_<?=$obj['order_number']?>" class="techVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][3]['tech_verified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,3,this, 1, <?=($rows_persons[3]['total_comm']==0||$disable_tech[3])?'':$HtmlAssist->totalPrPrice($rows_persons[3]['total_comm']) ?>);' comm_val="<?=$rows_persons[3]['total_comm']?>" order_id="<?=$obj['order_number']?>" seq_no="3"/>
@@ -921,10 +1070,26 @@ $(document).ready(function()
 				
 				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[4]['sales_job_comm']==0||$disable_tech[4])?'':$HtmlAssist->prPrice($rows_persons[4]['sales_job_comm'])?>&nbsp;</td>
 				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[4]['sales_appl_comm']==0||$disable_tech[4])?'':$HtmlAssist->prPrice($rows_persons[4]['sales_appl_comm'])?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[4]['booking_comm']==0||$disable_tech[4])?'':$HtmlAssist->prPrice($rows_persons[4]['booking_comm'])?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[4]['driving_comm']==0||$disable_tech[4])?'':$HtmlAssist->prPrice($rows_persons[4]['driving_comm']) ?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[4]['redo_penalty']==0||$disable_tech[4])?'':$HtmlAssist->prPrice($rows_persons[4]['redo_penalty'])?>&nbsp;</td>
-				<td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[4]['helper_ded']==0||$disable_tech[4])?'':$HtmlAssist->prPrice($rows_persons[4]['helper_ded'])?>&nbsp;</td>
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[4]['part_comm']==0||$disable_tech[4])?'':$HtmlAssist->prPrice($rows_persons[4]['part_comm'])?>&nbsp;</td>
+				
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[4]['source_job_comm']==0||$disable_tech[4])?'':$HtmlAssist->prPrice($rows_persons[4]['source_job_comm'])?>&nbsp;</td>
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[4]['booking_comm']==0||$disable_tech[4])?'':$HtmlAssist->prPrice($rows_persons[4]['booking_comm'])?>&nbsp;</td>
+        <td class="<?=$name_class?> <?=$local_class?>" align="right"><?=($rows_persons[4]['labour_comm']==0||$disable_tech[4])?'':$HtmlAssist->prPrice($rows_persons[4]['labour_comm'])?>&nbsp;</td>
+				<td class="<?=$name_class?> <?=$local_class?>" align="right">
+                    <?php
+                    $drivingPrice4 = ($rows_persons[4]['driving_comm']==0||$disable_tech[4])?'':$rows_persons[4]['driving_comm'];
+                     echo '<input type="text" style="width:40" '.$disField.' value="'.$drivingPrice4.'" onchange=\'drivingAdjust('.$obj['id'].','.json_encode($rows_persons[4]).',this);\'/>'; ?>
+                </td>
+				<td class="<?=$name_class?> <?=$local_class?>" align="right">
+                   <?php
+                    $redoPrice4 = ($rows_persons[4]['redo_penalty']==0||$disable_tech[4])?'':$rows_persons[4]['redo_penalty'];
+                     echo '<input type="text" style="width:40" '.$disField.' value="'.$redoPrice4.'" onchange=\'redoAdjust('.$obj['id'].','.json_encode($rows_persons[4]).',this);\'/>'; ?>
+                </td>
+				<td class="<?=$name_class?> <?=$local_class?>" align="right">
+                   <?php
+                    $helperPrice4 = ($rows_persons[4]['helper_ded']==0||$disable_tech[4])?'':$rows_persons[4]['helper_ded'];
+                     echo '<input type="text" style="width:40" '.$disField.' value="'.$helperPrice4.'" onchange=\'helperAdjust('.$obj['id'].','.json_encode($rows_persons[4]).',this);\'/>'; ?>
+                </td>
 				
 				<td>
 				<?php
@@ -945,7 +1110,7 @@ $(document).ready(function()
 					  &nbsp;
 					<?php } ?> -->
                     <?php
-                        echo '<input type="text" style="width:40" value="'.$rows_persons[4]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[4]).',this);\'/>';
+                        echo '<input type="text" style="width:40" '.$disField.' value="'.$rows_persons[4]['adjustment'].'" onchange=\'Adjust('.$obj['id'].','.json_encode($rows_persons[4]).',this);\'/>';
                     ?>
 
 				</td>
@@ -961,15 +1126,18 @@ $(document).ready(function()
         <td id="comm_val_4_<?=$obj['order_number']?>"  class="<?=$name_class?> <?=$local_class?>" align="right" commision_val= "<?=($rows_persons[4]['total_comm']==0||$disable_tech[4])?'':$rows_persons[4]['total_comm']?>"><?=($rows_persons[4]['total_comm']==0||$disable_tech[4])?'':$HtmlAssist->prPrice($rows_persons[4]['total_comm']) ?>&nbsp;</td>
 				
 				<td>
-                <?php if(($obj['booking_source2_id'] == $techid) && !empty($techid)) {
-                    if ($rows_persons[4]['verified'])
-                    $approved_sum = $approved_sum + $rows_persons[4]['total_comm'];
-                    ?>
+        <?php if(($obj['booking_source2_id'] == $techid) && !empty($techid)) {
+            if ($rows_persons[4]['verified'])
+            $approved_sum = $approved_sum + $rows_persons[4]['total_comm'];
+            ?>
+        <?php } ?>
+               
+        <?php if(!empty($rows_persons[4]['total_comm']) || $rows_persons[4]['total_comm'] != '') { ?>
 				  <input type="checkbox" <?=($userRoleId == 1)?'disabled':''?> <?=$rows_persons[4]['verified']?> onclick='MarkVerified(<?=$obj['id']?>,<? echo json_encode($rows_persons[4]);?>,this);'/>
 				<?php } ?>
-                </td>
+        </td>
                 
-				<td></td>
+				<!-- <td></td> -->
                 <?php if(!empty($rows_persons[4]['total_comm']) || $rows_persons[4]['total_comm'] != '') {?>
 				<td width="100">
 				  <input id="techverify_4_<?=$obj['order_number']?>" class="techVerify" type="checkbox" <?=$tech_comm_conf[$obj['id']][4]['tech_verified']?> name= "techCommArr[<?php echo $obj['id'] ?>][tech-confirm1]" onclick='techMarkVerified(<?=$obj['id']?>,4,this, 1, <?=($rows_persons[1]['total_comm']==0||$disable_tech[1])?'':$HtmlAssist->totalPrPrice($rows_persons[4]['total_comm']) ?>);' comm_val="<?=$rows_persons[4]['total_comm']?>" order_id="<?=$obj['order_number']?>" seq_no="4"/>
@@ -992,9 +1160,12 @@ $(document).ready(function()
 				
 				<!-- <td align="right" style="border-top:1px solid #9f9f9f;"><b>Total:</b></td>
 				<td align="right" style="border-top:1px solid #9f9f9f;"><b><?php echo $HtmlAssist->prPrice($total_sum);?></b></td> -->
-				<td colspan=1 align="right" style="border-top:1px solid #9f9f9f;"><b>Approved by office:</b></td>
+			<?php if($userRoleId == 1) { ?>
+
+                <td colspan=1 align="right" style="border-top:1px solid #9f9f9f;"><b>Approved by office:</b></td>
 				<td align="right" id="approved-office" style="border-top:1px solid #9f9f9f; font-weight: bold;" value="<?=$HtmlAssist->totalPrPrice($approved_sum);?>"><?php echo $HtmlAssist->prPrice($approved_sum);?></td>
 				</td>
+            <?php } ?>
 				
 				<td colspan=7 style="border-top:1px solid #9f9f9f;">&nbsp;</td>
 			

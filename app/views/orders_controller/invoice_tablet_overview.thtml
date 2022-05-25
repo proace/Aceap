@@ -3,24 +3,97 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Invoice</title>
-<!--<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
-<meta name="apple-mobile-web-app-capable" content="yes">-->
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet_overview_pooja.js?time=<?= time();?>"></script>
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/eff_calculator.js"></script>
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.21.custom.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/layout.css" rel="stylesheet" type="text/css">
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/media-queries.css" rel="stylesheet" type="text/css">
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
 <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
 
 <style type="text/css">
+.overBtn{
+    padding: 5px;
+    margin-bottom: 5px;
+}
+#timeinbx{
+    width: 7%;
+    height: 25px;
+}
 .hide_element{
     display: none;
 }
+.order-images{
+    cursor:pointer;
+    height: 200px;
+    width: 125px;
+}
+.item_table td,.item_table th {
+  border: 1px solid black;
+}
+
+.item_table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid black;
+} 
+
+@media only screen and (max-width: 768px) {
+ body, td, th, p{
+	font-size:1em !important;
+ }
+ #invoice{
+    margin-left: 0px;
+}
+    #timeinbx{
+        width: 25%;
+        height: 25px;
+    }
+}
+ table.recording {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table.recording td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+.redColor{
+ color:red;
+}
+
 </style>
 </head>
 
 <body>
+    <?php
+	require_once 'Mobile_Detect.php';
+
+
+
+	$detect = new Mobile_Detect;
+// Any mobile device (phones or tablets).
+if ( $detect->isMobile() ) { ?>
+ <style>
+	ul#nav{
+		display:none;
+	}
+ </style>
+ 
+<?php }
+	?>
 <ul id="nav">
     <li><a id="jobs_link" class="buttons"><div>Jobs</div></a></li>   
     <li><a href="<?php echo BASE_URL;?>/pages/main" id="home_link" class="buttons"><div>ACESYS</div></a></li>
@@ -103,7 +176,7 @@
 		<p><b style="color:red">Member</b> (Card # <?=$job['Customer']['card_number']?> &nbsp;&nbsp; Exp. Date: <?=date("d M Y", strtotime($job['Customer']['card_exp'])); ?>)</p>
 	<?php } ?>
 
-    </div>
+    </div> 
     <div id="overview_div">
     <form action="<?php echo BASE_URL ?>/orders/invoiceTabletOverviewSave" method="post">
         <?php echo $html->input('Invoice/order_id', array('type'=>'hidden', 'value'=>$job['Order']['id'])); ?>
@@ -115,7 +188,7 @@
         <h3>Booking</h3>
         <table class="item_table office">
         	<tr>
-            	<th class="item_name"></th>
+            	<th class="item_name">Name</th>
                 <th>Discount</th>
                 <th>Payable</th>                
             </tr>
@@ -163,16 +236,70 @@
         </table>
         </div>
         <h3>History</h3>
-        <input type="button" id="show_history" value="Show History" />
-        <input type="button" id="hide_history" value="Hide History" class="hide_element" />
-        <input type="button" id="show_images" value="Show Images" />
-        <input type="button" id="hide_images" value="Hide Images"  class="hide_element"/>
+        <div>            
+            <input type="button" class="overBtn" id="show_history" value="Show History" />
+            <input type="button"  id="hide_history" value="Hide History" class="hide_element overBtn" />
+        </div>
         <div id="JobHistoryWorking">Loading...</div>
         <div id="JobHistory" class="hide_element"></div>
+        <div>
+            <input type="button" class="overBtn" id="show_images" value="Show Images" />
+            <input type="button" id="hide_images" value="Hide Images"  class="hide_element overBtn"/>
+        </div>
+         <div>
+          <?php
+          if(empty($callRecordings)|| count(callRecordings)==0){
+          $class="";
+          }
+          else {
+          $class="redColor";
+          }
+          ?>
+          
+            <input type="button"  class="overBtn <?= $class ?>" id="show_recording" value="Recording" />
+            <input type="button" id="hide_recording" value="Hide Recording"  class="hide_element overBtn"/>
+        </div>
+        
         
 
-        <table style="width:100%" id="all_images" class="hide_element">
-            <tr>
+        <table style="width:100%;padding-top:25px;" id="all_images" class="hide_element">
+           <tr>
+                <?php foreach ($allImages as $key => $value) {?>
+            <td>
+                <div style="position: relative; padding:5px;">
+                 <?php
+                 if(!empty($value['label'])){ ?>
+                 
+                  <div style="max-width:150px;word-wrap:break-word"><b>Note:<?php echo $value['label'] ?></b></div>
+                 <?php
+                  
+                 }
+                 
+                  if(!empty($value['date'])){ ?>
+                 
+                  <div><b>Date:<?php echo $value['date'] ?></b></div>
+                 <?php
+                  
+                 }
+                 ?>
+                  
+                 
+                 
+                   <?php if($value['extension'] == 'pdf') {?>
+                       
+                          <img class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="<?php echo '/acesys/upload_photos/'.$value['image_name'];?>" style="height: 70px;width: 70px;"  >
+                    <?php } else {?>
+                       
+                        <img id="" class="invoice-openImg order-images" src="<?php echo ROOT_URL.'/upload_photos/'.$value['image_name'];?>">
+                    <?php } ?>
+                </div>
+            </td>
+            
+        <?php } ?>
+
+           </tr>
+
+            <!-- <tr>
              <?php foreach ($allImages as $key => $value) {?>
                 <td>
                     <div style="position: relative; padding:0; width: 30px;"> 
@@ -180,8 +307,56 @@
                     </div>
                 </td>
             <?php } ?>
-            </tr>
+            </tr> -->
         </table>
+        
+        
+        <table class="recording hide_element">
+  <tr>
+    <th>Date</th>
+    <th>Time</th>
+    <th>File</th>
+  </tr>
+  
+
+	 <?php
+  
+	 //print_r($recordings);
+		 foreach($callRecordings as $recording) { 
+		 	 $recName = $recording["media_name"];
+//			 $chunks = str_split($recName, 2);
+////Convert array to string.  Each element separated by the given separator.
+//$result = implode(':', $chunks);
+
+$result = substr($recName, 0, 4);
+
+$result1 = substr($recName, 4, 4);
+
+$result2 = substr($recName, 8, 6);
+
+$chunks1 = str_split($result1, 2);
+//Convert array to string.  Each element separated by the given separator.
+$result3 = implode('-', $chunks1);
+
+$chunks2 = str_split($result2, 2);
+//Convert array to string.  Each element separated by the given separator.
+$result4 = implode(':', $chunks2);
+
+$result5 = implode('/',$chunks1); ?>
+
+<tr>
+    <td><?= $result."/".$result5 ?></td>
+    <td><?= $result4 ?></td>
+    <td><audio controls><source src="<?php echo  ADUIO_REC_PATH.$recName ?>" type="audio/wav"></audio></td>
+  </tr>
+  
+
+<?php
+
+
+		 	 //echo '<tr><td href="javascript:void(0)"><span>'.$result2.'</span><audio controls><source src="'.ADUIO_REC_PATH.$recName.'" type="audio/wav"></audio></td></tr>';
+		  }?>
+</table>
         <!--<div class="time_log">
         	Time In:
             <?php $begin = explode(":", $order['Order']['fact_job_beg']); ?>
@@ -190,9 +365,12 @@
 			<?php echo $html->minuteOptionTag('Order/fact_job_beg', null, $begin[1], null, null, false); ?>
         </div>-->     
         
-        <h3>Time In</h3>   
-        <?php echo $order['Order']['fact_job_beg']=='00:00:00'?'Job not started. Time in will be recorded when the "Edit Job Questions" is clicked.':$order['Order']['fact_job_beg'] ?>
-        <?php echo $html->input('Order/fact_job_beg', array('type'=>'hidden', 'value'=>$job['Order']['fact_job_beg'])); ?>
+        <!--<h3>Time In</h3>
+        <input type="text" name="timeIn" id="timeinbx" value="<?= $timein; ?>">-->   
+       <!--  <?php echo $order['Order']['fact_job_beg']=='00:00:00'?'Job not started. Time in will be recorded when the "Edit Job Questions" is clicked.':$order['Order']['fact_job_beg'] ?> -->
+        <!--<?php echo $html->input('Order/fact_job_beg', array('type'=>'hidden', 'value'=>$job['Order']['fact_job_beg'])); ?>
+        -->
+        
 		<div class="next_div">
         	<input type="submit" class="next_submit" value="Edit Job Questions" />
         </div>
@@ -264,6 +442,23 @@
     <?php echo $this->element('image_rotate'); ?>
     <button class="w3-btn"> <a href="#" onclick="this.href =" download>Download</a> </button>
 </div>
+<div class="invoice-pdf-enlarge" title="Photo" style="display: none">
+    <div id="doc-modal" style="width: 100%, height:100%"></div>
+</div>
 <?php echo $this->element('tech_footer'); ?>
+<script>
+ $('#show_recording').live('click',function(){
+ $('table.recording').show();
+ $(this).hide();
+ $('#hide_recording').show();
+  });
+ 
+ $('#hide_recording').live('click',function(){
+ $('table.recording').hide();
+ $(this).hide();
+ $('#show_recording').show();
+  });
+ 
+</script>
 </body>
 </html>

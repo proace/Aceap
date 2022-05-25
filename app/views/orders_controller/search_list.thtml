@@ -111,7 +111,7 @@
 <input type="hidden" id="currentUserId" val="">
 <input type="hidden" id="currentUserPhoneNo" val="">
 
-<div style="clear: both; float: left;">
+<div style="clear: both; float: left;position: sticky;top: 0;">
 	<div class="dhcell" style="width: 110px;">Last Name<?=$last_name?></div>
 	<div class="dhcell" style="width: 85px;">First Name<?=$first_name?></div>
 	<?php if($from_reminder == 1) {?>

@@ -1,123 +1,125 @@
 <script>
-//*** SET PAGE TITLE ***
-document.title += " :: Edit Item";
-var last_id=100;
-//**********************
-function addQuestion(){
-var tbl = document.getElementById("QuestionsTable");
-var lastRow = tbl.rows.length-1;
-var row = tbl.insertRow(lastRow);
-last_id++;
-row.setAttribute("id", last_id);
-row.innerHTML="<td><input style='width:30px' name='data[OrderType][OrderTypeQuestions][" + last_id + "][question_number]'/></td>"+
- 							'<td><input type="checkbox" style="width:20px" name="data[OrderType][OrderTypeQuestions][' + last_id + '][for_office]"/></td>'+
-							'<td><input type="checkbox" style="width:20px" name="data[OrderType][OrderTypeQuestions][' + last_id + '][for_tech]"/></td>'+
-							'<td><input type="checkbox" style="width:20px" name="data[OrderType][OrderTypeQuestions][' + last_id + '][for_print]"/></td>'+
-              "<td><textarea rows=1 style='width:300px' name='data[OrderType][OrderTypeQuestions][" + last_id + "][question]'></textarea></td>"+
-              "<td><textarea rows=1 style='width:300px' name='data[OrderType][OrderTypeQuestions][" + last_id + "][answers]'></textarea></td>"+
-			  "<td><textarea rows=1 style='width:300px' name='data[OrderType][OrderTypeQuestions][" + last_id + "][suggestions]'></textarea></td>"+
-			  "<td><textarea rows=1 style='width:300px' name='data[OrderType][OrderTypeQuestions][" + last_id + "][response]'></textarea></td>"+
-						  "<td><img onclick='removeItem("+last_id+")' src='<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png'/></td></tr>";
-}
-function removeQuestion(item_id){
-	$("#"+item_id).remove();
-}
-function removeItem(item_id){
-	$("#item_"+item_id).remove();
-}
-function GoTo(tt){
-	document.location.href="<?=BASE_URL?>/jobs/editItem?item_id="+tt.value;
-}
-function showAddItems()
-{
-	jt=$('#OrderTypeId').val();
-  var new_item = window.showModalDialog("<?=BASE_URL?>/items/showPrices?item_type=0&job_type="+jt,'', 
-  "dialogWidth:400px; dialogHeight:400px; dialogLeft:100px; dialogTop:100px;");
-	addItem(new_item[0],new_item[1],new_item[2],1,new_item[3],new_item[4]);
-}
-function addItem(item_id, item_name, item_prc, old_qty, new_category, new_pp){
-  tbl = document.getElementById("ItemsTable");
-  var index = tbl.rows.length-1;
-		var row = tbl.insertRow(index);
-		row.setAttribute("id", "item_"+index);
-		txt = '<td>'+
-'<input type="hidden" name="data[OrderType][OrderTypeItems]['+index+'][name]" value="'+item_name+'"/>'+
-'<input type="hidden" name="data[OrderType][OrderTypeItems]['+index+'][item_id]" value="'+item_id+'"/>'+
-'<input type="hidden" name="data[OrderType][OrderTypeItems]['+index+'][price]" value="'+item_prc+'"/>'+
-'<input type="hidden" name="data[OrderType][OrderTypeItems]['+index+'][quantity]" value="1"/>'+
-'<input type="hidden" name="data[OrderType][OrderTypeItems]['+index+'][item_category_id]" value="'+new_category+'"/>'+
-item_name+'</td><td>'+item_prc+'</td>'+
-'<td><img onclick="removeItem('+index+')" src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png"/></td>';
-    row.innerHTML=txt;
-}
+    //*** SET PAGE TITLE ***
+    document.title += " :: Edit Item";
+    var last_id = 100;
+    //**********************
+    function addQuestion() {
+        var tbl = document.getElementById("QuestionsTable");
+        var lastRow = tbl.rows.length - 1;
+        var row = tbl.insertRow(lastRow);
+        last_id++;
+        row.setAttribute("id", last_id);
+        row.innerHTML = "<td><input style='width:30px' name='data[OrderType][OrderTypeQuestions][" + last_id + "][question_number]'/></td>" +
+            '<td><input type="checkbox" style="width:20px" name="data[OrderType][OrderTypeQuestions][' + last_id + '][for_office]"/></td>' +
+            '<td><input type="checkbox" style="width:20px" name="data[OrderType][OrderTypeQuestions][' + last_id + '][for_tech]"/></td>' +
+            '<td><input type="checkbox" style="width:20px" name="data[OrderType][OrderTypeQuestions][' + last_id + '][for_print]"/></td>' +
+            "<td><textarea rows=1 style='width:300px' name='data[OrderType][OrderTypeQuestions][" + last_id + "][question]'></textarea></td>" +
+            "<td><textarea rows=1 style='width:300px' name='data[OrderType][OrderTypeQuestions][" + last_id + "][answers]'></textarea></td>" +
+            "<td><textarea rows=1 style='width:300px' name='data[OrderType][OrderTypeQuestions][" + last_id + "][suggestions]'></textarea></td>" +
+            "<td><textarea rows=1 style='width:300px' name='data[OrderType][OrderTypeQuestions][" + last_id + "][response]'></textarea></td>" +
+            "<td><img onclick='removeItem(" + last_id + ")' src='<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png'/></td></tr>";
+    }
+
+    function removeQuestion(item_id) {
+        $("#" + item_id).remove();
+    }
+
+    function removeItem(item_id) {
+        $("#item_" + item_id).remove();
+    }
+
+    function GoTo(tt) {
+        document.location.href = "<?=BASE_URL?>/jobs/editItem?item_id=" + tt.value;
+    }
+
+    function showAddItems() {
+        jt = $('#OrderTypeId').val();
+        var new_item = window.showModalDialog("<?=BASE_URL?>/items/showPrices?item_type=0&job_type=" + jt, '',
+            "dialogWidth:400px; dialogHeight:400px; dialogLeft:100px; dialogTop:100px;");
+        addItem(new_item[0], new_item[1], new_item[2], 1, new_item[3], new_item[4]);
+    }
+
+    function addItem(item_id, item_name, item_prc, old_qty, new_category, new_pp) {
+        tbl = document.getElementById("ItemsTable");
+        var index = tbl.rows.length - 1;
+        var row = tbl.insertRow(index);
+        row.setAttribute("id", "item_" + index);
+        txt = '<td>' +
+            '<input type="hidden" name="data[OrderType][OrderTypeItems][' + index + '][name]" value="' + item_name + '"/>' +
+            '<input type="hidden" name="data[OrderType][OrderTypeItems][' + index + '][item_id]" value="' + item_id + '"/>' +
+            '<input type="hidden" name="data[OrderType][OrderTypeItems][' + index + '][price]" value="' + item_prc + '"/>' +
+            '<input type="hidden" name="data[OrderType][OrderTypeItems][' + index + '][quantity]" value="1"/>' +
+            '<input type="hidden" name="data[OrderType][OrderTypeItems][' + index + '][item_category_id]" value="' + new_category + '"/>' +
+            item_name + '</td><td>' + item_prc + '</td>' +
+            '<td><img onclick="removeItem(' + index + ')" src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png"/></td>';
+        row.innerHTML = txt;
+    }
 </script>
 
-<!-- <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tiny_mce/tiny_mce.js"></script> --> <!-- Simple Calendar --> 
+<!-- <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tiny_mce/tiny_mce.js"></script> -->
+<!-- Simple Calendar -->
 <script src="<?php echo ROOT_URL; ?>/app/webroot/js/jquery.js"></script>
 <!-- <script src="<?php echo ROOT_URL; ?>/app/webroot/js/tinymce/tinymce.min.js"></script> -->
-<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tinymce/tinymce.min.js"></script> 
+<script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tinymce/tinymce.min.js"></script>
 
 <!-- <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tiny_mce/tiny_mce.js"></script> -->
 <script>
-	
+    tinyMCE.init({
+        mode: 'textareas',
+        theme: "modern",
+        browser_spellcheck: true,
+        plugins: "code,safari,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,visualchars,nonbreaking,xhtmlxtras,template,imagemanager,filemanager, nanospell, link unlink, anchor, image, media",
+        external_plugins: {
+            "nanospell": "plugins/nanospell/plugin.js"
+        },
+        nanospell_server: "php", // choose "php" "asp" "asp.net" or "java"
+        // Theme options
+        theme_advanced_buttons1: "save,newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,styleselect,formatselect,fontselect,fontsizeselect,|nanospell",
+        theme_advanced_buttons2: "cut,copy,paste,pastetext,pasteword,|,search,replace,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,insertdate,inserttime,preview,|,forecolor,backcolor",
+        theme_advanced_buttons3: "tablecontrols,|,hr,removeformat,visualaid,|,sub,sup,|,charmap,emotions,iespell,media,advhr,|,print,|,ltr,rtl,|,fullscreen",
+        theme_advanced_buttons4: "insertlayer,moveforward,movebackward,absolute,|,styleprops,spellchecker,|,cite,abbr,acronym,del,ins,attribs,|,visualchars,nonbreaking,template,blockquote,pagebreak,|,insertfile,insertimage",
+        theme_advanced_toolbar_location: "top",
+        theme_advanced_toolbar_align: "left",
+        theme_advanced_statusbar_location: "bottom",
+        theme_advanced_resizing: true,
 
-		tinyMCE.init({
-			mode: 'textareas',
-			theme : "modern",
-			browser_spellcheck: true,
-		plugins : "code,safari,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,visualchars,nonbreaking,xhtmlxtras,template,imagemanager,filemanager, nanospell, link unlink, anchor, image, media",
-		external_plugins: {"nanospell": "plugins/nanospell/plugin.js"},
-			nanospell_server: "php", // choose "php" "asp" "asp.net" or "java"
-		// Theme options
-		theme_advanced_buttons1 : "save,newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,styleselect,formatselect,fontselect,fontsizeselect,|nanospell",
-		theme_advanced_buttons2 : "cut,copy,paste,pastetext,pasteword,|,search,replace,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,insertdate,inserttime,preview,|,forecolor,backcolor",
-		theme_advanced_buttons3 : "tablecontrols,|,hr,removeformat,visualaid,|,sub,sup,|,charmap,emotions,iespell,media,advhr,|,print,|,ltr,rtl,|,fullscreen",
-		theme_advanced_buttons4 : "insertlayer,moveforward,movebackward,absolute,|,styleprops,spellchecker,|,cite,abbr,acronym,del,ins,attribs,|,visualchars,nonbreaking,template,blockquote,pagebreak,|,insertfile,insertimage",
-		theme_advanced_toolbar_location : "top",
-		theme_advanced_toolbar_align : "left",
-		theme_advanced_statusbar_location : "bottom",
-		theme_advanced_resizing : true,
-		
-		// Example content CSS (should be your site CSS)
-		content_css : "css/example.css",
-		
-	    convert_urls: true,
-	    width: 800,
-	    height: 500,
-        template_external_list_url : "js/template_list.js",
-		external_link_list_url : "js/link_list.js",
-		external_image_list_url : "js/image_list.js",
-		media_external_list_url : "js/media_list.js",
-		gecko_spellcheck : true, browser_spellcheck : true
-		});
+        // Example content CSS (should be your site CSS)
+        content_css: "css/example.css",
 
-	
-
+        convert_urls: true,
+        width: 800,
+        height: 500,
+        template_external_list_url: "js/template_list.js",
+        external_link_list_url: "js/link_list.js",
+        external_image_list_url: "js/image_list.js",
+        media_external_list_url: "js/media_list.js",
+        gecko_spellcheck: true,
+        browser_spellcheck: true
+    });
 </script>
 
-<form name="editItemForm" action="<?=BASE_URL;?>/jobs/saveItem"  method="post">
-<?php echo $html->hidden('OrderType/id')?>
-<div class="frame-wrap" style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
-		<div class="frame-header-left"></div>
-		<div class="frame-header-title">Job type information</div>
-		<div class="frame-header-right"></div>
-		<div class="frame-body" style="clear: both;">
-				<table>
-						<tr>
-								<td align="right">Job type name:</td>
-								<td>
-								<?php echo$html->input('OrderType/name', array('style' => 'width: 200px;')); ?>
-								&nbsp;
-								
-								</td>
-						</tr>
-						<tr>
-								<td align="right">Job category:</td>
-								<td>
-                <?php echo $html->selectTag('OrderType/category_id', $jobcategories, $this->data['OrderType']['category_id']);?>
-								</td>
-						</tr>
-					<!-- 	<tr><td colspan=2>
+<form name="editItemForm" action="<?=BASE_URL;?>/jobs/saveItem" method="post">
+    <?php echo $html->hidden('OrderType/id')?>
+    <div class="frame-wrap" style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
+        <div class="frame-header-left"></div>
+        <div class="frame-header-title">Job type information</div>
+        <div class="frame-header-right"></div>
+        <div class="frame-body" style="clear: both;">
+            <table>
+                <tr>
+                    <td align="right">Job type name:</td>
+                    <td>
+                        <?php echo$html->input('OrderType/name', array('style' => 'width: 200px;')); ?> &nbsp;
+
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">Job category:</td>
+                    <td>
+                        <?php echo $html->selectTag('OrderType/category_id', $jobcategories, $this->data['OrderType']['category_id']);?>
+                    </td>
+                </tr>
+                <!-- 	<tr><td colspan=2>
 								<table id="QuestionsTable" cellspacing=0 colspacing=0 class="inResultsBooking">
 								<tr>
 									<th width=30px>#</th>
@@ -189,48 +191,74 @@ item_name+'</td><td>'+item_prc+'</td>'+
 							</table>
             <td></tr> -->
 
-            <tr>
-            	<td  colspan=2>
-	            	<table id="QuestionsTable" cellspacing=0 colspacing=0 class="inResultsBooking">
-			         	<tr>
-	            	 		<td>
-		            	 		<textarea rows="" cols="" name="data[template][templateform]">
+                <tr>
+                    <td colspan=2>
+                        <table id="QuestionsTable" cellspacing=0 colspacing=0 class="inResultsBooking">
+                            <tr>
+                                <td>
+                                    <textarea rows="" cols="" name="data[template][templateform]">
 		            	 			
-		            	 			<div style="border: 1px solid grey;padding-right: 35px;padding-left: 35px;">
-									<div class="header" title="test" contenteditable="true">
-									<p><img class="headerimg" style="margin-right: auto;margin-left: auto;display: block;" src="https://www.acecare.ca/wp-content/uploads/2017/10/newacelogo.png" alt="no image foud"  /></p><p><span style="color: #000000;">Pro Ace Heating and Air Conditioning Ltd.</span><br /><span style="color: #000000;">102 - 3855 Henning Dr,</span><br /><span style="color: #000000;">Burnaby, BC, V5C 6N3</span><br /><span style="color: #000000;">604-293-3770</span><br /><br /></p>
-									<p style="text-align: left;"><span style="color: #000000;">Date: &nbsp; {date}</span></p> <br /><span style="color: #000000;">Reference: {reference}</span><br /><br /></p>
-									<p style="text-align: left;">First and Last Name: {name}</p>
-									<p>Address: {address}</p>
-									<p>City: {city}</p>
-									<p>Postal code: {postal}</p>
-									<p>Email: {email}</p>
-									<p>Phone: {phone}</p>
-									<p>Cell Phone: {cellphone}</p>
-									<p>&nbsp;</p>
-									</div>
-									<p>Dear Client,</p>
-									<p>Pro Ace Heating and Air Conditioning is eager for the opportunity to offer our services to you. We</p>
-									<p>have been in business for over twenty years, with over eighty thousand residential,</p>
-									<p>commercial and industrial clients served, and a proven track record of success and distinction in</p>
-									<p>the heating and cooling industry. Our licensed technicians have years of experience and training</p>
-									<p>that sets them apart, to offer you, our valued client, the highest quality of service.</p>
-									<p>Our promise is to deliver an exceptional installation with quality and care, and to ensure that your</p>
-									<p>Hvac system meets every need required. Heating and cooling are what we do for a living.tetet</p>
-									<p>&nbsp;</p>
-									<div class="officequestion" title="officequestion" contenteditable="true">
-									<p><span style="color: #000000;"><strong>Information Provided by Client:</strong></span> {officequestion}</p>
-									</div>
-									<p>&nbsp;</p>
-									<p><span style="color: #000000;"><strong>Estimate For: </strong>{jobetype}</span></p>
-									<p>&nbsp;</p>
-									<div class="option1" title="option1" contenteditable="true">
-									<p><span style="color: #000000;">{option1}&nbsp;&nbsp; {subtotal1}</span></p>
-									</div>
-									<p>&nbsp;</p>
-									<div class="option2" title="option2" contenteditable="true">
-									<p><span style="color: #000000;">{option2}&nbsp;&nbsp; {subtotal2}<br /></span></p>
-									</div>
+									<div style="padding: 0 20px; font-size: 12px;">
+										<div style="display: inline-block; width: 100%; padding: 20px 0;">
+										<div style="width: 50%; float: left;">
+										<h3 style="margin: 0;">Pro Ace Heating and Air Conditioning Ltd.</h3>
+										<p style="margin: 0;"><br /> 102 - 3855 Henning Dr,<br /> Burnaby, BC, V5C 6N3<br /> 604-293-3770</p>
+										</div>
+										<div style="width: 50%; float: right; text-align: right;">
+										<p style="margin-top: 0;">Date:{date}</p>
+										<p style="margin: 0;">Reference:{reference}</p>
+										</div>
+										</div>
+										<div>
+										<div style="border-bottom: 1px solid #f9f9f9; display: inline-block; width: 100%; padding: 10px 0;">
+										<div style="margin: 0; width: 30%; float: left;">First and Last Name:</div>
+										<div style="width: 70%; float: left;">{name}</div>
+										</div>
+										<div style="border-bottom: 1px solid #f9f9f9; display: inline-block; width: 100%; padding: 10px 0;">
+										<div style="margin: 0; width: 30%; float: left;">Address:</div>
+										<div style="width: 70%; float: left;">{address}</div>
+										</div>
+										<div style="border-bottom: 1px solid #f9f9f9; display: inline-block; width: 100%; padding: 10px 0;">
+										<div style="margin: 0; width: 30%; float: left;">City:</div>
+										<div style="width: 70%; float: left;">{city}</div>
+										</div>
+										<div style="border-bottom: 1px solid #f9f9f9; display: inline-block; width: 100%; padding: 10px 0;">
+										<div style="margin: 0; width: 30%; float: left;">Postal code:</div>
+										<div style="width: 70%; float: left;">{postal}</div>
+										</div>
+										<div style="border-bottom: 1px solid #f9f9f9; display: inline-block; width: 100%; padding: 10px 0;">
+										<div style="margin: 0; width: 30%; float: left;">Email:</div>
+										<div style="width: 70%; float: left;">{email}</div>
+										</div>
+										<div style="border-bottom: 1px solid #f9f9f9; display: inline-block; width: 100%; padding: 10px 0;">
+										<div style="margin: 0; width: 30%; float: left;">Phone:</div>
+										<div style="width: 70%; float: left;">{phone}</div>
+										</div>
+										<div style="border-bottom: 1px solid #f9f9f9; display: inline-block; width: 100%; padding: 10px 0;">
+										<div style="margin: 0; width: 30%; float: left;">Cell Phone:</div>
+										<div style="width: 70%; float: left;">{cellphone}</div>
+										</div>
+										</div>
+										<div style="background: #c7e7f0; border-radius: 10px; padding: 20px; color: #231f20; line-height: 25px; margin: 30px 0;">
+										<p style="margin: 0;"><strong>Dear Client,</strong></p>
+										<p style="margin: 0;">Pro Ace Heating and Air Conditioning is eager for the opportunity to offer our services to you. We have been in business for over twenty years, with over eighty thousand residential, commercial and industrial clients served, and a proven track record of success and distinction in the heating and cooling industry. Our licensed technicians have years of experience and training that sets them apart, to offer you, our valued client, the highest quality of service. Our promise is to deliver an exceptional installation with quality and care, and to ensure that your Hvac system meets every need required. Heating and cooling are what we do for a living.</p>
+										</div>
+										<div style="margin-bottom: 30px;">
+										<p><strong>Information Provided by Client:</strong></p>
+										{officequestion}</div>
+										<div>
+										<p style="margin-top: 0;"><strong>Estimate For:</strong> {jobetype}</p>
+										</div>
+										
+										<div>{option1} <br />
+										<div>{subtotal1}</div>
+										&nbsp;</div>
+										 <div><br />
+												<div>{option2} <br />
+												<div>{subtotal2}</div>
+											</div>
+											</div>
+									<div style="clear: both;">&nbsp;</div>
 									<p>&nbsp;</p>
 									<p><span style="color: #000000;"><strong>Scope of work:</strong></span></p>
 									<p>&nbsp;</p>
@@ -248,21 +276,20 @@ item_name+'</td><td>'+item_prc+'</td>'+
 									</div>
 									<p>&nbsp;</p>
 									<p>&nbsp;</p>
-									</div>
-
+								</div>
 		            	 		</textarea>
-	            	 		</td>
-						</tr>	  
-	            	</table>
-            	<td>
-            </tr>
-						<tr>
-								<td style="text-align:right" colspan=2>
-												<?php echo $html->submit("Save", array("class" => "buttons"));?>
-												<input type="button" value="Exit" onclick="document.location.href='<?=BASE_URL?>/jobs/index';" class="buttons">
-								</td>
-						</tr>
-				</table>
-		</div>
-</div>
+                                </td>
+                            </tr>
+                        </table>
+                        <td>
+                </tr>
+                <tr>
+                    <td style="text-align:right" colspan=2>
+                        <?php echo $html->submit("Save", array("class" => "buttons"));?>
+                        <input type="button" value="Exit" onclick="document.location.href='<?=BASE_URL?>/jobs/index';" class="buttons">
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
 </form>

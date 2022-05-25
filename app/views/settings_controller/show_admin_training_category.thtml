@@ -1,0 +1,1712 @@
+<html> 
+<head>
+  <link rel="stylesheet" type="text/css" media="all" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_constants.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_js_sample.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.2.0/dropzone.js"></script>
+
+<!-- <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/dropzone.js"></script> -->
+<!-- <link href="<?=ROOT_URL;?>/app/webroot/css/dropzone.css" rel="stylesheet" type="text/css"> -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.2.0/dropzone.css" rel="stylesheet" type="text/css">
+<link href="<?=ROOT_URL;?>/app/webroot/css/jquery-ui.min.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
+  <script src="http://cdn.ckeditor.com/4.6.2/standard-all/ckeditor.js"></script>
+<style>
+  .invoice-pdf-enlarge{
+    overflow: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  #myFrame{
+     overflow: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .callSubCatNum{
+    cursor: pointer;
+  }
+  .order-images{
+        cursor:pointer;
+        height: 100px;
+        width: 75px;
+    }
+  .video-link{
+        height: 25px;
+        width: 500px;
+  }
+  .fa{
+    font-size: 13px;
+  }
+  ul, #myUL {
+    list-style-type: none;
+  }
+  li{
+    font-size: 14px;
+  }
+
+  #myUL {
+    margin: 3%;
+    padding: 0;
+  }
+
+  .caret {
+    cursor: pointer;
+    -webkit-user-select: none; /* Safari 3.1+ */
+    -moz-user-select: none; /* Firefox 2+ */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none;
+  }
+
+  .caret::before {
+    content: "\25B6";
+    color: black;
+    display: inline-block;
+    margin-right: 6px;
+  }
+
+  .caret-down::before {
+    -ms-transform: rotate(90deg); /* IE 9 */
+    -webkit-transform: rotate(90deg); /* Safari */'
+    transform: rotate(90deg);  
+  }
+
+  .nested {
+    display: none;
+  }
+
+  .active {
+    display: block;
+  }
+
+
+  .nested1 {
+    display: none;
+  }
+/*  table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+  }
+*/  th, td {
+    padding: 10px;
+    text-align: center;
+  }   
+  .question_button {
+      background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/text_page.png) no-repeat center #666;
+      border:1px solid #999;
+      border-radius:5px;
+      width:25px;
+      height:25px;
+  }
+
+  .timeslot_button {
+      background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/calendar.png) no-repeat center #666;
+      border:1px solid #999;
+      border-radius:5px;
+      width:25px;
+      height:25px;
+  }
+
+  .item_category_button {
+      background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/tree.png) no-repeat center #666;
+      border:1px solid #999;
+      border-radius:5px;
+      width:25px;
+      height:25px;
+  }
+</style>
+
+</head>
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+</form>
+<form >
+<!-- <input type="button" name="addnew" value="Add new" onclick="document.location.href='<?=BASE_URL?>/payments/showAddPaymentTypePage'" /> -->
+<h1>Categories :-</h1>
+<!-- <input id="myInput" type="text" placeholder="Search.."> -->
+<?php if($common->getLoggedUserRoleID() == 1) {?>
+    <input type="button" class="buttons" name="Back" value="Back" onclick="window.location ='<?php echo BASE_URL;?>/orders/invoiceTablet';">
+  <?php } else {?>
+  <input type="button" name="Add" value="Add" id="add-category" style="margin: 0 0 5px 10px;"/> 
+  <!-- <input type="button" name="Remove" value="Remove" id="removeCategory" style="margin: 0 0 5px 10px;"/> -->
+<?php } ?>
+<div class="row">
+  <div class="col-sm-3">
+<ul id="myUL">
+  <?php foreach ($trainingCategories as $obj) { ?>
+    <li id="<?php echo $obj['AdminTrainingCategory']['id']; ?>"><span class="caret" onclick="showSubCtaegory(<?php echo $obj['AdminTrainingCategory']['id']; ?>,this)"><?php echo $obj['AdminTrainingCategory']['name']; ?></span> <i class="fa fa-plus addSubCategory"  current-cat-id="<?php echo $obj['AdminTrainingCategory']['id']; ?>" aria-hidden="true"></i></span> <i class="fa fa-pencil-square-o editCat" cat-id="<?php echo $obj['AdminTrainingCategory']['id']; ?>"></i>
+    <i class="fa fa-trash-o deleteCat" cat-id="<?php echo $obj['AdminTrainingCategory']['id']; ?>"></i>
+    <i class="fa fa-file-o get_all_the_text" data-id="<?php echo $obj['AdminTrainingCategory']['id']; ?>"></i>
+    </li>
+  <?php } ?>
+</ul>
+<button class="btn btn-primary save_category" style="position:absolute;bottom:90px;left:50%;display:none">Save</button>
+</div>
+  <div class="col-sm-9 show_notes_images" style="display:none;margin-top:-1%">
+    
+    <div id="editor" style="width:400px;height:400px;">
+    
+     
+    </div>
+    
+    <br><br>
+
+  </div>
+      <div class="col-sm-7 all_notes_images"></div>
+
+  </div>
+</form>
+
+<div id="techsupport_box" style="display: none;">
+  <input type="hidden" name="subcatId" id="subcat-id">
+  <table>
+    <tr>
+      <td>Name:</td>
+      <td><input type="text" name="techSupportName" id="techSupportName"></td>
+      <td>Tech Support:</td>
+      <td><input type="text" name="techSupportNote" id="techSupportNote"></td>
+      <!-- <td><textarea rows="10" cols="70" id="techSupportNote"></textarea></td> -->
+    </tr>
+    <tr><td><input type="button" name="save" value="Save" id="saveTechSupport"></td>
+      <td><button type="button" name="close" value="Close" onclick="$('#techsupport_box').dialog('close');">Close</button></td>
+    </tr>
+  </table>
+</div>
+<div id="show_techsupport_box" style="display: none;">
+  <button type="button" name="close" value="Close" onclick="$('#show_techsupport_box').dialog('close');">Close</button>
+</div>
+
+<div id="show_techsupport_val" style="display: none;">
+  <!--  <input type="hidden" name="techSupportId" id="techSupportId">
+  <table>
+    <tr>
+      <td>Tech Support:</td>
+      <td><textarea rows="10" cols="70" id="techSupportVal"></textarea></td>
+    </tr>
+    <tr><td><input type="button" name="save" value="Save" id="saveTechSupportVal"></td>
+      <td><button type="button" name="close" value="Close" onclick="$('#show_techsupport_val').dialog('close');">Close</button></td>
+    </tr>
+  </table> -->
+</div>
+
+<div id="subcat_notes_box" style="display: none;">
+  <input type="hidden" name="subcatId" id="subcat-notes-id">
+  <table>
+    <tr>
+      <td>Notes:</td>
+      <td><textarea rows="10" cols="70" id="subCatNote"></textarea></td>
+    </tr>
+    <tr><td><input type="button" name="save" value="Save" id="saveSubCatNote"></td>
+      <td> <button type="button" name="close" value="Close" onclick="$('#subcat_notes_box').dialog('close');">Close</button></td>
+    </tr>
+  </table>
+</div>
+
+<div id="show_subcat_notes_box" style="display: none;">
+</div>
+
+<div id="show_subcat_notes_val" style="display: none;">
+   <input type="hidden" name="subcatNotesId" id="subcatNotesId">
+  <table>
+    <tr>
+      <td>Notes:</td>
+      <td><textarea rows="10" cols="70" id="subcatNotesVal"></textarea></td>
+    </tr>
+    <tr><td><input type="button" name="save" value="Save" id="savesubcatNotesVal"></td>
+      <td><button type="button" name="close" value="Close" onclick="$('#show_subcat_notes_val').dialog('close');">Close</button></td>
+    </tr>
+  </table>
+</div>
+
+
+<div id="show_second_subcat_notes_box" style="display: none;">
+  <button type="button" name="close" value="Close" onclick="$('#show_second_subcat_notes_box').dialog('close');">Close</button>
+</div>
+
+<div id="show_second_subcat_notes_val" style="display: none;">
+   <input type="hidden" name="secondSubcatNotesId" id="secondSubcatNotesId">
+  <table>
+    <tr>
+      <td>Notes:</td>
+      <td><textarea rows="10" cols="70" id="secondSubcatNotesVal"></textarea></td>
+    </tr>
+    <tr><td><input type="button" name="save" value="Save" id="saveSecondSubcatNotesVal"></td>
+      <td><button type="button" name="close" value="Close" onclick="$('#show_second_subcat_notes_val').dialog('close');">Close</button></td>
+    </tr>
+  </table>
+</div>
+
+<div id="second_subcat_notes_box" style="display: none;">
+  <input type="hidden" name="secondSubcatId" id="second-subcat-notes-id">
+  <table>
+    <tr>
+      <td>Notes:</td>
+      <td><textarea rows="10" cols="70" id="secondSubCatNote"></textarea></td>
+    </tr>
+    <tr><td><input type="button" name="save" value="Save" id="saveSecondSubCatNote"></td>
+      <td><button type="button" name="close" value="Close" onclick="$('#second_subcat_notes_box').dialog('close');">Close</button></td>
+    </tr>
+  </table>
+</div>
+
+<div id="show_techsupport_details" style="display: none;">
+  <input type="hidden" name="techSupportDetailsId" id="techSupportDetailsId">
+  <input type="hidden"  id="techSupportDetailsCatId">
+  <table>
+    <tr>
+      <td>Name:</td>
+      <td><input type="text" name="techSupportDetailsName" id="techSupportDetailsName"></td>
+      <td>Tech Support:</td>
+      <td><input type="text" name="techSupportDetailsNote" id="techSupportDetailsNote"></td>
+    </tr>
+    <tr><td><input type="button" name="save" value="Save" id="saveTechSupportDetails"></td>
+      <td><button type="button" name="close" value="Close" onclick="$('#show_techsupport_details').dialog('close');">Close</button></td>
+    </tr>
+  </table>
+</div>
+
+
+<div id="subcat_images_box" style="display: none;">
+  <form id="imageUploadForm" action="<?=BASE_URL;?>/settings/adminSubCatImageUpload" class="dropzone">
+    <input type="hidden" name="subcatId" id="subcat-image-id">
+  </form>
+    <button id="uploaderBtn" type="button" class="btn btn-primary">Save</button>
+    <button type="button" class="btn btn-default " id="close-upload-btn" data-dismiss="modal">Remove images</button>
+    <button type="button" name="close" value="Close" onclick="$('#subcat_images_box').dialog('close');">Close</button>
+</div>
+
+<div id="subcat_document_box" style="display: none;">
+  <form id="documentUploadForm" action="<?=BASE_URL;?>/settings/adminSubCatDocumentUpload" class="dropzone">
+    <input type="hidden" name="subcatId" id="subcat-document-id">
+  </form>
+    <button id="uploaderBtnDoc" type="button" class="btn btn-primary">Save</button>
+    <button type="button" class="btn btn-default " id="close-upload-btn1" data-dismiss="modal">Remove images</button>
+     <button type="button" name="close" value="Close" onclick="$('#subcat_document_box').dialog('close');">Close</button>
+</div>
+
+<div id="second_subcat_document_box" style="display: none;">
+  <form id="secondCatDocumentUpload" action="<?=BASE_URL;?>/settings/adminSecondSubCatDocumentUpload" class="dropzone">
+    <input type="hidden" name="secondSubcatId" id="second-subcat-doc-id">
+  </form>
+    <button id="uploadDocBtn" type="button" class="btn btn-primary">Save</button>
+    <button type="button" class="btn btn-default " id="close-upload-btn2" data-dismiss="modal">Remove images</button>
+    <button type="button" name="close" value="Close" onclick="$('#second_subcat_document_box').dialog('close');">Close</button>
+</div>
+
+<div id="second_subcat_images_box" style="display: none;">
+  <form id="secondCatImageUpload" action="<?=BASE_URL;?>/settings/adminSecondSubCatImageUpload" class="dropzone">
+    <input type="hidden" name="secondSubcatId" id="second-subcat-image-id">
+  </form>
+    <button id="uploadImageBtn" type="button" class="btn btn-primary">Save</button>
+    <button type="button" class="btn btn-default " id="close-upload-btn3" data-dismiss="modal">Remove images</button>
+    <button type="button" name="close" value="Close" onclick="$('#second_subcat_images_box').dialog('close');">Close</button>
+
+</div>
+
+
+<div id="subcat_video_box" style="display: none;">
+  <input type="hidden" name="subcatId" id="subcat-video-id">
+  <table>
+    <tr>
+      <td>Link Name:</td>
+      <td><input class="video-link" type="text" name="video_link_name" id="video_link_name"></td>
+    </tr>
+    <tr>
+      <td>Video Link:</td>
+      <td><input class="video-link" type="text" name="video_link" id="video_link"></td></tr>
+      <tr><td><input type="button" name="save" value="Save" id="saveSubCatVideo"></td>
+      <td><button type="button" name="close" value="Close" onclick="$('#subcat_video_box').dialog('close');">Close</button></td>
+      </tr>
+  </table>
+</div>
+
+<div id="second_subcat_video_box" style="display: none;">
+  <input type="hidden" name="secondSubcatId" id="second-subcat-video-id">
+  <table>
+    <tr>
+      <td>Link Name:</td>
+      <td><input class="video-link" type="text" name="second_video_link_name" id="second_video_link_name"></td>
+    </tr>
+    <tr>
+      <td>Video Link:</td>
+      <td><input class="video-link" type="text" name="second_video_link" id="second_video_link"></td></tr>
+      <tr>
+        <td><input type="button" name="save" value="Save" id="saveSecondSubCatVideo"></td>
+        <td><button type="button" name="close" value="Close" onclick="$('#second_subcat_video_box').dialog('close');">Close</button></td>
+      </tr>
+  </table>
+</div>
+
+<div id="show_second_subcat_videos_box" style="display: none;">
+  
+</div>
+<div id="show_subcat_videos_box" style="display: none;">
+  
+</div>
+<div id="show_subcat_images_box" style="display: none;">
+  <button type="button" name="close" value="Close" onclick="$('#show_subcat_images_box').dialog('close');">Close</button>
+</div>
+<div id="show_subcat_document_box" style="display: none;">
+  <button type="button" name="close" value="Close" onclick="$('#show_subcat_document_box').dialog('close');">Close</button>
+</div>
+<div id="show_second_subcat_document_box" style="display: none;">
+  <button type="button" name="close" value="Close" onclick="$('#show_second_subcat_document_box').dialog('close');">Close</button>
+</div>
+<div id="show_second_subcat_images_box" style="display: none;">
+  <button type="button" name="close" value="Close" onclick="$('#show_second_subcat_images_box').dialog('close');">Close</button>
+</div>
+
+<div class="invoice-img-enlarge" title="Photo" style="display: none">
+  <img src="" class="rotate-image" style="width:100%;">
+    <?php echo $this->element('image_rotate'); ?>
+    <button type="button" name="close" value="Close" onclick="$('.invoice-img-enlarge').dialog('close');">Close</button>
+</div>
+<div class="invoice-pdf-enlarge" title="Photo" style="display: none">
+    <!-- <div id="doc-modal" style="width: 100%, height:100%"></div> -->
+</div>
+
+<div id="delete_cat_box" style="display: none">
+  <input type="hidden" name="catId" id="deleteCatId">
+  <div style="font-size: 14px"><b>Are you sure?</b></div>
+  <div style="margin-top: 20px;">
+    <input type="button" name="deleteCategory" id="deleteCategory" value="Yes">
+    <input type="button" onclick="$('#delete_cat_box').dialog('close');" value="No">
+  </div>
+</div>
+
+<div id="delete_sub_cat_box" style="display: none">
+  <input type="hidden" name="subCatId" id="deleteSubCatId">
+  <div style="font-size: 14px"><b>Are you sure?</b></div>
+  <div style="margin-top: 20px;">
+    <input type="button" name="deleteSubCategory" id="deleteSubCategory" value="Yes">
+    <input type="button" onclick="$('#delete_sub_cat_box').dialog('close');" value="No">
+  </div>
+</div>
+
+<script>
+  G_URL = "/acesys/index.php/";
+  Dropzone.autoDiscover = false;
+
+  /*var myAwesomeDropzone = new Dropzone("form#imageUploadForm", {
+
+        autoProcessQueue: false,
+        maxFiles: 10,
+        uploadMultiple: true,
+        
+        init: function() {
+
+            var submitButton = document.querySelector("#uploaderBtn")
+            var closeButton = document.querySelector("#close-upload-btn")
+                myDropzone = this; // closure
+
+            submitButton.addEventListener("click", function() {
+                myDropzone.processQueue(); // Tell Dropzone to process all queued files.
+            });
+
+            closeButton.addEventListener("click", function() {
+                myDropzone.removeAllFiles(); // Tell Dropzone to process all queued files.
+            });
+
+            // You might want to show the submit button only when 
+            // files are dropped here:
+            this.on("addedfile", function(file) {
+                 // Create the remove button
+                var removeButton = Dropzone.createElement("<div class='remove-upload-img'><button class='btn btn-link '><i class='fa fa-times'></i></button></div>");
+
+                var _this = this;
+
+                removeButton.addEventListener("click", function(e) {
+
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  _this.removeFile(file);
+                });
+
+                file.previewElement.appendChild(removeButton);
+            });
+
+            this.on("success", function(file, responseText) {
+                myDropzone.removeAllFiles(); 
+                $('#close-upload-btn').trigger('click');
+                $('#subcat_images_box').dialog('close');
+            });
+        }
+    });
+*/
+
+     var myAwesomeDropzonePdf = new Dropzone("form#documentUploadForm", {
+
+        autoProcessQueue: false,
+        maxFiles: 10,
+        uploadMultiple: true,
+        dictDefaultMessage:"Drop files here or click here to upload",
+        init: function() {
+
+            var submitButton = document.querySelector("#uploaderBtnDoc")
+            var closeButton = document.querySelector("#close-upload-btn1")
+                myDropzonePdf = this; // closure
+
+            submitButton.addEventListener("click", function() {
+                myDropzonePdf.processQueue(); // Tell Dropzone to process all queued files.
+            });
+
+            closeButton.addEventListener("click", function() {
+                myDropzonePdf.removeAllFiles(); // Tell Dropzone to process all queued files.
+            });
+
+            // You might want to show the submit button only when 
+            // files are dropped here:
+            this.on("addedfile", function(file) {
+                 // Create the remove button
+                var removeButton = Dropzone.createElement("<div class='remove-upload-img'><button class='btn btn-link '><i class='fa fa-times'></i></button></div>");
+
+                var _this = this;
+
+                removeButton.addEventListener("click", function(e) {
+
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  _this.removeFile(file);
+                });
+
+                file.previewElement.appendChild(removeButton);
+            });
+
+            this.on("success", function(file, responseText) {
+                myDropzonePdf.removeAllFiles(); 
+                $('#close-upload-btn1').trigger('click');
+                $('#subcat_document_box').dialog('close');
+            });
+        }
+    });
+
+      var myAwesomeDropzoneSecondCatPdf = new Dropzone("form#secondCatDocumentUpload", {
+
+        autoProcessQueue: false,
+        maxFiles: 10,
+        uploadMultiple: true,
+        dictDefaultMessage:"Drop files here or click here to upload",
+        init: function() {
+
+            var submitButton = document.querySelector("#uploadDocBtn")
+            var closeButton = document.querySelector("#close-upload-btn2")
+                myDropzonePdf1 = this; // closure
+
+            submitButton.addEventListener("click", function() {
+                myDropzonePdf1.processQueue(); // Tell Dropzone to process all queued files.
+            });
+
+            closeButton.addEventListener("click", function() {
+                myDropzonePdf1.removeAllFiles(); // Tell Dropzone to process all queued files.
+            });
+
+            // You might want to show the submit button only when 
+            // files are dropped here:
+            this.on("addedfile", function(file) {
+                 // Create the remove button
+                var removeButton = Dropzone.createElement("<div class='remove-upload-img'><button class='btn btn-link '><i class='fa fa-times'></i></button></div>");
+
+                var _this = this;
+
+                removeButton.addEventListener("click", function(e) {
+
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  _this.removeFile(file);
+                });
+
+                file.previewElement.appendChild(removeButton);
+            });
+
+            this.on("success", function(file, responseText) {
+                myDropzonePdf1.removeAllFiles(); 
+                $('#close-upload-btn2').trigger('click');
+                $('#second_subcat_document_box').dialog('close');
+            });
+        }
+    });
+     var myAwesomeDropzone = new Dropzone("form#imageUploadForm", {
+
+        autoProcessQueue: false,
+        maxFiles: 10,
+        uploadMultiple: true,
+        dictDefaultMessage:"Drop files here or click here to upload",
+        
+        init: function() {
+
+            var submitButton = document.querySelector("#uploaderBtn")
+            var closeButton = document.querySelector("#close-upload-btn")
+                myDropzone = this; // closure
+
+            submitButton.addEventListener("click", function() {
+                myDropzone.processQueue(); // Tell Dropzone to process all queued files.
+            });
+
+            closeButton.addEventListener("click", function() {
+                myDropzone.removeAllFiles(); // Tell Dropzone to process all queued files.
+            });
+
+            // You might want to show the submit button only when 
+            // files are dropped here:
+            this.on("addedfile", function(file) {
+                 // Create the remove button
+                var removeButton = Dropzone.createElement("<div class='remove-upload-img'><button class='btn btn-link '><i class='fa fa-times'></i></button></div>");
+
+                var _this = this;
+
+                removeButton.addEventListener("click", function(e) {
+
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  _this.removeFile(file);
+                });
+
+                file.previewElement.appendChild(removeButton);
+            });
+
+            this.on("success", function(file, responseText) {
+                myDropzone.removeAllFiles(); 
+                $('#close-upload-btn').trigger('click');
+                $('#subcat_images_box').dialog('close');
+            });
+        }
+    });
+
+      var myAwesomeDropzoneImageUpload = new Dropzone("form#secondCatImageUpload", {
+
+        autoProcessQueue: false,
+        maxFiles: 10,
+        uploadMultiple: true,
+        dictDefaultMessage:"Drop files here or click here to upload",
+        
+        init: function() {
+
+            var submitButton = document.querySelector("#uploadImageBtn")
+            var closeButton = document.querySelector("#close-upload-btn3")
+                myDropzone2 = this; // closure
+
+            submitButton.addEventListener("click", function() {
+                myDropzone2.processQueue(); // Tell Dropzone to process all queued files.
+            });
+
+            closeButton.addEventListener("click", function() {
+                myDropzone2.removeAllFiles(); // Tell Dropzone to process all queued files.
+            });
+
+            // You might want to show the submit button only when 
+            // files are dropped here:
+            this.on("addedfile", function(file) {
+                 // Create the remove button
+                var removeButton = Dropzone.createElement("<div class='remove-upload-img'><button class='btn btn-link '><i class='fa fa-times'></i></button></div>");
+
+                var _this = this;
+
+                removeButton.addEventListener("click", function(e) {
+
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  _this.removeFile(file);
+                });
+
+                file.previewElement.appendChild(removeButton);
+            });
+
+            this.on("success", function(file, responseText) {
+                myDropzone2.removeAllFiles(); 
+                $('#close-upload-btn3').trigger('click');
+                $('#second_subcat_images_box').dialog('close');
+            });
+        }
+    });
+$ = jQuery.noConflict();
+
+$( document ).ready(function() {
+        var wWidth = $(window).width();
+        var dWidth = wWidth * 0.8;
+        var wHeight = $(window).height();
+        var dHeight = wHeight * 0.7;
+    $("#techsupport_box").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "",
+                autoOpen: false,
+                width: 700,
+                height: 'auto',
+                cache: false
+      });  
+
+    $("#subcat_notes_box").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "",
+                autoOpen: false,
+                width: 700,
+                height: 'auto',
+                cache: false
+      });   
+      
+      $("#show_subcat_notes_box").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "",
+                autoOpen: false,
+                width: 400,
+                height: 'auto',
+                cache: false
+      });     
+    $("#show_techsupport_box").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "",
+                autoOpen: false,
+                width: dWidth,
+                height: 'auto',
+                cache: false
+      });    
+
+     $("#show_techsupport_val").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "",
+                autoOpen: false,
+                width: 400,
+                height: 'auto',
+                cache: false
+      });    
+     $("#show_subcat_notes_val").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "",
+                autoOpen: false,
+                width: dWidth,
+                height: 'auto',
+                cache: false
+      });    
+       $("#subcat_images_box").dialog({
+                modal: true,
+                autoOpen: false,
+                title: "",
+                autoOpen: false,
+                width: 700,
+                height: 'auto',
+                cache: false
+      }); 
+      $("#subcat_video_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      }); 
+
+      $("#show_subcat_videos_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      }); 
+      $("#subcat_document_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      }); 
+
+       $("#show_subcat_images_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      }); 
+
+      $("#show_subcat_document_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      });
+       $(".invoice-img-enlarge").dialog({
+          modal: true,
+          autoOpen: false,
+          title: "Photo",
+          autoOpen: false,
+          width: 800,
+          height: 'auto',
+      });
+     $(".invoice-pdf-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 800,
+            height: 600,
+        });
+
+      $("#second_subcat_document_box").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 700,
+            height: 'auto',
+        });
+       $("#show_second_subcat_document_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      });
+        $("#second_subcat_images_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      }); 
+       $("#show_second_subcat_images_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      });
+      $("#second_subcat_notes_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      });
+      $("#show_second_subcat_notes_val").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      });
+       $("#show_second_subcat_notes_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      });
+
+      $("#second_subcat_video_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      }); 
+
+      $("#show_second_subcat_videos_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      }); 
+
+      $("#delete_cat_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 400,
+              height: 'auto',
+              cache: false
+      }); 
+      $("#delete_sub_cat_box").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 400,
+              height: 'auto',
+              cache: false
+      });
+
+      $("#show_techsupport_details").dialog({
+              modal: true,
+              autoOpen: false,
+              title: "",
+              autoOpen: false,
+              width: 700,
+              height: 'auto',
+              cache: false
+      });
+      
+      $(".deleteCat").on("click", function(){
+        var catId = $(this).attr("cat-id");
+        $("#deleteCatId").val(catId);
+        $("#delete_cat_box").dialog("open");
+      });
+      
+      $(document).on("click",".deleteSubCat", function(){
+        var subCatId = $(this).attr("subcat-id");
+        $("#deleteSubCatId").val(subCatId);
+        $("#delete_sub_cat_box").dialog("open");
+      });
+
+      $(document).on("click",".invoice-openImg",function () {
+        var imgPath = $(this).attr('src');
+            $('.invoice-img-enlarge img').attr('src', imgPath);
+            $('.invoice-img-enlarge a').attr('href', imgPath);  
+            $('.invoice-img-enlarge').dialog('open');
+      });
+
+      $(document).on("click",".show-pdf-image",function (e) {
+            e.preventDefault();
+            var imgPath = $(this).attr('data-doc_lnk');
+
+           if(imgPath !== undefined){
+          
+              pdfurl = 'http://docs.google.com/gview?url=http://hvacproz.ca' + imgPath + '&embedded=true';
+            // document.getElementById('myiframe').src = pdfurl;
+                // var docFrame = '<iframe width="100%" height="100%" src="'+imgPath+'" frameborder="0" scrolling="no" id="myFrame" ></iframe>';
+                var docFrame = '<iframe width="100%" height="100%" src="'+pdfurl+'" frameborder="0" scrolling="auto" id="myFrame" ></iframe>';
+                $('.invoice-pdf-enlarge').html(docFrame);
+                // $('#doc-modal').html('');
+                // $('#doc-modal').append(docFrame);
+                // $('#doc-modal').load(docFrame);
+                // }else{
+                //     $('#doc-modal').html('Sorry some error found');
+                // }
+              }
+                $('.invoice-pdf-enlarge').dialog('open');
+        });
+       
+       $("li").on('click',".subCatVideo", function(e){
+         var id = $(this).attr('subcat-id');
+         $("#subcat-video-id").val(id);
+         $("#subcat_video_box").dialog('open');
+      });
+
+       $("li").on('click',".addSecondCatVideo", function(e){
+         var id = $(this).attr('secondSubcat-id');
+         $("#second-subcat-video-id").val(id);
+         $("#second_subcat_video_box").dialog('open');
+      });
+
+     $("li").on('click',".techSupport", function(e){
+       var id = $(this).attr('subcat-id');
+       $("#subcat-id").val(id);
+       $("#techsupport_box").dialog('open');
+    });
+
+    $("li").on('click',".subCatImages", function(e){
+       var id = $(this).attr('subcat-id');
+       $("#subcat-image-id").val(id);
+       $("#subcat_images_box").dialog('open');
+    });
+    
+    $("li").on('click',".subCatDocument", function(e){
+       var id = $(this).attr('subcat-id');
+       $("#subcat-document-id").val(id);
+       $("#subcat_document_box").dialog('open');
+    }); 
+
+    $("li").on('click',".addSecondCatDoc", function(e){
+       var id = $(this).attr('secondSubcat-id');
+       $("#second-subcat-doc-id").val(id);
+       $("#second_subcat_document_box").dialog('open');
+    });
+
+    $("li").on('click',".addSecondCatImage", function(e){
+       var id = $(this).attr('secondSubcat-id');
+       $("#second-subcat-image-id").val(id);
+       $("#second_subcat_images_box").dialog('open');
+    });
+
+    $("li").on('click',".subCatNotes", function(e){
+        $("#subCatNote").val('');
+       var id = $(this).attr('subcat-id');
+       $("#subcat-notes-id").val(id);
+       $("#subcat_notes_box").dialog('open');
+    });
+
+    $("li").on('click',".addSecondCatNote", function(e){
+        $("#secondSubCatNote").val('');
+       var id = $(this).attr('secondSubcat-id');
+       $("#second-subcat-notes-id").val(id);
+       $("#second_subcat_notes_box").dialog('open');
+    });
+
+    // $("li").on('click',".showTechSupport .getTechSupport", function(e){
+    //   console.log("inn");
+    //    var id = $(this).attr('row-id');
+    //    jQuery.ajax({
+    //           url: "<?=BASE_URL;?>/settings/getTechSupportVal",
+    //           type: "GET",
+    //           dataType:"json",
+    //           data: {id:id},
+    //           success: function(data){
+    //               console.log(data);
+    //               // $("#techSupportId").val(data.id);
+    //               // $("#techSupportVal").text(data.tech_support);
+    //               // $("#show_techsupport_val").dialog('open');  
+    //             }              
+    //         });
+    //   });
+    
+    $("li").on('click',".addSecondSubCat", function(e){
+       var subCatId = $(this).attr('subcat-id');
+       var subCatType = $(this).attr('secondSubCatType');
+       
+       var win = window.open("<?=BASE_URL;?>/settings/editAdminSecondSubCategory/"+subCatId+"/"+subCatType, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=900,width=400,height=200");
+      });
+    
+     $(document).on('click',"#deleteCategory", function(e){
+        var id = $("#deleteCatId").val();
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/deleteAdminCategory",
+              type: "POST",
+              dataType:"json",
+              data: {id:id},
+              success: function(data){
+                if(data.res ==1){
+                  $("#delete_cat_box").dialog('close');
+                    window.location.reload();
+                  }
+                }
+            });
+      });
+    $(document).on('click',"#deleteSubCategory", function(e){
+        var id = $("#deleteSubCatId").val();
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/deleteAdminSubCategory",
+              type: "POST",
+              dataType:"json",
+              data: {id:id},
+              success: function(data){
+                if(data.res ==1){
+                  $("#delete_sub_cat_box").dialog('close');
+                    window.location.reload();
+                  }
+                }
+            });
+      });
+
+      $(document).on('click',".delete-subcat-image", function(e){
+        var id = $(this).attr("image-id");
+        var name = $(this).attr("image-name");
+        var current = $(this);
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/deleteAdminSubcatImage",
+              type: "POST",
+              dataType:"json",
+              data: {id:id,name:name},
+              success: function(data){
+                if(data.res ==1){
+                  current.parent().parent().hide();
+                  }
+                }
+            });
+      });
+
+      $(document).on('click',".delete-secondsubcat-image", function(e){
+        var id = $(this).attr("image-id");
+        var name = $(this).attr("image-name");
+        var current = $(this);
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/deleteAdminSecondSubcatImage",
+              type: "POST",
+              dataType:"json",
+              data: {id:id,name:name},
+              success: function(data){
+                if(data.res ==1){
+                  current.parent().parent().hide();
+                  }
+                }
+            });
+      });
+
+      $(document).on('click',".delete-subcat-doc", function(e){
+        var id = $(this).attr("image-id");
+        var name = $(this).attr("image-name");
+        var current = $(this);
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/deleteAdminSubcatDoc",
+              type: "POST",
+              dataType:"json",
+              data: {id:id,name:name},
+              success: function(data){
+                if(data.res ==1){
+                  current.parent().parent().hide();
+                  }
+                }
+            });
+      });
+
+      $(document).on('click',".callSubCatNum", function(e){
+        var number = $(this).attr("number");
+        call_cell_phone(number);
+      });
+
+      $(document).on('click',".delete-secondsubcat-doc", function(e){
+        var id = $(this).attr("image-id");
+        var name = $(this).attr("image-name");
+        var current = $(this);
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/deleteAdminSecondSubcatDoc",
+              type: "POST",
+              dataType:"json",
+              data: {id:id,name:name},
+              success: function(data){
+                if(data.res ==1){
+                  current.parent().parent().hide();
+                  }
+                }
+            });
+      });
+
+    $("li").on('click',".showSubCatDocuments", function(e){
+       var id = $(this).attr('subcat-id');
+       jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminSubCatDocuments",
+              type: "GET",
+              dataType:"html",
+              data: {id:id},
+              success: function(data){
+                  $("#show_subcat_document_box").html(data);  
+                  $("#show_subcat_document_box").dialog('open');  
+                }              
+            });
+      });
+
+      $("li").on('click',".showSecondCatDoc", function(e){
+       var id = $(this).attr('secondSubcat-id');
+       jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminSecondSubCatDocuments",
+              type: "GET",
+              dataType:"html",
+              data: {id:id},
+              success: function(data){
+                  $("#show_second_subcat_document_box").html(data);  
+                  $("#show_second_subcat_document_box").dialog('open');  
+                }              
+            });
+      });
+
+    $("li").on('click',".showSecondCatImage", function(e){
+       var id = $(this).attr('secondSubcat-id');
+       jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminSecondSubCatImages",
+              type: "GET",
+              dataType:"html",
+              data: {id:id},
+              success: function(data){
+                  $("#show_second_subcat_images_box").html(data);  
+                  $("#show_second_subcat_images_box").dialog('open');  
+                }              
+            });
+      });
+
+    $("li").on('click',".showSubCatImages", function(e){
+       var id = $(this).attr('subcat-id');
+       jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminSubCatImages",
+              type: "GET",
+              dataType:"html",
+              data: {id:id},
+              success: function(data){
+                  $("#show_subcat_images_box").html(data);  
+                  $("#show_subcat_images_box").dialog('open');  
+                }              
+            });
+      });
+
+    $("li").on('click',".showSubCatNotes", function(e){
+       var id = $(this).attr('subcat-id');
+       jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminSubCatNotes",
+              type: "GET",
+              dataType:"html",
+              data: {id:id},
+              success: function(data){
+                  $("#show_subcat_notes_box").html(data);  
+                  $("#show_subcat_notes_box").dialog('open');  
+                }              
+            });
+      });
+
+    $("li").on('click',".showSubCatVideos", function(e){
+       var id = $(this).attr('subcat-id');
+       jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminSubCatVideos",
+              type: "GET",
+              dataType:"html",
+              data: {id:id},
+              success: function(data){
+                  $("#show_subcat_videos_box").html(data);  
+                  $("#show_subcat_videos_box").dialog('open');  
+                }              
+            });
+      });
+      
+      $("li").on('click',".showSecondCatVideo", function(e){
+       var id = $(this).attr('secondSubcat-id');
+       jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminSecondSubCatVideos",
+              type: "GET",
+              dataType:"html",
+              data: {id:id},
+              success: function(data){
+                  $("#show_second_subcat_videos_box").html(data);  
+                  $("#show_second_subcat_videos_box").dialog('open');  
+                }              
+            });
+      });
+       $("li").on('click',".showSecondCatNote", function(e){
+       var id = $(this).attr('secondSubcat-id');
+       jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminSecondSubCatNotes",
+              type: "GET",
+              dataType:"html",
+              data: {id:id},
+              success: function(data){
+                  $("#show_second_subcat_notes_box").html(data);  
+                  $("#show_second_subcat_notes_box").dialog('open');  
+                }              
+            });
+      });
+
+    /*$("li").on('click',".showTechSupport", function(e){
+       var id = $(this).attr('subcat-id');
+       jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getTechSupport",
+              type: "GET",
+              dataType:"html",
+              data: {id:id},
+              success: function(data){
+                  $("#show_techsupport_box").html(data);  
+                  $("#show_techsupport_box").dialog('open');  
+                }              
+            });
+      });*/
+
+      $(document).on("click",".editSubCatTech",function(){
+          var id = $(this).attr('row-id');
+          jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminTechSupportDetails",
+              type: "GET",
+              dataType:"json",
+              data: {id:id},
+              success: function(data){
+                  $("#techSupportDetailsId").val(data.id);
+                  $("#techSupportDetailsCatId").val(data.sub_cat_id);
+                  $("#techSupportDetailsName").val(data.tech_support_name);
+                  $("#techSupportDetailsNote").val(data.tech_support);
+                  $("#show_techsupport_details").dialog('open'); 
+                }              
+            });
+      });
+
+      $(document).on("click",".deleteSubCatTech",function(){
+          var id = $(this).attr('row-id');
+          var current = $(this);
+          jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/deleteAdminTechSupportDetails",
+              type: "GET",
+              dataType:"json",
+              data: {id:id},
+              success: function(data){
+                  if(data.res ==1){
+                    current.parent().parent().hide();
+                  }
+                }              
+            });
+      });
+
+      $(document).on("click",".deleteSubCatVideo",function(){
+          var id = $(this).attr('row-id');
+          var current = $(this);
+          jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/deleteAdminSubCatVideo",
+              type: "POST",
+              dataType:"json",
+              data: {id:id},
+              success: function(data){
+                  if(data.res ==1){
+                    current.parent().parent().hide();
+                  }
+                }              
+            });
+      });
+      $(document).on("click",".deleteSecondSubCatVideo",function(){
+          var id = $(this).attr('row-id');
+          var current = $(this);
+          jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/deleteAdminSecondSubCatVideo",
+              type: "POST",
+              dataType:"json",
+              data: {id:id},
+              success: function(data){
+                  if(data.res ==1){
+                    current.parent().parent().hide();
+                  }
+                }              
+            });
+      });
+      
+      $("li").on('click',".showTechSupport", function(e){
+       var id = $(this).attr('subcat-id');
+       jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminTechSupportVal",
+              type: "GET",
+              dataType:"json",
+              data: {id:id},
+              success: function(data){
+                  $("#show_techsupport_val").html(data); 
+                  $("#show_techsupport_val").dialog('open'); 
+                }              
+            });
+      });
+    
+     $("#saveTechSupport").on("click",function(){
+        var note = $("#techSupportNote").val();
+        var name = $("#techSupportName").val();
+        var id = $("#subcat-id").val();
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/addAdminTechSupport",
+              type: "POST",
+              dataType:"json",
+              data: {id:id,note:note,name:name},
+              success: function(data){
+                if(data.res ==1){
+                  $("#techsupport_box").dialog('close');                 }
+                }
+            });
+     });
+
+      $("#saveSecondSubCatNote").on("click",function(){
+        var note = $("#secondSubCatNote").val();
+        var id = $("#second-subcat-notes-id").val();
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/addAdminSecondSubCatNote",
+              type: "POST",
+              dataType:"json",
+              data: {id:id,note:note},
+              success: function(data){
+                if(data.res ==1){
+                  $("#second_subcat_notes_box").dialog('close');                 }
+                }
+            });
+     });
+
+     $("#saveSubCatNote").on("click",function(){
+        var note = $("#subCatNote").val();
+        var id = $("#subcat-notes-id").val();
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/addAdminSubCatNote",
+              type: "POST",
+              dataType:"json",
+              data: {id:id,note:note},
+              success: function(data){
+                if(data.res ==1){
+                  $("#subcat_notes_box").dialog('close');                 }
+                }
+            });
+     });
+
+     $("#saveTechSupportDetails").on("click",function(){
+        var name = $("#techSupportDetailsName").val();
+        var note = $("#techSupportDetailsNote").val();
+        var id = $("#techSupportDetailsId").val();
+        var subCatId = $("#techSupportDetailsCatId").val();
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/editAdminTechSupport",
+              type: "POST",
+              dataType:"json",
+              data: {id:id,note:note,name:name},
+              success: function(data){
+                if(data.res ==1){
+                    $("#show_techsupport_details").dialog('close');
+                    $("#show_techsupport_val").dialog('close'); 
+                     jQuery.ajax({
+                            url: "<?=BASE_URL;?>/settings/getAdminTechSupportVal",
+                            type: "GET",
+                            dataType:"json",
+                            data: {id:subCatId},
+                            success: function(data){
+                                $("#show_techsupport_val").html(data); 
+                                $("#show_techsupport_val").dialog('open'); 
+                              }              
+                          });
+                   }
+                }
+            });
+     });
+
+     $("#savesubcatNotesVal").on("click",function(){
+        var note = $("#subcatNotesVal").val();
+        var id = $("#subcatNotesId").val();
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/updateAdminSubCatNote",
+              type: "POST",
+              dataType:"json",
+              data: {id:id,note:note},
+              success: function(data){
+                if(data.res ==1){
+                  $("#show_subcat_notes_val").dialog('close');
+                  
+                  }
+                }
+            });
+     });
+
+     $("#saveSecondSubcatNotesVal").on("click",function(){
+        var note = $("#secondSubcatNotesVal").val();
+        var id = $("#secondSubcatNotesId").val();
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/updateAdminSecondSubCatNote",
+              type: "POST",
+              dataType:"json",
+              data: {id:id,note:note},
+              success: function(data){
+                if(data.res ==1){
+                  console.log('45');
+                  $("#show_second_subcat_notes_val").dialog('close');
+                  }
+                }
+            });
+     });
+
+     $("#saveSubCatVideo").on("click",function(){
+        var videoLink = $("#video_link").val();
+        var videoLinkName = $("#video_link_name").val();
+        var id = $("#subcat-video-id").val();
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/addAdminSubCatVideo",
+              type: "POST",
+              dataType:"json",
+              data: {id:id,videoLink:videoLink,videoLinkName:videoLinkName},
+              success: function(data){
+                if(data.res ==1){
+                  $("#subcat_video_box").dialog('close');                 }
+                }
+            });
+     });
+
+      $("#saveSecondSubCatVideo").on("click",function(){
+        var videoLink = $("#second_video_link").val();
+        var videoLinkName = $("#second_video_link_name").val();
+        var id = $("#second-subcat-video-id").val();
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/addAdminSecondSubCatVideo",
+              type: "POST",
+              dataType:"json",
+              data: {id:id,videoLink:videoLink,videoLinkName:videoLinkName},
+              success: function(data){
+                if(data.res ==1){
+                  $("#second_subcat_video_box").dialog('close');                 
+                }
+                }
+            });
+     });
+     
+    //$("li").on('click',"span.secondCat", function(e){
+    //    if($(this).hasClass("caret-down")){
+    //      $(this).removeClass("caret-down");
+    //      $(this).next().next().next().removeClass("active");
+    //    }else {
+    //      $(this).addClass("caret-down");
+    //      $(this).next().next().next().addClass("active");
+    //    }
+    //});
+    //$("li").on('click',"span.secondSubCat", function(e){
+    //    if($(this).hasClass("caret-down")){
+    //      $(this).removeClass("caret-down");
+    //      $(this).next().removeClass("active");
+    //    }else {
+    //      $(this).addClass("caret-down");
+    //      $(this).next().addClass("active");
+    //    }
+    //});
+    
+     $("li").on('click',".editSubCat", function(e){
+        var SubCatId = $(this).attr('subcat-id');
+        var subcat = window.open("<?=BASE_URL;?>/settings/editAdminSubCategory/0/"+SubCatId, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=400,height=400");
+
+    });
+
+     $(".editCat").on("click", function(){
+        var catId = $(this).attr('cat-id');
+
+        var cat = window.open("<?=BASE_URL;?>/settings/editAdminTrainingCategory/1/"+catId, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=400,height=400");
+    });
+
+    $(".addSubCategory").on("click", function(){
+        var catId = $(this).attr('current-cat-id');
+
+        var subcat = window.open("<?=BASE_URL;?>/settings/editAdminSubCategory/"+catId, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=400,height=400");
+
+    });
+
+    $("#myInput").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        $("#myTable tr").filter(function() {
+          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+    });
+   
+    $('#removeCategory').on('click', function(e){
+            var selected = [];
+             $("input:checkbox[class=checkboxes]:checked").each(function () {
+                 selected.push($(this).attr('type_id'));
+            });
+            jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/deleteAdminCategory",
+              type: "POST",
+              data: {typeIds:selected},
+              success: function(data){
+                     document.forms['viewform'].submit();
+                 }
+            });
+        });
+    
+    $('.category-name').on('click', function(){
+            var id = $(this).attr('cat-id');
+            window.open("<?=BASE_URL;?>/settings/editAdminTrainingCategory/1/"+id, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=900,width=400,height=200");
+    });
+        $("#add-category").on("click", function(){
+            var url = G_URL + "settings/editAdminTrainingCategory/1";
+            var option = "width=450,height=450,left=300,top=200,status=no,resize=none";
+            var answer = window.open(url,'', option);   
+        });
+       
+  });
+  function showSecondSubCtaegory(subCatId,subCatType,current){
+  if($(current).hasClass("caret-down")){
+    $(current).removeClass("caret-down");
+    $(current).next().next('ul').remove();
+  }else {
+      jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminSecondSubCategory",
+              type: "get",
+              dataType: 'html',
+              data: {subCatId:subCatId,subCatType:subCatType},
+              success: function(data){
+                     $(current).parent().append(data);
+                     $(current).addClass("caret-down");
+                     $(current).next().next('ul').addClass('active');            
+                 }
+            });
+      } 
+  }
+
+  function showSubCtaegory(catId,current){
+
+  if($(current).hasClass("caret-down")){
+    $(current).removeClass("caret-down");
+    $(current).next().next().next().next('ul').remove();
+    $(current).next().next().next().next().next('ul').remove();
+  }else {
+      jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminSubCategory",
+              type: "get",
+              dataType: 'html',
+              data: {catId:catId},
+              success: function(data){
+                     $('#'+catId).append(data);
+                     $(current).addClass("caret-down");
+                     $(current).next().next().next().next().next('ul').addClass('active');            
+                 }
+            });
+    }  
+  }
+
+  function getTechSupport(id)
+  {
+       jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminTechSupportVal",
+              type: "GET",
+              dataType:"json",
+              data: {id:id},
+              success: function(data){
+                  // console.log(data);
+                  $("#techSupportId").val(data.id);
+                  $("#techSupportVal").text(data.tech_support);
+                  $("#show_techsupport_val").dialog('open');  
+                }              
+            });
+  }
+
+  function getCatNotes(id)
+  {
+       jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminSubCatNotesVal",
+              type: "GET",
+              dataType:"json",
+              data: {id:id},
+              success: function(data){
+                  // console.log(data);
+                  $("#subcatNotesVal").text('');
+                  $("#subcatNotesId").val(data.id);
+                  $("#subcatNotesVal").val(data.notes);
+                  // $("#subcatNotesVal").text(data.notes);
+                  $("#show_subcat_notes_val").dialog('open');  
+                }              
+            });
+  }
+
+  function getSecondCatNotes(id)
+  {
+       jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/getAdminSecondSubCatNotesVal",
+              type: "GET",
+              dataType:"json",
+              data: {id:id},
+              success: function(data){
+                  // console.log(data);
+                  $("#secondSubcatNotesId").val(data.id);
+                  $("#secondSubcatNotesVal").val(data.notes);
+                  $("#show_second_subcat_notes_val").dialog('open');  
+                }              
+            });
+  }
+
+  function call_cell_phone(phone_number)
+{
+  bringToFront();
+  placeCall(phone_number);
+}
+
+$('body').on('click','.get_all_the_text',function(e){
+          e.preventDefault();
+          var get_value = $(this).attr('data-id');
+          
+          jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/get_all_the_text_admin",
+              type: "GET",
+              data: {get_value:get_value},
+              success: function(data){
+                $('.show_notes_images').hide();
+                
+                $('.all_notes_images').show();
+            
+                $('.all_notes_images').html(data);
+                
+                }              
+            });
+          
+          
+        
+        });
+ CKEDITOR.replace( 'editor', {
+  height: 600,
+  filebrowserUploadUrl: "upload_picture"
+ });
+        
+        $('body').on('click','.open_content',function(){
+          
+          $('.save_category').show();
+           
+          
+          var subcate_id = $(this).attr('data-subcat-id');
+          
+          var secondsubcattype = $(this).attr('data-secondsubcattype');
+          
+          jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/get_html2",
+              type: "GET",
+              data: {subcat_id:subcate_id,secondsubcattype:secondsubcattype},
+              success: function(data){
+                $('.show_notes_images').show();
+                $('.all_notes_images').hide();
+                CKEDITOR.instances.editor.setData(data);
+                
+                }              
+            });
+          
+          $('.save_category').attr('data-subcat-id',subcate_id);
+          
+          $('.save_category').attr('data-secondsubcattype',secondsubcattype);
+        
+        });
+        
+        $('body').on('click','.open_content1',function(){
+          
+          $('.save_category').hide();
+           
+          
+          var subcate_id = $(this).attr('data-subcat-id');
+          
+          var secondsubcattype = $(this).attr('data-secondsubcattype');
+          
+          jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/get_html2",
+              type: "GET",
+              data: {subcat_id:subcate_id,secondsubcattype:secondsubcattype},
+              success: function(data){
+                $('.show_notes_images').hide();
+                $('.all_notes_images').show();
+                $('.all_notes_images').html(data);
+                }              
+            });
+          
+          $('.save_category').attr('data-subcat-id',subcate_id);
+          
+          $('.save_category').attr('data-secondsubcattype',secondsubcattype);
+        
+        });
+        
+         $('body').on('click','.save_category',function(event){
+          event.preventDefault();
+        var data_subcat_id = $(this).attr('data-subcat-id');
+        var data_secondsubcattype = $(this).attr('data-secondsubcattype');
+        var data1 = CKEDITOR.instances.editor.getData();
+        
+         jQuery.ajax({
+              url: "<?=BASE_URL;?>/settings/save_html2",
+              type: "GET",
+              data: {data1:data1,data_subcat_id:data_subcat_id,data_secondsubcattype:data_secondsubcattype},
+              success: function(data){
+                 alert('saved successfully');
+                }              
+            });
+        
+        });
+  
+</script>

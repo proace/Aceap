@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.4.0/fullcalendar.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <link href='https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css' rel='stylesheet' />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.4.0/fullcalendar.min.js"></script>
+
+
+<style>
+body {
+    margin-top: 50px;
+    text-align: center;
+    font-size: 12px;
+    font-family: "Lucida Grande", Helvetica, Arial, Verdana, sans-serif;
+}
+.form-group{
+  font-size:16px;
+}
+label{
+  
+  text-align:left;
+
+}
+
+#calendar {
+    width: 700px;
+    margin: 0 auto;
+}
+
+.response {
+    height: 60px;
+}
+
+.success {
+    background: #cdf3cd;
+    padding: 10px 60px;
+    border: #c3e6c3 1px solid;
+    display: inline-block;
+}
+</style>
+</head>
+<body>
+    
+
+    <div class="response"></div>
+    <div id='calendar'></div>
+    <script>
+      var id = null;
+$(document).ready(function () {
+    var calendar = $('#calendar').fullCalendar({
+        editable: true,
+    header:{
+     left:'prev,next today',
+     center:'title',
+     right:'month,agendaWeek,agendaDay'
+    },
+        events: "<?=BASE_URL;?>/settings/fetchEvent",
+        displayEventTime: false,
+        navLinks:true,
+        
+        eventRender: function (event, element, view) {
+            if (event.allDay === 'true') {
+                event.allDay = true;
+            } else {
+                event.allDay = false;
+            }
+        },
+        selectable: true,
+        selectHelper: true,
+        select: function (start, end, allDay) {
+
+        var start11 = $.fullCalendar.formatDate(start, "Y-MM-DD HH:mm:ss");
+        var end11 = $.fullCalendar.formatDate(end, "Y-MM-DD HH:mm:ss");    
+         
+         localStorage.setItem('start_event',start11);
+
+           $('#exampleInputEmail1').val('');
+            
+            $('.time_from').val('');
+            
+            $('.time_to').val('');
+
+            $('.time_from_min').val('');
+            
+            $('.time_to_min').val('');
+
+            $('#owner').val('');
+
+            $('#remind').attr( "checked", false );
+
+            $('#eventContent').show();
+
+            showmodal();
+            $('#deleteBtn').hide();
+        },
+        
+        editable: true,
+        eventDrop: function (event, delta) {
+                    var start = $.fullCalendar.formatDate(event.start, "Y-MM-DD HH:mm:ss");
+                    var end = $.fullCalendar.formatDate(event.end, "Y-MM-DD HH:mm:ss");
+                    $.ajax({
+                        url: '<?=BASE_URL;?>/settings/editEvent',
+                        data: 'title=' + event.title + '&start=' + start + '&end=' + end + '&id=' + event.id + '&owner=' + event.owner + '&reminder=' + event.reminder,
+                        type: "POST",
+                        success: function (response) {
+                            displayMessage("Updated Successfully");
+                        }
+                    });
+                },
+        eventClick: function (event) {
+          // $('select').attr('required', true);
+            if (event.url) {
+                return;
+            }
+            console.log(event);
+            $('#eventContent').show();
+            showmodal();
+            $('#deleteBtn').show();
+            id = event.id;
+            $('#exampleInputEmail1').val(event.title);
+            
+            $('#owner').val(event.owner);
+
+            if(event.reminder == 1) {
+              $('#remind').attr( "checked", true );
+            } else {
+              $('#remind').attr( "checked", false );
+            }
+
+            var end = new Date(event.end._i);
+            var start = new Date(event.start._i);
+
+            
+            if(end.getHours() < 10) 
+              $('.time_to').val('0'+end.getHours());
+            else
+              $('.time_to').val(end.getHours());
+
+            if(start.getHours() < 10)
+              $('.time_from').val('0'+start.getHours());
+            else
+              $('.time_from').val(start.getHours());
+
+            if(end.getMinutes() < 10)
+              $('.time_to_min').val('0'+end.getMinutes());
+            else
+              $('.time_to_min').val(end.getMinutes());
+            if(start.getMinutes() < 10)
+              $('.time_from_min').val('0'+start.getMinutes());
+            else
+              $('.time_from_min').val(start.getMinutes());
+        }
+
+    });
+});
+
+function displayMessage(message) {
+	    $(".response").html("<div class='success'>"+message+"</div>");
+    setInterval(function() { $(".success").fadeOut(); }, 1000);
+}
+$('body').on('click','.ui-icon-closethick',function(){
+console.log('clicked');
+id = null;
+$('.ui-dialog').hide();
+});
+
+function showmodal() {
+     
+     
+     setTimeout(() => {
+				$("#eventContent").dialog({
+	        modal: true,
+	        autoOpen: false,
+	        title: "",
+	        width: 700,
+	        height: 500,
+	    });
+			},100);
+    
+    	setTimeout(() => {
+        $("#eventContent").dialog({
+	        modal: true,
+	        autoOpen: false,
+	        title: "",
+	        width: 700,
+	        height: 500,
+	    });
+				$('.ui-dialog').show();	
+			},100);
+    
+}
+
+function deleteEvent() {
+  var deleteMsg = confirm("Do you really want to delete?");
+  if (deleteMsg) {
+    $('select').attr('required', false);
+      $.ajax({
+          type: "POST",
+          url: "<?=BASE_URL;?>/settings/deleteEvent",
+          data: "&id=" + id,
+          success: function (response) {
+          
+                  $('#calendar').fullCalendar('removeEvents', event.id);
+                  displayMessage("Deleted Successfully");
+              
+          }
+      });
+  }
+}
+
+$('body').on('submit','#eventform',function(event){
+  $('select').attr('required', true);
+  var title = $('#exampleInputEmail1').val();
+  var get_start = localStorage.getItem('start_event');
+  
+  var time_from = $('.time_from').val();
+  
+  var time_to = $('.time_to').val();
+
+  var time_from_min = $('.time_from_min').val();
+
+  var time_to_min = $('.time_to_min').val();  
+  
+  get_start11 = get_start.split(' ');
+  
+  var start = get_start11[0]+"T"+time_from+":"+time_from_min+":00";
+  var end = get_start11[0]+"T"+time_to+":"+time_to_min+":00";
+  console.log(start);
+  console.log(end);
+  var owner = $('#ownerType').val();
+  console.log(owner);
+
+  var reminder = $('input[name="reminder"]:checked').val();
+  if(reminder == 1)
+    reminder = 1;
+  else
+    reminder = 0;
+
+  if(id === null) {
+    event.preventDefault();
+      $.ajax({
+        url: "<?=BASE_URL;?>/settings/addEvent",
+        data: 'title=' + title + '&start=' + start + '&end=' + end+ '&owner=' + owner + '&reminder=' + reminder,
+        type: "POST",
+        success: function (data) {
+          displayMessage("Added Successfully");
+          // location.reload(true);
+                        }
+                    });
+    console.log('submitted');
+} else {
+  event.preventDefault();
+  $.ajax({
+    url: "<?=BASE_URL;?>/settings/editEvent",
+    data: 'title=' + title + '&start=' + start + '&end=' + end+ '&owner=' + owner + '&id=' + id + '&reminder=' + reminder,
+    type: "POST",
+    success: function (data) {
+      console.log(data);
+      displayMessage("Edited Successfully");
+      // location.reload(true);
+                    }
+                });
+console.log('submitted');
+}
+    });
+</script>
+    
+    <div id="eventContent" title="Event Details" style="display:none" >
+      
+      <form id="eventform">
+  <div class="form-group">
+    <label for="exampleInputEmail1">Title</label>
+    <textarea type="text" required class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter title"></textarea>
+     </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">Start time</label>
+    <div class="row">
+      <div class="col-6">
+            <select name="time_from" class="time_from 15 form-control">
+          
+          <option value="">&nbsp;</option>
+                      <option value="20"> 8 PM</option>
+                      <option value="21"> 9 PM</option>
+                      <option value="22">10 PM</option>
+                      <option value="23">11 PM</option>
+                      <option value="24">12 PM</option>
+                      <option value="01"> 1 AM</option>
+                      <option value="02"> 2 AM</option>
+                      <option value="03"> 3 AM</option>
+                      <option value="04"> 4 AM</option>
+            <option value="05"> 5 AM</option>
+            <option value="06"> 6 AM</option>
+            <option value="07"> 7 AM</option>
+            <option value="08"> 8 AM</option>
+            <option value="09"> 9 AM</option>
+            <option value="10"> 10 AM</option>
+            <option value="11"> 11 AM</option>
+            <option value="12"> 12 AM</option>
+            <option value="13"> 1 PM</option>
+            <option value="14"> 2 PM</option>
+            <option value="15"> 3 PM</option>
+            <option value="16"> 4 PM</option>
+            <option value="17"> 5 PM</option>
+            <option value="18"> 6 PM</option>
+            <option value="19"> 7 PM</option>
+            
+            </select>
+      </div>
+      <div class="col-6">
+<select name="time_from_min" class="time_from_min 15 form-control">
+                    
+          
+          <option value="">&nbsp;</option>
+          <?php for($i = 0; $i<60; $i++) {
+                      if($i < 10) {?>
+                      <option value="<?php echo '0'.$i?>"> <?php echo '0'.$i ?> min</option>
+                      <?php }else {?>
+                      <option value="<?php echo $i?>"> <?php echo $i ?> min</option>
+                      <?php 
+                      }
+                    }?>
+            
+            </select>        
+      </div>
+    </div>
+
+  </div>
+  
+  <div class="form-group">
+    <label for="exampleInputPassword1">End time</label>
+    <div class="row">
+      <div class="col-6">
+            <select name="time_to" class="time_to 15 form-control">
+          
+          <option value="">&nbsp;</option>
+                      <option value="20"> 8 PM</option>
+                      <option value="21"> 9 PM</option>
+                      <option value="22">10 PM</option>
+                      <option value="23">11 PM</option>
+                      <option value="24">12 PM</option>
+                      <option value="01"> 1 AM</option>
+                      <option value="02"> 2 AM</option>
+                      <option value="03"> 3 AM</option>
+                      <option value="04"> 4 AM</option>
+            <option value="05"> 5 AM</option>
+            <option value="06"> 6 AM</option>
+            <option value="07"> 7 AM</option>
+            <option value="08"> 8 AM</option>
+            <option value="09"> 9 AM</option>
+            <option value="10"> 10 AM</option>
+            <option value="11"> 11 AM</option>
+            <option value="12"> 12 AM</option>
+            <option value="13"> 1 PM</option>
+            <option value="14"> 2 PM</option>
+            <option value="15"> 3 PM</option>
+            <option value="16"> 4 PM</option>
+            <option value="17"> 5 PM</option>
+            <option value="18"> 6 PM</option>
+            <option value="19"> 7 PM</option>
+            
+            </select>
+      </div>
+      <div class="col-6">
+<select name="time_to_min" class="time_to_min 15 form-control">
+                    
+          
+          <option value="">&nbsp;</option>
+          <?php for($i = 0; $i<60; $i++) {
+                      if($i < 10) {?>
+                      <option value="<?php echo '0'.$i?>"> <?php echo '0'.$i ?> min</option>
+                      <?php }else {?>
+                      <option value="<?php echo $i?>"> <?php echo $i ?> min</option>
+                      <?php 
+                      }
+                    }?>
+            
+            </select>        
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">Owner</label>
+    <select name="owner" class="form-control" id="ownerType">
+          <option value="">&nbsp;</option>
+                      <option value="<?php echo $_SESSION['user']['id'] ?>" selected> Private</option>
+                      <option value="0"> Public</option>
+            
+            </select>
+  </div>
+  <div class="form-group">
+    <input type="checkbox" name="reminder" class="form-control" value="1" id="remind"> Remind me
+  </div>
+  <div class="form-group form-check">
+
+  </div>
+  <button type="submit" class="btn btn-primary">Save</button>
+  <button class="btn btn-danger" onclick="deleteEvent()" id="deleteBtn">Delete</button>
+</form>
+</div>
+</body>
+
+
+</html>

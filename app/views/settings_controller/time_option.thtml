@@ -1,0 +1,193 @@
+<html> 
+<head>
+  <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+  
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<style>
+.div_right{
+  border-right:1px solid black;
+}
+</style> 
+</head>
+<body>
+ <div class="container"> 
+select time and km limit for the schedule
+<br>
+<br>
+<div class="row">
+<div class="col-sm-3 div_right">  
+  <h4>Repair</h4>
+  <span>Time:</span>
+  <select name="rapair_time" id="rapair_time">
+  <?php
+  for ($i=5; $i<505; $i+=5) {
+   if($i==$repair_time){
+    $selected="selected";
+   }
+   else {
+    $selected="";
+   }
+   ?>
+    
+    <option value="<?=$i ?>" <?= $selected ?>><?=$i ?></option>
+ <?php }
+  ?>
+  </select>
+  <br>
+  <br>
+  <span>kms:</span>
+  <select name="rapair_km" id="rapair_km">
+  <?php
+  for ($i=5; $i<505; $i+=5) {
+   if($i==$repair_km){
+    $selected="selected";
+   }
+   else {
+    $selected="";
+   }
+   ?>
+    
+    <option value="<?=$i ?>" <?= $selected ?>><?=$i ?></option>
+ <?php }
+  ?>
+  </select>
+</div>
+<div class="col-sm-3 div_right">  
+  <h4>Airduct</h4>
+  <span>Time:</span>
+  <select name="airduct_time" id="airduct_time">
+  <?php
+  for ($i=5; $i<505; $i+=5) {
+   if($i==$airduct_time){
+    $selected="selected";
+   }
+   else {
+    $selected="";
+   }
+   ?>
+    
+    <option value="<?=$i ?>" <?= $selected ?>><?=$i ?></option>
+ <?php }
+  ?>
+  </select>
+  <br><br>
+  <span>km:</span>
+  <select name="airduct_km" id="airduct_km">
+  <?php
+  for ($i=5; $i<505; $i+=5) {
+   if($i==$airduct_km){
+    $selected="selected";
+   }
+   else {
+    $selected="";
+   }
+   ?>
+    
+    <option value="<?=$i ?>" <?= $selected ?>><?=$i ?></option>
+ <?php }
+  ?>
+  </select>
+
+</div>
+<div class="col-sm-3 div_right">  
+  <h4>Service</h4>
+  <span>Time:</span>
+  <select name="service_time" id="service_time">
+  <?php
+  for ($i=5; $i<505; $i+=5) {
+   if($i==$service_time){
+    $selected="selected";
+   }
+   else {
+    $selected="";
+   }
+   ?>
+    
+    <option value="<?=$i ?>" <?= $selected ?>><?=$i ?></option>
+ <?php }
+  ?>
+  </select>
+  <br><br>
+  <span>km:</span>
+  <select name="service_km" id="service_km">
+  <?php
+  for ($i=5; $i<505; $i+=5) {
+   if($i==$service_km){
+    $selected="selected";
+   }
+   else {
+    $selected="";
+   }
+   ?>
+    
+    <option value="<?=$i ?>" <?= $selected ?>><?=$i ?></option>
+ <?php }
+  ?>
+  </select>
+</div>
+<div class="col-sm-3 div_right">  
+  <h4>Installation</h4>
+  <span>Time:</span>
+  <select name="installation_time" id="installation_time">
+  <?php
+  for ($i=5; $i<505; $i+=5) {
+   
+   if($i==$installation_time){
+    $selected="selected";
+   }
+   else {
+    $selected="";
+   }
+   ?>
+    
+    <option value="<?=$i ?>" <?= $selected ?>><?=$i ?></option>
+ <?php }
+  ?>
+  </select>
+  <br><br>
+  <span>km:</span>
+  <select name="installation_km" id="installation_km">
+  <?php
+  for ($i=5; $i<505; $i+=5) {
+   if($i==$installation_km){
+    $selected="selected";
+   }
+   else {
+    $selected="";
+   }
+   ?>
+    
+    <option value="<?=$i ?>" <?= $selected ?>><?=$i ?></option>
+ <?php }
+  ?>
+  </select>
+</div>
+ </div>
+<br><br>
+<button class="btn btn-primary" id="save_value">Save</button>
+<script>
+ $('#save_value').on('click',function(){
+
+  var repair_time = $('#rapair_time').val();
+  var repair_km = $('#rapair_km').val();
+  var airduct_time = $('#airduct_time').val();
+  var airduct_km = $('#airduct_km').val();
+  var service_time = $('#service_time').val();
+  var service_km = $('#service_km').val();
+  var installation_time = $('#installation_time').val();
+  var installation_km = $('#installation_km').val();
+  
+  $.ajax({
+      url: "<?=BASE_URL;?>/settings/savetime",
+      type: "POST",
+      data: {repair_time:repair_time,repair_km:repair_km,airduct_time:airduct_time,airduct_km:airduct_km,service_time:service_time,service_km:service_km,installation_time:installation_time,installation_km:installation_km},
+      success: function(data){
+        alert('values updated succesfully');
+             }
+    });
+  }); 
+  
+</script>
+</body>
+</html>

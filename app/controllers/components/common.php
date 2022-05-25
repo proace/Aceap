@@ -1,8 +1,8 @@
 <?php
-//error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 class CommonComponent extends Object
 {
 	function startup(&$controller){
@@ -68,6 +68,13 @@ class CommonComponent extends Object
 			return $result; 
 		}
     }
+     function uploadTechPurchaseImage($fileName,$temName)
+     {
+     	$fileName = time()."_".rand().$fileName;
+		$fileTmpName = $temName;
+		$move = move_uploaded_file($fileTmpName ,ROOT."/app/webroot/tech-purchase-image/".$fileName);
+		return $fileName; 	
+     }
 
     function getOrderDetails($order_id, $config)
     {    	
@@ -81,7 +88,7 @@ class CommonComponent extends Object
     }
     
     //function uploadPhoto($file, $order_id, $config, $i, $customer_id = null)
-    function uploadPhoto($file_name,$file_tmpname, $order_id, $config, $i, $customer_id = null, $fromTech=0)
+    	function uploadPhoto($file_name,$file_tmpname, $order_id, $config, $i, $customer_id = null, $fromTech=0, $date='', $label='')
 	{
 		date_default_timezone_set('America/Los_Angeles');
 
@@ -102,22 +109,59 @@ class CommonComponent extends Object
 		$ext = pathinfo($path, PATHINFO_EXTENSION);
 		if($order_id != 0)
 		{
-			$name = date('Ymdhis', time()).$order_id.$i.'_'.$path;
+			$name = date('Ymdhis', time()).$order_id.$i.'_'.rand().$path;
 		} 
 		else {
-			$name = date('Ymdhis', time()).'_'.$path;
+			$name = date('Ymdhis', time()).'_'.rand().$path;
 		}
 			
 		if ( 0 < $file['error'] ) {
 	        echo 'Error: ' . $_FILES['image']['error'] . '<br>'; 
 	    } else {
+			$extensions=array('jpg','jpe','jpeg','jfif','png','bmp','dib','gif');
+if(in_array($ext,$extensions)){     
+$maxDimW = 1600;
+$maxDimH = 1000;
+list($width, $height, $type, $attr) = getimagesize( $file_tmpname );
+if ( $maxDimW > $maxDimW || $height > $maxDimH ) {
+    $target_filename = $file_tmpname;
+    $fn = $file_tmpname;
+    $size = getimagesize( $fn );
+    $ratio = $size[0]/$size[1]; // width/height
+    
+       $width =$width/2;
+       $height=$height/2;
+    
+    $src = imagecreatefromstring(file_get_contents($fn));
+    $dst = imagecreatetruecolor( $width, $height );
+    imagecopyresampled($dst, $src, 0, 0, 0, 0, $width, $height, $size[0], $size[1] );
+
+    imagejpeg($dst, $target_filename); // adjust format as needed
+	
+    
+
+
+}
+}
 	        move_uploaded_file($file_tmpname, 'upload_photos/'.$day.'/'.$name);
 	    }
+				
+
+		
 
 		//$sql = "UPDATE ace_rp_orders SET photo_".$i." = '".$name."' WHERE id = ".$order_id;
-		$sql = "INSERT INTO ace_rp_user_part_images (customer_id, image_name, from_tech) VALUES (".$customer_id.", '".$name."', ".$fromTech.")";
+		
 		$db =& ConnectionManager::getDataSource($config);
+		//$sql = "INSERT INTO ace_rp_user_part_images (customer_id, image_name, from_tech,order_id,created_at,type) VALUES (".$customer_id.", '".$name."', ".$fromTech.", ".$order_no.", ".time().", ".$type.")";
+		//$result = $db->_execute($sql);
+		if(empty($date) || $date==""){
+			$date=null;
+		}
+
+		$sql = "INSERT INTO ace_rp_user_part_images (customer_id, image_name, from_tech,order_id,date_created,label) VALUES (".$customer_id.", '".$name."', ".$fromTech.", ".$order_id.", '".$date."', '".$label."')";
+	    
 		$result = $db->_execute($sql);
+		$result1 = $db->_execute("update ace_rp_user_part_images set label='$label' WHERE customer_id=$customer_id and date_created ='$date'");
 		return $result;
 	}
 	//# LOKI- Techinician upload pictures from commission page.
@@ -182,7 +226,7 @@ class CommonComponent extends Object
 
 			$menu = array(
 
-				'tabs' => array('Bookings','Inventory','Reports','Admin','Techs','Payroll','Call Center','Financial', 'Template'),
+				'tabs' => array('Bookings','Inventory','Reports','Admin','Techs','Payroll','Call Center','Financial', 'Template','Support'),
 
 				'content' =>
 
@@ -211,7 +255,7 @@ class CommonComponent extends Object
 						),
 						array(
 
-							'name' => 'Hot List',
+							'name' => 'Call To Book',
 
 							'url' => '#',
 
@@ -233,10 +277,16 @@ class CommonComponent extends Object
 						),
 						array(
 
-							'name' => 'Chat',
+							'name' => 'Chat1',
 							// 'url' => 'http://support.acecare.ca/lhc_web/index.php/site_admin/',
 							'url' => 'http://support.hvacproz.ca/lhc_web/index.php/site_admin/',
 							'img' => 'comments.png'
+						),
+
+						array(
+							'name' => 'Organiser',
+							'url' => BASE_URL.'/settings/orgniser',
+							'img' => 'icon-lg-jobs.png'
 						),
 
 						array(
@@ -266,47 +316,64 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-all-bookings.png'
 
 						),
+						// array(
+
+						// 	'name' => 'Received Email',
+
+						// 	'url' => BASE_URL.'/users/showUserEmailResponse',
+
+						// 	'img' => 'icon-lg-all-bookings.png'
+
+						// ),
+						
 						array(
 
-							'name' => 'Received Email',
+							'name' => 'Follow up',
 
-							'url' => BASE_URL.'/users/showUserEmailResponse',
+							'url' => BASE_URL.'/reports/orderReports',
 
 							'img' => 'icon-lg-all-bookings.png'
-
+						),
+						
+						array(
+							'name' => 'GPS',
+							// 'url' => 'http://support.acecare.ca/lhc_web/index.php/site_admin/',
+							'url' => 'https://locate.positrace.com/en/?share_token=7d634e0bc7392c8a1403a330c10e4353',
+							'img' => 'location1.png',
+							'target' => '_blank'
 						),
 						array(
 
-							'name' => 'Edit Inventory Payment',
+							'name' => 'Suppliers',
 
-							'url' => BASE_URL.'/payments/ShowPaymentMethod',
+							'url' => BASE_URL.'/suppliers',
 
-							'img' => 'icon-lg-all-bookings.png'
+							'img' => 'icon-lg-technician.png'
 
 						)
 					),
 
 					array(
 
-						array(
+						// array(
 
-							'name' => 'Warehouse',
+						// 	'name' => 'Warehouse',
 
-							'url' => BASE_URL.'/inventories/index',
+						// 	'url' => BASE_URL.'/inventories/index',
 
-							'img' => 'icon-lg-inventory.png'
+						// 	'img' => 'icon-lg-inventory.png'
 
-						),
+						// ),
 
-						array(
+						// array(
 
-							'name' => 'Transactions',
+						// 	'name' => 'Transactions',
 
-							'url' => BASE_URL.'/inventories/AllDocuments',
+						// 	'url' => BASE_URL.'/inventories/AllDocuments',
 
-							'img' => 'icon-lg-inventory-moves.png'
+						// 	'img' => 'icon-lg-inventory-moves.png'
 
-						),
+						// ),
 
 						array(
 
@@ -320,23 +387,13 @@ class CommonComponent extends Object
 
 						array(
 
-							'name' => 'Techs',
+							'name' => 'Transactions',
 
 							'url' => BASE_URL.'/inventories/techs',
 
 							'img' => 'icon-lg-inventory-moves.png'
 
-						),
-
-						array(
-
-							'name' => 'Part Requests',
-
-							'url' => BASE_URL.'/inventories/requests',
-
-							'img' => 'icon-lg-inventory-moves.png'
-
-						),
+						),					
 
 						array(
 
@@ -347,7 +404,15 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-jobs.png'
 
 						),
+						array(
 
+							'name' => 'Move Items',
+
+							'url' => BASE_URL.'/inventories/moveTechItem',
+
+							'img' => 'icon-lg-jobs.png'
+
+						),
 						array(
 
 							'name' => 'Suppliers',
@@ -376,15 +441,34 @@ class CommonComponent extends Object
 						// ),
 					
 						array(
-							'name' => 'Category',
+							'name' => 'Main Category',
 							'url' => BASE_URL.'/iv_categories/showItemCategory',
+							'img' => 'icon-lg-price.png',
+						),
+						array(
+							'name' => 'Category',
+							'url' => BASE_URL.'/iv_categories/showItemMidCategory',
 							'img' => 'icon-lg-price.png',
 						),
 						array(
 							'name' => 'Sub Category',
 							'url' => BASE_URL.'/iv_categories/showItemSubCategory',
 							'img' => 'icon-lg-price.png',
-						)
+						),
+						array(
+							'name' => 'Import Item',
+							'url' => BASE_URL.'/iv_items/importItem',
+							'img' => 'icon-lg-price.png',
+						),
+						array(
+
+							'name' => 'Part Requests',
+
+							'url' => BASE_URL.'/inventories/requests',
+
+							'img' => 'icon-lg-inventory-moves.png'
+
+						),
 						//,
 						// array(
 						// 	'name' => 'Dialer',
@@ -491,7 +575,24 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-feedbacks.png'
 
-						)
+						),
+						array(
+
+							'name' => 'Reminder Summary',
+
+							'url' => BASE_URL.'/reports/reminderSummary',
+
+							'img' => 'icon-lg-report.png'
+
+						),
+						array(
+
+							'name' => 'Print summery',
+
+							'url' => BASE_URL.'/technicians/',
+
+							'img' => 'icon-lg-report.png'
+						),
 
 					),
 					array(
@@ -543,6 +644,37 @@ class CommonComponent extends Object
 							'url' => BASE_URL.'/maintenance/index',
 
 							'img' => 'icon-lg-jobs.png'
+
+						),
+
+						array(
+
+							'name' => 'City',
+
+							'url' => BASE_URL.'/settings/showCities',
+
+							'img' => 'icon-lg-jobs.png'
+
+						),
+
+						array(
+
+							'name' => 'Time option',
+
+							'url' => BASE_URL.'/settings/timeOption',
+
+							'img' => 'icon-lg-jobs.png'
+
+						),
+
+
+						array(
+
+							'name' => 'Gallery',
+
+							'url' => 'http://hvacproz.ca/acesys/filemanager/dialog.php',
+
+							'img' => 'edit_18.png'
 
 						)
 					),
@@ -636,10 +768,22 @@ class CommonComponent extends Object
 						,
 						array(
 
-							'name' => 'Commission Review',
-							'url' => 'https://mail.google.com',
-							'img' => 'gmial-icon.jpeg',
-							'target' => '_blank'
+							'name' => 'Tech Report',
+							'url' => BASE_URL.'/commissions/chartreport',
+							'img' => 'icon-lg-report.png',
+						),
+						array(
+
+							'name' => 'Night Shift',
+							'url' => BASE_URL.'/tech_schedule/night_shift',
+							'img' => 'icon-lg-report.png',
+						),
+
+						array(
+
+							'name' => 'Tech Purchase',
+							'url' => BASE_URL.'/commissions/techPurchase',
+							'img' => 'icon-lg-customers.png',
 						)
 
 					),
@@ -865,7 +1009,22 @@ class CommonComponent extends Object
 								'url' => BASE_URL.'/reports/monthlyPaymentReport',
 
 								'img' => 'icon-lg-all-bookings.png'
-							)
+							),
+							array(
+								'name' => 'Bank Reconciliation',
+
+								'url' => BASE_URL.'/reports/cardPaymentSummary',
+
+								'img' => 'icon-lg-all-bookings.png'
+							),array(
+
+							'name' => 'Edit Inventory Payment',
+
+							'url' => BASE_URL.'/payments/ShowPaymentMethod',
+
+							'img' => 'icon-lg-all-bookings.png'
+						)
+							
                       ),
 					array (
 						array(
@@ -923,6 +1082,15 @@ class CommonComponent extends Object
 							'name' => 'Blast Email Template',
 
 							'url' => BASE_URL.'/settings/editBulkEmail?title=bulk_email',
+
+							'img' => 'icon-lg-mail.png'
+
+						),
+						array(
+
+							'name' => 'GLS Invoice Temp',
+
+							'url' => BASE_URL.'/settings/edit?title=gls_invoice_temp',
 
 							'img' => 'icon-lg-mail.png'
 
@@ -991,7 +1159,102 @@ class CommonComponent extends Object
 
 							'img' => 'icon-lg-mail.png'
 
+						),
+
+						array(
+
+							'name' => 'Contract Pdf',
+
+							'url' => BASE_URL.'/settings/edit?title=pdf_template',
+
+							'img' => 'icon-lg-mail.png'
+
+						),
+
+						array(
+
+							'name' => 'Tech Invoice',
+
+							'url' => BASE_URL.'/settings/edit?title=tech_invoice',
+
+							'img' => 'icon-lg-mail.png'
+
+						),
+
+						array(
+
+							'name' => 'Tech Purchase Invoice',
+
+							'url' => BASE_URL.'/settings/edit?title=tech_purchase_invoice',
+
+							'img' => 'icon-lg-mail.png'
+
+						),
+
+
+						array(
+
+							'name' => 'New Permit',
+
+							'url' => BASE_URL.'/settings/edit?title=permit_template',
+
+							'img' => 'icon-lg-mail.png'
+						),
+
+						array(
+
+							'name' => 'Failed Permit',
+
+							'url' => BASE_URL.'/settings/edit?title=failed_permit_template',
+
+							'img' => 'icon-lg-mail.png'
 						)
+
+					),
+					array(		
+						array(
+							'name' => 'Tech Support',
+							'url' => BASE_URL.'/settings/showTrainingCategory',
+							'img' => 'icon-lg-jobs.png',
+						)
+						,
+						array(
+							'name' => 'Admin Support',
+							'url' => BASE_URL.'/settings/showAdminTrainingCategory',
+							'img' => 'icon-lg-jobs.png',
+						),
+						array(
+							'name' => 'Techs Training',
+							'url' => BASE_URL.'/settings/showTechTrainingCategory',
+							'img' => 'icon-lg-jobs.png',
+						),
+						array(
+								'name' => 'Agent Training',
+								'url' => BASE_URL.'/settings/showAgentTrainingCategory',
+								'img' => 'icon-lg-jobs.png',
+							),
+						// array(
+						// 	'name' => 'Admin Training',
+						// 	'url' => BASE_URL.'/settings/showAdminTraining',
+						// 	'img' => 'icon-lg-jobs.png',
+						// ),
+						// array(
+						// 	'name' => 'Agents Training',
+						// 	'url' => BASE_URL.'/settings/showAgentsTraining',
+						// 	'img' => 'icon-lg-jobs.png',
+						// )
+						
+						// ,
+						// array(
+						// 	'name' => 'Sub Category',
+						// 	'url' => BASE_URL.'/settings/showTrainingSubCategory',
+						// 	'img' => 'icon-lg-jobs.png',
+						// ),
+						// array(
+						// 	'name' => 'Second Sub Category',
+						// 	'url' => BASE_URL.'/settings/showTrainingSecondSubCategory',
+						// 	'img' => 'icon-lg-jobs.png',
+						// )
 					),
 					array(
 						array(
@@ -1111,13 +1374,23 @@ class CommonComponent extends Object
 							'target' => '_top'
 						),
 						array(
-							'name' => 'Category',
+							'name' => 'Main Category',
 							'url' => BASE_URL.'/iv_categories/showItemCategory',		
+							'img' => 'icon-lg-price.png',
+						),
+						array(
+							'name' => 'Category',
+							'url' => BASE_URL.'/iv_categories/showItemMidCategory',
 							'img' => 'icon-lg-price.png',
 						),
 						array(
 							'name' => 'Sub Category',
 							'url' => BASE_URL.'/iv_categories/showItemSubCategory',
+							'img' => 'icon-lg-price.png',
+						),
+						array(
+							'name' => 'Import Item',
+							'url' => BASE_URL.'/iv_items/importItem',
 							'img' => 'icon-lg-price.png',
 						),
 						array(
@@ -1313,6 +1586,31 @@ class CommonComponent extends Object
 		
 		elseif (($roleID == 3)||($roleID == 9)) // TELEMARKETERS and OUTSOURCE AGENTS
 		{
+			$db =& ConnectionManager::getDataSource('default');
+		$userID = (integer)$this->getLoggedUserID();
+		$showEstimateId = (integer)$this->getShowEstimateId();
+		$query = "select truck_id from ace_rp_truck_maps where user_id=$userID";
+		
+		$result = $db->_execute($query);
+		$trucks = array();
+		while ($row = mysql_fetch_array($result, MYSQL_ASSOC))
+        {
+		  $trucks[] = $row['truck_id'];	
+		}
+		//$menu="";
+		// if(in_array(40,$trucks) && ()){
+		if($roleID == 9 || $showEstimateId == 1 || $showEstimateId == 2 ) {
+			$menu123=array(
+							'name' => 'Estimates',
+
+							'url' => BASE_URL.'/reports/estimates',
+
+							'img' => 'icon-lg-all-bookings.png'
+						);
+		}
+		else {
+		$menu123="";
+		}
 			$menu = array(
 				'tabs' => array(),
 				'content' => array(
@@ -1338,7 +1636,7 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-schedule.png'
 						),
 						array(
-							'name' => 'Hot List',
+							'name' => 'Call To Book',
 							'url' => '#',
 							'onclick' => 'opencb();return false;',
 							//'onclick' => 'opencb()',
@@ -1349,13 +1647,26 @@ class CommonComponent extends Object
 							'name' => 'Telem Summary ',
 							'url' => BASE_URL.'/reports/telemarketers_summary',
 							'img' => 'icon-lg-all-bookings.png'
-						),
+						)
+						,
+						$menu123,
 						array(
 							'name' => 'Map',
 							'url' => '#',
 							'onclick' => 'openMap();return false;',
 							'img' => 'icon-ace.gif',
 							'target' => '_blank'
+						),
+						
+
+						array(
+
+							'name' => 'Gallery',
+
+							'url' => 'http://hvacproz.ca/acesys/filemanager/dialog.php',
+
+							'img' => 'edit_18.png'
+
 						),
 						array(
 							'name' => 'Cancellations',
@@ -1370,7 +1681,12 @@ class CommonComponent extends Object
 
 							'img' => 'voice.jpg'
 
-						)
+						),
+						array(
+								'name' => 'Agent Training',
+								'url' => BASE_URL.'/settings/showAgentTrainingCategory',
+								'img' => 'icon-lg-jobs.png',
+							),
 						// ,
 						// array(
 
@@ -1453,29 +1769,15 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-trucks.png'
 						),
 						array(
-							'name' => 'Summary',
-							'url' => BASE_URL.'/commissions/techSummary',
-							'img' => 'icon-lg-all-bookings.png'
+							'name' => 'Part Purchase',
+							'url' => BASE_URL.'/inventories/supplies',
+							'img' => 'icon-lg-inventory-moves.png'
 						),
 						array(
-							'name' => 'Schedule',
-							'url' => BASE_URL.'/orders/scheduleView',
-							'img' => 'icon-lg-schedule.png'
-						),
-						array(
-							'name' => 'Feedbacks',
-							'url' => BASE_URL.'/orders/feedbacks_list',
-							'img' => 'icon-lg-feedbacks.png'
-						),
-						array(
-							'name' => 'Feedback Display',
-							'url' => BASE_URL.'/orders/feedbackView',
-							'img' => 'icon-lg-feedbacks.png'
-						),
-						array(
-							'name' => 'Commission',
-							'url' => BASE_URL.'/commissions/editTech/'.$userID,
-							'img' => 'icon-lg-price.png'
+
+							'name' => 'Tech Purchase',
+							'url' => BASE_URL.'/commissions/techPurchase',
+							'img' => 'icon-lg-customers.png',
 						),
 						array(
 							'name' => 'Days off',
@@ -1483,15 +1785,51 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-technician.png'
 						),
 						array(
-							'name' => 'Tablet Invoice',
-							'url' => BASE_URL.'/orders/invoiceTablet',
-							'img' => 'invoice48x48.png',
-							'target' => '_top'
+							'name' => 'Commission',
+							'url' => BASE_URL.'/commissions/editTech/'.$userID,
+							'img' => 'icon-lg-price.png'
 						),
+						// array(
+						// 	'name' => 'Summary',
+						// 	'url' => BASE_URL.'/commissions/techSummary',
+						// 	'img' => 'icon-lg-all-bookings.png'
+						// ),
+						array(
+
+							'name' => 'Daily Summary',
+
+							'url' => BASE_URL.'/commissions/techSummary',
+
+							'img' => 'icon-lg-report.png'
+
+						),
+						// array(
+						// 	'name' => 'Schedule',
+						// 	'url' => BASE_URL.'/orders/scheduleView',
+						// 	'img' => 'icon-lg-schedule.png'
+						// ),
+						array(
+							'name' => 'Feedbacks',
+							'url' => BASE_URL.'/orders/feedbacks_list',
+							'img' => 'icon-lg-feedbacks.png'
+						),
+						
 						array(
 							'name' => 'Send Message',
 							'url' => BASE_URL.'/messages/EditMessage',
 							'img' => 'icon-lg-enter-work-done.png',
+							'target' => '_top'
+						),
+						
+						array(
+							'name' => 'Feedback Display',
+							'url' => BASE_URL.'/orders/feedbackView',
+							'img' => 'icon-lg-feedbacks.png'
+						),
+						array(
+							'name' => 'Home',
+							'url' => BASE_URL.'/orders/invoiceTablet',
+							'img' => 'invoice48x48.png',
 							'target' => '_top'
 						),
 						array(
@@ -1549,7 +1887,7 @@ class CommonComponent extends Object
 							'img' => 'icon-lg-report.png'
 						),
 						array(
-							'name' => 'Hot List',
+							'name' => 'Call To Book',
 							'url' => '#',
 							'onclick' => 'opencb()',
 							'img' => 'icon-lg-callback.png',
@@ -1706,13 +2044,32 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 	function hasRole($roleIDs)
 	{
 		global $_SESSION;
+		// if($_COOKIE['acecare'])
+		// {	
+		// 	$id = session_regenerate_id();
+		// 	$new_sessionid = session_id();
+		// 	$db =& ConnectionManager::getDataSource('default');
+		//     $query1 = "UPDATE ace_rp_users set session_id = '".$new_sessionid."' where id =".$_COOKIE['acecare'];     
+		//     $result = $db->_execute($query1);
+		//     echo "<pre>";
+		//     print_r($_SESSION); die;
+		// 	// $db =& ConnectionManager::getDataSource('default');
+  //   		$query2 = "SELECT role_id  from ace_rp_users where id =".$_COOKIE['acecare'];     
+  //   		$result2 = $db->_execute($query2);
+  //   		$roleId = mysql_fetch_array($result2);
+		// 	return in_array($roleId['role_id'], $roleIDs);
+		// } else {
+
+		// 	return in_array($_SESSION['user']['role_id'], $roleIDs);
+		// }
 		return in_array($_SESSION['user']['role_id'], $roleIDs);
 	}
 
 	function checkRoles($roles){
-		if( !$this->hasRole($roles) ) {
-			die('<h3 style="text-align:center">You have not permision to access this action!<br /><a href="javascript:history.go(-1)" style="text-align:center">back</a></h3>');
-		}
+
+		 if( !$this->hasRole($roles) ) {
+		 	die('<h3 style="text-align:center">You have not permision to access this action2!<br /><a href="javascript:history.go(-1)" style="text-align:center">back</a></h3>');
+		 }
 	}
 
 	function getLoggedUserID()
@@ -1724,6 +2081,12 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 	function getLoggedUserRoleID() {
 		global $_SESSION;
 		return ( $_SESSION['user']['role_id'] > 0  ? $_SESSION['user']['role_id'] : 0);
+	}
+
+	function getShowEstimateId()
+	{
+		global $_SESSION;
+		return ( $_SESSION['user']['show_estimate'] > 0  ? $_SESSION['user']['show_estimate'] : 0);
 	}
 
 	function getJobPayPeriodConditions($pDay=0)
@@ -1938,7 +2301,7 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 		// Creates an HTML 'select' drop-down on the basis of a given array
 		function getSelector($aSrc, $sControlName, $mCurrentItem)
 		{
-			$sRet = "<select id='$sControlName' name='data[$sControlName]'>";
+			$sRet = "<select id='$sControlName' name='data[$sControlName]'onchange =  'ChangeSupplier(this)'>";
 			$selected = "";
 			if (!$mCurrentItem)
 				$selected = "selected='selected'";
@@ -2025,7 +2388,7 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 			INSERT INTO ace_iv_transactions SET
 				doc_id = $doc_id,
 				item_id = '$item_id',
-				item_name = '$item_name',
+				item_name = '".mysql_real_escape_string($item_name)."',
 				item_qty = '$item_qty',
 				item_selling_price = '$item_selling_price',
 				item_purchase_price = '$item_purchase_price',
@@ -2037,7 +2400,7 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 		$db->_execute($query);
 	}
 
-	function itemAssetTransaction ($itemId, $purchasePrice, $regularPrice)
+	function itemAssetTransaction ($itemId, $purchasePrice, $regularPrice,$qty,$paidBy)
 	{
 		$db =& ConnectionManager::getDataSource("default");
 
@@ -2045,7 +2408,9 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 			INSERT INTO ace_iv_assets SET
 				item_id = '$itemId',
 				regular_price = '$regularPrice',
-				purchase_price = '$purchasePrice'
+				purchase_price = '$purchasePrice',
+				qty = '$qty'
+				
 		";
 		$db->_execute($query);
 		return $id = $db->lastInsertId();
@@ -2078,7 +2443,7 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 	function formateDate($date)
 	{
 		$date = explode("/", $date);
-		$new_date = $date[2]."-".$date[1]."-".$date[0];
+		$new_date = $date[2]."-".$date[0]."-".$date[1];
 		return $new_date;
 	}
 
@@ -2088,12 +2453,13 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 	{
 		$phone = "+1".str_replace ('-','', $phone);
 		// $phone = str_replace ('-','', $phone);
-
+		$msg = strip_tags($message);
 		$ch = curl_init();
-		//curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/send_text_sms.php");
-		curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/send_text_sms.php");
+		curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/send_text_sms.php");
+		// curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/send_text_sms.php");
+		// curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/send_text_sms.php");
 		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS,"phone=".urlencode($phone)."&body=".urlencode($message));
+		curl_setopt($ch, CURLOPT_POSTFIELDS,"phone=".urlencode($phone)."&body=".urlencode($msg));
 		// receive server response ...
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$result = curl_exec($ch);
@@ -2111,8 +2477,9 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 	function getSmsStatus($id)
 	{
 		$ch = curl_init();
-		//curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/get_sms_status.php");
-		curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/get_sms_status.php");
+		curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/get_sms_status.php");
+		// curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/get_sms_status.php");
+		// curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/get_sms_status.php");
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS,"id=".$id);
 		// receive server response ...
@@ -2148,8 +2515,9 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 		try
 		{
 			$ch = curl_init();
-			//curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
-			curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailcheck.php");
+			curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca.ca/acesystem2018/mailcheck.php");
+			// curl_setopt($ch, CURLOPT_URL,"http://acecare.ca/acesystem2018/mailcheck.php");
+			// curl_setopt($ch, CURLOPT_URL,"http://35.209.147.55/acesystem2018/mailcheck.php");
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS,"TO=".$to."&SUBJECT=".$subject."&BODY=".urlencode($body)."&imagePath=".$imagePath);
 			// receive server response ...
@@ -2169,13 +2537,19 @@ function pagination($allPage, $currentPage, $itemsToShow='', $pagesToDisplay='',
 	{
 		$url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$source."&destinations=".$destination."&mode=driving&language=en-EN&sensor=false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw";
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/distance_calculation.php");
         curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_POSTFIELDS,"");
+        curl_setopt($ch, CURLOPT_POSTFIELDS,"URL=".urlencode($url));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        // curl_setopt($ch, CURLOPT_URL, $url);
+        // curl_setopt($ch, CURLOPT_POST, 1);
+        // curl_setopt($ch, CURLOPT_HEADER, 0);
+        // curl_setopt($ch, CURLOPT_POSTFIELDS,"");
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $response = curl_exec($ch);
+
+        // print_r($response); die;
         $result = json_decode($response, true);
         $err = curl_error($ch);
         curl_close($ch);

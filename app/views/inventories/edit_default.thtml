@@ -23,7 +23,14 @@ function showItemsById(category_id){
 	window.location.href = $url;
 }
 $(document).ready(function(){
-	$('#SearchToUser').multiselect().deselectAll();
+    $("#myInput").live("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        $("#myTable tr").filter(function() {
+          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+    });
+	
+    $('#SearchToUser').multiselect().deselectAll();
 	$('#SearchToUser').multiselect();
 	$('#SearchToUser option').each(function() {
 		$(this).attr('selected',false);
@@ -42,40 +49,57 @@ $(document).ready(function(){
 
 	$(".transfer_item").live("click", function(){
 		var items= [];	
-		$('.selectedItems:checkbox:checked').each(function () {
-			var cur = $(this).parent().parent();
-			var itema = {}; 
-       		itema.item_id 		 		= $(".item_id",cur).val();
-			itema.item_name 	 		= $(".item_name",cur).val();
-			itema.item_category_id 	 	= $(".item_category_id" ,cur).val();
-			itema.item_quantity	 		= $('.itemQuantity',cur).val();
-			items.push(itema);
-		});
+        var fromArr   = $("#from_user").children("option:selected").val();
 		var technicians = [];
 		$('#SearchToUser option:selected').each(function() {
     		technicians.push($(this).val());
 		});
-		var itemArr = JSON.stringify(items);
-		var techArr = JSON.stringify(technicians);
-		$.ajax({
-			url:"<?=BASE_URL;?>/inventories/saveTechDefaultInventory",
-			type: 'POST',
-			dataType: 'json',
-			data: {items:itemArr, technician:techArr },
-			cache: false,
-			success: function(data) {
-				if(data.res == "OK")
-				{
-					location.reload();
-				}
-			}			
-		});
+        var toLenght = technicians.length;
+        if(toLenght > 0)
+        {        
+    		$('.selectedItems:checkbox:checked').each(function () {
+    			var cur = $(this).parent().parent();
+    			var itema = {}; 
+           		itema.item_id 		 		= $(".item_id",cur).val();
+    			itema.item_name 	 		= $(".item_name",cur).val();
+    			itema.item_category_id 	 	= $(".item_category_id" ,cur).val();
+    			itema.item_quantity	 		= $('.itemQuantity',cur).val();
+                itema.purchase_price         = $('.purchase_price',cur).val();
+    			items.push(itema);
+    		});
+    		var itemArr   = JSON.stringify(items);
+    		var toArr     = JSON.stringify(technicians);
+            
+            var tdate   = $(".ffromdate").val();
+    		$.ajax({
+    			url:"<?=BASE_URL;?>/inventories/saveTechDefaultInventory",
+    			type: 'POST',
+    			dataType: 'json',
+    			data: {items:itemArr, toTech:toArr, fromTech:fromArr,tdate:tdate},
+    			cache: false,
+    			success: function(data) {
+    				if(data.res == "OK")
+    				{
+    					// window.location.href = "<?=BASE_URL?>/inventories/editDefault"
+                        location.reload();
+    				}
+    			}			
+    		});
+        } else {
+            document.forms['editDocForm'].submit();
+        }
 
 	});
 	
 });
 </script>
 <style type="text/css">
+ .space{
+    padding-right: 10px;
+ }
+.itemTable {
+        width: 100%;
+}
 .transfer_item{
 	padding: 5px;
     margin-left: 30px;
@@ -87,9 +111,7 @@ $(document).ready(function(){
 	text-align: left;
 }
 </style>
-<form name="editDocForm" action="<?=BASE_URL;?>/inventories/saveDefault"  method="post">
-	<input type="hidden" name="data[doc_id]" value="<?=$doc_id?>"/>
-	<input type="hidden" name="data[doc_type]" value="<?=$doc_type?>"/>
+<form name="editDocForm" id="editDocForm" action="?"  method="get">
 	<div class="list_wrapper">
     <div class="list_header">
     <?php if($inventoryAccess['add_item'] && $mode != 'store') { ?>
@@ -97,36 +119,56 @@ $(document).ready(function(){
     <?php } ?>
     <span class="clear_this">&nbsp;</span>
     </div>
-    <div class="transfer-div">
-    	Technician: <select id='SearchToUser' multiple name="data[Message][search_user][]">
-			<option value="0">Warehouse</option>
-            <?php foreach($allTechnicians as $key => $val){?>								
-				<option value="<?=$key ?>"><?php echo $val?></option>
-			<?php } ?>
-		</select>
+    <!-- <div class="transfer-div">
+        	
+        &nbsp;
 		<input type="button" name="transfer" value="Transfer" class="transfer_item ">
-    </div>
-    <table class="list clear_this">
+    </div> -->
+    <table>
         <tr>
-        	<td><input type="button" name="parts" value="Parts" id="open_parts" onclick="showItemsById(8);"></td>	
-        	<td><input type="button" name="reusable" value="Reusable" id="reusable_items" onclick="showItemsById(26);"></td>	
+            <td align="left">Date:</td>
+           <td align="left" colspan="5"><input type="text" name="ffromdate" class="emboss ffromdate" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>"></td>
         </tr>
         <tr>
-            <th></th>
-        	<th>SKU</th>
-            <th>Name</th>                        
-            <th>Regular Price</th>
-            <th>Selling Price</th>
-            <th>Model</th>
-            <th>Supplier Price</th>
-            <th>Efficiency</th>
-            <th>Brand</th>
-            <th>Supplier</th>
-            <th>Description 1</th>
-            <th>Description 2</th>
-            <th>Quantity</th>
-            <th></th>
+            <td></td>
+            <td class="space"><input id="myInput" type="text" placeholder="Search.."></td>
+            <td align="right" class="space">Search</td>
+            <td class="space"><select id="from_user" name="from_user">
+                <option selected="<? echo ($fromUser == 0) ? 'selected' : ''?>" value="0">--</option> 
+                <?php foreach($allTechnicians as $key => $val){?>     
+                    <option <?= ($key == $fromUser)? 'selected' : ''?> value="<?=$key ?>"><?php echo $val?></option>
+                <?php } ?>
+                 </select>
+             </td>
+             <td align="right" class="space">To</td>
+             <td>
+                <select id='SearchToUser' multiple name="search_user[]">
+                <?php foreach($allTechnicians as $key => $val){?>                               
+                    <option value="<?=$key ?>"><?php echo $val?></option>
+                <?php } ?>
+                </select>
+            </td>
+            <td><input type="button" name="transfer" value="Submit" class="transfer_item"></td>
         </tr>
+    </table>
+    <table class="list clear_this itemTable">  
+        <thead>
+            <tr>
+                <th></th>
+                <th style="width: 5%">Quantity</th>
+            	<th>SKU</th>
+                <th>Name</th>   
+                <th>Brand</th>    
+                <?php if($fromUser > 0) {?>
+                    <th><?php echo $inventoryTechnician[$fromUser]['short_name']?></th>
+                <?php } else { ?>
+                <?php foreach ($inventoryTechnician as $tech => $value): ?>
+                    <th><?php echo $value['short_name'] ?></th>
+                <?php endforeach ?>
+               <?php } ?>
+            </tr>
+        </thead>
+        <tbody id="myTable">
         <?php $i = 0; ?>
         <?php foreach($items as $item) { ?>
         <tr class="<?php echo $i++%2==0?'odd':'even' ?> <?php if($inventoryAccess['edit_item'] && $mode != 'store') { ?>editable<?php } ?> item"><input type="hidden" class="id" value="<?php echo $item['id'] ?>" />
@@ -135,23 +177,31 @@ $(document).ready(function(){
             <input type="hidden" class="item_name" value="<?php echo $item['name'] ?>" />
             <input type="hidden" class="item_category_id" value="<?php echo $item['category_id'] ?>" />
             <input type="hidden" class="item_sub_category_id" value="<?php echo $item['sub_category_id'] ?>" />
-            <td style="width: 33px;"><img style="height: 14px;width: 14px;" src="<?=ROOT_URL?>/app/webroot/img/cross-icon.jpeg" class="remove-dup-item" inactiveId ="<?=$InactiveId?>" itemId="<?=$item['id']?>"><img src="<?=ROOT_URL?>/app/webroot/img/add.png" class="add-dup-item" itemId="<?=$item['id']?>"></td>
-            <td><?php echo $item['sku'] ?></td> 
-            <td><?php echo $item['name'] ?></td>                        
-            <td class="right "><?php echo $item['regular_price'] ?></td>
-            <td class="right "><?php echo $item['selling_price'] ?></td>
-            <td><?php echo $item['model'] ?></td>
-            <td class="right "><?php echo $item['supplier_price'] ?></td>
-            <td><?php echo $item['efficiency'] ?></td>
-            <td><?php echo $item['brand'] ?></td>
-            <td><?php echo $item['supplier'] ?></td>
-            <td><?php echo $item['description1'] ?></td>
-            <td><?php echo $item['description2'] ?></td>
-            <td><input type="text" name="itemQuantity" class="itemQuantity" style="width: 70%"></td>
+            <input type="hidden" class="purchase_price" value="<?php echo $item['supplier_price'] ?>" />
             <td><input type="checkbox" name="multipleItems[]" class="selectedItems"></td>
+            <td><input type="text" name="itemQuantity" class="itemQuantity" style="width: 100%"></td>
+            <td><?php echo $item['sku'] ?></td> 
+            <td><?php echo $item['name'] ?></td>    
+            <td><?php echo $item['brand'] ?></td>  
+            
+            <?php if($fromUser > 0) {?>
+                <td><?php echo $item['quantity'] ?></td>
+            <?php } else {?>
+            <?php foreach ($inventoryTechnician as $tech => $value): ?>
+                <td class="right">
+                 <?php if(!empty($item['tech_data'])){?>
+                 <?php foreach ($item['tech_data'] as $tech1 => $value1): ?>
+                    <?php if($value['id'] == $value1['TechInventoryItem']['tech_id'] ) {?>
+                         <?php echo $value1['TechInventoryItem']['quantity'] ?>
+                    <?php } ?>
+                 <?php endforeach ?>
+             <?php } ?>
+            </td>
+            <?php endforeach ?>     
+            <?php } ?>             
         </tr>
         <?php } ?>
+        </tbody>
     </table> 
-    <input type="button" name="transfer" value="Transfer" class="transfer_item" style="float:right; margin-top: 10px">   
 </div>
 </form>

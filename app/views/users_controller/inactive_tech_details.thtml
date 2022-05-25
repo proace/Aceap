@@ -1,0 +1,272 @@
+
+<style type="text/css">
+.common-property{
+    font-size: 12px;background: white;
+}
+.frame-wrap{
+    width: 100%;
+}
+    .inactive{
+        color: #c8c8c8 !important;
+        cursor:default !important;
+    }
+    .active{
+        font-weight:bold;
+    }
+    .notready{
+        color: #f80e01 !important;
+    }
+    td.inactive.notready{
+        color: #ffaaa6 !important;
+    }
+    .results{
+        margin-top: 20px;
+    }
+    .results th{
+        color:black;
+        border-left:1px solid #9f9f9f;
+        border-bottom:1px solid #9f9f9f;
+    }
+    .results, .results td{
+        border-style: solid;
+        border-width:1px;
+       /* padding-top: 10px;*/
+    }
+    .calendar {
+    width:50px;
+        height:50px;
+        text-align:right;
+        vertical-align:bottom;
+        cursor:pointer;
+    }
+    .calendar_off {
+        text-align:center;
+        vertical-align:middle;
+    }
+#return {
+    display:block;
+    color:#ff6633;
+    background-color:#333333;
+    padding:3px;
+    position:relative;
+    left:-10px;
+    top:-10px;
+    font-size:140%;
+}
+
+</style>
+ <?php echo $html->formTag('/users/inactiveTechDetails/'.$user_id,null,array("name"=>"inactivetech", "id" => "inactivetech") ); ?>
+<?php echo $html->hiddenTag('rurl', $this->params['url']['rurl']); ?>
+<h2>Tech Information</h2>
+ <div class="frame-body" style="clear: both; width: 96%;">
+            <table>
+                <tr>
+                    <td align="right">First Name:</td>
+                    <td><input type="text" name='data[User][first_name]' value="<?=$user_details['User']['first_name']?>" style="width: 140px;" /></td>
+                    <td align="right">Phone:</td>
+                    <td><input type="text" name='data[User][phone]' value="<?=$user_details['User']['phone']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Last Name:</td>
+                    <td><input type="text" name='data[User][last_name]' value="<?=$user_details['User']['last_name']?>" style="width: 140px;" /></td>
+                    <td align="right">Cell Phone:</td>
+                    <td><input type="text" name='data[User][cell_phone]' value="<?=$user_details['User']['cell_phone']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Address:</td>
+                    <td><input type="text" name='data[User][address]' value="<?=$user_details['User']['address']?>" style="width: 140px;" /></td>
+                    <td align="right">E-Mail:</td>
+                    <td><input type="text" name='data[User][email]' value="<?=$user_details['User']['email']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right">City:</td>
+                    <td><input type="text" name='data[User][city]' value="<?=$user_details['User']['city']?>" style="width: 140px;" /></td>
+                    <td align="right">Login:</td>
+                    <td><input type="text" name='data[User][username]' value="<?=$user_details['User']['username']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Postal Code:</td>
+                    <td><input type="text" name='data[User][postal_code]' value="<?=$user_details['User']['postal_code']?>" style="width: 140px;" /></td>
+                    <?php //Ali, Sanaz, Maria Flor, Anthony
+                        if (!$method): 
+                    ?>
+                    <td align="right">Password:</td>
+                    <td><input type="text" name='data[User][password]' value="<?=$user_details['User']['password']?>" style="width: 140px;" /></td>
+                    <?php endif; ?>
+                </tr>
+                 <tr>
+                    <td align="right">Starting Date</td>
+                    <td>
+                        <!-- <input type="text" name='data[User][start_date]' value="<?=$user_details['User']['start_date']?>" style="width: 140px;" /> -->
+                        <input class="emboss" type="text" name="data[User][start_date]" style="width: 85px; cursor: hand; cursor: pointer;" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$user_details['User']['start_date']?>">
+                    </td>
+                  
+                    <td align="right">License:</td>
+                    <td><input type="text" name='data[User][license]' value="<?=$user_details['User']['license']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Bank Name</td>
+                    <td><input type="text" name='data[User][bank_name]' value="<?=$user_details['User']['bank_name']?>" style="width: 140px;" /></td>
+                  
+                    <td align="right">Bank Branch:</td>
+                    <td><input type="text" name='data[User][bank_branch]' value="<?=$user_details['User']['bank_branch']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Gst Number</td>
+                    <td><input type="text" name='data[User][gst_number]' value="<?=$user_details['User']['gst_number']?>" style="width: 140px;" /></td>
+                  
+                    <td align="right">Gst %:</td>
+                    <td><input type="text" name='data[User][gst_percent]' value="<?=$user_details['User']['gst_percent']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Wcb Number</td>
+                    <td><input type="text" name='data[User][wcb_number]' value="<?=$user_details['User']['wcb_number']?>" style="width: 140px;" /></td>
+                  
+                    <td align="right">Wcb %:</td>
+                    <td><input type="text" name='data[User][wcb_percent]' value="<?=$user_details['User']['wcb_percent']?>" style="width: 140px;" /></td>
+                </tr>
+                 <tr>
+                    <td align="right">Contract Exp Date</td>
+                    <td>
+                        <!-- <input type="text" name='data[User][end_date]' value="<?=$user_details['User']['end_date']?>" style="width: 140px;" /> -->
+                        <input class="emboss" type="text" name="data[User][end_date]" style="width: 85px; cursor: hand; cursor: pointer;" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$user_details['User']['end_date']?>">
+                    </td>
+                    <td align="right">Driving License Number</td>
+                    <td><input type="text" name='data[User][driving_license_number]' value="<?=$user_details['User']['driving_license_number']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Truck Plate Number</td>
+                    <td><input type="text" name='data[User][truck_plate_number]' value="<?=$user_details['User']['truck_plate_number']?>" style="width: 140px;" /></td>
+                  
+                    <td align="right">Truck Model:</td>
+                    <td><input type="text" name='data[User][truck_model]' value="<?=$user_details['User']['truck_model']?>" style="width: 140px;" /></td>
+                </tr>
+                <tr>
+                    <td align="right"><b>Note:</b></td>
+                    <td colspan="3"><textarea name='data[User][notes]' rows="4" cols="70"><?=$user_details['User']['notes']?></textarea></td>
+                </tr>
+                <tr style="text-align: center;">
+                    <td colspan="4"><b>Qualification</b></td>
+                </tr>
+                <tr>
+                    <td colspan="4"><b>Residential:</b></td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <table id="tech_qua">
+                        <tr>
+                            <th></th>
+                            <th>Service</th>
+                            <th>Repair</th>
+                            <th>Installation</th>
+                        </tr>
+                        <tr>
+                            <td><b>Ductless System</b><input type="hidden" name="qa[1][id]" value="1"></td>
+                            <td><input type="text" name="qa[1][service]" value="<?=$user_details['TechQualification'][0]['service']?>"></td>
+                            <td><input type="text" name="qa[1][repair]" value="<?=$user_details['TechQualification'][0]['repair']?>"></td>
+                            <td><input type="text" name="qa[1][installation]" value="<?=$user_details['TechQualification'][0]['installation']?>"></td>
+                        </tr>
+                        <tr>
+                            <td><b>Central AC or Heat Pump</b><input type="hidden" name="qa[2][id]" value="2"></td>
+                            <td><input type="text" name="qa[2][service]" value="<?=$user_details['TechQualification'][1]['service']?>"></td>
+                            <td><input type="text" name="qa[2][repair]" value="<?=$user_details['TechQualification'][1]['repair']?>"></td>
+                            <td><input type="text" name="qa[2][installation]" value="<?=$user_details['TechQualification'][1]['installation']?>"></td>
+                        </tr>
+                        <tr>
+                            <td><b>Ac</b><input type="hidden" name="qa[3][id]" value="3"></td>
+                            <td><input type="text" name="qa[3][service]" value="<?=$user_details['TechQualification'][2]['service']?>"></td>
+                            <td><input type="text" name="qa[3][repair]" value="<?=$user_details['TechQualification'][2]['repair']?>"></td>
+                            <td><input type="text" name="qa[3][installation]" value="<?=$user_details['TechQualification'][2]['installation']?>"></td>
+                        </tr>
+                         <tr>
+                            <td><b>Boiler</b><input type="hidden" name="qa[4][id]" value="4"></td>
+                            <td><input type="text" name="qa[4][service]" value="<?=$user_details['TechQualification'][3]['service']?>"></td>
+                            <td><input type="text" name="qa[4][repair]" value="<?=$user_details['TechQualification'][3]['repair']?>"></td>
+                            <td><input type="text" name="qa[4][installation]" value="<?=$user_details['TechQualification'][3]['installation']?>"></td>
+                        </tr> 
+                        <tr>
+                            <td><b>Furnace</b><input type="hidden" name="qa[5][id]" value="5"></td>
+                            <td><input type="text" name="qa[5][service]" value="<?=$user_details['TechQualification'][4]['service']?>"></td>
+                            <td><input type="text" name="qa[5][repair]" value="<?=$user_details['TechQualification'][4]['repair']?>"></td>
+                            <td><input type="text" name="qa[5][installation]" value="<?=$user_details['TechQualification'][4]['installation']?>"></td>
+                        </tr> 
+                        <tr>
+                            <td><b>Hot Water Tank</b><input type="hidden" name="qa[6][id]" value="6"></td>
+                            <td><input type="text" name="qa[6][service]" value="<?=$user_details['TechQualification'][5]['service']?>"></td>
+                            <td><input type="text" name="qa[6][repair]" value="<?=$user_details['TechQualification'][5]['repair']?>"></td>
+                            <td><input type="text" name="qa[6][installation]" value="<?=$user_details['TechQualification'][5]['installation']?>"></td>
+                        </tr> 
+                        <tr>
+                            <td><b>Tankless</b><input type="hidden" name="qa[7][id]" value="7"></td>
+                            <td><input type="text" name="qa[7][service]" value="<?=$user_details['TechQualification'][6]['service']?>"></td>
+                            <td><input type="text" name="qa[7][repair]" value="<?=$user_details['TechQualification'][6]['repair']?>"></td>
+                            <td><input type="text" name="qa[7][installation]" value="<?=$user_details['TechQualification'][6]['installation']?>"></td>
+                        </tr> 
+                        <tr>
+                            <td><b>Fireplace</b><input type="hidden" name="qa[8][id]" value="8"></td>
+                            <td><input type="text" name="qa[8][service]" value="<?=$user_details['TechQualification'][7]['service']?>"></td>
+                            <td><input type="text" name="qa[8][repair]" value="<?=$user_details['TechQualification'][7]['repair']?>"></td>
+                            <td><input type="text" name="qa[8][installation]" value="<?=$user_details['TechQualification'][7]['installation']?>"></td>
+                        </tr>
+                        <tr>
+                            <td><b>Air Duct Cleaning</b><input type="hidden" name="qa[9][id]" value="9"></td>
+                            <td><input type="text" name="qa[9][service]" value="<?=$user_details['TechQualification'][8]['service']?>"></td>
+                            <td><input type="text" name="qa[9][repair]" value="<?=$user_details['TechQualification'][8]['repair']?>"></td>
+                            <td><input type="text" name="qa[9][installation]" value="<?=$user_details['TechQualification'][8]['installation']?>"></td>
+                        </tr>
+                    </table>
+                    </td>
+                </tr>
+                <tr><td colspan="4"><b>Commercial:</b></td></tr>
+                 <tr>
+                    <td colspan="4">
+                        <table id="tech_qua">
+                            <tr>
+                                <th></th>
+                                <th>Service</th>
+                                <th>Repair</th>
+                                <th>Installation</th>
+                            </tr>
+                            <tr>
+                                <td><b>Roof Top</b><input type="hidden" name="qa[10][id]" value="10"></td>
+                                <td><input type="text" name="qa[10][service]" value="<?=$user_details['TechQualification'][9]['service']?>"></td>
+                                <td><input type="text" name="qa[10][repair]" value="<?=$user_details['TechQualification'][9]['repair']?>"></td>
+                                <td><input type="text" name="qa[10][installation]" value="<?=$user_details['TechQualification'][9]['installation']?>"></td>
+                            </tr>
+                            <tr>
+                                <td><b>Sheet Metal Work</b><input type="hidden" name="qa[11][id]" value="11"></td>
+                                <td><input type="text" name="qa[11][service]" value="<?=$user_details['TechQualification'][10]['service']?>"></td>
+                                <td><input type="text" name="qa[11][repair]" value="<?=$user_details['TechQualification'][10]['repair']?>"></td>
+                                <td><input type="text" name="qa[11][installation]" value="<?=$user_details['TechQualification'][10]['installation']?>"></td>
+                            </tr>
+                            <tr>
+                                <td><b>Water Source Heat Pump</b><input type="hidden" name="qa[12][id]" value="12"></td>
+                                <td><input type="text" name="qa[12][service]" value="<?=$user_details['TechQualification'][11]['service']?>"></td>
+                                <td><input type="text" name="qa[12][repair]" value="<?=$user_details['TechQualification'][11]['repair']?>"></td>
+                                <td><input type="text" name="qa[12][installation]" value="<?=$user_details['TechQualification'][11]['installation']?>"></td>
+                            </tr>
+                            <tr>
+                                <td><b>Estimate</b><input type="hidden" name="qa[13][id]" value="13"></td>
+                                <td><input type="text" name="qa[13][service]" value="<?=$user_details['TechQualification'][12]['service']?>"></td>
+                                <td><input type="text" name="qa[13][repair]" value="<?=$user_details['TechQualification'][12]['repair']?>"></td>
+                                <td><input type="text" name="qa[13][installation]" value="<?=$user_details['TechQualification'][12]['installation']?>"></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                    <?php echo $html->submit("Save",array("class"=>"buttons remove_save"));?>
+                    </td>
+                </tr>
+               <!--  <?php //Ali, Sanaz, Maria Flor, Anthony
+                    if (!$method): 
+                ?>
+                <tr>
+                    <td><? echo $html->submit("Save",array("class"=>"buttons")); ?></td>
+                </tr>
+                <?php endif; ?> -->
+            </table>
+
+            
+        </div>

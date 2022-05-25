@@ -1,5 +1,5 @@
 <?
-error_reporting(E_PARSE  ^ E_ERROR );
+// error_reporting(E_PARSE  ^ E_ERROR );
 class MessagesController extends AppController
 {
 	//To avoid possible PHP4 problemfss
@@ -121,6 +121,23 @@ class MessagesController extends AppController
 		
 		$this->set('records', $records);
 	}
+
+	function getMessageHistory1() {
+		$phone_number = $_POST['phone_number'];
+		
+		 //$url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$postal1."&destinations=".$postalCode."&mode=driving&language=en-EN&sensor=false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw";
+            
+			$ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/get_con_history.php?phone=$phone_number");
+            curl_setopt($ch, CURLOPT_POST, 1);
+            //curl_setopt($ch, CURLOPT_POSTFIELDS,"URL=".$phone_number);
+            // receive server response ...
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec ($ch);//exit;
+			print_r($response);
+		  exit;
+	}
+
 	function getMessages()
 	{
 		$toUser = $this->Common->getLoggedUserID();
@@ -134,8 +151,7 @@ class MessagesController extends AppController
 		$total = $row['total'];    	
 		$data=array('total'=>$total);
 		echo json_encode($data);
-    	
-    	
+     	
 		exit();
 	}
 	function markAsRead()
@@ -174,23 +190,27 @@ class MessagesController extends AppController
 			// 					left outer join ace_rp_users fu on fu.id=m.from_user
 			// 				 where m.state = 0 and m.to_user='".$this->Common->getLoggedUserID()."' and m.to_date='".$currentDate."'
 			// 				 order by to_date desc";		
-			$messages = "select m.id, m.from_date,m.state,
+			$messages = "select m.id, m.from_date,m.state,m.customer_notify,m.order_id,
 										 m.from_user, concat(fu.first_name, ' ', fu.last_name) from_name,
 										 m.to_user, concat(tu.first_name, ' ', tu.last_name) to_name,
-										 m.txt, m.file_link, m.customer_link, m.state
+										 m.txt, m.file_link, m.customer_link, m.state, fu.phone as from_contact,cu.cell_phone as customer_contact
 								from ace_rp_messages m
 								left outer join ace_rp_users tu on tu.id=m.to_user
 								left outer join ace_rp_users fu on fu.id=m.from_user
+								left join ace_rp_orders o on o.id = m.order_id
+								left join ace_rp_customers cu on cu.id = o.customer_id
 							 where m.state = 0 and m.to_user='".$this->Common->getLoggedUserID()."' and m.to_date='".$currentDate."'
 							 order by m.id desc limit 1";	
 		} else {
-			$messages = "select m.id, m.from_date,m.state,
+			$messages = "select m.id, m.from_date,m.state,m.customer_notify,m.order_id,
 										 m.from_user, concat(fu.first_name, ' ', fu.last_name) from_name,
 										 m.to_user, concat(tu.first_name, ' ', tu.last_name) to_name,
-										 m.txt, m.file_link, m.customer_link, m.state
+										 m.txt, m.file_link, m.customer_link, m.state, fu.phone as from_contact,cu.cell_phone as customer_contact
 								from ace_rp_messages m
 								left outer join ace_rp_users tu on tu.id=m.to_user
 								left outer join ace_rp_users fu on fu.id=m.from_user
+								left join ace_rp_orders o on o.id=m.order_id
+								left join ace_rp_customers cu on cu.id=o.customer_id
 							 where m.state<2 $condition
 							   and (m.to_user='".$this->Common->getLoggedUserID()."'
 									 or m.from_user='".$this->Common->getLoggedUserID()."'
@@ -210,6 +230,20 @@ class MessagesController extends AppController
 
 		}
 
+		// echo "<pre>";
+		// print_r($newMessage); die;
+		$notes = array();
+		if(!empty($newMessage['order_id'])){
+			$query = "
+	                SELECT message FROM ace_rp_notes where order_id = ".$newMessage['order_id']."";
+	         $result = $db->_execute($query);
+	           
+	        while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+	        	$notes[] = $row['message'];
+	        }
+		}
+		// print_r($newMessage); die;
+		$this->set('notes', $notes);
 		$this->set('newMessage', $newMessage);
 		$this->set('allSources', $allSources); 
 		if($fromMessage) 
@@ -265,7 +299,7 @@ class MessagesController extends AppController
 
 	function saveMessage()
 	{
-
+		date_default_timezone_set("America/Vancouver");
 		$is_reply = $_POST['is_reply'];
 		$this->data['Message']['from_date']= date("Y-m-d H:i:s");
 		$this->data['Message']['from_user']= $this->Common->getLoggedUserID();
@@ -763,12 +797,27 @@ class MessagesController extends AppController
 		exit();
 	}
 
+	function get_conversation(){
+		$all = "";
+            
+			$ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/get_con.php");
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS,"ALL=".urlencode($all));
+            // receive server response ...
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec ($ch);//exit;
+			print_r($response);
+		exit;
+	}
+
 	// Loki: Set message frame
 	function sendTextMessage() 
 	{	
 		// error_reporting(E_ALL);
 		$db =& ConnectionManager::getDataSource($this->User->useDbConfig);
 		$phone_number = isset($_POST['phone_num']) ? $_POST['phone_num']: '';
+		$phone_number1 = str_replace("-","",$phone_number);
 		$message = isset($_POST['message']) ? mysql_real_escape_string($_POST['message']) : '';
 		$today = gmdate("Y-m-d\TH:i:s\Z");
 		$sender_id = $this->Common->getLoggedUserID();
@@ -777,7 +826,7 @@ class MessagesController extends AppController
 			$response = $this->Common->sendTextMessage($phone_number, $message); 
 			if(!empty($response))
 			{
-				$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id) VALUES ('','', ".$response->id.",'".$message."','".$today."', '".$phone_number."',1, ".$sender_id.")";
+				$query = "INSERT INTO ace_rp_sms_log (order_id, customer_id, log_id, message, sms_date, phone_number, sms_type, sender_id) VALUES ('','', '".$response->id."','".$message."','".$today."', '".$phone_number1."',1, ".$sender_id.")";
 				$result = $db->_execute($query);	
 				if($result)
 				{

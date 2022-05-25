@@ -1,53 +1,53 @@
 /*****************************************************************************
  * JavaScript Sample of Bria Desktop API usage over a WebSocket connection
  *****************************************************************************/
-/* Using jQuery to facilitate some interactions with the HTML page, this is not a requirement to use the Bria Desktop API */ 
+/* Using jQuery to facilitate some interactions with the HTML page, this is not a requirement to use the Bria Desktop API */
 jq = jQuery.noConflict();
- 
- 
-/* A collection of fixed string values used with the Bria Desktop API, arranged in some ENUM-style structures 
+
+
+/* A collection of fixed string values used with the Bria Desktop API, arranged in some ENUM-style structures
    are found in bria_api_constants.js. This is mainly to make the sample code easier to read and to avoid the
    occasional slight typo that can be challenging to troubleshoot. "Raw" values can certainly be used in place
-   of these should that be preferred. */   
- 
-  
+   of these should that be preferred. */
+
+
 /****************************************************************************
                       WEB SOCKET CONNECTION HANDLING
  ****************************************************************************/
- 
+
 var apiUri = "wss://cpclientapi.softphone.com:9002/counterpath/socketapi/v1/";
 var websocket;
- 
+
 function initialize() {
 	connectToWebSocket();
 }
- 
+
 function onConnectedToWebSocket() {
 	/* Do some stuff here when the connection is first established ... */
-	
+
 	/* Request CALL status to sync the list of active calls */
 	apiGetStatus(ApiStatusEventTypes.properties[ApiStatusEventTypes.CALL].text);
-	
+
 	/* Request CALLHISTORY status to sync the content of the Call History item list */
-	apiGetStatusWithParameters(ApiStatusEventTypes.properties[ApiStatusEventTypes.CALLHISTORY].text, ' <count>15</count>\r\n <entryType>all</entryType>\r\n');	
-	
+	apiGetStatusWithParameters(ApiStatusEventTypes.properties[ApiStatusEventTypes.CALLHISTORY].text, ' <count>15</count>\r\n <entryType>all</entryType>\r\n');
+
 	/* Request SCREENSHARE status to sync the status in the Screen-Sharing box */
 	apiGetStatus(ApiStatusEventTypes.properties[ApiStatusEventTypes.SCREENSHARE].text);
-}	
- 
+}
+
 /* 'connectToWebSocket' contain construction or the WebSocket object, connection, error - and event handling */
-/* On any disconnection the error handling will attempt to reconnect after 5 seconds */ 
+/* On any disconnection the error handling will attempt to reconnect after 5 seconds */
 function connectToWebSocket() {
 	var connectionError = false;
 	var incomingMessage;
-	
+
 	/* Create new WebSocket object */
 	try {
 		websocket = new WebSocket(apiUri);
 	}
 	catch(e) {
 		console.log('WebSocket exception: ' + e);
-	}	
+	}
 
 	/* Event handler for connection established */
 	websocket.onopen = function(evt) {
@@ -55,14 +55,14 @@ function connectToWebSocket() {
 		setConnectionStatus('CONNECTED');
 		onConnectedToWebSocket();
 	};
-	
+
 	/* Event handler for disconnection from Web-Socket */
 	websocket.onclose = function(evt) {
 		if (!connectionError) {
 			setConnectionStatus('DISCONNECTED - retrying connection after 5 seconds ...');
 		}
 		console.log('OnClose: ' + evt.code);
-		
+
 		/* Set timer to attempt re-connection in 5 seconds */
 		setTimeout(function() { connectToWebSocket(); }, 5000);
 	};
@@ -74,27 +74,27 @@ function connectToWebSocket() {
 		console.log('OnError: ' + evt.name);
 		websocket.close();
 	};
-	
-	/* Event handler for received messages via web-socket connection */	
+
+	/* Event handler for received messages via web-socket connection */
 	websocket.onmessage = function(evt) {
 		//appendToLog('--- RECEIVED ---\n' + evt.data);
-		
+
 		processApiMessageReceived(evt.data);
 	};
 }
 function sendMessage(msg) {
 	websocket.send(msg);
 	//appendToLog('----- SENT -----\n' + msg);
-}	
+}
 
 
 /****************************************************************************
                          HTML ON-CLICK HANDLERS
- ****************************************************************************/  
+ ****************************************************************************/
 
 function placeCall(number) {
 	var suppressGUI = 'true';
-	
+
 	apiPlaceCall(number, suppressGUI);
 }
 
@@ -105,64 +105,64 @@ function bringToFront() {
 function sendIM() {
 	var target = jq('#IMAddressTextInput').val();
 	var typeSelect = jq('input[name=IMAddressType]:checked').val();
-	
+
 	var type;
 	if (typeSelect == 'SIP') type='sip'; else type='xmpp';
-	
+
 	apiSendIM(target, type);
 }
 
 function startScreenSharing() {
 	var targets = jq('#ScreenShareAddressTextInput').val();
 	var typeSelect = jq('input[name=ScreenShareAddressType]:checked').val();
-	
+
 	var type;
 	if (typeSelect == 'SIP') type='simple'; else type='xmpp';
-	
+
 	apiStartScreenShare(targets, type);
 }
-	
+
 /****************************************************************************
                           API MESSAGE CONSTRUCTION
- ****************************************************************************/	 
+ ****************************************************************************/
 
 const userAgentString = "Bria API JavaScript Sample";
-  
-var lastTransactionID = 0;	
-	
+
+var lastTransactionID = 0;
+
 function getNextTransactionID() {
 	lastTransactionID++;
 	return lastTransactionID;
 }
-	
+
 function constructApiMessage(requestType, body) {
     var contentLength = body.length;
-	var msg = 'GET /' + ApiRequestTypes.properties[requestType].text 
-			+ '\r\nUser-Agent: ' + userAgentString 
-			+ '\r\nTransaction-ID: ' + getNextTransactionID() 
+	var msg = 'GET /' + ApiRequestTypes.properties[requestType].text
+			+ '\r\nUser-Agent: ' + userAgentString
+			+ '\r\nTransaction-ID: ' + getNextTransactionID()
 			+ '\r\nContent-Type: application/xml\r\nContent-Length: ' + contentLength;
 
 	if (contentLength > 0) msg += '\r\n\r\n' + body;
 
     return msg;
 }
-	
-	
+
+
 /****************************************************************************
                              BRIA API COMMANDS
- ****************************************************************************/	
+ ****************************************************************************/
 
-function apiBringToFront() {	
+function apiBringToFront() {
 	var msg = constructApiMessage(ApiRequestTypes.BRINGTOFRONT, '');
 	sendMessage(msg);
-} 
- 
+}
+
 function apiPlaceCall(target, suppressGUI) {
 	var content = xmlDeclarationString + '<dial type="audio">\r\n <number>' + target + '</number>\r\n <displayName></displayName>\r\n <suppressMainWindow>' + suppressGUI + '</suppressMainWindow>\r\n</dial>';
-	
+
 	var msg = constructApiMessage(ApiRequestTypes.CALL, content);
 	sendMessage(msg);
-}	
+}
 function apiCallRecord(callId, fileLocation) {
 	var content = xmlDeclarationString + '<startCallRecording>\r\n <callId>' + callId + '</callId>\r\n <filename>' + fileLocation + '</filename>\r\n <suppressPopup>true</suppressPopup> \r\n </startCallRecording>';
 	var msg = constructApiMessage(ApiRequestTypes.STARTCALLRECORDING, content);
@@ -207,20 +207,20 @@ function apiTransferCall(callId, target) {
 function apiSendIM(target, type) {
 	var content = xmlDeclarationString + '<im type=\"' + type + '\">\r\n <address>' + target + '</address>\r\n</im>';
 	var msg = constructApiMessage(ApiRequestTypes.IM, content);
-	sendMessage(msg);	
+	sendMessage(msg);
 }
 
 /* targetList is a semi-colon separated list of target SIP URI or XMPP JID addresses - this function only handle all addresses being the same type*/
 function apiStartScreenShare(targetList, type) {
 	var targets = targetList.split(';');
-	
+
 	var content = xmlDeclarationString + '<invitees>\r\n';
 	for (var i=0; i < targets.length; i++) {
 		content += ' <invitee>\r\n  <address type=\"' + type + '\">' + targets[i].trim() + '</address>\r\n </invitee>\r\n';
 	}
 	content += '</invitees>';
 	var msg = constructApiMessage(ApiRequestTypes.STARTSCREENSHARE, content);
-	sendMessage(msg);	
+	sendMessage(msg);
 }
 
 function apiGetStatus(statusType) {
@@ -232,39 +232,43 @@ function apiGetStatus(statusType) {
 function apiGetStatusWithParameters(statusType, parameterXML) {
 	var content = xmlDeclarationString + '<status>\r\n <type>' + statusType + '</type>\r\n' + parameterXML + '</status>';
 	var msg = constructApiMessage(ApiRequestTypes.STATUS, content);
-	sendMessage(msg);	
+	sendMessage(msg);
 }
-
+function apiGetUserStatus(email) {
+	var content = xmlDeclarationString +'<status>\r\n <type> contact </type> \r\n <email>'+email + '</email> \r\n </status>';
+	var msg = constructApiMessage(ApiRequestTypes.STARTCALLRECORDING, content);
+	sendMessage(msg);
+}
 
 /****************************************************************************
                           BRIA API EVENT HANDLING
  ****************************************************************************/
 
 /* 'getStringValueFromXMLTag' is a helper function for digging through XML *
- * structures to retrieve values from the first occurrence of a named tag  */ 
+ * structures to retrieve values from the first occurrence of a named tag  */
 function getStringValueFromXMLTag(xmlItem, tagName) {
 
 	/* Get the first XML element with the given tag name */
 	var element = xmlItem.getElementsByTagName(tagName)[0];
-	
+
 	if (element != null) {
 		/* Get the first child node from the element */
 		var childNode = element.childNodes[0];
-	
+
 		/* If the child node exist, return the value for it */
 		if (childNode != null) return childNode.nodeValue;
 	}
-	
+
 	/* If tag isn't found or has no value, return a blank string */
 	return "";
 }
 
- 
+
 function handleStatusChangeEvent(eventType) {
 	console.log('Status Change Event - type: ' + eventType);
 
 	/* Process events that we care about, ignore the rest */
-	
+
 	switch (eventType) {
 		case ApiStatusEventTypes.properties[ApiStatusEventTypes.CALL].text:
 		case ApiStatusEventTypes.properties[ApiStatusEventTypes.SCREENSHARE].text:
@@ -276,35 +280,35 @@ function handleStatusChangeEvent(eventType) {
 			apiGetStatusWithParameters(eventType, ' <count>15</count>\r\n <entryType>all</entryType>\r\n');
 			break;
 	}
-}	
- 
+}
+
 function handleCallStatusResponse(callStatusDoc) {
 	/* Each Call Status Response contain zero or more 'call' elements with information about each ongoing call */
 	var calls = callStatusDoc.getElementsByTagName("call");
 
-	
+
 	/* Create an array to hold the list of calls */
 	var currentCallList = [];
-	
+
 	/* Iterate through the list of calls and pick out the information */
 	for (var i = 0; i < calls.length; i++) {
 		var call = calls[i];
-		
+
 		var id = getStringValueFromXMLTag(call, 'id');
 		var hold = getStringValueFromXMLTag(call, 'holdStatus');
 		var recordingStatus = getStringValueFromXMLTag(call, 'recordingStatus');
-		var recordingFile = getStringValueFromXMLTag(call, 'recordingFile'); 
+		var recordingFile = getStringValueFromXMLTag(call, 'recordingFile');
 
 		/* Each call has a list of one or more remote participants */
 		var participants = call.getElementsByTagName('participants')[0].getElementsByTagName('participant');
-		
+
 		/* Create an array to hold the list of participants in each call */
 		var participantList = [];
-		
+
 		/* Iterate through the list of remote participants and pick out the information */
 		for (var p = 0; p < participants.length; p++) {
 			var participant = participants[p];
-			
+
 			var number = getStringValueFromXMLTag(participant, 'number');
 			var displayName = getStringValueFromXMLTag(participant, 'displayName');
 			var state = getStringValueFromXMLTag(participant, 'state');
@@ -315,11 +319,11 @@ function handleCallStatusResponse(callStatusDoc) {
 				state : state,
 				startTime : startTime
 			};
-			
+
 			/* Add this participant to the list */
 			participantList.push(participantInfo);
 		}
-		
+
 		/* Create an object to store the information for this call */
 		var callInfo = {
 			id : id,
@@ -328,75 +332,75 @@ function handleCallStatusResponse(callStatusDoc) {
 			file : recordingFile,
 			participants : participantList
 		};
-	
+
 		/* Add this call to the list */
 		currentCallList.push(callInfo);
 	}
-	
+
 	/* Call Helper Function to update HTML with current Call Information */
 	updateCallActivity(currentCallList);
-}	
+}
 
 function handleCallHistoryStatusResponse(callHistoryStatusDoc) {
 	/* Each CallHistory Status Response contain zero or more 'callHistory' elements */
 	var items = callHistoryStatusDoc.getElementsByTagName("callHistory");
-	
+
 	/* Create a string variable to hold the HTML content we will construct with the history information */
 	var html = '';
-	
+
 	/* Iterate throgh each CallHistory item and pick out information */
 	for (var i = 0; i < items.length; i++) {
 		var item = items[i];
-		
+
 		var timeStamp = getStringValueFromXMLTag(item, 'timeInitiated');
 		var displayName = getStringValueFromXMLTag(item, 'displayName');
 		var number = getStringValueFromXMLTag(item, 'number');
-		
-		/* Add each line to the resulting HTML */		
-		html += formatDateTime(timeStamp) + ' : [ ' + displayName + ' ] ( <a href="" onclick="apiPlaceCall(\'' + number + '\', true); return false;">' + number + '</a> )<br/>'; 
+
+		/* Add each line to the resulting HTML */
+		html += formatDateTime(timeStamp) + ' : [ ' + displayName + ' ] ( <a href="" onclick="apiPlaceCall(\'' + number + '\', true); return false;">' + number + '</a> )<br/>';
 	}
 
 	/* Using JQuery to set HTML content in the div called CallHistory */
-	jq('#CallHistoryDiv').html(html);	
-}	
+	jq('#CallHistoryDiv').html(html);
+}
 
 function handleScreenShareStatusResponse(screenShareStatusDoc) {
 	var item = screenShareStatusDoc.getElementsByTagName("session")[0];
 	var html = 'Screensharing is not active';
-	
+
 	var startButtonDisabled = false;
-	
-	
+
+
 	if (item != null)
 	{
 		var status = getStringValueFromXMLTag(item, 'status');
 		var joinUrl = getStringValueFromXMLTag(item, 'joinUrl');
-		
+
 		html = 'Screen-Sharing is ' + status;
-		
+
 		if ((status == 'active') || (status == 'connecting')) {
 			startButtonDisabled = true;
 			html += '<br/>Join URL: ' + joinUrl;
-		} 
+		}
 	}
-	
+
 	jq('#StartScreenShareButton').prop("disabled", startButtonDisabled);
 	jq('#ScreenshareStatusDiv').html(html);
 }
- 
+
 /****************************************************************************
                           BRIA API MESSAGE HANDLING
  ****************************************************************************/
- 
+
 function processApiMessageReceived(msg) {
 	incomingMessage = parseMessage(msg);
-	
+
 	switch (incomingMessage.messageType) {
-		case ApiMessageTypes.RESPONSE:	
+		case ApiMessageTypes.RESPONSE:
 			/* This is a response to a status query */
 			processResponse(incomingMessage.content);
 			break;
-			
+
 		case ApiMessageTypes.EVENT:
 			/* Check the event type */
 			if (incomingMessage.eventType == ApiEventTypes.STATUSCHANGE) {
@@ -407,18 +411,18 @@ function processApiMessageReceived(msg) {
 				console.log('Unknown Event Type received ' + incomingMessage.eventType );
 			};
 			break;
-			
+
 		case ApiMessageTypes.ERROR:
 			/* Handle Error from API */
 			console.log('API Returned Error: ' + incomingMessage.errorCode + ' - ' + incomingMessage.errorText);
 			break;
-			
+
 		default:
 			/* Unknown message type received */
 			console.log('Unknown API Message Type received');
 			break;
 	}
-}	
+}
 
 function processResponse(responseXML) {
 	/* Basic responses carry no content, so we don't need to process them */
@@ -426,12 +430,12 @@ function processResponse(responseXML) {
 	if (responseXML.length > 0) {
 		var parser = new DOMParser();
 		var xmlDoc = parser.parseFromString(responseXML, "text/xml");
-	
+
 		var statusElement = xmlDoc.getElementsByTagName("status")[0];
 		if (statusElement != null) {
 			var statusType = statusElement.getAttributeNode("type");
 			console.log('Status Response type: ' + statusType.nodeValue);
-			
+
 			switch (statusType.nodeValue) {
 				case ApiStatusEventTypes.properties[ApiStatusEventTypes.CALL].text:
 					handleCallStatusResponse(xmlDoc);
@@ -449,37 +453,37 @@ function processResponse(responseXML) {
 		}
 	}
 }
- 
+
 function processStatusChangeEvent(eventXML) {
 	var parser = new DOMParser();
 	var xmlDoc = parser.parseFromString(eventXML, "text/xml");
-	
+
 	var eventElement = xmlDoc.getElementsByTagName("event")[0];
 	var eventType = eventElement.getAttributeNode("type");
-	
+
 	handleStatusChangeEvent(eventType.nodeValue);
-}	
- 
+}
+
 /****************************************************************************
                           BRIA API MESSAGE PARSING
  ****************************************************************************/
- 
+
 function parseMessage(msg) {
 	var messageType = ApiMessageTypes.UNKNOWN;
 	var eventType = ApiEventTypes.UNKNOWN;
 	var errorCode = 0;
 	var errorText = "";
-	
+
 	var transactionId = "";
 	var userAgentString = "";
 	var contentType = "";
 	var contentLength = 0;
 	var content = "";
-	
+
 	/* Replace any Windows-Style line-endings with \n */
 	var lines = msg.replace( /\r\n/g, "\n").split("\n");
 	var line = lines[0];
-	
+
 	/* Parse the first line to determine the type of message */
 	if (line.substr(0,4) == 'POST') {
 		messageType = ApiMessageTypes.EVENT;
@@ -503,7 +507,7 @@ function parseMessage(msg) {
 	var i = 1;
 	for (; i<lines.length; i++) {
 		line = lines[i];
-		
+
 		if (line[0] == '<') {
 			/* Start of the content section */
 			break;
@@ -528,7 +532,7 @@ function parseMessage(msg) {
 			content += '\n';
 		}
 	}
-	
+
 	/* Return object with all the details from the message */
 	return {
 		messageType: messageType,
@@ -542,24 +546,24 @@ function parseMessage(msg) {
 		content: content
 	};
 }
- 
+
 
 /****************************************************************************
                          HTML/UI HELPER FUNCTIONS
  ****************************************************************************/
- 
+
 function setConnectionStatus(status) {
 	var statusField = jq('#ConnectionStatusText');
 	statusField.text(status);
 	jq("#ConnectionStatus").val(status);
 	console.log('setting status to: ' + status);
 }
- 
+
 function appendToLog(data) {
 	var logField = jq('#APIMessageLog');
 	logField.val(logField.val() + data + '\n\n');
 	logField.scrollTop(logField[0].scrollHeight);
-}	
+}
 
 function clearLog() {
 	var logField = jq('#APIMessageLog');
@@ -567,10 +571,10 @@ function clearLog() {
 }
 
 function formatDateTime(t) {
-	/* Input expected to be a UTC Unix timestamp */		
+	/* Input expected to be a UTC Unix timestamp */
 	var tzoffset = (new Date()).getTimezoneOffset() * 60;
 	var dateTime = new Date((t - tzoffset) * 1000).toISOString().slice(0, -5);
-	
+
 	return dateTime.replace('T', ' ');
 }
 
@@ -586,14 +590,14 @@ function updateCallActivity(callList) {
 	var endc = '<a href="javascript:void(0)" id="end_current_call" class="fa fa-times"> </a>';
 	for (var i = 0; i < callList.length; i++) {
 		var call = callList[i];
-		
+
 		if (call.participants.length == 1) {
 			/* Plain 1:1 call - straightforward handling */
 			participant = call.participants[0];
-		
+
 			var holdStateString = '';
 			var holdStateAction = '';
-		
+
 			if (call.hold == 'localHold') {
 				holdStateString = ' [ON HOLD]';
 				holdStateAction = ' [<a href="" onclick="apiResumeCall(\'' + call.id + '\'); return false;">Resume</a>]';
@@ -604,13 +608,13 @@ function updateCallActivity(callList) {
 				}
 				holdStateAction = ' [<a href="" onclick="apiHoldCall(\'' + call.id + '\'); return false;">Hold</a>]';
 			}
-				
+
 			switch (participant.state) {
 				case ApiCallStates.properties[ApiCallStates.RINGING].text:
-					html += 'Incoming call from ' + participant.displayName + holdStateString + ' (' + participant.number + ') <br/>[<a href="" onclick="apiAnswerCall(\'' + call.id + '\', false); return false;">Answer</a>]' + holdStateAction; 
+					html += 'Incoming call from ' + participant.displayName + holdStateString + ' (' + participant.number + ') <br/>[<a href="" onclick="apiAnswerCall(\'' + call.id + '\', false); return false;">Answer</a>]' + holdStateAction;
 					break;
 				case ApiCallStates.properties[ApiCallStates.CONNECTING].text:
-					html += 'Outgoing call to ' + participant.displayName + holdStateString + ' (' + participant.number + ') <br/>[<a href="" onclick="apiEndCall(\'' + call.id + '\'); return false;">End Call</a>]' + holdStateAction; 
+					html += 'Outgoing call to ' + participant.displayName + holdStateString + ' (' + participant.number + ') <br/>[<a href="" onclick="apiEndCall(\'' + call.id + '\'); return false;">End Call</a>]' + holdStateAction;
 					endc = '<a href="javascript:void(0)" id="end_current_call" class="fa fa-times" call_id="'+call.id+'" onclick="apiEndCall(\'' + call.id + '\'); return false;" ></a>';
 					//jq("#end_current_call").attr("onclick",apiEndCall(call.id));
 					break;
@@ -625,16 +629,16 @@ function updateCallActivity(callList) {
 					endc = '<a href="javascript:void(0)" id="end_current_call" class="fa fa-times"> </a>';
 					break;
 			}
-			
-			
+
+
 			html += '<br/><br/>';
 		}
 		else
 		{
 			/* Call with multiple participants - display as conference */
-			
+
 		}
-			
+
 	}
 	jq("#end_current_call_span").html(endc);
 	//jq('#CallActivityDiv').html(html);
@@ -645,4 +649,3 @@ function updateCallActivity(callList) {
  ****************************************************************************/
 
 window.addEventListener("load", initialize, false);
- 

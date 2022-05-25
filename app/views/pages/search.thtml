@@ -190,6 +190,25 @@
 			document.getElementById('sq_str').value = now.format("isoDate");
 			submitRequest();
 		}
+		else if(val == 'phone')
+		{
+			document.getElementById('sq_str').value = '';
+			document.getElementById('sq_str').style.display = '';
+			document.getElementById('callback_missed_call_dropdown').style.display = 'none';
+			document.getElementById('booking_source_id').style.display = 'none';
+			document.getElementById('order_type_id').style.display = 'none';
+			document.getElementById('Campaign_source_id_frontend').style.display = 'none';
+			document.getElementById('callresult').style.display = 'none';
+
+			document.getElementById('missed_callback_dates').style.display = 'none';
+
+			document.getElementById('callback_agent_option_frontend').style.display = '';
+			document.getElementById("callback_agent_option_frontend").selectedIndex = 3;
+
+			// var now = new Date();
+			// document.getElementById('sq_str').value = now.format("isoDate");
+			// submitRequest();
+		}
 		else{
 			if(selectedStr == 'booking_source_id' || selectedStr == 'order_type_id' )
 			{
@@ -395,7 +414,7 @@ Date.prototype.format = function (mask, utc) {
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
 <input type="hidden" id="hidden_flag_hotlist" name="hidden_flag_hotlist" value="not_select">
 <form id="searchform" onSubmit="submitRequest();return false;">
-<div id="searchbox" style="width: 99%; padding: 1px; text-align: center; background: #CCCCCC;">
+<div id="searchbox" style="width: 99%; padding: 1px; text-align: center;">
 	<!-- <select name="sq_crit" id="sq_crit" style="width: 60px;" onchange="prepFields(this.value); if (this.value == 'callback_date' || this.value == 'Campaign_data') callbackSearch();"> -->
 		<select name="sq_crit" id="sq_crit" style="width: 60px;" onchange="prepFields(this.value); if (this.value == 'callback_date') callbackSearch();">
 		<option value="REF">REF #</option>
@@ -433,7 +452,7 @@ Date.prototype.format = function (mask, utc) {
       $html->selectTag('User/callresult', $call_results, null, 'style="width: 115px; display: none;" onchange="callbackSource(this.value);" id="callresult"');
       ?>
       <?php
-      $callback_agent_dropdown = array("one_today_callback" => "Today call back" , "two_missing_callback" => "Missed call backs");
+      $callback_agent_dropdown = array("one_today_callback" => "Today call back" , "two_missing_callback" => "Missed call backs","phone" => "Phone");
        echo
       $html->selectTag('Order/callback_agent_id', $callback_agent_dropdown, null, 'style="width: 115px; display: none;" onchange="callbackSource(this.value);" id="callback_agent_option_frontend"');
       ?>

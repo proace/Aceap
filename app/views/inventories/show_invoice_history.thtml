@@ -1,0 +1,40 @@
+
+<table id='ajax_invoice_history_results' class="supplier_result" style="
+    width: 100%;
+>
+		<thead>
+			<tr>
+				<th class="hide_td">id</th>
+				<th>Date</th>
+				<th>Paid Amount $</th>
+				<th>Refund Amount $</th>
+				<th>Status</th>
+				<th>Paid By</th>
+				<th>Returned By</th>
+				<th>Payment Method</th>
+				<th>Invoice Number</th>
+				<th>Picture</th>
+			</tr>
+		</thead>
+		<tbody>
+			<?php foreach ($response as $key => $value) { ?>			
+			<tr class="result_invoice_clicked" style="cursor: pointer;" >
+				<td class='id hide_td'><?php echo $value['id'] ?></td>
+				<td class='date'><?php echo $value['pay_date'] ?></td>
+				<td class='amount'><?php echo $value['paid_amount'] ?></td>
+				<td class='refund_amount'><?php echo $value['refund_amount'] ?></td>
+				<td class='status'><?php echo $value['status_name'] ?></td>
+				<td class='paid_user'><?php echo $value['paid_user'] ?></td>
+				<td class='return_user'><?php echo $value['return_user'] ?></td>
+				<td class='payment_method_name'><?php echo $value['payment_method_name'] ?></td>
+				<td class='invoice_number'><?php echo $value['invoice_num'] ?></td>
+				<td class='invoice_image' onclick="tdclick(event)">
+					<?php if(!empty($value['invoice_image'])) {?>
+					<img class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="<?php echo '/acesys/app/webroot/purchase-invoice-images/'.$value['invoice_image'];?>" style="height: 25px;width: 25px;" >
+					<?php } ?>
+					<!-- <?php echo $value['invoice_image'] ?> -->
+				</td>
+			</tr>
+			<?php } ?>			
+		</tbody>
+	</table>

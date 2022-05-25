@@ -71,7 +71,29 @@ $(function() {
 	});
 		
 });
-
+$(function () {
+        $(".invoice-pdf-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 900,
+            height: 764,
+        });
+        $(".show-pdf-image").live("click",function (e) {
+            e.preventDefault();
+            var imgPath = $(this).attr('data-doc_lnk');
+           if(imgPath !== undefined){
+                var docFrame = '<iframe width="100%" height="100%" src="'+imgPath+'" frameborder="0" scrolling="no" id="myFrame" ></iframe>';
+                $('#doc-modal').html('');
+                $('#doc-modal').append(docFrame);
+                $('#doc-modal').load(docFrame);
+                }else{
+                    $('#doc-modal').html('Sorry some error found');
+                }
+                $('.invoice-pdf-enlarge').dialog('open');
+        });
+    }); 
 function OpenJobsHistory(){
 	$("#JobHistoryWorking").show();
 	$.get(G_URL + "orders/showCustomerJobs",

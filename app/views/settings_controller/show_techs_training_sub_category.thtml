@@ -1,0 +1,104 @@
+n<html> 
+<head>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-3.3.1.min.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<script>
+jQuery( document ).ready(function($) {
+  $("#myInput").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        $("#myTable tr").filter(function() {
+          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+    });
+   $("#add-sub-cat").on("click", function(){
+              window.open("<?=BASE_URL;?>/settings/editTechsSubCategory/", "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=500,width=400,height=400");
+          });
+   $('#removeSubCategory').on('click', function(e){
+          var selected = [];
+           $("input:checkbox[class=checkboxes]:checked").each(function () {
+               selected.push($(this).attr('type_id'));
+          });
+          jQuery.ajax({
+            url: "<?=BASE_URL;?>/settings/deleteTechsSubCategory",
+            type: "POST",
+            data: {typeIds:selected},
+            success: function(data){
+              // location.href = "<?=BASE_URL;?>/settings/";
+                   document.forms['viewform'].submit();
+          }
+        });  
+      }); 
+   $('.sub-category-name').on('click', function(){
+              var id = $(this).attr('cat-id');
+              window.open("<?=BASE_URL;?>/settings/editTechsSubCategory/"+id, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=300,left=900,width=500,height=150");
+          });
+});
+</script>
+<style>
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 10px;
+  text-align: center;
+}   
+.question_button {
+    background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/text_page.png) no-repeat center #666;
+    border:1px solid #999;
+    border-radius:5px;
+    width:25px;
+    height:25px;
+}
+
+.timeslot_button {
+    background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/calendar.png) no-repeat center #666;
+    border:1px solid #999;
+    border-radius:5px;
+    width:25px;
+    height:25px;
+}
+
+.item_category_button {
+    background:url(<?=ROOT_URL;?>/app/webroot/img/iconset_coquette/tree.png) no-repeat center #666;
+    border:1px solid #999;
+    border-radius:5px;
+    width:25px;
+    height:25px;
+}
+</style>
+</head>
+<form method="GET" action="<?= $PHP_SELF?>" name="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+</form>
+<form >
+<h1>Sub Categories :-</h1>
+<input id="myInput" type="text" placeholder="Search..">
+<input type="button" name="addnew" value="Add new" id="add-sub-cat" />
+ <input type="button" name="Remove" value="Remove" id="removeSubCategory" style="margin: 0 0 5px 10px;"/>
+<table class="results"  style="border-style: solid;border-width:1px; width: 50%;" width="100%">
+    <tr>
+        <th width="50"><b>ID</b></th>
+        <th width="50">Sub Category Name</th>
+        <th width="50">Category Name</th>
+        <th width="10">Delete</th>
+   </tr>
+       <tbody id="myTable">
+        <?php $r=1;
+            foreach ($trainingSubCategories as $obj) {
+                $class = 'cell'.(++$r%2);
+        ?>
+        <tr>
+        <td class="firstcol sub-category-name" cat-id="<?=$obj['TechsTrainingSubCategory']['id']?>" style="cursor: pointer;">&nbsp;<?php echo $obj['TechsTrainingSubCategory']['id']; ?></td>
+        <td class="sub-category-name" cat-id="<?=$obj['TechsTrainingSubCategory']['id']?>" style="cursor: pointer;font-size: 11px;">&nbsp;<?php echo $obj['TechsTrainingSubCategory']['name']; ?></td>
+        <td class="firstcol" style="font-size: 11px;">&nbsp;<?php echo $obj['TechsTrainingCategory']['name']; ?></td>
+        <td><input type="checkbox" class="checkboxes" name="remove_<?=$obj['TechsTrainingSubCategory']['id']?>" id="remove_<?=$obj['TechsTrainingSubCategory']['id']?>" type_id = "<?=$obj['TechsTrainingSubCategory']['id']?>"></td>
+    </tr>
+    <? } ?>
+  </tbody>
+</table>
+</form>

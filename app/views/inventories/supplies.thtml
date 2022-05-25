@@ -2,6 +2,7 @@
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
 <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
 
 <form method="GET" action="<?= $PHP_SELF?>" name="viewform">
 <input type="hidden" name="methodId" id="methodId" value="">
@@ -11,7 +12,11 @@
 <input type="hidden" name="sort" value="<?=$_GET['sort']?>">
 <input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
 <input type="hidden" name="remaining_amount" id="remaining_amount" value="">
+<input type="hidden" name="subtotal_amount" id="subtotal_amount" value="0">
 <style type="text/css">
+	.fa-trash{
+		font-size:20px;
+	}
 	.status_refund{
 		color: red !important;
 	}
@@ -68,11 +73,21 @@
   text-align: center;
   cursor: pointer
 }
+.hide_td{
+	 display: none;
+}
 [class^="pre-image_"] {
     display: none;
 }
 </style>
 <table width="90%" border="0px" cellspacing="10" cellpadding="0">
+	<tr>
+		<?php if($common->getLoggedUserRoleID() == 1) {?>
+		<tr>
+			<td colspan="8"><input type="button" class="buttons" name="Back" value="Back" onclick="window.location ='<?php echo BASE_URL;?>/orders/invoiceTablet';"></td>
+		</tr>
+	<?php } ?>
+	</tr>
 	<tr>
 		<td class="sectionTitle" >Purchased Items</td>
 		<td colspan="7">
@@ -89,7 +104,9 @@
 	<tr>
 		<td align="left">
 			<input type="button" name="addnew" value="Purchase" onclick="document.location.href='<?=BASE_URL?>/inventories/editDoc?type=1&rurl=<?=urlencode('supplies?'.$_SERVER['QUERY_STRING'])?>'" />
+			<?php if($common->getLoggedUserRoleID() != 1) {?>
 			<input type="button" name="newRefund" value="Refund" onclick="document.location.href='<?=BASE_URL?>/inventories/editDoc?type=7&rurl=<?=urlencode('supplies?'.$_SERVER['QUERY_STRING'])?>'" />
+			<?php } ?>
 		</td>
 		<td colspan="7">
 			Supplier Name: <input type="text" name="search_supplier" style="margin-right:10px;" value="<?php echo $_GET['search_supplier'];?>"/>
@@ -119,7 +136,9 @@
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
     <tr style="text-align: left;">
         <th width="80">PO#</th>
-        <th width="80">Name</th>
+        <th width="80">Ref#</th>
+        <th width="80">Tech Name</th>
+        <th width="80">Order By</th>
         <th width="80">Type</th>
         <th width="100"><a href="javascript:setOrder('supplier_id');">Supplier</a></th>
         <th width="80"><a href="javascript:setOrder('name');">Invoice #</a></th>
@@ -127,10 +146,11 @@
         <th width="80"><a href="javascript:setOrder('qty');">Subtotal</a></th>
         <th width="80"><a href="javascript:setOrder('qty');">Tax</a></th>
         <th width="80"><a href="javascript:setOrder('qty');">Purchase Total</a></th>
-        <th width="80"><a href="javascript:setOrder('qty');">Remaining Amount</a></th>
+        <!-- <th width="80"><a href="javascript:setOrder('qty');">Remaining Amount</a></th> -->
         <th width="80">Status</th>
         <th width="100">Pay</th>
         <th>History</th>
+        <th width="80"></th>
     </tr>
     <?php
 	$r=1;
@@ -152,10 +172,13 @@
 		?>
 		<?php
 			$html_url = 'style="cursor:pointer;" onclick="document.location.href=\'' . BASE_URL .'/inventories/editDoc?invoice_id='.$obj['invoice_id'] .'&doc_id='. $obj['invoice_id'] .'&rurl=' .urlencode('supplies?'.$_SERVER['QUERY_STRING']) .'\'"';
+			$html_url1 = 'style="cursor:pointer;" onclick="document.location.href=\'' . BASE_URL .'/orders/editBooking?order_id='.$obj['order_no'].'\'"';
 		?>
 		<tr id="r<?=$r?>" class="<?=$class?>">
 			<td class="<?=$status_cls?>"  <?php echo $html_url; ?>><?php echo $obj['po_number']; ?></td>
+			<td class="<?=$status_cls?>"  <?php echo $html_url1; ?>><?php echo $obj['order_id']; ?></td>
 			<td class="<?=$status_cls?>"  <?php echo $html_url; ?>><?php echo $obj['location_name']; ?></td>
+			<td class="<?=$status_cls?>"  <?php echo $html_url; ?>><?php echo $obj['order_by']; ?></td>
 			<td class="<?=$status_cls?>"  <?php echo $html_url; ?>><?php echo $obj['invoice_type']; ?></td>
 			<td class="<?=$status_cls?>" <?php echo $html_url; ?> <?php echo $obj['original_invoice_id'] ? 'align="right"' : ''; ?>>&nbsp;<?php echo $obj['original_invoice_id'] ? 'Refund' : $obj['supplier_name']; ?></td>
 			<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['invoice_number']; ?></td>
@@ -163,7 +186,7 @@
 			<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['original_invoice_id'] ? '- ' : ''; ?>$<?php echo number_format($obj['total_price'], 2, '.', ','); ?></td>
 			<td class="<?=$status_cls?>"> $<?php echo number_format($obj['total_price']*.12, 2, '.', ','); ?></td>
 			<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['original_invoice_id'] ? '- ' : ''; ?>$<?php echo number_format($obj['total_price']*1.12, 2, '.', ','); ?></td>
-			<td class="<?=$status_cls?>"><?php echo !empty($obj['remaining_amount']) ? '$'.$obj['remaining_amount'] :''; ?> </td>
+			<!-- <td class="<?=$status_cls?>"><?php echo !empty($obj['remaining_amount']) ? '$'.$obj['remaining_amount'] :''; ?> </td> -->
 			<!-- <?php if($search_invoice == 5)	{?>
 				<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo $obj['pay_date']; ?></td>
 				<td class="<?=$status_cls?>" <?php echo $html_url; ?>>&nbsp;<?php echo "$".$obj['paid_amount']; ?></td>
@@ -183,7 +206,7 @@
 					?>
 					<!-- <img src="<?=ROOT_URL?>/app/webroot/img/refund_image.png" style="height: 30px"> -->
 					<?php if($obj['status_id'] != 5) {?>
-					<input type="checkbox" class="check_invoices" name="check_invoices" invoice_id="<?php echo $obj['invoice_id']; ?>" remaining_amount="<?php echo $obj['remaining_amount']; ?>">
+					<input type="checkbox" class="check_invoices" name="check_invoices" invoice_id="<?php echo $obj['invoice_id']; ?>" remaining_amount="<?php echo $obj['remaining_amount']; ?>" ref_num="<?php echo $obj['order_id']; ?>" invoice_num="<?php echo $obj['invoice_number']; ?>" sub_total="<?=$obj['total_price']?>">
 					<?php } ?>
 					<?php
 				}
@@ -197,9 +220,11 @@
 			<td> <input type="button" name="addnew" value="Refund" onclick="document.location.href='<?=BASE_URL?>/inventories/editDoc?invoice_id=<?php echo $obj['invoice_id']; ?>&type=5&rurl=<?php echo urlencode('supplies?'.$_SERVER['QUERY_STRING']); ?>'"  style="padding: 3px;border-radius: 3px;"/></td>
 			<?php } ?> -->
 			<td><input type="button" name="invoiveHistory" value="History" onclick="showHistory(<?php echo $obj['invoice_id']; ?>)"></td>
+			<td class="<?=$status_cls?>"> <i class="fa fa-trash deleteInvoice" orgInvoiceId="<?=$obj['invoice_id']?>" aria-hidden="true"></a></td>
 	    </tr>
 	    <tr class="invoice_history_<?php echo $obj['invoice_id']; ?>">
-	    	<td colspan="10"></td>
+	    	<td colspan="14"></td>
+
 	    </tr>
 
     <?
@@ -210,7 +235,8 @@
 	
 	</table>
 	
-	<table id='ajax_invoice_history_results' class="supplier_result" style="display: none; width: 50%; text-align: center;">
+
+<!-- 	<table id='ajax_invoice_history_results' class="supplier_result" style="display: none; width: 50%; text-align: center;">
 		<thead>
 			<tr>
 				<th>id</th>
@@ -229,45 +255,42 @@
 				<td class='status'></td>
 			</tr>			
 		</tbody>
-	</table>
+	</table> -->
 	
 	<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px; margin-top:5px;" width="100%">
 		<tr align="right">
 			<th></th>
 			<th>Subtotal</th>
 			<th>Tax</th>
-			<th colspan=2>Total</th>
+			<th>Owing Total</th>
+			<th ></th>
+			<th>Pay Now</th>
 		</tr>
 		<tr align="right" class="<?php $class = 'cell'.(++$r%2); echo $class; ?>">
 			<td align="right">Purchases</td>
 			<td >$<?php echo number_format($subtotal, 2, '.', ','); ?></td>
 			<td >$<?php echo number_format($subtotal*.12, 2, '.', ','); ?></td>
-			<td colspan=2>$<?php echo number_format($subtotal*1.12, 2, '.', ','); ?></td>
+			<td >$<?php echo number_format($subtotal*1.12, 2, '.', ','); ?></td>
+			<td><strong>Gst:</strong></td>
+			<td class="gst_amount"></td>
 		</tr>
-	<!-- 	<?php   if($search_invoice == 7 || $search_invoice == 8)	{?>
-			<tr align="right" class="<?php $class = 'cell'.(++$r%2); echo $class; ?>">
-				<td align="right">Refunds</td>
-				<td >- $<?php echo number_format($refund_subtotal, 2, '.', ','); ?></td>
-				<td >- $<?php echo number_format($refund_subtotal*.12, 2, '.', ','); ?></td>
-				<td colspan=2>- $<?php echo number_format($refund_subtotal*1.12, 2, '.', ','); ?></td>
-			</tr>
-		<?php } ?> -->
-	<!-- 	<tr align="right" class="<?php $class = 'cell'.(++$r%2); echo $class; ?>" style="font-weight:bold;">
-			<td align="right">Total Owing</td>
-			<td >$<?php echo number_format($combined, 2, '.', ','); ?></td>
-			<td >$<?php echo number_format($combined*.12, 2, '.', ','); ?></td>
-			<td colspan=2>$<?php echo number_format($combined*1.12, 2, '.', ','); ?></td>
-		</tr> -->
 		<tr align="right" class="<?php $class = 'cell'.(++$r%2); echo $class; ?>" style="font-weight:bold;">
-			<td align="right">Total Owing</td>
+			<!-- <td align="right">Total Owing</td> -->
 			<!-- <td >$<?php echo number_format($combined, 2, '.', ','); ?></td>
 			<td >$<?php echo number_format($combined*.12, 2, '.', ','); ?></td> -->
-			<td colspan=4>$<?php echo number_format($remainingCombined, 2, '.', ','); ?></td>
+			<!-- <td colspan="3">$<?php echo number_format($remainingCombined, 2, '.', ','); ?></td> -->
+			<td  colspan="5"><strong>Pst:</strong></td>
+			<td class="pst_amount"></td>
+		</tr>
+		<tr align="right" class="cell0">
+			<td colspan="4"></td>
+			<td><strong>Tota:</strong></td>
+			<td class="total_amount"></td>
 		</tr>
 	</table>
 <div style="float: right;">
 	<table>
-		<tr>
+		<!-- <tr>
 			<td><b>Paid By:</b></td>
 			<td>
 				<select class="method-id" name="allCatId[]">
@@ -277,7 +300,7 @@
 			      <?}?>
 				</select>
 			</td>
-		</tr>
+		</tr> -->
 		<tr>
 			<td></td>
 			<td></td>
@@ -293,18 +316,29 @@
 	<table class="pay_table">
 		<tr>
 			<td>Date:<input type="text" name="paidDate" id="paid_date" class="" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event,1);" onkeydown="return false;" value="<?=$paidDate?>"></td>
-			<td>Amount Paid:<input type="text" name="amountPaid" id="amount_paid"></td>
+			<td>Amount Paid: <strong>$</strong><input type="text" name="amountPaid" id="amount_paid"></td>
+			<td>Payment Method:
+				<select class="method-id" name="allCatId[]">
+			      <option>Choose here</option>
+			       <?php foreach($methods as $method) {?>
+			          <option value="<?=$method['id']?>" name="multipleMethodId[]"><?php echo $method['name']?></option>
+			      <?}?>
+				</select>
+			</td>
 		</tr>
 		<tr>
-			<td>Note:<input type="text" name="reference" id="reference_no"></td>
-			<td>Agent:<select id="agent_id">
+			
+			<td >Agent:<select id="agent_id">
 				<option>Choose here</option>
 			       <?php foreach($booking_sources as $k => $v) {?>
-			          <option value="<?=$k?>" name="multipleMethodId[]"><?php echo $v?></option>
+			          <option value="<?=$k?>" <?php echo ($k == 231432)? 'selected' : ''; ?> ><?php echo $v?></option>
 			      <?}?>
 			</select></td>
+			<td colspan="2">Ref: <input type="text" name="job_ref" id="job_ref"></td>
 		</tr>
-			<td>
+		<tr>
+			<td colspan="2">Invoice Number: <textarea rows="4" cols="50" name="invoice_number" id="invoice_number"></textarea> </td>
+			<td >
 				<img id="pre-image_photo1" class="pre-image_photo1 invoice-openImg" src="#" alt="your image" />
 				<div class="cls-acecare-td-adjust" style="width: 70px; padding: 3px;">
 					<label for="sortpicture1" style="background: #737577;" >Upload</label>
@@ -312,13 +346,21 @@
 				</div>
 			</td>
 		</tr>
+		<tr>
+			<td colspan="3">Note:<textarea rows="4" cols="50" name="reference" id="reference_no"></textarea></td>
+		</tr>
+		<tr>
+			<td colspan="2"></td>
 			<td><input type="button" value="Save" id="save_invoice_payment" name="" style="padding: 6px;"></td>
 		</tr>
 	</table>
 </div>
 <div class="invoice-img-enlarge" title="Photo" style="display: none">
 	<img src="<?=$imgPath?>" style="width:100%;">
-</div>	
+</div>
+<div class="invoice-pdf-enlarge" title="Photo" style="display: none">
+    <div id="doc-modal" style="width: 100%, height:100%"></div>
+</div>
 	<?php //do+1 something to trigger an error for testing ?>
 <script>
 	function showHistory(invoiceId){
@@ -328,44 +370,24 @@
 
 		}else{
 			$.ajax({
-				url: "<?=BASE_URL;?>/inventories/ShowInvoiceHistory",
-				dataType: 'json',
+				url: "<?=BASE_URL;?>/inventories/showInvoiceHistory",
+				dataType: 'html',
 				type: 'GET',
 				cache: false,
 				data:{invoiceId:invoiceId},
 				success: function(data) {
-					template = $('#ajax_invoice_history_template');
-					table = $('#ajax_invoice_history_results').clone();				
-					table.removeAttr("id");
-					$('tbody',table).html('');
-					for(i in data) {
-						result = template.clone();
-						result.removeAttr("id");
-						result.children(".id").html(data[i]["id"]);
-						result.children(".date").html(data[i]["pay_date"]);
-						result.children(".amount").html(data[i]["paid_amount"]);
-						if(data[i]["refund_amount"] != null && data[i]["refund_amount"] != ''){
-							result.children(".refund_amount").html(parseFloat(data[i]["refund_amount"]) + (data[i]["refund_amount"] * .12));
-						} else {
-							result.children(".refund_amount").html('');
-						}
-						result.children(".status").html(data[i]["status_name"]);
-						result.show();
-						result.bind("click",function(){result_invoice_clicked(this);});
-						result.appendTo(table);
-					}
-					table.show();
-					$(".invoice_history_"+invoiceId+" td").html(table);
+					
+					$(".invoice_history_"+invoiceId+" td").html(data);
 					$(".invoice_history_"+invoiceId+" td").addClass("display_invoice");
 				}	
 			});	
 		}
 	}
-	function result_invoice_clicked(clicked_item){
-		dat = $(clicked_item);
-		Id = dat.children(".id").text();
-		window.location.href = "<?=BASE_URL;?>/inventories/ShowInvoiceHistoryById?historyId="+Id;
-	}
+	// function result_invoice_clicked(clicked_item){
+	// 	dat = $(clicked_item);
+	// 	Id = dat.children(".id").text();
+	// 	window.location.href = "<?=BASE_URL;?>/inventories/ShowInvoiceHistoryById?historyId="+Id;
+	// }
 	$(function() {
 
 		
@@ -411,8 +433,74 @@ function upload_photo(cur,i) {
     reader.readAsDataURL(cur.files[0]);
   }
 }
+function tdclick(e)
+{
+	//e.stopPropagation();
+}
 $(document).ready(function() {
-		$('#ajax_invoice_history_results').hide();
+
+
+	$(".check_invoices").live('click', function(e){
+		if($(this).is(":checked"))
+        {
+        	var curSubtotal = $(this).attr('sub_total');
+          	var oldSubtotal =  $("#subtotal_amount").val();
+          	var newSubTotal =  parseFloat(oldSubtotal) + parseFloat(curSubtotal);
+          	var gst = (newSubTotal * 0.05).toFixed(2);
+          	var pst = (newSubTotal * 0.07).toFixed(2);
+          	var newTotal = newSubTotal + parseFloat(gst) + parseFloat(pst);
+
+          
+        } else {
+            var curSubtotal = $(this).attr('sub_total');
+          	var oldSubtotal =  $("#subtotal_amount").val();
+          	var newSubTotal =  parseFloat(oldSubtotal) - parseFloat(curSubtotal);
+          	var gst = (newSubTotal * 0.05).toFixed(2);
+          	var pst = (newSubTotal * 0.07).toFixed(2);
+          	var newTotal = newSubTotal + parseFloat(gst) + parseFloat(pst);
+        }
+    	$('.gst_amount').html(gst);
+      	$('.pst_amount').html(pst);
+      	$('.total_amount').html(newTotal);
+      	$('#subtotal_amount').val(newSubTotal);
+	});
+
+	$(".result_invoice_clicked").live('click', function(e){
+		 var senderElement = e.target;
+	    if($(e.target).is("td")) {
+			dat = $(this);
+			Id = dat.children(".id").text();
+			window.location.href = "<?=BASE_URL;?>/inventories/ShowInvoiceHistoryById?historyId="+Id;
+		}
+	})
+	$(function () {
+        $(".invoice-pdf-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 700,
+            height: 500,
+        });
+        $(".show-pdf-image").live("click",function (e) {
+        	// e.stopImmediatePropagation();
+        	
+            // e.preventDefault();
+            // stopPropagation
+            var imgPath = $(this).attr('data-doc_lnk');
+           if(imgPath !== undefined){
+                var docFrame = '<iframe width="100%" height="100%"  src="'+imgPath+'" frameborder="0" scrolling="no" id="myFrame" ></iframe>';
+                $('#doc-modal').html('');
+                $('#doc-modal').append(docFrame);
+                $('#doc-modal').load(docFrame);
+                }else{
+                    $('#doc-modal').html('Sorry some error found');
+                }
+                $('.invoice-pdf-enlarge').dialog('open');
+                e.stopPropagation(); 
+        });
+    }); 
+		// $('#ajax_invoice_history_results').hide();
 	    $('.method-id').live('change', function(){
 		    var methodId = $( ".method-id option:selected" ).val();
 		     $('#methodId').val(methodId);
@@ -422,14 +510,21 @@ $(document).ready(function() {
 	            modal: true,
 	            autoOpen: false,
 	            title: "",
-	            width: 500,
+	            width: 600,
 	            height: 350
 	        });
 	        $("#pay_invoice").live("click",function () {
 	           var selected = [];
-	           var methodId = $("#methodId").val();
+	           var refNum = [];
+	           var invoice_num = [];
+	           var paidAmount = $(".total_amount").html();
+	           // var methodId = $("#methodId").val();
 		         $("input:checkbox[class=check_invoices]:checked").each(function () {
 		             selected.push($(this).attr('invoice_id'));
+		             if($(this).attr('ref_num') != 0){
+		             	refNum.push($(this).attr('ref_num'));
+		             }
+		             invoice_num.push($(this).attr('invoice_num'));
 		             var remainingAmount = $(this).attr('remaining_amount');
 		             $("#remaining_amount").val(remainingAmount);
 
@@ -437,11 +532,16 @@ $(document).ready(function() {
 		        if(selected == '' || selected == null)
 		        {
 		        	alert("Please select atleast one invoice.");
-		        } else if(methodId == '' || methodId == null)
-		        {
-		        	alert("Please select payment method.");
-		        } else {
+		        }
+		        //  else if(methodId == '' || methodId == null)
+		        // {
+		        // 	alert("Please select payment method.");
+		        // }
+		         else {
 		        	$("#invoice_ids").val(selected);
+		        	$("#invoice_number").val(invoice_num);
+		        	$("#job_ref").val(refNum);
+		        	$("#amount_paid").val(paidAmount);
 	         		$("#pay_box").dialog('open');
 		        }
 	         	
@@ -449,6 +549,8 @@ $(document).ready(function() {
     });   
 	$("#save_invoice_payment").live("click", function(){
      	var form = new FormData();
+     	form.append('invoiceNum',$("#invoice_number").val());
+     	form.append('refNum',$("#job_ref").val());
      	form.append('invoiceIds',$("#invoice_ids").val());
      	form.append('methodId',$("#methodId").val());
      	form.append('payDate',$("#paid_date").val());
@@ -466,7 +568,6 @@ $(document).ready(function() {
 	      processData: false,
 	      cache: false,
 	      contentType: false,    
-          // data: {invoiceIds:invoiceIds,methodId:methodId,payDate:payDate, notes:referenceNo, agentId:agentId, paidAmount:paidAmount, statusId:statusId, remainingAmount:remainingAmount},
           success: function(data){
 				if(data.res == "1")
 				{	
@@ -497,5 +598,22 @@ $(document).ready(function() {
 	    var cur = $(this);
 	   upload_photo(cur[0],img_ct);
 	});
+
+	$(".deleteInvoice").live("click", function(){	
+		var invoiceId = $(this).attr("orgInvoiceId");
+		 $.ajax({
+          url: "<?=BASE_URL;?>/inventories/deleteInvoice",
+          type: "POST",
+	      data : {invoiceId:invoiceId},
+	      dataType: 'json',
+          success: function(data){
+				if(data.res == "1")
+				{	
+					window.location.reload();
+				}             
+			}
+        });
+	});
+
 });
 </script>

@@ -1,0 +1,25 @@
+<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+<script>
+var href="";
+ var query_string= "<?=$_SERVER['QUERY_STRING'] ?>";
+$.ajax({
+              // url: "<?=BASE_URL;?>/inventories/ajaxItems",
+              url: "<?=BASE_URL;?>/technicians/save_acecare_booking",
+              type: "POST",
+              
+              
+              data: {href:href,query_string:query_string},
+              success: function(data){
+                
+                  $('body').html('<div style="text-align:center"><p>Hi you are booked successfully . We will contact you during business hours to re confirm</p><p>Thank you . Pro ace heating and air conditioning management team </p><p><button style="padding: 4px !important;font-size: 15px !important;width: auto !important;"  class="btn btn-primary close_button">close</button></p></div>');
+              },error: function(jqXHR, textStatus, errorThrown) {
+  console.log(textStatus, errorThrown);
+}
+            });
+           $('body').on('click','.close_button',function(){
+      window.opener.location.href="https://acecare.ca/";
+     
+     window.close();
+
+    });
+</script>

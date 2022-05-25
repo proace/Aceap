@@ -1,0 +1,638 @@
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />	
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/layout.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+
+
+<script>
+$(document).ready(function(){
+	$(".img-enlarge").dialog({
+	        modal: true,
+	        autoOpen: false,
+	        title: "Photo",
+	        autoOpen: false,
+	        width: 900,
+	        height: 764,
+	    });
+	    $(".openImg").live("click",function () {
+	    	var imgPath = $(this).attr('src');
+            $('.img-enlarge img').attr('src', imgPath);
+	        $('.img-enlarge').dialog('open');
+	        });
+	 $(".disply_preview").live("change",function(e){
+        var img_ct = $(this).attr("data-ct").trim();
+        var cur = $(this);
+       upload_photo(cur[0],img_ct);
+    });
+	  $(".invoice-img-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 1024,
+            height: 786,
+        });
+        $(".invoice-openImg").live("click",function () {
+            var imgPath = $(this).attr('src');
+            $('.invoice-img-enlarge img').attr('src', imgPath);
+            $('.invoice-img-enlarge').dialog('open');
+        });
+	 $(".disply_preview_image").live("change",function(e){
+        var cur = $(this);
+       upload_photo_pdf(cur[0], cur);
+    });
+
+	$(".invoice-pdf-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 900,
+            height: 764,
+        });
+        
+        $(".show-pdf-image").live("click",function (e) {
+            e.preventDefault();
+            var imgPath = $(this).attr('data-doc_lnk');
+           if(imgPath !== undefined){
+                var docFrame = '<iframe width="100%" height="100%" src="'+imgPath+'" frameborder="0" scrolling="no" id="myFrame" ></iframe>';
+                $('#doc-modal').html('');
+                $('#doc-modal').append(docFrame);
+                $('#doc-modal').load(docFrame);
+                }else{
+                    $('#doc-modal').html('Sorry some error found');
+                }
+                $('.invoice-pdf-enlarge').dialog('open');
+        });
+
+        $("#submit2").live("click", function(){
+        	$(".show_item").show();
+        	$(".itemTotal1").show();
+        	$(".updatePurchase").show();
+        	$(".savePurchase").hide();
+        	$(".grandTotal").text(0);
+        	var itemTbl = $(".items_table tbody");
+        	itemTbl.empty();
+        	$(".items_table").hide();
+        	$(".itemTotal").hide();
+        	var ftechid = $("#ftechid").val();
+        	var from = $("#ffromdate").val();
+        	var to = $("#ftodate").val();
+        	var status = $("#job_option").val();
+        	var itemInvoiceNum = $("#itemInvoiceNum").val();
+			if(ftechid > 0){				
+				$.ajax({
+					url:"<?=BASE_URL;?>/commissions/getTechPurchaseItems",
+					type: "GET",
+					dataType:"html",
+					data:{ftechid:ftechid,from:from,to:to,status:status,itemInvoiceNum:itemInvoiceNum},
+					success: function(data) {
+			            tbl = $(".show_item tbody");
+			            tbl.empty();
+			            tbl.append(data);
+					}
+				});
+			} else {
+					alert("Please select technician.");
+				}
+        });
+
+	$(".savePurchase").live("click", function(){
+		var ftechid = $("#ftechid").val();
+		if(ftechid > 0){
+			var formdata = new FormData($("#viewform")[0]);
+			$.ajax({
+				url:"<?=BASE_URL;?>/commissions/saveTechPurchaseItem",
+				type: "post",
+				data: formdata,
+				contentType: false,
+				processData: false,
+				cache: false,
+				success: function(data)
+				{
+					var output = jQuery.parseJSON(data);
+					if(output.res == 1){
+						window.location.href = "<?=BASE_URL?>/commissions/techPurchase";		
+					}else {
+						alert("Item not saved.");
+					}
+
+				}
+			});
+		} else {
+				alert("Please select technician.");
+			}
+	});
+
+	$(".delete-image").live("click", function(){
+		var id = $(this).attr("row-id");
+		var imageName = $(this).attr("image-name");
+
+		$.ajax({
+				url:"<?=BASE_URL;?>/commissions/deleteItemImage",
+				type: "GET",
+				dataType:"json",
+				data:{id:id,imageName:imageName},
+				success: function(data) {
+		           if(data.res == 1){
+		           		$("#submit2").trigger("click");
+		           }
+				}
+			});
+		});
+
+	$(".updatePurchase").live("click", function(){
+		var formdata = new FormData($("#viewform")[0]);
+			$.ajax({
+				url:"<?=BASE_URL;?>/commissions/updateTechPurchaseItem",
+				type: "post",
+				data: formdata,
+				contentType: false,
+				processData: false,
+				cache: false,
+				success: function(data)
+				{
+					var output = jQuery.parseJSON(data);
+					if(output.res == 1){
+						$("#submit2").trigger("click");
+					}else {
+						alert("Item not saved.");
+					}
+				}
+			});
+	});
+	
+	$("#ChangePayPeriod").live("change", function(){
+		var id = $(this).val();
+
+
+		$("#pay_period_id").val(id);
+	});
+
+	$(".check_pay").live("change", function()
+	{
+		var current = $(this);		
+		if(current.is(":checked"))
+		{
+			current.val(1);
+		} else {
+			current.val(0);
+			$("#ChangePayPeriod").val(-1);
+		}
+	} );
+
+	$("#ftechid").live("change", function(){
+
+	});
+
+	$(".email_invoice").live("click", function(){
+		var techId = $("#ftechid").val();
+		var to_email = $("#toEmail").val();
+		var ffromdate = $("#ffromdate").val();
+		var ftodate = $("#ftodate").val();
+		var status = $("#job_option").val();
+		var invoiceNum = $("#itemInvoiceNum").val();
+
+		if(techId > 0)
+		{		
+			$.ajax({
+				url: '<?=BASE_URL?>/commissions/sendTechPurchaseInvoice',
+				dataType: 'json',
+				type: 'POST',
+				cache: false,
+				data:{techId:techId,to_email:to_email,ffromdate:ffromdate,ftodate:ftodate,status:status,invoiceNum:invoiceNum},
+				success: function(data) {
+					if(data.res == 1){
+						alert("Invoice sent successfully.");
+					} else {
+						alert("Invoice not sent.")
+					}
+				}
+			});	
+		} else {
+			alert("Please select technician.");
+		}		
+	});
+
+	$("#print_invoice").live("click", function(){
+		var techId = $("#ftechid").val();
+		var to_email = $("#toEmail").val();
+		var ffromdate = $("#ffromdate").val();
+		var ftodate = $("#ftodate").val();
+		var status = $("#job_option").val();
+		var invoiceNum = $("#itemInvoiceNum").val();
+		if(techId > 0)
+		{		
+			$.ajax({
+				url: '<?=BASE_URL?>/commissions/printTechItemInvoice',
+				dataType: 'html',
+				type: 'POST',
+				cache: false,
+				data:{techId:techId,to_email:to_email,ffromdate:ffromdate,ftodate:ftodate,status:status,itemInvoiceNum:invoiceNum},
+				success: function(data) {
+		            var newWindow = window.open();
+		            newWindow.document.write(data);
+				}
+			});	
+		} else {
+			alert("Please select technician.");
+		}		
+	});
+});
+
+function upload_photo_pdf(cur, cur1) {  
+    //var file = $('input[id="sortpicture'+i+'"]')[0];
+    if (cur.files && cur.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        var base64Value = e.target.result;
+        var newBase64Value = base64Value.replace('data:application/wps-office.pdf', 'data:application/pdf');
+        $("#pre-image-pdf",cur1.parent().parent()).attr('data-doc_lnk', newBase64Value).width(86)
+        .height(50);
+        $("#pre-image-pdf",cur1.parent().parent()).css("display","block");
+    };
+    reader.readAsDataURL(cur.files[0]);
+  }
+}
+
+
+function calculateTotal()
+{	
+	var finalTotal = 0;
+	$('.items_table').children('tbody').children('.purchased').each(function(i, el){
+		// var price = 0;
+		var qty = $(el).children('td').children('.quantity').val();
+		var price = $(el).children('td').children('.price').val();	
+		var subtotal = parseInt(qty) * parseFloat(price);
+		var gst = ((subtotal * 5)/100).toFixed(2);
+		var pst = ((subtotal * 7)/100).toFixed(2);
+		var total = (parseFloat(subtotal) + parseFloat(gst) + parseFloat(pst)).toFixed(2);
+		finalTotal = parseFloat(finalTotal) + parseFloat(total);
+		$(el).children('td').children('.subtotal').val(subtotal);
+		$(el).children('td').children('.gst').val(gst);
+		$(el).children('td').children('.pst').val(pst);
+		$(el).children('td').children('.total').val(total);
+	});
+
+	$(".grandTotal").text('$ '+ finalTotal.toFixed(2));
+}
+function addItem(){
+	
+	$(".items_table").show();
+	$(".show_item").hide();
+	$(".show_item tbody").empty();
+	$(".savePurchase").show();
+	$(".itemTotal1").hide();
+	$(".updatePurchase").hide();
+
+	$(".itemTotal").show();
+	var isTesch = $("#loggedUserIsTech").val();
+	tbl = $(".items_table tbody");
+	var txt = '';
+	txt += '<tr class="purchased"><td><input class="name" type="text" name="itemName[]"></td>';
+	txt += '<td><input type="text" class="purchaseDate" name="purchaseDate[]" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event,1);" onkeydown="return false;" value="<?=$purchaseDate?>"></td>';
+	txt += '<td><input class="quantity" style="width: 70px;" type="text" name="itemQuantity[]" onchange="calculateTotal()" value="1"></td>';
+	txt += '<td><input class="price" style="width: 70px;" type="text" name="itemPrice[]" onchange="calculateTotal()" value="0"></td>';
+	txt += '<td><input style="width: 70px;" class="subtotal" type="text" name="itemSubtotal[]"></td>';
+	txt += '<td><input class="invoiceNum" type="text" name="invoiceNum[]"></td>';
+	txt += '<td><input style="width: 70px;" class="gst" type="text" name="itemGst[]"></td>';
+	txt += '<td><input style="width: 70px;" class="pst" type="text" name="itemPst[]"></td>';
+	txt += '<td><input style="width: 70px;" class="total" type="text" name="itemTotal[]"></td>';
+	txt += '<td><input type="text" name="itemPaidBy[]"></td>';
+	txt += '<td><img id="pre-image-pdf" class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="" alt="your image" style="display: none;"/><div class="cls-acecare-td-adjust"><label for="sortpicture1" >Upload</label><input type="file" name="sortpic1[]" id="sortpicture1" class="disply_preview_image" data-ct="photo1"></div></td>';
+	// txt += '<td><img class="pre-image_photo invoice-openImg" src="#" alt="your image" /><div class="cls-acecare-td-adjust"><label for="sortpicture" >Upload</label><input type="file" name="sortpic1[]" id="sortpicture" class="disply_preview" data-ct="photo"></div></td>';
+	if(isTesch == 0){
+		txt += '<td><select name="itemStatus[]"><option value=2>Not Paid</option><option value=1>Paid</option><option value=3>Rejected</option></select></td>';
+		// txt += '<td><input type="checkbox" name="itemStatus[]" value="1"></td>';
+	}
+	txt += '<td><img style="max-width: 15px;" onclick="removeItem(this)" src="<?=ROOT_URL?>/app/webroot/img/icon-vsm-delete.png"></td>'
+	txt +='</tr>';
+	tbl.append(txt);
+}
+
+function removeItem(cur)
+{
+	cur.closest('tr').remove();
+	calculateTotal();
+}
+
+function upload_photo(cur,i) {  
+    //var file = $('input[id="sortpicture'+i+'"]')[0];
+    if (cur.files && cur.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      $('.pre-image_'+i+'')
+        .attr('src', e.target.result)
+        .width(86)
+        .height(50);
+        $('.pre-image_'+i+'').css("display","block");
+    };
+    reader.readAsDataURL(cur.files[0]);
+  }
+}
+</script>
+
+<style type="text/css">
+	.backButton{
+		width: 75%;
+	}
+	.updatePurchase{
+		display: none;
+		margin-top: 2%;
+	}
+	.itemTotal{
+	    margin-left: 55%;
+		margin-top: 1%;
+	}
+	.itemTotal1{
+		display: none;
+	    margin-left: 55%;
+		margin-top: 1%;
+	}
+	#sortpicture1{
+		width: 30px;
+	}
+	#toEmail {
+	    padding: 5px;
+		width: 16%;
+	}
+	.show_item{
+		display: none;
+	}
+	.img-enlarge{
+		display: none;
+	}
+	.cls-acecare-td-adjust {
+    position: relative;
+    height: 16;
+    width: 99px;
+    /* padding: 1; */
+    margin: 2px 0px 4px 0px;
+}
+.cls-acecare-td-adjust > input[type="file"]{
+  position: absoulte;
+  opacity: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0
+}
+
+.cls-acecare-td-adjust > label {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: #5f5c5c;
+  color: #000;
+  border-radius: 5px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer
+}
+	.savePurchase{
+		margin-top: 2%;
+	}
+
+	#to_email{
+		padding: 5px;
+    	width: 16%;
+	}
+
+	#email_invoice{
+		padding: 5px;
+		margin-top: 5px;
+	}
+
+	/*#print_invoice{
+		padding: 5px;
+		margin-top: 5px;
+	}*/
+
+	tr.border_bottom td {
+  		border-top: 1pt solid black;
+	}
+	.inactive{
+		color: #868686 !important;
+	}
+	.active{
+		font-weight:bold;
+	}
+	.notready{
+		color: #f80e01 !important;
+	}
+	td.inactive.notready{
+		color: #ffaaa6 !important;
+	}
+	.results th{
+		color:black;
+		border-left:1px solid #9f9f9f;
+		border-bottom:1px solid #9f9f9f;
+	}
+	#return {
+		display:block;
+		color:#ff6633;
+		background-color:#333333;
+		padding:3px;
+		position:relative;
+		left:-10px;
+		top:-10px;
+		font-size:140%;
+	}
+	table.items_table {
+		border : 1px solid black;
+		width: 75%;
+	    border-collapse: collapse;
+	    margin-top: 3%;
+	}
+	.items_table table,.items_table td,.items_table th {
+		border : 1px solid black;
+	}
+
+	table.show_item {
+		border : 1px solid black;
+		width: 75%;
+	    border-collapse: collapse;
+	    margin-top: 3%;
+	}
+
+	.show_item table,.show_item td,.show_item th {
+		border : 1px solid black;
+	}
+	
+</style>
+<?php if($ismobile == 1) { ?>
+	<a href="<?php echo BASE_URL ?>/pages/mobileMenu" id="return">Back to Main</a>
+<?php } ?>
+
+<form action="<?=BASE_URL;?>/commissions/saveTechPurchaseItem"  method="post" name="viewform" id="viewform">
+<input type="hidden" name="action" value="view" >
+<input type="hidden" name="order" value="<?=$_GET['order']?>">
+<input type="hidden" name="sort" value="<?=$_GET['sort']?>">
+<input type="hidden" name="currentPage" value="<?=$_GET['currentPage']?>">
+
+<table width="800">
+<tr>
+<td>
+<table width="100%" border="0" cellspacing="3" cellpadding="0">
+	<!-- <tr>
+		<td><input type="button" class="buttons" name="Back" value="Back" onclick="window.location ='<?php echo BASE_URL;?>/orders/invoiceTablet';"></td>
+	</tr> -->
+	<tr>
+		<td class="sectionTitle" colspan="6">Technician's Summary</td>
+	</tr>
+	<tr>
+		<td>Technician:</td>
+		<td>
+			<select name="ftechid" <?=($loggedUserIsTech == "1" ? "disabled='disabled'" : "")?> id="ftechid">
+				<option value="-1">--</option>
+				<? 
+				foreach($allTechnician as $k => $v) {
+					echo '<option value="'.$k.'"'.( $k == $techid ? ' selected' : '').'>'.$v.'</option>';
+				}
+				?>
+			</select>
+			<!-- We could have only one selected user and only one selected commission_type per job -->
+			<input type="hidden" name="comm_oper" id="comm_oper" value="<?=$comm_oper?>" /> <!--edit;cancel;save -->
+			<input type="hidden" name="loggedUserIsTech" id="loggedUserIsTech" value="<?=$loggedUserIsTech?>" /> <!--edit;cancel;save -->
+			<input type="hidden" name="pay_period_id" id="pay_period_id" value="<?=$pay_period?>" /> <!--edit;cancel;save -->
+			<!-- <input type="hidden" name="techId" id="techId" value="<?=$techid?>" /> -->
+			<input type="hidden" name="selected_job" id="selected_job" value="<?=$selected_job?>" />
+			<input type="hidden" name="selected_commission_type" id="selected_commission_type" value="<?=$selected_commission_type?>" />
+		</td>
+		<!-- <td>Purchase Date</td> -->
+	<!-- 	<td>
+			<input type="text" id="purchaseDate" name="purchaseDate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event,1);" onkeydown="return false;" value="<?=$purchaseDate?>">
+		</td> -->
+		<!-- <td>
+			<select name="pay_period" id="ChangePayPeriod">
+				<option value="-1" <?=($pay_period<0?'selected':'')?>>-=Custom=-</option>
+			<?php foreach ($allPayPeriods as $v => $k) {
+				$selected = '';
+				if ($v == $pay_period) $selected = 'selected';?>
+				<option value="<?=$v?>" <?=$selected?>><?=$k?></option>
+			<?php } ?>
+			</select>
+		</td> -->
+
+		<?php if ($common->getLoggedUserRoleID() == "6"){?>
+		
+		<?php }?>
+	</tr>
+	<tr>
+		<td>Date from: </td>
+		<td>
+			<input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$prev_fdate?>'; document.viewform.ftodate.value='<?=$prev_fdate?>';" style="font-size: 8pt;">
+			&nbsp;&nbsp;
+			<input type="text" id="ffromdate" name="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event,1);" onkeydown="return false;" value="<?=$fdate?>">
+		</td>
+		<td>Date to: </td>
+		<td>
+      <input type="text" id="ftodate" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event,1);" onkeydown="return false;" value="<?=$tdate?>">
+			
+			<input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$next_tdate?>'; document.viewform.ftodate.value='<?=$next_tdate?>';" style="font-size: 8pt;">
+		</td> 
+		<td >Status: 
+			<select name="job_option" id="job_option">
+				<option value=0 <? if ($job_option==0) echo 'selected=1';?>>--</option>
+				<option value=1 <? if ($job_option==1) echo 'selected=1';?>>Paid</option>
+				<option value=2 <? if ($job_option==2) echo 'selected=1';?>>Not Paid</option>
+				<option value=3 <? if ($job_option==3) echo 'selected=1';?>>Rejected</option>
+      		</select>
+		</td>
+		<td>
+			Invoice Num: <input type="text" name="itemInvoiceNum" id="itemInvoiceNum">
+		</td>
+		<td align="left">
+		<input type="button" name="submit2" id="submit2" value="Search" class="buttons">
+		</td>			
+	</tr>
+	<tr>
+		<?php if ($common->getLoggedUserRoleID() == "1"){?>
+			<td><input type="button" class="buttons backButton" name="Back" value="Back" onclick="window.location ='<?php echo BASE_URL;?>/orders/invoiceTablet';"></td>
+		<?php }?>
+		<td><input type="button" name="add_item" value="Add Item" onclick="addItem();" class="buttons"></td>
+	</tr>
+	</table>
+</td>
+</tr>
+</table> 	
+
+<div>	
+<table class="items_table">
+	<thead>		
+		<tr>
+			<th>Name</th>
+			<th>Purchase Date</th>
+			<th>Qty</th>
+			<th>Price</th>
+			<th>Sub Total</th>
+			<th>Invoice Number</th>
+			<th>Gst</th>
+			<th>Pst</th>
+			<th>Total</th>
+			<th>Paid By</th>
+			<th>Image</th>
+			<?php if($loggedUserIsTech == 0){?>
+			<th>Status</th>
+			<?php } ?>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>	
+		
+	</tbody>
+</table>
+<div class="itemTotal">
+	Total: <span class="grandTotal"></span>
+</div>
+<table class="show_item">
+	<thead>		
+		<tr>
+			<th>Name</th>
+			<th>Purchase Date</th>
+			<th>Qty</th>
+			<th>Price</th>
+			<th>Sub Total</th>
+			<th>Invoice Number</th>
+			<th>Gst</th>
+			<th>Pst</th>
+			<th>Total</th>
+			<th>Paid By</th>
+			<th>Image</th>
+			<th>Status</th>
+			<?php if($loggedUserIsTech == 0){?>
+				<th>Pay</th>
+			<?php } ?>
+		</tr>
+	</thead>
+	<tbody>	
+	</tbody>
+</table>
+<!-- <div class="itemTotal1">
+	Total: <span><?php echo $grandTotal?></span>
+</div> -->
+</div>
+
+<input type="button" class="savePurchase buttons" name="Save" value="Save">
+<input type="button" class="updatePurchase buttons" name="update" value="Update">
+<input type="text" name="toEmail" id="toEmail">
+<input type="button" class="email_invoice buttons" name="email_invoice" value="Email Invoice">
+<input type="button" class="buttons"  name="print_invoice" value="Print Invoice" id="print_invoice">
+</div>
+</form>
+<div class="invoice-pdf-enlarge" title="Photo" style="display: none">
+    <div id="doc-modal" style="width: 100%, height:100%"></div>
+</div>
+<div class="invoice-img-enlarge" title="Photo">
+    <!-- <img src="<?=$imgPath?>" style="width:100%;"> -->
+    <img src="<?=$imgPath?>" class="rotate-image" style="width:100%;">
+    <?php echo $this->element('image_rotate'); ?>
+
+</div>
+
+ <div class="img-enlarge" title="Photo">
+  <img class="rotate-image" src="<?php echo $imgPath; ?>" style="width:100%;">
+</div>  

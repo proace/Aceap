@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<form name="pdfGenerateform"  action="<?=BASE_URL;?>/orders/testPdfGenerate" method="post" enctype="multipart/form-data">
+	<input type="submit" name="save" value="save">
+	<textarea name="pdf_data" rows="10" cols="50"></textarea>
+	
+</form>
+</body>
+</html>

@@ -9,6 +9,50 @@ function ChangeActive(id,elem_chk){
 			{item_id:id,is_active:0},
 			function(data){document.forms['viewform'].submit();});
 }
+function ChangeActiveInventory(id,elem_chk)
+{
+	if (elem_chk.checked) 
+		$.get("<?=BASE_URL;?>/commissions/changeActiveInventory",
+			{item_id:id,is_active:1},
+			function(data){document.forms['viewform'].submit();});
+	else
+		$.get("<?=BASE_URL;?>/commissions/changeActiveInventory",
+			{item_id:id,is_active:0},
+			function(data){document.forms['viewform'].submit();});
+}
+$("#ShowInactive").live("change", function(){
+	if($(this).is(':checked'))
+	{
+		$("#ShowNewTech").attr("checked", false); //uncheck all checkboxes
+		$("#ShowNewTech").val(0); //uncheck all checkboxes
+		$(this).attr("checked", true);
+		$(this).val(1);
+	} else {
+		$(this).val(1);
+	}
+
+	document.forms['viewform'].submit();
+});
+
+$("#ShowNewTech").live("change", function(){
+	if($(this).is(':checked')) {
+		$("#ShowInactive").attr("checked", false); //uncheck all checkboxes
+		$("#ShowInactive").val(0); //uncheck all checkboxes
+		$(this).attr("checked", true);
+		$(this).val(1);
+	} else {
+		$(this).val(0);	
+	}
+	document.forms['viewform'].submit();
+});
+
+function deleteTech(id,elem_chk)
+{
+	if (elem_chk.checked) 
+		$.get("<?=BASE_URL;?>/commissions/deleteTech",
+			{tech_id:id},
+			function(data){document.forms['viewform'].submit();});
+}
 </script>
 
 <form method="GET" action="<?= $PHP_SELF?>" name="viewform">
@@ -21,7 +65,8 @@ function ChangeActive(id,elem_chk){
 		<tr>
 			<td class="sectionTitle">Technicians</td>
 			<td>Search by name:&nbsp;<input type="text" id="ItemSearchString" onkeyup="SearchFilter(this)"/></td>
-			<td>Show Inactive:&nbsp;<input type="checkbox" id="ShowInactive" <?php if ($ShowInactive) echo 'checked';?> name="ShowInactive" onchange="document.forms['viewform'].submit();"/></td>
+			<td>Show Inactive:&nbsp;<input type="checkbox" id="ShowInactive" <?php if ($ShowInactive) echo 'checked';?> value="0" name="ShowInactive"/></td>
+			<!-- <td>Show Pending Tech:&nbsp;<input type="checkbox" id="ShowNewTech" <?php if ($ShowNewTech) echo 'checked';?> value="0" name="ShowNewTech"/></td> -->
 		</tr>
 		<tr>
 			<td>
@@ -38,7 +83,9 @@ function ChangeActive(id,elem_chk){
         <th width="80"><a href="javascript:setOrder('last_name');">Last name</a></th>
         <th width="80"><a href="javascript:setOrder('phone');">Phone</a></th>
         <th width="100"><a href="javascript:setOrder('commission_type');">Commission type</a></th>
+        <th width="10"><a href="javascript:setOrder('tech_inventory');">Techs Inventory</a></th>
         <th width="10"><a href="javascript:setOrder('is_active');">Active</a></th>
+        <th width="10"><a href="javascript:setOrder();">Delete</a></th>
     </tr>
 		<?php $r=1;
 			foreach ($items as $obj) { 
@@ -51,7 +98,39 @@ function ChangeActive(id,elem_chk){
       	<td>&nbsp;<?php echo $obj['last_name']; ?></td>
       	<td>&nbsp;<?php echo $obj['phone']; ?></td>
       	<td>&nbsp;<?php echo $obj['commission_type']; ?></td>
-      	<td><input type="checkbox" <?php if ($obj['is_active']) echo 'checked'; ?> onclick="ChangeActive(<?=$obj['id']?>,this)"/></td>
+      	<td><input type="checkbox" <?php if ($obj['tech_inventory'] == 1) echo 'checked'; ?> onclick="ChangeActiveInventory(<?=$obj['id']?>,this)"/></td>
+      	<td><input type="checkbox" <?php if ($obj['is_active'] == 1) echo 'checked'; ?> onclick="ChangeActive(<?=$obj['id']?>,this)"/></td>
+      	<td><input type="checkbox" onclick="deleteTech(<?=$obj['id']?>,this)"/></td>
+    </tr>
+    <? } ?>
+</table>
+
+<table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
+	<tr><td><h3>New Tech</h3></td></tr>
+    <tr>
+        <th width="20"><b><u>ID</b></u></td>
+        <th width="80"><a href="javascript:setOrder('first_name');">First name</a></th>
+        <th width="80"><a href="javascript:setOrder('last_name');">Last name</a></th>
+        <th width="80"><a href="javascript:setOrder('phone');">Phone</a></th>
+        <th width="100"><a href="javascript:setOrder('commission_type');">Commission type</a></th>
+        <th width="10"><a href="javascript:setOrder('tech_inventory');">Techs Inventory</a></th>
+        <th width="10"><a href="javascript:setOrder('is_active');">Active</a></th>
+        <th width="10"><a href="javascript:setOrder();">Delete</a></th>
+    </tr>
+		<?php $r=1;
+			foreach ($items1 as $obj) { 
+				$class = 'cell'.(++$r%2);
+		?>
+    <tr id="r<?=$r?>" class="<?=$class?>">
+      	<td class="firstcol">&nbsp;<a href="<?=BASE_URL?>/commissions/editTech/<?=$obj['id']?>?view=1"><?=$obj['id']?></a></td>
+				<td class="item_name_td" style="display:none"><?php echo strtoupper($obj['first_name'].$obj['last_name']);?></td>
+				<td>&nbsp;<?php echo $obj['first_name']; ?></td>
+      	<td>&nbsp;<?php echo $obj['last_name']; ?></td>
+      	<td>&nbsp;<?php echo $obj['phone']; ?></td>
+      	<td>&nbsp;<?php echo $obj['commission_type']; ?></td>
+      	<td><input type="checkbox" <?php if ($obj['is_active'] == 1) echo 'checked'; ?> onclick="ChangeActive(<?=$obj['id']?>,this)"/></td>
+      	<td><input type="checkbox" <?php if ($obj['tech_inventory'] == 1) echo 'checked'; ?> onclick="ChangeActiveInventory(<?=$obj['id']?>,this)"/></td>
+      	<td><input type="checkbox" onclick="deleteTech(<?=$obj['id']?>,this)"/></td>
     </tr>
     <? } ?>
 </table>

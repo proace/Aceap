@@ -35,7 +35,7 @@
   text-decoration: none;
   display: inline-block;
   font-size: 13px;
-  margin: 4px 2px;
+  margin: 4px 17px;
   cursor: pointer;
 }
 
@@ -210,9 +210,9 @@ border-radius: 4px;
 .col-md-12{
     width: 40%;
     margin: auto;
-    border: 1px solid black;
-    padding-left: 30px;
-    border-radius: 20px;
+/*    border: 1px solid black;
+*/    padding-left: 30px;
+   /* border-radius: 20px;*/
 }
 
 @media (max-width: 1024px) {
@@ -230,26 +230,30 @@ border-radius: 4px;
     </div>
     <div class="col-md-12">
         <form id="info" method="POST" action="<?=BASE_URL;?>/orders/saveUserReviewResponse" class="mid_form">
-          <h2>Customer Review</h2>
+        <input type="hidden" name="rating" id="rating" value="<?= $_REQUEST['s']; ?>">
+        <input type="hidden" name="order_id" id="order_id" value="<?= $_REQUEST['order_id']; ?>">
+        <input type="hidden" name="email" id="email" value="<?= $_REQUEST['email']; ?>">
+          <!--<h2>Customer Review</h2>-->
             <table>
-               <tr>
+               <!--<tr>
                 <td style="width: 40%;">
                   <label>Phone Number:</label>
                 </td>
                 <td>
                   <input type="text" class="form_control" name="phone_num" placeholder="6042933770" value="<?php echo $phone_number ?>">
                   <input type="hidden" name="rating" id="rating">
+                  <input type="hidden" name="order_id" id="order_id" value="<?= $_REQUEST['order_id']; ?>">
                 </td>
-              </tr>
-               <tr>
+              </tr>-->
+               <!--<tr>
                 <td>
                   <label>Email:</label>
                 </td>
                 <td>
                   <input type="text" class="form_control" name="email" placeholder="info@acecae.ca" value="<?php echo $email ?>">
                 </td>
-              </tr>
-              <tr>
+              </tr>-->
+              <!--<tr>
                 <td>
                   <label style="margin-top: 15px">How was your experience with us:</label>
                 </td>
@@ -268,16 +272,17 @@ border-radius: 4px;
                           <li class='star' title='Excellent' data-value='4'>
                             <i class='fa fa-star fa-fw'></i>
                           </li>
-                          <li class='star' title='WOW!!!' data-value='5'>
+                          <li class='star' title='WOW!!!' data-value='5' onclick="window.location='https://g.page/r/CVg7WOiOp9QKEAE/review';">
                             <i class='fa fa-star fa-fw'></i>
                           </li>
                         </ul>
                     </div>
                 </td>
-              </tr>
+              </tr>-->
                 <tr>
                     <td colspan="2">
-                        <textarea name="Notes" rows="6"></textarea>
+                     <span><b>Comments:</b></span>
+                        <textarea name="Notes" rows="10" cols="50" required></textarea>
                     </td>
                 </tr>
             </table>

@@ -1,0 +1,71 @@
+ <?php
+function search_revisions($dataArray, $search_value, $key_to_search, $other_matching_value = null, $other_matching_key = null) {
+    
+    $keys = array();
+    foreach ($dataArray as $key => $cur_value) {
+        if ($cur_value[$key_to_search] == $search_value) {
+            if (isset($other_matching_key) && isset($other_matching_value)) {
+                if ($cur_value[$other_matching_key] == $other_matching_value) {
+                    $keys[] = $key;
+                }
+            } else {
+             
+                $keys[] = $key;
+            }
+        }
+    }
+    return $keys;
+}
+ ?>
+ <ul class="nested">
+      <?php foreach ($trainingSubCategories as $obj) {
+       $video=0;
+       $image=0;
+       $notes=0;
+       $tech_support=0;
+       $document=0;
+       $data = search_revisions($get_data,$obj['AgentTrainingSubCategory']['id'],'sub_cat_id');
+       foreach($data as $datas){
+        $check = explode(',',$obj['AgentTrainingSubCategory']['allow']);
+        if($get_data[$datas]['type']==8){
+         $video++;
+        }
+        if($get_data[$datas]['type']==4){
+         $image++;
+        }
+        if($get_data[$datas]['type']==2){
+         $notes++;
+        }
+        if($get_data[$datas]['type']==1){
+         $tech_support++;
+        }
+        if($get_data[$datas]['type']==3){
+         $document++;
+        }
+        
+       }
+       if($video>0 || $image>0 || $notes>0 || $document>0 || $tech_support>0){
+        $class="active";
+       }
+       
+       ?>
+             <li><span data-secondSubCatType="1"  data-subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" class="caret secondCat open_content <?= implode(',',$data) ?>" ><?=$obj['AgentTrainingSubCategory']['name']?> </span>
+             <i class="fa fa-pencil-square-o editSubCat" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>"></i> <i class="fa fa-trash-o deleteSubCat" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>"></i>
+             <!--<i class="fa fa-plus addSecondSubCat" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" secondSubCatType="1" aria-hidden="true"></i> -->
+             <i data-secondSubCatType="1"  data-subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" class="fa fa-file open_content1"></i>
+                <ul class="nested <?= $class ?>">
+                   <!--<li class="li_<?php echo $obj['AgentTrainingSubCategory']['id']; ?>_1"><span class="caret" onclick="showSecondSubCtaegory(<?php echo $obj['AgentTrainingSubCategory']['id']; ?>,1,this)">Installation</span> <i class="fa fa-plus addSecondSubCat" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" secondSubCatType="1" aria-hidden="true"></i>&nbsp;&nbsp;<i data-secondSubCatType="1"  data-subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" class="fa fa-file open_content"></i></li>
+                   <li class="li_<?php echo $obj['AgentTrainingSubCategory']['id']; ?>_2"><span class="caret" onclick="showSecondSubCtaegory(<?php echo $obj['AgentTrainingSubCategory']['id']; ?>,2,this)">Repair</span> <i class="fa fa-plus addSecondSubCat" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" secondSubCatType="2" aria-hidden="true"></i>&nbsp;&nbsp;<i data-secondSubCatType="2"  data-subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" class="fa fa-file open_content"></i></li>
+                   <li class="li_<?php echo $obj['AgentTrainingSubCategory']['id']; ?>_3"><span class="caret" onclick="showSecondSubCtaegory(<?php echo $obj['AgentTrainingSubCategory']['id']; ?>,3,this)">Service</span> <i class="fa fa-plus addSecondSubCat" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" secondSubCatType="3" aria-hidden="true"></i>&nbsp;&nbsp;<i data-secondSubCatType="3"  data-subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" class="fa fa-file open_content"></i></li>
+                  
+                  
+                  <li>Tech Support (<?= $tech_support?>) <i class="fa fa-plus techSupport" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showTechSupport" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>"></i></li>
+                  <li>Note (<?= $notes ?>) <i class="fa fa-plus subCatNotes" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSubCatNotes" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>"></i></li>
+                  <li>Images (<?= $image ?>) <i class="fa fa-plus subCatImages" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSubCatImages" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>"></i></li>
+                   <li>Document (<?= $document?>) <i class="fa fa-plus subCatDocument" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSubCatDocuments" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>"></i></li>
+                   <li>Video(<?= $video ?>) <i class="fa fa-plus subCatVideo" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSubCatVideos" subcat-id="<?php echo $obj['AgentTrainingSubCategory']['id']; ?>"></i></li> -->
+               
+                 </ul>
+              </li>
+      <? } ?>
+     </ul>

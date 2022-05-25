@@ -75,7 +75,7 @@
  * release/app/webroot/.htaccess
 
  */
-
+	date_default_timezone_set('America/Vancouver');
 	define ('BASE_URL', env('SCRIPT_NAME'));
 
 	define ('ROOT_URL', str_replace('/index.php', '', BASE_URL));
@@ -116,7 +116,7 @@
 
  */
 
-	define('CACHE_CHECK', false);
+	define('CACHE_CHECK', true);
 
 /**
 
@@ -220,7 +220,8 @@
 
  */
 
-	define('CAKE_SESSION_TIMEOUT', '17280');
+	// define('CAKE_SESSION_TIMEOUT', '17280');
+ define('CAKE_SESSION_TIMEOUT', '86400');
 
 /**
 

@@ -123,7 +123,9 @@ if (($common->getLoggedUserRoleID()!=6)&&($v==3)) continue;
             {
                 $nCnt++;
                 $class = 'empty_cell';
-                
+               
+                // echo "<pre>";
+                // print_r($default_techs); die("out");
                 if (isset($map_busy[$k][$j][$i])) $class = 'busy_cell';
                 $en = true;
                 if ($p_code||$city)

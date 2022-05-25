@@ -1,0 +1,238 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Invoice</title>
+<!--<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+<meta name="apple-mobile-web-app-capable" content="yes">-->
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/invoice_tablet.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/eff_calculator.js"></script>	
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.21.custom.css" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/invoice_tablet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style type="text/css">
+    .borderLine{
+        border-bottom: 1px ridge #777;
+    }
+#invoice {
+    margin-left: 120px;
+}
+.no-close .ui-dialog-titlebar-close {
+  display: none;
+}
+ .button {
+    width: 21px;
+    height: 12px;
+    background: #F7B647;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+
+}
+.dropbtn {
+  /*background-color: #4CAF50;*/
+  /*background-color: #999999;*/
+  /*color: white;*/
+  color: #999999;
+  padding: 16px;
+  /*font-size: 14px;*/
+  font-size: 100%;
+  border: none;
+  background: #333333;
+  color: #999999;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  /*background: #333333;*/
+  color:#999999;
+}
+
+.dropdown-content a {
+  color: black;
+  /*color:#ffffff;*/
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {background-color: #ddd;}
+
+.dropdown:hover .dropdown-content {display: block;}
+
+/*.dropdown:hover .dropbtn {background-color: #3e8e41;}*/
+.dropdown:hover .dropbtn {background-color: #333333;}
+#nav a div{
+    margin-top: 70%;
+}
+#nav .buttons {
+    height: 84px;
+}
+</style>
+<body>    
+<ul id="nav">
+    <!-- <li><a id="jobs_link" class="buttons"><div>Jobs</div></a></li>  -->     
+    <li><a id="jobs_link" href="<?php echo BASE_URL;?>/orders/invoiceTablet" class="buttons" class="buttons"><div>Jobs</div></a></li>
+    <li><a href="<?php echo BASE_URL;?>/pages/main" id="home_link" class="buttons"><div>ACESYS</div></a></li>
+     <li><a href="<?php echo BASE_URL ?>/orders/editBooking?customer_id=&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date('d M Y'));?>&job_technician1_id=0&job_technician2_id=0&from_tech_page=1&show_preview=0"  id="new_link" class="buttons"><div>New Booking</div></a></li>
+     
+    <li class="borderLine" >
+        <div class="dropdown">
+            <button class="dropbtn">Estimate</button>
+            <div class="dropdown-content">
+                <a href="<?php echo BASE_URL;?>/orders/invoiceTabletNewBooking">New Estimate</a>
+                <a href="<?php echo BASE_URL;?>/reports/estimates?fromTech=1">Estimate History</a>
+            </div>
+        </div>
+    </li>
+    <!-- <li><a href="<?php echo BASE_URL;?>/orders/invoiceTabletNewBooking"  id="new_link" class="buttons"><div>Estimate</div></a></li> -->
+    
+      <!-- <li><a href="<?=BASE_URL?>/inventories/editDoc?type=1&fromTech=1&rurl=<?=urlencode('supplies?'.$_SERVER['QUERY_STRING'])?>"  id="purchase_image" class="buttons"><div>Purchase</div></a></li> -->
+
+      <li class="borderLine">
+          <div class="dropdown">
+          <button class="dropbtn">Inventory </br> and Purchase</button>
+          <div class="dropdown-content">
+            <a href="<?=BASE_URL?>/inventories/getTechItems">Truck and Office Inventory</a>
+            <!-- <a href="<?=BASE_URL?>/inventories/requests">Part Request</a> -->
+            <a href="<?=BASE_URL?>/suppliers">Supplier</a>
+            <a href="<?=BASE_URL?>/inventories/editDoc?type=1&fromTech=1&rurl=<?=urlencode('supplies?'.$_SERVER['QUERY_STRING'])?>">Purchase</a>
+            <!-- <a href="#">Purchase</a> -->
+            <a href="<?=BASE_URL?>/inventories/supplies">Part History</a>
+            <a href="#">Training</a>
+          </div>
+        </div>
+      </li>
+    <!-- <li><a href="<?php echo BASE_URL;?>/inventories/techInventory" id="new_inventory_link" class="buttons" style="text-align: center;text-decoration: none;"><i class="fa fa-truck" aria-hidden="true" style="font-size: 60px;color: #ccc;"></i>
+<br/>Inventory</a></li> -->
+  <!--   <li><a id="calc_link" class="buttons"><div>Eff Calculator</div></a></li>
+    <li><a id="preview_link" class="buttons" href="http://69.31.184.162:81/acesys/PrinterShare-6.0.0.apk"><div>PrinterShare 6</div></a></li> -->
+    <!--<li><a id="new_link" class="buttons" onclick="alert('Under construction. Please use a blank estimate paper for now.')"><div>New Booking</div></a></li>--> 
+    <!--<li><a id="messages_link" class="buttons"><div>Messages</div></a></li>-->
+</ul>
+<!--<div id="messages_div">
+<div id="messages_prev"></div>
+<textarea wrap="hard" id="messages_reply"></textarea><input type="button" id="messages_send" value="SEND" />
+</div>-->
+<div id="invoice">
+	<ul id="job_list">
+    	<?php foreach($jobs as $job) { ?>
+        <?php if($job['Order']['order_status_id'] == 5) $url = BASE_URL."/orders/invoiceTabletPrint?order_id=".$job['Order']['id'] ?>
+        <?php if($job['Order']['order_status_id'] == 3) $url = "#" ?>
+        <?php if($job['Order']['order_status_id'] == 1) $url = BASE_URL."/orders/invoiceTabletOverview?order_id=".$job['Order']['id'] ?>
+    	<li>
+         <a href="<?php echo ($job['Order']['tech_visible'] == '0'?'#':$url) ?>" class="job status<?php echo $job['Order']['order_status_id'] ?>">
+        	<span><?php echo $job['Customer']['first_name'] ?> <?php echo $job['Customer']['last_name'] ?> <?php echo $job['Order']['job_time_beg'] ?> <?php echo $job['Order']['job_time_end'] ?></span>            
+            <div><?php echo $job['Order']['order_number'] ?></div>
+        </a>        
+        </li>
+        
+        <?php } ?>
+    </ul>
+</div>
+<div id="calc_dialog">
+<table>
+	<tr>
+    	<td>
+        	<h3>Yearly Cost</h3>
+        	<table>
+            	<tr>
+                	<td colspan="3"><div class="number_display" id="cost">0</div></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="7" class="calc_digits"></td>
+                    <td><input type="button" value="8" class="calc_digits"></td>
+                    <td><input type="button" value="9" class="calc_digits"></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="4" class="calc_digits"></td>
+                    <td><input type="button" value="5" class="calc_digits"></td>
+                    <td><input type="button" value="6" class="calc_digits"></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="1" class="calc_digits"></td>
+                    <td><input type="button" value="2" class="calc_digits"></td>
+                    <td><input type="button" value="3" class="calc_digits"></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="0" class="calc_digits"></td>
+                    <!--<td><input type="button" value="." class="calc_dot"></td>-->
+                    <td colspan="2" class="right"><input type="button" value="clear" class="calc_clear"></td>
+                </tr>
+            </table>
+            <h3>Old Furnace %</h3>
+        	<table>
+            	<tr>
+                	<td><div class="number_display" id="old_eff">0</div></td>
+                </tr>
+                <tr>
+                	<td><input type="button" value="60" class="calc_percent"></td>
+                </tr>
+                <tr>
+                    <td><input type="button" value="70" class="calc_percent"></td>
+                </tr>
+                <tr>
+                    <td><input type="button" value="80" class="calc_percent"></td>
+                </tr>
+                                
+            </table>
+        </td>
+        <td style="position:relative">
+        	<div id="old_scale">Old<div id="old_cost"></div></div>
+            <div id="old_label">Existing</div>
+            <div id="new1_scale">92%<div id="new1_cost"></div></div>
+            <div id="new1_label">High Efficiency</div>
+            <div id="new2_scale">95%<div id="new2_cost"></div></div>
+            <div id="new2_label">Highest Efficiency</div>
+        </td>
+    </tr>
+</table>
+</div>
+<div id= "show-dialog" style="display: none; text-align: center;">
+   <div><span> You can not access your jobs until you complete your commission page.</span>
+    <br><br><br>
+    <span>Click here to complete <br>
+    Your commission page<span>
+    <br><br><br></div>
+    <div style="text-align: center">
+    <!-- <a  class="button" href="http://hvacproz.ca/acesys/index.php/commissions/calculateCommissions?<?=$URL?>" target="">GO</a></div> -->
+    <a  class="button" href="<?=BASE_URL?>/commissions/calculateCommissions?<?=$URL?>" target="">GO</a></div>
+</div>
+<script type="text/javascript">
+$(document).ready(function()
+{
+       <?php if($isShow == 1) {?>
+        $("#invoice").hide();
+        $("#show-dialog").dialog({
+            modal: true,
+            autoOpen: true,
+            title: "Commission",
+            width: 500,
+            height: 200,
+            dialogClass: "no-close",
+            color:"yellow"
+        });
+        <?php }?>   
+ 
+});
+ 
+</script>
+<?php echo $this->element('tech_footer'); ?>
+</body>
+</html>

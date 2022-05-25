@@ -1,26 +1,32 @@
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.quicksearch.js"></script>
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/scw.js"></script>
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.js"></script>
-<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.2.min.js"></script>
-<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery.quicksearch.js"></script>
+<!-- <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.2.min.js"></script> -->
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_constants.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_js_sample.js"></script>
 <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
 
 <script>
+  $(document).ready(function() {
+    $("#call_phone").live('click', function(e){
+      e.stopPropagation();
+      var senderElement = e.target;
+      if($(e.target).is("a")) {
+       var phone = $(this).attr('call_cell_phone');
+       call_cell_phone(phone);
+    }
+  });
+$(function () {
+  $('input#search').quicksearch('.affected');
+});
+  });
+
 var cur = '';
-// function ClickRow(id,name){
-//     console.log("here");
-// 		<?php $r=1;
-// 			if ($_REQUEST['mode']=='select'){
-// 				echo "window.returnValue=name;";
-// 				echo "window.close();";
-// 			}
-// 			elseif ($_REQUEST['mode']=='id'){
-// 				echo "window.returnValue=id;";
-// 				echo "window.close();";
-// 			}
-// 			else
-// 				echo "document.location.href='".BASE_URL."/suppliers/editItem?item_id='+id";
-// 		?>
-// }
+function call_cell_phone(phone_number)
+{
+  bringToFront();
+  placeCall(phone_number);
+}
 
 function ClickRow(ev){
      id = $(ev).closest('tr').children('td:first').text();
@@ -41,9 +47,7 @@ function showBranches(sup_id, el)
         });  
 }
 
-$(function () {
-	$('input#search').quicksearch('.affected');
-});
+
 </script>
 <style>
 .fa-trash {
@@ -110,12 +114,11 @@ $(function () {
 
 <table class="results" cellpadding="3" cellspacing="0" style="border-style: solid;border-width:1px;" width="100%">
     <tr>
-        <th width="25" style="color: black"><i class="fa fa-trash" aria-hidden="true"></i></td>
         <th width="25"><b><u>ID</b></u></td>
         <th width="200"><a href="javascript:setOrder('name');">Name</a></th>
         <th width="200"><a href="javascript:setOrder('equipment');">Equipment</a></th>
         <th width="200"><a href="javascript:setOrder('notes');">Notes</a></th>
-        
+        <th width="25" style="color: black"><i class="fa fa-trash" aria-hidden="true"></i></td>
     </tr>
 		<?php $r=1;
 			foreach ($items as $obj): 
@@ -126,11 +129,11 @@ $(function () {
     	onclick="showBranches(<?=$obj['id']?>, '#details<?=$obj['id']?>')" 
         <?php } ?>
         style="cursor:pointer;">
-        <td><a href="<?=BASE_URL?>/suppliers/deleteMainSupplier?sup_id=<?=$obj['id']?>"><i class="fa fa-trash" aria-hidden="true"></i></a></td>
 		<td ><a href="<?=BASE_URL?>/suppliers/editMainSupplier?sup_id=<?=$obj['id']?>"><?=$obj['id']?></a></td>
 		<td>&nbsp;<?php echo $obj['name']; ?></td>
         <td>&nbsp;<?php echo $obj['equipment']; ?></td>
 		<td>&nbsp;<?php echo $obj['notes']; ?></td>
+         <td><a href="<?=BASE_URL?>/suppliers/deleteMainSupplier?sup_id=<?=$obj['id']?>"><i class="fa fa-trash" aria-hidden="true"></i></a></td>
     </tr>
     <tr class="details" style="display:none;"><td colspan=12 id="details<?=$obj['id']?>"></td></tr>
     <?php endforeach; ?>

@@ -12,4 +12,3 @@ class TechQualification extends AppModel
 }
 
 ?>
-

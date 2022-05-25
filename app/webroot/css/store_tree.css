@@ -1,186 +1,186 @@
-/* CSS Document */
-
-#page_store_tree {
-	/*font-size:50%;*/
-	padding:0;
-	margin:0;	
-	height:300px;	
-	font-family:Arial, Helvetica, sans-serif;
-	background-color:#ffffff;
-	overflow:scroll;
-}
-
-#page_store_list {
-	/*font-size:50%;*/
-	padding:0;
-	margin:0;	
-	height:300px;	
-	font-family:Arial, Helvetica, sans-serif;
-	background-color:#ffffff;
-	overflow:scroll;
-}
-
-div#list_filter {
-	position:absolute;
-	left:20px;
-	margin:2px;
-	padding:1px 4px;
-	background-color:#cccccc;
-	-moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    -khtml-border-radius: 4px;
-    border-radius: 4px;
-}
-
-div#spacer {
-	margin-bottom:20px;	
-}
-
-div#tabs {
-	min-height:98%;
-}
-
-ul {
-	border-left:1px dashed #999999;
-	padding-left:5px;
-	margin-left:8px;	
-}
-
-.tabs li {
-	list-style:none;
-	background-color:#ffffff;
-	clear:both;
-}
-
-.tabs div.list_wrapper {
-	float:left;
-}
-
-.tabs div.list_header {
-	background-color:#555555;
-	padding:3px;
-	color:#cccccc;
-}
-
-.tabs div.list_header input[type=text].filter_name {
-	width:70px;	
-}
-
-.tabs div.list_header input[type=text].filter_part {
-	width:50px;	
-}
-
-a {
-	text-decoration:underline;
-	color:#333333;
-	cursor:pointer;
-}
-
-.tabs div.list_header a.link_additem {
-	display:block;
-	float:left;
-	background:transparent url("../img/iconset_coquette/add.png") no-repeat bottom center;	
-	height:16px;
-	width:16px;
-}
-
-.tabs div.list_header a:hover.link_additem,
-.tabs div.list_header a:active.link_additem {
-	background-color:#777777;
-}
-
-.tabs .link_category_settings {
-	float:right;
-	display:block;
-	background:transparent url("../img/iconset_coquette/process24x24.png") no-repeat bottom center;	
-	height:24px;
-	width:24px;
-}
-
-ul.parent {
-	border:none;
-	margin-top:15px;
-}
-
-div.item_count {
-	color:#cccccc;	
-}
-
-table.list {
-	border:1px solid #333333;
-	padding:0;	
-	border-collapse: collapse;	
-	clear:both;
-}
-
-table.list th {
-	background-color:#333333;
-	color:#cccccc;
-	margin:0;
-	padding:2px 7px;
-}
-
-table.list td {
-	margin:0;
-	padding:2px 7px;
-	text-align:center;
-	border:1px solid #dddddd;
-}
-
-table.list td.right {
-	text-align:right;
-}
-
-table.list td.left {
-	text-align:left;
-}
-
-table.list td.center {
-	text-align:center;
-}
-
-table.list tr.item {
-	cursor:pointer;
-}
-
-table.list tr.odd {
-	background-color:transparent;
-}
-
-table.list tr.even {	
-	background-color:#ffedcf;
-}
-
-table.list tr.hovered {	
-	background-color:#dddddd;
-}
-
-.clear_this {
-	clear:both;	
-}
-
-#addBookedItems, #addTechnicianSales, #closeBookedItems, #closeTechnicianSales, .loading_indicator {
-	float:left;
-	width:150px;
-}
-
-.loading_indicator {
-	background:transparent url("../img/iconset_coquette/bar_loading.gif") no-repeat center;	
-	height:24px;
-}
-
-#addBookedItemsTree, #addTechnicianSalesTree {
-	float:left;
-	display:block;
-	background:transparent url("../img/iconset_coquette/bullet24x24.png") no-repeat bottom center;	
-	height:24px;
-	width:24px;
-}
-
-#addBookedItemsList, #addTechnicianSalesList {
-	float:left;
-	display:block;
-	background:transparent url("../img/iconset_coquette/enumerate24x24.png") no-repeat bottom center;	
-	height:24px;
-	width:24px;
-}
+/* CSS Document */
+
+#page_store_tree {
+	/*font-size:50%;*/
+	padding:0;
+	margin:0;	
+	height:300px;	
+	font-family:Arial, Helvetica, sans-serif;
+	background-color:#ffffff;
+	overflow:scroll;
+}
+
+#page_store_list {
+	/*font-size:50%;*/
+	padding:0;
+	margin:0;	
+	height:300px;	
+	font-family:Arial, Helvetica, sans-serif;
+	background-color:#ffffff;
+	overflow:scroll;
+}
+
+div#list_filter {
+	position:absolute;
+	left:20px;
+	margin:2px;
+	padding:1px 4px;
+	background-color:#cccccc;
+	-moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+}
+
+div#spacer {
+	margin-bottom:20px;	
+}
+
+div#tabs {
+	min-height:98%;
+}
+
+ul {
+	border-left:1px dashed #999999;
+	padding-left:5px;
+	margin-left:8px;	
+}
+.tabs li a {    font-weight: bold;    font-size: 12px;}
+.tabs li {
+	list-style:none;
+	background-color:#ffffff;
+	clear:both;	margin:7px;
+}
+
+.tabs div.list_wrapper {
+	float:left;
+}
+
+.tabs div.list_header {
+	background-color:#e7e7e7;
+	padding:3px;
+	color:#cccccc;
+}
+
+.tabs div.list_header input[type=text].filter_name {
+	width:70px;	
+}
+
+.tabs div.list_header input[type=text].filter_part {
+	width:50px;	
+}
+
+a {
+	text-decoration:underline;
+	color:#333333;
+	cursor:pointer;
+}
+
+.tabs div.list_header a.link_additem {
+	display:block;
+	float:left;
+	background:transparent url("../img/iconset_coquette/add.png") no-repeat bottom center;	
+	height:16px;
+	width:16px;
+}
+
+.tabs div.list_header a:hover.link_additem,
+.tabs div.list_header a:active.link_additem {
+	background-color:#777777;
+}
+
+.tabs .link_category_settings {
+	float:right;
+	display:block;
+	background:transparent url("../img/iconset_coquette/process24x24.png") no-repeat bottom center;	
+	height:24px;
+	width:24px;
+}
+
+ul.parent {
+	border:none;
+	margin-top:15px;
+}
+
+div.item_count {
+	color:#cccccc;	
+}
+
+table.list {
+	border:1px solid #333333;
+	padding:0;	
+	border-collapse: collapse;	
+	clear:both;
+}
+
+table.list th {
+	background-color:#0a304e;
+	color:#cccccc;
+	margin:0;
+	padding:2px 7px;
+}
+
+table.list td {
+	margin:0;
+	padding:2px 7px;
+	text-align:center;
+	border:1px solid #dddddd;
+}
+
+table.list td.right {
+	text-align:right;
+}
+
+table.list td.left {
+	text-align:left;
+}
+
+table.list td.center {
+	text-align:center;
+}
+
+table.list tr.item {
+	cursor:pointer;
+}
+
+table.list tr.odd {
+	background-color:transparent;
+}
+
+table.list tr.even {	
+	background-color:#e7e7e7;
+}
+
+table.list tr.hovered {	
+	background-color:#dddddd;
+}
+
+.clear_this {
+	clear:both;	
+}
+
+#addBookedItems, #addTechnicianSales, #closeBookedItems, #closeTechnicianSales, .loading_indicator {
+	float:left;
+	width:150px;
+}
+
+.loading_indicator {
+	background:transparent url("../img/iconset_coquette/bar_loading.gif") no-repeat center;	
+	height:24px;
+}
+
+#addBookedItemsTree, #addTechnicianSalesTree {
+	float:left;
+	display:block;
+	background:transparent url("../img/iconset_coquette/bullet24x24.png") no-repeat bottom center;	
+	height:24px;
+	width:24px;
+}
+
+#addBookedItemsList, #addTechnicianSalesList {
+	float:left;
+	display:block;
+	background:transparent url("../img/iconset_coquette/enumerate24x24.png") no-repeat bottom center;	
+	height:24px;
+	width:24px;
+}

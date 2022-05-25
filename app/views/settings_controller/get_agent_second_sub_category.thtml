@@ -1,0 +1,71 @@
+ <?php
+
+function search_revisions($dataArray, $search_value, $key_to_search, $other_matching_value = null, $other_matching_key = null) {
+    // This function will search the revisions for a certain value
+    // related to the associative key you are looking for.
+    $keys = array();
+    foreach ($dataArray as $key => $cur_value) {
+        if ($cur_value[$key_to_search] == $search_value) {
+            if (isset($other_matching_key) && isset($other_matching_value)) {
+                if ($cur_value[$other_matching_key] == $other_matching_value) {
+                    $keys[] = $key;
+                }
+            } else {
+                // I must keep in mind that some searches may have multiple
+                // matches and others would not, so leave it open with no continues.
+                $keys[] = $key;
+            }
+        }
+    }
+    return $keys;
+}
+ ?>
+ <ul class="nested">
+      <?php foreach ($trainingSecondSubCategories as $obj) {
+       $data = search_revisions($get_data,$obj['AgentTrainingSecondSubCategory']['id'],'second_sub_cat');
+       $video=0;
+       $image=0;
+       $notes=0;
+       $document=0;
+       foreach($data as $datas){
+        if($get_data[$datas]['type']==4){
+         $video++;
+        }
+        if($get_data[$datas]['type']==2){
+         $image++;
+        }
+        if($get_data[$datas]['type']==1){
+         $notes++;
+        }
+        
+        if($get_data[$datas]['type']==3){
+         $document++;
+        }
+        
+       }
+       if($video>0 || $image>0 || $notes>0 || $document>0){
+        $class="active";
+       }
+       ?>
+             
+             <li><span class="caret secondSubCat" ><?=$obj['AgentTrainingSecondSubCategory']['name']?>
+             <i style="cursor:pointer" class="fa fa-trash-o deletesecond_category" data-id="<?= $obj['AgentTrainingSecondSubCategory']['id'] ?>"></i>
+             <i style="cursor:pointer" class="fa fa-file get_all_notes_images" data-id="<?= $obj['AgentTrainingSecondSubCategory']['id'] ?>"></i>
+      
+             </span>
+                 <ul class="nested">
+                <?php
+                $allow =$obj['AgentTrainingSecondSubCategory']['allow'];
+                $check = explode(',',$allow); ?>
+                
+                
+                    <li>Documents (<?= $document ?>) <i class="fa fa-plus addSecondCatDoc" secondSubcat-id="<?php echo $obj['AgentTrainingSecondSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSecondCatDoc" secondSubcat-id="<?php echo $obj['AgentTrainingSecondSubCategory']['id']; ?>"></i></li>
+                  <li>Note (<?= $notes ?>) <i class="fa fa-plus addSecondCatNote" secondSubcat-id="<?php echo $obj['AgentTrainingSecondSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSecondCatNote" secondSubcat-id="<?php echo $obj['AgentTrainingSecondSubCategory']['id']; ?>"></i></li>
+                  <li>Images (<?= $image ?>) <i class="fa fa-plus addSecondCatImage" secondSubcat-id="<?php echo $obj['AgentTrainingSecondSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSecondCatImage" secondSubcat-id="<?php echo $obj['AgentTrainingSecondSubCategory']['id']; ?>"></i></li>
+                  <li>Video (<?= $video ?>) <i class="fa fa-plus addSecondCatVideo" secondSubcat-id="<?php echo $obj['AgentTrainingSecondSubCategory']['id']; ?>" aria-hidden="true"></i>&nbsp<i class="fa fa fa-folder showSecondCatVideo" secondSubcat-id="<?php echo $obj['AgentTrainingSecondSubCategory']['id']; ?>"></i></li>
+                 
+              
+                </ul>
+              </li>
+      <? } ?>
+    </ul>

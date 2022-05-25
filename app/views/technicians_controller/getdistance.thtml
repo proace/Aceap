@@ -1,0 +1,93 @@
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+
+</style>
+<table>
+  <tr>
+    <th>date</th>
+    <th>technician</th>
+    <th>distance</th>
+    <th>time</th>
+    <th>place</th>
+  </tr>
+  
+
+
+
+<?php $previousWeight = 0;
+				$check=0;
+                $total_distance = 0;
+				?>
+		
+						<?php foreach($post_codes as $post_code) {
+							
+							?>
+							
+								<?php
+                               
+								if(!empty($post_codes[$previousWeight+1])){
+                                    $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$post_codes[$previousWeight]."&destinations=".$post_codes[$previousWeight+1]."&mode=driving&language=en-EN&sensor=false&key=AIzaSyDUC73wk4-yrBlIKZOy7j1ya2_dv9MFiGw";
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL,"http://hvacproz.ca/acesystem2018/distance_calculation.php");
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS,"URL=".urlencode($url));
+            // receive server response ...
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec ($ch);//exit;
+            
+            
+            $url2 = json_decode($response, true);
+                
+                       
+                       $duration = ($url2['rows'][0]['elements'][0]['distance']['text']);
+                       $total_distance+=$duration;
+                       $time = ($url2['rows'][0]['elements'][0]['duration']['text']);
+            
+                       
+                       ?>
+                         <tr>
+    <td><?= $date; ?></td>
+    <td>Maria</td>
+    <td><?= $duration ?></td>
+    <td><?= $time ?></td>
+    <td><?= $post_codes[$previousWeight] ?> to <?= $post_codes[$previousWeight+1] ?></td>
+  </tr>
+
+                       <?Php
+								}
+
+								if($previousWeight==$check+1){
+									continue;
+									}	
+										
+									
+									
+								?>
+							
+						<?php
+						$previousWeight++;
+						$check++;
+						} ?>
+                        <tfoot>
+                            <tr>
+                                
+                                <td></td>
+                                <td></td>
+                                <td><?= $total_distance ?></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                        </table>
+                        

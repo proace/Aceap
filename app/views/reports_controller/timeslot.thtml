@@ -1,0 +1,146 @@
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.4.2.min.js"></script>
+<h2>Please choose address and postal code</h2>
+<br>
+<?php
+if(strpos($_REQUEST['address'], 'undefined') !== false){
+	$address="";
+}
+else {
+		$address=$_REQUEST['address'];
+}
+?>
+<h5>postal code:</h5><input type="text" name="postal_code" id="postal_code" value="<?= $_REQUEST['postal_code']; ?>">
+<br><br>
+<h5>Address:</h5><input  type="text" onFocus="geolocate();" name="postal_code" id="get_postal_code" value="<?= $address; ?>">
+<input type="hidden" name="sc_from" id="sc_from" value="<?= date('Y-m-d') ?>">
+				<input type="hidden" name="sc_to" id="sc_to" value="<?= date('Y-m-d', strtotime('+5 days')); ?>">
+<br><br>
+<h5>Job Type:</h5>
+
+<select class="map_services">
+ <?php
+ foreach($users as $user){
+    if($user['name']=="Furnace"){
+       $user['name']="Service"; 
+    }
+    if($user['name']=="AC"){
+        $user['name']="Repair"; 
+    }
+    ?>
+   <option value="<?=$user['id'] ?>"><?=$user['name'] ?></option> 
+<?php  }
+ ?>   
+    
+</select>
+<br><br>
+<button id="form_submit">Submit</button>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBM2MbUHkZK02xXCFhLQ5aRcV8ntsRNWiY&callback=initAutocomplete&libraries=places&v=weekly" defer></script>
+
+<script>
+const componentForm = {
+           
+        postal_code: "short_name",
+      };
+ function initAutocomplete() {
+        // Create the autocomplete object, restricting the search predictions to
+        // geographical location types.
+        autocomplete = new google.maps.places.Autocomplete(
+          document.getElementById("get_postal_code"),
+          { types: ["geocode"] }
+        );
+        // Avoid paying for data that you don't need by restricting the set of
+        // place fields that are returned to just the address components.
+        autocomplete.setFields(["address_component"]);
+        // When the user selects an address from the drop-down, populate the
+        // address fields in the form.
+        autocomplete.addListener("place_changed", fillInAddress);
+      }
+      
+      function fillInAddress() {
+        // Get the place details from the autocomplete object.
+        const place = autocomplete.getPlace();
+        
+        //console.log(place.address_components);
+        
+        let address = place.address_components;
+        
+        let city = address[2]['long_name'].toUpperCase();
+        
+        
+        
+        $('select[name="city"]').val(city);
+        
+        var get_cu_address = $('#postal_code').val();
+        
+        var cu_postal_code = address[0]['long_name'];
+        
+        $('#postal_code').val(cu_postal_code);
+        
+       // let city = address[2]['long_name'];
+
+        for (const component in componentForm) {
+          document.getElementById(component).value = "";
+          document.getElementById(component).disabled = false;
+        }
+        
+        // Get each component of the address from the place details,
+        // and then fill-in the corresponding field on the form.
+        for (const component of place.address_components) {
+          const addressType = component.types[0];
+        
+          if (componentForm[addressType]) {
+            const val = component[componentForm[addressType]];
+            document.getElementById(addressType).value = val.trim();
+          }
+             var street_number = $('#street_number').val();
+             var route = $('#route').val();
+             $('#sc_address').val(street_number+" "+route);
+             var pos_val = document.getElementById('postal_code').value;
+             var re_po = pos_val.replace(/\s+/g, '');
+             document.getElementById('postal_code').value=re_po;
+             
+        }
+      }
+      function geolocate() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((position) => {
+            const geolocation = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+            const circle = new google.maps.Circle({
+              center: geolocation,
+              radius: position.coords.accuracy,
+            });
+            autocomplete.setBounds(circle.getBounds());
+          });
+        }
+      }    
+    
+</script>
+
+<script>
+$('#form_submit').live('click',function(){
+    var postal_code=$('#postal_code').val();
+    
+    if (postal_code=="") {
+           alert('post code can not be empty');
+    return false;
+    }
+    var sc_from = $('#sc_from').val();
+    var sc_to= $('#sc_to').val();
+    var service=$('.map_services').val();
+    var booking_cus_id ="<?= $_REQUEST['customer'] ?>";
+var get_url = "&sc_from="+sc_from+"&sc_to="+sc_to+"&map_services="+service+"&postal_code="+postal_code+"&customer_id="+booking_cus_id+"&first_page=1";
+		
+url = "<?=ROOT_URL;?>/index.php/technicians/calender/?currentOrdId="+get_url;
+//newwindow=window.open(url,'name','height=350,width=800,top=250, left=600');
+window.open(url, '_self');
+
+
+
+
+});    
+    
+</script>

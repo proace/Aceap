@@ -1,3 +1,9 @@
+<?php
+$style="style='display:none'";
+if($admin_per==0 && $common->getLoggedUserRoleID() == 3){
+$style="style='display:block'";
+}
+?>
 <!-- <meta http-equiv="refresh" content="60"> -->
 <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
 <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -9,6 +15,130 @@
 <script language="JavaScript" src="<?=ROOT_URL;?>/app/webroot/js/tinymce/tinymce.min.js"></script>
 
 <style type="text/css">
+#get_postal_code{
+  background: #fff;
+  
+    border: 1px solid #dfe1e5;
+    box-shadow: none;
+    border-radius: 24px;
+    z-index: 3;
+    height: 25px;
+    text-indent: 10px;
+
+
+ }
+ #get_postal_code:hover{
+  
+background-color: #fff;
+    box-shadow: 0 1px 6px rgba(32,33,36,.28);
+    border-color: rgba(223,225,229,0);
+
+ }
+ #hide_by_admin{
+  position: fixed;
+    z-index: 1;
+    padding-top: 100px;
+    /* left: 36%; */
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background: #000;
+    opacity: .3;"
+ }
+
+ /* schefule modal css */
+ .modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 36%;
+  top: 0;
+  width: 72%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+}
+.dis_result{
+ padding:10px;
+ border: 2px solid black;
+    margin-top: 5px;
+}
+
+/* Modal Content */
+.modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
+  padding: 0;
+  border: 1px solid #888;
+  width: 80%;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  -webkit-animation-name: animatetop;
+  -webkit-animation-duration: 0.4s;
+  animation-name: animatetop;
+  animation-duration: 0.4s
+}
+
+/* Add Animation */
+@-webkit-keyframes animatetop {
+  from {top:-300px; opacity:0} 
+  to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+  from {top:-300px; opacity:0}
+  to {top:0; opacity:1}
+}
+
+/* The Close Button */
+.close {
+  color: white;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-header {
+  padding: 2px 16px;
+  background-color: #5cb85c;
+  color: white;
+}
+.modal-body span{
+ padding:10px;
+ 
+}
+
+.modal-body {padding: 10px 16px;}
+
+.modal-footer {
+  padding: 2px 16px;
+  background-color: #5cb85c;
+  color: white;
+}
+ 
+    .sort_distance{       
+        padding: 5px;
+        margin-left: 10%;
+        width: 25%;
+    }
+    .new_sort_array_tbl{ 
+        width: 65%;
+        text-align: left;
+    }
+
+    .sort_array_tbl{
+        width: 100%;
+         text-align: left;
+    }
+
    /* body {
         display: block !important;
     }*/
@@ -135,10 +265,17 @@
     -webkit-animation-timing-function:ease-in-out;
     -webkit-animation-direction: alternate;
 }
+select.emboss{
+ padding: 2px;
+    border-radius: 10px;
+    
+    background: none;
+}
 </style>
 
 
 <script>
+window.name="parentWindow";
  function addTinyMCE(){
         tinyMCE.init({
             selector: '#scheduleEmailVal',
@@ -188,6 +325,10 @@
 //             }
 //         });
 // }
+function loadBooking(orderId)
+{
+    document.location.href='<?=BASE_URL?>/orders/editBooking?order_id='+orderId+'&rurl=orders%2FscheduleView%3F';
+}
 function showEmailBox() {
     $("#sendAnonymousEmail").css({ 'display' : 'block'});
     if(tinymce.get("scheduleEmailVal")) 
@@ -244,6 +385,8 @@ function setLocation(job, truck, beg_hour)
     $.get("<?=BASE_URL;?>/orders/changeJobTruckAndHour",
         {order_id:job,job_truck:truck,beg_hour:beg_hour},
         function(data){
+            $("#currentOrdId").val(job);
+           // $("#changeTimeMail").dialog("open");
             //document.viewform.submit();
         }
     );
@@ -287,6 +430,7 @@ function toggleVisible(job, visibility)
     $.post("<?=BASE_URL;?>/orders/toggleVisible",
         {order_id:job,visibility:visibility},
         function(data){
+            window.location.reload();
             document.viewform.submit();
         }
     );
@@ -298,6 +442,7 @@ function getLocation(truck, beg_hour, end_hour, padding)
     var top = -1;
     var right = -1;
     var bottom = -1;
+    var winWidth = $(window).width();
 
     //Get table location
     tabletop = window.tabletop;
@@ -305,7 +450,12 @@ function getLocation(truck, beg_hour, end_hour, padding)
     top_mod = 0;
     left_mod = 0;
     <?php if (($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13 ) ||($common->getLoggedUserRoleID()==3)) { ?>
-    top_mod = 90;
+    if(winWidth < 1024)
+    {
+        top_mod = 160;
+    } else {
+        top_mod = 100;
+    }
     left_mod = 10;
     <? } ?>
 
@@ -415,19 +565,18 @@ function showRouteVisibility(truck)
 }
 
 var winRef;
-function showChat()
+/*function showChat()
 {
     var openChat = "<?php echo $_SESSION['user']['open_chat'];?>";
    var username = "<?php echo $_SESSION['user']['username_chat'];?>";
     var userRoleId = "<?php echo $_SESSION['user']['role_id'];?>";
     if((userRoleId == 6 || userRoleId == 3 || userRoleId == 7) && openChat == 1) {
         <?php $_SESSION['user']['open_chat'] = 2;?>
-        
         var openUrl = 'http://support.hvacproz.ca/lhc_web/doc/autologin/autologin.php?username='+username;
         var win = window.open(openUrl);
         win.focus();
     }
- }
+ }*/
 
 function openPayPeriodPopup()
 {
@@ -448,20 +597,39 @@ function openPayPeriodPopup()
     }
 }
 
- function getDistance(el, postalCode, orderNum, city)
+ function getDistance(el, postalCode, orderNum, city,truck_num)
  {
     if($(el).is(":checked")){
          var postVal = $("#postArray").val();  
+         $("#truck_num").val(truck_num);
          if(postVal)
          {
             var decodeArr = JSON.parse(postVal);
-            // decodeArr[orderNum] = postalCode.substring(0, 3)+','+city;
-            decodeArr["'"+orderNum+"'"] = postalCode.substring(0, 3)+' '+postalCode.substring(3)+','+city;
+            var newObj = decodeArr[0];
+            var obj = {};
+            obj[orderNum] = postalCode.substring(0, 3)+' '+postalCode.substring(3)+','+city;
+           
+            // decodeArr[orderNum] = postalCode.substring(0, 3)+' '+postalCode.substring(3)+','+city;
+            // var code = postalCode.substring(0, 3)+' '+postalCode.substring(3)+','+city;
+            
+            decodeArr[0] = $.extend(newObj, obj);
+            // decodeArr[0] = Object.assign(newObj, obj);
+            
+            // newArr = decodeArr[0];
+            // newArr.push();
+            // console.log(obj);
+            // decodeArr = obj;
             $("#postArray").val(JSON.stringify(decodeArr));
          } else {
-            var newArr = {};
+            var newArr = [];
+            // var newArr = {};
+            var obj = {};
             // newArr[orderNum] = postalCode.substring(0, 3)+','+city;
-            newArr["'"+orderNum+"'"] = postalCode.substring(0, 3)+' '+postalCode.substring(3)+','+city;
+            // newArr[0][orderNum] = postalCode.substring(0, 3)+' '+postalCode.substring(3)+','+city;
+            obj[orderNum] = postalCode.substring(0, 3)+' '+postalCode.substring(3)+','+city;
+            // var code = postalCode.substring(0, 3)+' '+postalCode.substring(3)+','+city;
+            // newArr.push({orderNum : code});
+            newArr[0] = obj;
             $("#postArray").val(JSON.stringify(newArr));
          }
     }
@@ -475,22 +643,25 @@ function openPayPeriodPopup()
  }
 function getFinalDistance()
 {
+    var truck_num = $("#truck_num").val();
+    // var sourceCode = $(".source_code_"+truck_num).val();
+    var destinationCode = $(".destination_code_"+truck_num).val();
     var distanceArray = $("#postArray").val();
-    
     if(distanceArray == '' || distanceArray == null || typeof distanceArray == "undefined")
     {
         alert("Please select jobs.");
     } 
     var decodeArr = JSON.parse(distanceArray);
     var arrLength =   Object.keys(decodeArr).length;
-    if(arrLength >= 2){
+    if(arrLength > 0){
         if(decodeArr)
         {
             $.ajax({
                 url:"<?=BASE_URL;?>/orders/getFinaldistance",
                 dataType:"html",
                 type:"POST",
-                data:{postalArray:decodeArr},
+                // data:{postalArray:decodeArr,sourceCode:sourceCode,destinationCode:destinationCode},
+                data:{postalArray:decodeArr,destinationCode:destinationCode},
                 success:function(result){ 
                     res = JSON.parse(result);
                     $('#showDistance').html(res.res).dialog("open");
@@ -520,7 +691,6 @@ function emailAll()
                 type:"GET",
                 success:function(result){ 
                     res = JSON.parse(result);
-                    console.log(res);
                     if(res.res == 1){
                         alert("Email sent succesfully");
                     } else {
@@ -531,7 +701,49 @@ function emailAll()
 }
 $(document).ready(function(){
 
+     $("#changeTimeMail").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Send Email",
+            autoOpen: false,
+            width: 400,
+            height: 150,
+        });
 
+     $("#sendTimeChangeMail").live("click", function(){
+        var currentOrdId = $("#currentOrdId").val();  
+        $.ajax({
+          url: "<?=BASE_URL;?>/orders/sendTimeChangeMail",
+          type: "POST",
+          data : {oid:currentOrdId},
+          dataType: 'json',
+          success: function(data){
+            if(data.res == 1){
+                $("#changeTimeMail").dialog("close");
+            }
+            }
+        });
+     });
+     
+     $("#notSendMail").live("click", function(){
+        $("#changeTimeMail").dialog("close");
+     });
+
+    $(".sort_distance").live("click", function(){
+        var arr = $("#zipcode_array").val();
+        var cityArr = $("#city_array").val();
+        var code = $(this).attr('code');
+        $.ajax({
+          url: "<?=BASE_URL;?>/orders/getSortedArray",
+          type: "POST",
+          data : {arr:arr,code:code,cityArr:cityArr},
+          dataType: 'html',
+          success: function(data){
+                 $("#new_sort_arr").html(data);
+            }
+        });
+
+    });
     $(function () {
         $("#sendAnonymousEmail").dialog({
             modal: true,
@@ -581,7 +793,7 @@ $(document).ready(function(){
             autoOpen: false,
             title: "Result",
             autoOpen: false,
-            width: 300,
+            width: 400,
             height: 400,
             draggable: false,
             position: { my: "right top", at: "right top" }
@@ -857,30 +1069,31 @@ $(document).ready(function(){
 <?php if($ismobile == 1) { ?>
     <a href="<?php echo BASE_URL ?>/pages/mobileMenu" id="return">Back to Main</a>
 <?php } ?>
-<form method="GET" name="viewform">
+
+<form method="GET" action="<?php echo BASE_URL ?>/technicians/calender" id="sc_form" style="margin:0">
+
+<input type="hidden" name="currentOrdId" id="currentOrdId" value=""/>
 <input type="hidden" name="schedule_mode" id="schedule_mode" value="<?=$_REQUEST['schedule_mode']?>"/>
 <input type="hidden" name="route_type" id="route_type" value="<?=$_REQUEST['route_type']?>"/>
+<input type="hidden" name="truck_num" id="truck_num" value="0"/>
 <table border="0" cellspacing="0" cellpadding="5" ><!-- align=left -->
     <tr>
-        <td>
-            <input type="button" value="Weekly" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/mapSchedule?p_code=<?=$p_code?>&city=<?=$city?>&route_type=<?=$_REQUEST['route_type']?>'" style="font-size: 8pt;">
-            &nbsp;&nbsp;
+        <td style="display:none">
+            <!--<input type="button" value="Weekly" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/mapSchedule?p_code=<?=$p_code?>&city=<?=$city?>&route_type=<?=$_REQUEST['route_type']?>'" style="font-size: 8pt;">
+            -->&nbsp;&nbsp;
             <?php if ($common->getLoggedUserRoleID()!=6): ?>
-            <input type="button" value="Bi-Weekly" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/weeklySchedule?p_code=<?=$p_code?>&city=<?=$city?>&route_type=<?=$_REQUEST['route_type']?>'" style="font-size: 8pt;">
-            &nbsp;&nbsp;
+            <!--<input type="button" value="Bi-Weekly" class="=" onclick="document.location.href='<?=BASE_URL?>/orders/weeklySchedule?p_code=<?=$p_code?>&city=<?=$city?>&route_type=<?=$_REQUEST['route_type']?>'" style="font-size: 8pt;">-->
+            
             <?php endif;?>
-            <input type="button" value="&lt;&lt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$ydate?>'; document.viewform.submit();" style="font-size: 8pt;">
-            &nbsp;&nbsp;
-            <input type="text" name="ffromdate" id="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
-            &nbsp;&nbsp;
-            <input type="button" value="&gt;&gt;" class="buttons" onclick="document.viewform.ffromdate.value='<?=$tdate?>'; document.viewform.submit();" style="font-size: 8pt;">
-            &nbsp;&nbsp;
+      
+            
+      
 <?php if ($common->getLoggedUserRoleID()==6):?>
             <!-- <input type="button" value="Print all" class="buttons" onclick="PrintAll()" style="font-size: 8pt; display:none;">-->
 <?php endif;?>
         </td>
 <?php if ($common->getLoggedUserRoleID()==6):?>
-        <td rowspan=2>
+        <td rowspan=2 style="display:none">
             <table cellpadding=0 cellspacing=0 border=1 style="visibility:hidden">
                 <tr>
                     <th>&nbsp;</th>
@@ -914,39 +1127,211 @@ $(document).ready(function(){
                 </tr>
             </table>
         </td>
+        <input type="hidden" name="sc_from" id="sc_from" style="width:127px;" value="<?= date('Y-m-d') ?>">
+      
+
+
+      <input type="hidden" name="sc_to" id="sc_to" style="width:127px;" value="<?= date('Y-m-d', strtotime('+6 days')); ?>">
+              
 <?php endif;?>
     </tr>
     <tr>
-      <td>Postal code:
-        <input type="text" name="p_code" class="emboss" value="<?=$p_code?>" style="width:50px;">
-        &nbsp;&nbsp;City:
-        <select name="city" class="emboss" style="width:150px;" onchange="document.viewform.submit();">
+     
+      <td style="display:inline-block;width:1156px;">
+      <a id="redirect_to_page" style="display:none" class="redirect_to_page" href="https://www.google.com">redirect</a>
+      Search:
+        <input type="text" name="p_code" class="emboss" value="<?=$p_code?>" style="width:190px;" id="get_postal_code" onFocus="geolocate();">
+        <input type="hidden" name="street_number" id="street_number">
+        <input type="hidden" name="route" id="route">
+        &nbsp;
+        Address:
+        <input type="text" name="sc_address" id="sc_address" style="border:none" value="<?= $_REQUEST['street']." ".$_REQUEST['route'] ?>">
+        Zip:
+        <input type="text" name="postal_code" id="postal_code" style="border:none" onChange="removespace()" value="<?= $_REQUEST['postal_code']; ?>">
+         City:
+        <select name="city" class="emboss" style="width:100px;" onchange="document.viewform.submit();">
             <option value=""></option>
             <?php
+            $city1=$_REQUEST['city1'];
             foreach($allCities as $k => $v) {
-            echo '<option value="'.$k.'"'.( $k == $city ? ' selected' : '').'>'.$v.'</option>';
+            echo '<option value="'.$k.'"'.( $v == $city1 ? ' selected' : '').'>'.$v.'</option>';
+            }
+            ?>
+        </select><span class="main_date" style="margin-left:8%">
+                    <input type="button" value="&lt" class="=" onclick="re_to_date('<?=$ydate?>')" style="font-size: 8pt;">
+     
+            <input type="text" name="ffromdate" id="ffromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$fdate?>">
+            
+            
+            <input type="button" value="&gt;" class="buttons1" onclick="re_to_date('<?=$tdate?>')" style="font-size: 8pt;">
+            </span>
+       <div style="padding-top:20px;">
+        trucks:
+        <select name="trucks" class="emboss">
+            <option value=""></option>
+            <?php
+            foreach($trucks as $k => $v) {
+            echo '<option value="'.$k.'">'.$v.'</option>';
             }
             ?>
         </select>
+        <span>Service:</span>
+<select class="map_services emboss" name="map_services">
+ <option value=""></option>
+ 
+<?php
+foreach ($allTypes as $v => $k):
+        if (($common->getLoggedUserRoleID()!=6)&&($common->getLoggedUserRoleID()!=1)&&($v==4)) continue;
+        if (($common->getLoggedUserRoleID()==1)&&($v==1)) continue;
+        if (($common->getLoggedUserRoleID()!=6)&&($v==3)) continue;
+?>
+<?php
+$selected="";
+if($k=='AC'){
+ $k="Repair";
+}
+if($k=='Furnace'){
+ $k="Service";
+ 
+}
+if($v==$_REQUEST['map_service']){
+  $selected="selected";
+ }
+ else if($k=='Service') {
+  $selected="selected";
+ }
+?>
+<option value="<?= $v?>" <?=$selected ?>><?=$k ?></option>
+        
+       
+<?php endforeach; ?>
+<option value="estimate">New Estimate</option>
+</select>
+AM/PM:
+        <select class="emboss" style="width:100px;" id="sc_period" name="sc_period">
+         <option value=""></option>
+         <option value="am" <?php if($_REQUEST['preiod']=='am'){echo 'selected';} ?>  >AM</option>
+         <option value="pm" <?php if($_REQUEST['preiod']=='pm'){echo 'selected';} ?>>PM</option>
+        </select>
+        <span style="margin-left:2%">
+        Time:
+        
+        <select class="emboss" name="choose_time" id="choose_time" style="width: 70px;">
+         <option value=""></option>
+         <?php
+         if(isset($_REQUEST['choose_time'])){
+         $choose_time  = $_REQUEST['choose_time'];
+        }
+        else{
+         $choose_time  = 15;
+        }
+         for ($i=5; $i<505; $i+=5) {
+          if($i==$choose_time){
+           $selected="selected";
+          }
+          else {
+           $selected="";
+          }
+         
+          ?>
+         <option value="<?=$i ?>" <?= $selected ?>><?=$i ?></option>
+<?php }
+         
+         ?>
+         
+        </select>
+        </span>
+        <span style="margin-left:2%">
+                Kms:
+        
+        
+        <select class="emboss" name="choose_km" id="choose_km" style="width: 70px;">
+         <option value=""></option>
+         <?php
+          if(isset($_REQUEST['choose_km'])){
+         $choose_km  = $_REQUEST['choose_km'];
+        }
+        else {
+         $choose_km  = 20;
+        }
+         for ($i=5; $i<505; $i+=5) {
+          if($i==$choose_km){
+           $selected="selected";
+          }
+          else {
+           $selected="";
+          }
+         
+          ?>
+         <option value="<?=$i ?>" <?= $selected ?>><?=$i ?></option>
+<?php }
+         
+         ?>
+         
+        </select>
+        
+               
+      </span>
+        
+        
+      </div>
+    
+      
       <!--</td>
       <td>Address:
-        <input type="text" name="address" class="emboss" value="<?=$address?>" style="width:250px;" onchange="GetPostalCode(this);">
+        <input type="text" name="address" class="emboss" value="<?=$address?>" style="width:250px;" onchange="GetPostalCode(this);" >
         <input type="submit" value="GO"/>-->
       &nbsp;&nbsp;
 <?php if ($common->getLoggedUserRoleID()==6): ?>
-        <input type="button" value="All trucks" class="buttons" onclick="document.viewform.route_type.value='0'; document.viewform.submit();" style="font-size: 8pt;">
-<?php endif;
+        <!--<input type="button" value="All trucks" class="buttons" onclick="document.viewform.route_type.value='0'; document.viewform.submit();" style="font-size: 8pt;">
+--><?php endif;
       foreach ($allTypes as $v => $k):
         if (($common->getLoggedUserRoleID()!=6)&&($common->getLoggedUserRoleID()!=1)&&($v==4)) continue;
         if (($common->getLoggedUserRoleID()==1)&&($v==1)) continue;
         if (($common->getLoggedUserRoleID()!=6)&&($v==3)) continue;
 ?>
-        &nbsp;&nbsp;
-        <input type="button" value="<?=$k?>" class="buttons" onclick="document.viewform.route_type.value='<?=$v?>'; document.viewform.submit();" style="font-size: 8pt;">
-<?php endforeach; ?>
+        
+        <!--<input type="button" value="<?=$k?>" class="buttons" onclick="document.viewform.route_type.value='<?=$v?>'; document.viewform.submit();" style="font-size: 8pt;">
+--><?php endforeach; ?>
+
 
 <!-- <input type="button" value="Clear" class="buttons" onclick="clearSelectjob();" style="font-size: 8pt;"> -->
+<div style="
+    float: right;
+    margin-right: 90px;">
+<!--<input type="button" class="buttons" name="estimate" onclick="document.location.href='<?php echo BASE_URL ?>/orders/editBooking?customer_id=&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date("d M Y"));?>&job_technician1_id=0&job_technician2_id=0&from_tech_page=1&show_preview=1&estimate=1'" value="New Estimate" style="font-size: 8pt;">
+-->           
+           <input type="hidden" class="get_new_estimate" value="<?php echo BASE_URL ?>/orders/editBooking?customer_id=&job_truck=&job_time_beg=&job_date=<?php echo urlencode(date("d M Y"));?>&job_technician1_id=0&job_technician2_id=0&from_tech_page=1&show_preview=1&estimate=1'">
+           
+           <button type="submit" class="search_schedule">search</button>
+           <div>
      </td>
+
+      <div id="hide_by_admin" <?= $style ?>>
+       
+      </div>
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <div class="modal-header">
+      <span class="close">&times;</span>
+      <h2>Schedule</h2>
+    </div>
+    <div class="modal-body">
+     please wait fetching results
+      <div class="schedule">
+       
+       
+      </div>
+    </div>
+    
+  </div>
+
+</div>
+     
   </tr>
 </table>
 
@@ -972,9 +1357,18 @@ $(document).ready(function(){
 </div>
 <div id="showDistance" style="display: none">
 </div>
+<div id="changeTimeMail" style="display: none">
+    <p>Would you like to send email and text to customer?</p>
+    <input type="button" name="sendMail" id="sendTimeChangeMail" value="Yes">
+    <input type="button" name="sendMail" id="notSendMail" value="No">
+</div>
+
 </form>
 <?php
-function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $substatuses, $jobtypes, $method) {    $hourDiff = $order['job_time_end'] - $order['job_time_beg'];
+function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $substatuses, $jobtypes, $method) {
+ 
+
+    $hourDiff = $order['job_time_end'] - $order['job_time_beg'];
     $returnValue = '';
     $icon_prn = ROOT_URL."/app/webroot/img/icon-vsm-printer.png";
     $border2 = '';
@@ -990,7 +1384,8 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
         ||(($common->getLoggedUserRoleID() != "1")&&($common->getLoggedUserRoleID() != "9") && ($common->getLoggedUserRoleID() != "3")))
      //&&($common->getLoggedUserRoleID() != "3")
     {
-        $enable_access = "onclick='document.location.href=\"$method?order_id={$order['id']}&rurl=$rurl\"'";
+         $url  = ROOT_URL."/index.php/orders/".$method;
+        $enable_access = "onclick='window.location.href=\"$url?order_id={$order['id']}&rurl=$rurl\"'";
         $open = "style='cursor:hand;cursor:pointer;'";
         $style='cursor:hand;cursor:pointer; text-align: center; font-size:7pt;';
         $source = "<tr><td>{$order['booking_source_fn']}</td></tr>";
@@ -1000,18 +1395,22 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
         if($order['emal_bounce_status']==1){
             if($order['is_gmail'] == 1)
             {
-                $print_this = "<div style='background-color:red;font-weight: bold;font-size: 13px;'>G</div>";
+                $print_this = "<span style='font-weight: bold;font-size: 13px;margin-left:6px'>G</span>";
+                // $print_this ='<div></div>';
             } else {
-                 $print_this = "<div style='border: 1px solid black; padding: 2px;border-radius: 25px; width:5px; height:5px;background-color:red;'>&nbsp;</div>";
+                 // $print_this = "<div style='border: 1px solid black; padding: 2px;border-radius: 25px; width:5px; height:5px;background-color:red;'>&nbsp;</div>";
+                $print_this ='<span></span>';
             }
           
            
             }else{
                if($order['is_gmail'] == 1)
                 {
-                    $print_this = "<div style='background-color:green;font-weight: bold;font-size: 13px;'>G</div>";
+                    // $print_this = "<div style='background-color:green;font-weight: bold;font-size: 13px;'>G</div>";
+                    $print_this = "<span style='margin-left:6px;font-weight: bold;font-size: 13px;'>G</span>";
                 } else {
-                   $print_this = "<div style='border: 1px solid black; padding: 2px;border-radius: 25px; width:5px; height:5px;background-color:green;'>&nbsp;</div>";
+                   // $print_this = "<div style='border: 1px solid black; padding: 2px;border-radius: 25px; width:5px; height:5px;background-color:green;'>&nbsp;</div>";
+                  $print_this ='<span></span>';
                 }
             }
         //$print_this = "<img style='cursor: hand; cursor: pointer; margin-right: 1px;' src='$icon_prn' onclick='window.open(\"printView?id=$id\");return false;'>";
@@ -1036,6 +1435,12 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
     }
 
     if ($order['order_type_id'] == 81) $color = 'background-color: #00e5ff';
+     if ($order['order_status_id'] == 5 && ($order['job_tech_notes'] != '' || $order['call_to_book'] != '' || $order['send_estimate'] != '' ||
+                                           $order['order_part'] != '' || $order['job_notes'] != '')){
+        $color = 'background-color: #fbf5a1';
+    } else if($order['order_status_id'] == 5){
+        $color = 'background-color: #ccffcc';   
+    }
     //echo '<BR>RESPONSE<BR><pre>';print_r($order);exit;
     $id = $order['id'];
     /*if($order['emal_bounce_status']==1){
@@ -1058,55 +1463,187 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
     {
         $icon_prn = ROOT_URL."/app/webroot/img/icon-vsm-printer.png";
         $icon_globe = ROOT_URL."/app/webroot/img/icon-vsm-globe.png";
-        $returnValue .= "
-        <div id='divjob{$id}' class='draggable' style='float: left; width: 75px !important; height:100px; overflow:hide; $special'>
-            <table id='divjobtable{$id}' cellpadding='0' cellspacing='0' style='$border $color'>
-            <tr>
-                <td style='width: 16px; background: #{$order['color']};'>
-                    $print_this
-                </td>
-                
-                <td $enable_access $hint style='background: #{$order['color']};$style'>$edit_button</td>
-            </tr>
-             
-            <tr>
-                <td colspan=2 $enable_access $hint style='$style'>
-                    <u>".$order['city'].((($order['zone_name']!="") && (strlen($order['postal_code']) >= 3)) ? '<br>'.$order['zone_name'] : '')."
-                </td>
-            </tr>
-            <tr>
-                <td colspan=2 style='padding-left: 3px;'>
-                    <a href='".$HtmlAssist->getOrderGoogleMap($order)."' target='_blank'><img src='$icon_globe' style='border: none; width: 15px; height: 15px; vertical-align: middle;'>
-                        ".$common->displayZip($order['postal_code'])."
-                    </a>
-                </td>
-            </tr>
-            <tr>
-                <td colspan=2 style='padding-left: 3px;'>".$emal_bounce_status."</td>
-            </tr>
-            <tr>
-                <td colspan=2> <input type='checkbox' class='getDistance' onclick=\"getDistance(this,'".$order['postal_code']."', ".$order['order_number'].", '".$order['city']."')\"></td>
-            </tr>
-            <tr $open $enable_access>
-                <td colspan=2 style='padding-left: 3px;'>";
-       
-        if ( $hourDiff > 1)
-        {
-            if ($order['order_status_id']== "3")
-            $returnValue .=  "<a href=\"#\" onMouseover=\"showhint('".str_replace("'","`",$order['dCancelReason'])."', this, event, '150px')\">Canceled</a></td></tr>";
-            elseif ($order['order_status_id']== "2")
-                $returnValue .=  "<a href=\"#\" onMouseover=\"showhint('".str_replace("'","`",$order['sCancelReason'])."', this, event, '150px')\">Rescheduled</a></td></tr>";
-            else
-                $returnValue .=  '<span style="color: gray; font-style: italic;">'.$substatuses[$order['order_substatus_id']].'</span></td></tr>';
+        
+        if ($order['order_status_id'] == 5){
+            if($order['payment_status'] == 1){
+                $payStatus = "Approved";
+                $statuColor = "#006600";
+            }else if($order['payment_status'] == 2){
+                 $payStatus = "Declined";
+                $statuColor = "#ff0000";
+            } else {
+                 $payStatus = $order['payment_method_name'];
+                // $statuColor = "#0000cc";
+                $statuColor = '#'.$order['method_color'];
+            }
+              
+                $diff = abs(strtotime($order['fact_job_end']) - strtotime($order['fact_job_beg']));
 
-            $returnValue .= $source.'<tr><td colspan=2 style="padding-left: 3px; '.$border2.'">'.$jobtypes[$order['order_type_id']].'</td></tr>';
+                $tmins = round($diff/60);
+
+                $hours = floor($tmins/60);
+
+                $mins = $tmins%60;
+                
+                if($order['fact_job_beg']=='00:00:00' || $order['fact_job_beg']=='' ){
+                 $start = "";
+                }
+                else {
+                 $start = "S:".date("h:i A",strtotime($order['fact_job_beg']));
+                }
+                
+                
+                if($order['fact_job_end']=='00:00:00'){
+                $end = "";
+                $time="";
+               }
+              else {
+              $end = "F:".date("h:i A",strtotime($order['fact_job_end']));
+  
+                $time="D:".$hours." Hr : ".$mins." Min";
+  
+ }
+
+                if($order['audio']=='yes'){
+          $td="<i style='font-size:1.5em' class='fa fa-volume-up fa-2x'></i>";
+         }
+         else {
+          $td="";
+          
+         }
+                $book=$order['call to book'];
+                if($book!=''){
+                    $color = 'background-color: #ffff00';
+                }
+                
+            $returnValue .= "
+            <div id='divjob{$id}' class='draggable 333' style='float: left; width: 75px !important; height:100px; overflow:hide; $special'>
+                <table id='divjobtable{$id}' class='$book' cellpadding='0' cellspacing='0' style='$border $color;margin-top:10px;'>
+                <tr>
+                
+                    <td style='width: 16px; background: #{$order['color']};'>
+                        $td$print_this
+                    </td>
+                    
+                    <td $enable_access $hint style='background: #{$order['color']};$style'>$edit_button</td>
+                </tr>
+                 
+                <tr>
+
+                    <td $enable_access $hint colspan=2 $enable_access style='color:#".$order['method_color'].";text-align:center; cursor:pointer;'>
+                        ".$order['payment_method_name']."
+                    </td>
+                </tr>
+                <tr>
+                    <td $enable_access $hint colspan=2 style='text-align:center;color:$statuColor;font-weight:bold; cursor:pointer;'>". $payStatus."</td>
+                </tr>
+                 <tr>
+                    <td colspan=2 style='text-align:center;color:$s tatuColor;font-weight:bold'>$ ".$order['paid_amount']."</td>
+                </tr>
+                <tr>
+                    <td colspan=2 style='text-align:center;color:#006600;font-weight:bold'>".$order['tech_name']."</td>
+                </tr>
+                <tr>
+                                    <td colspan=2 style='text-align:center;color:#006600;font-weight:bold'>".$start."</td>
+                </tr>
+                <tr>
+
+                    <td colspan=2 style='text-align:center;color:#006600;font-weight:bold'>".$end."</td>
+                </tr>
+                <tr>
+                    <td colspan=2 style='text-align:center;color:#006600;font-weight:bold'>".$time." </td>
+                </tr>
+                <!--<tr>
+                   <td colspan=2 style='text-align:center;color:#808080;font-weight:bold'>".gmdate("H:i", $order['stop_duration'])."</td>
+               </tr> -->
+               ";
+         
+                 
+                // <tr $open $enable_access>
+                //      <td colspan=2 style='padding-left: 3px;'>";
+           
+            if ( $hourDiff > 1)
+            {
+                // if ($order['order_status_id']== "3")
+                // $returnValue .=  "<a href=\"#\" onMouseover=\"showhint('".str_replace("'","`",$order['dCancelReason'])."', this, event, '150px')\">Canceled</a></td></tr>";
+                // elseif ($order['order_status_id']== "2")
+                //     $returnValue .=  "<a href=\"#\" onMouseover=\"showhint('".str_replace("'","`",$order['sCancelReason'])."', this, event, '150px')\">Rescheduled</a></td></tr>";
+                // else
+                //     $returnValue .=  '<span style="color: gray; font-style: italic;">'.$substatuses[$order['order_substatus_id']].'</span></td></tr>';
+
+                $returnValue .= $source.'<tr><td colspan=2 style="padding-left: 3px; '.$border2.'">'.$jobtypes[$order['order_type_id']].'</td></tr>';
+            }
+            $returnValue .="
+                <tr>
+                    <td colspan=2 $enable_access $hint style='$style'>
+                        <u>".$order['city']."
+                    </td>
+                </tr>";
+        }else {
+            if($order['audio']=='yes'){
+          $td="<i style='font-size:1.5em' class='fa fa-volume-up fa-2x'></i>";
+         }
+         else {
+          $td="";
+          
+         }
+
+            $returnValue .= "
+            <div id='divjob{$id}' class='draggable 22' style='float: left; width: 75px !important; height:100px; overflow:hide; $special'>
+                <table id='divjobtable{$id}' cellpadding='0' cellspacing='0' style='$border $color;margin-top:10px'>
+                <tr>
+                
+                    <td style='width: 16px; background: #{$order['color']};'>
+                        $td$print_this
+                    </td>
+                    
+                    <td $enable_access $hint style='background: #{$order['color']};$style'>$edit_button</td>
+                </tr>
+                 
+                <tr>
+                    <td class='1' colspan=2 $enable_access $hint style='$style'>
+                        <u>".$order['city'].((($order['zone_name']!="") && (strlen($order['postal_code']) >= 3)) ? '<br>'.$order['zone_name'] : '')."
+                    </td>
+                </tr>
+                <tr>
+                    <td class='2' colspan=2 style='padding-left: 3px;'>
+                        <a href='".$HtmlAssist->getOrderGoogleMap($order)."' target='_blank'><img src='$icon_globe' style='border: none; width: 15px; height: 15px; vertical-align: middle;'>
+                            ".$common->displayZip($order['postal_code'])."
+                        </a>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td class='3' colspan=2 style='padding-left: 3px;'>
+                        ".(($order['fact_job_beg'] == "00:00:00") ? '' : "S:".date("h:i A",strtotime($order['fact_job_beg'])))."
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td colspan=2 style='padding-left: 3px;'>".$emal_bounce_status."</td>
+                </tr>
+                <tr>
+                    <td colspan=2> <input type='checkbox' class='getDistance' onclick=\"getDistance(this,'".$order['postal_code']."', ".$order['order_number'].", '".$order['city']."',".$order['job_truck'].")\"></td>
+                </tr>
+                <tr $open $enable_access>
+                    <td colspan=2 style='padding-left: 3px;'>";
+           
+            if ( $hourDiff > 1)
+            {
+                if ($order['order_status_id']== "3")
+                $returnValue .=  "<a href=\"#\" onMouseover=\"showhint('".str_replace("'","`",$order['dCancelReason'])."', this, event, '150px')\">Canceled</a></td></tr>";
+                elseif ($order['order_status_id']== "2")
+                    $returnValue .=  "<a href=\"#\" onMouseover=\"showhint('".str_replace("'","`",$order['sCancelReason'])."', this, event, '150px')\">Rescheduled</a></td></tr>";
+                else
+                    $returnValue .=  '<span style="color: gray; font-style: italic;">'.$substatuses[$order['order_substatus_id']].'</span></td></tr>';
+
+                $returnValue .= $source.'<tr><td colspan=2 style="padding-left: 3px; '.$border2.'">'.$jobtypes[$order['order_type_id']].'</td></tr>';
+            }
         }
         
     }
     else
     {
-
-
         if ($common->getLoggedUserID()==44884) $drag ='class="draggable"'; else $drag = "";
         $returnValue .=  '
           <div id="divjob'.$id.'" '.$drag.' style="float: left; width: 75px; height:100px;">
@@ -1134,7 +1671,11 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
     return $returnValue;
 }
 ?>
-
+<?php if ($common->getLoggedUserRoleID()!=6): ?>
+    <input type="hidden" id="daily_status" value="<?=$daily?>" name="daily">
+    <input type="button" value="Daily" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/scheduleView?p_code=<?=$p_code?>&city=<?=$city?>&fdate=<?=$date_from?>&daily=<?=$daily?>'" style="font-size: 8pt;">
+    <input type="button" value="Weekly" class="buttons" onclick="document.location.href='<?=BASE_URL?>/orders/weeklySchedule?p_code=<?=$p_code?>&city=<?=$city?>&route_type=<?=$_REQUEST['route_type']?>&daily=<?$daily?>'" style="font-size: 8pt;">
+<?php endif;?>
 <table id="restable" class="results1" cellpadding="3" cellspacing="1">
 <input type='hidden' id='postArray'>
 <?php if (($common->getLoggedUserRoleID()==6)||($common->getLoggedUserRoleID()==13)) { ?>
@@ -1158,6 +1699,7 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
     if ($common->getLoggedUserRoleID()!='1') $en = true;
     if ($en)
     {
+         
         echo '<tr style="height: 8px;"><td></td><td class="hide-checkbox" align="right">Truck<input type="checkbox" value="1" class="toggle_truck_number hide-checkbox" checked="checked" /></td>';
         foreach( $trucks as $k => $v )
         {
@@ -1180,7 +1722,7 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
             {
                 echo '<td style="width: 75px;" class="truck_name1">';
                 if (($common->getLoggedUserRoleID()!='1')&&($common->getLoggedUserRoleID()!='9')&&($common->getLoggedUserRoleID()!='3'))
-                    echo $html->selectTag('techpick1',$allTechnician,$trucktech[$k][0],array('style' => 'width: 75px;', 'onchange' => 'document.location.href=\'setTechnicians?tech_num=1&tech_id=\'+this.value+\'&job_truck='.$k.'&job_date='.$norm_date.'&rurl='.$rurl.'\';')).'<br/>';
+                    echo $html->selectTag('techpick1',$allTechnician,$trucktech[$k][0],array('style' => 'width: 75px;', 'onchange' => 'document.location.href=\'/acesys/index.php/orders/setTechnicians?tech_num=1&tech_id=\'+this.value+\'&job_truck='.$k.'&job_date='.$norm_date.'&rurl='.$rurl.'\';')).'<br/>';
                 else
                     echo $html->selectTag('techpick1',$allTechnician,$trucktech[$k][0],array('style' => 'width: 75px;', 'disabled' => '1')).'<br/>';
                 echo '</td>';
@@ -1208,7 +1750,7 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
             {
                 echo '<td style="width: 75px;" class="truck_name2">';
                 if (($common->getLoggedUserRoleID()!='1')&&($common->getLoggedUserRoleID()!='9')&&($common->getLoggedUserRoleID()!='3'))
-                    echo $html->selectTag('techpick2',$allTechnician,$trucktech[$k][1],array('style' => 'width: 75px;', 'onchange' => 'document.location.href=\'setTechnicians?tech_num=2&tech_id=\'+this.value+\'&job_truck='.$k.'&job_date='.$norm_date.'&rurl='.$rurl.'\';'));
+                    echo $html->selectTag('techpick2',$allTechnician,$trucktech[$k][1],array('style' => 'width: 75px;', 'onchange' => 'document.location.href=\'/acesys/index.php/orders/setTechnicians?tech_num=2&tech_id=\'+this.value+\'&job_truck='.$k.'&job_date='.$norm_date.'&rurl='.$rurl.'\';'));
                 else
                     echo $html->selectTag('techpick2',$allTechnician,$trucktech[$k][1],array('style' => 'width: 75px;', 'disabled' => '1'));
                 echo '</td>';
@@ -1221,6 +1763,22 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
     //for route areas
     ?>
     <?php } //end of telemarketer hiding ?>
+
+    <?php 
+        echo '<tr style="height: 8px;"><td></td><td class="hide-checkbox" align="right">Truck<input type="checkbox" value="1" class="toggle_truck_number hide-checkbox" checked="checked" /></td>';
+        // foreach( $trucks as $k => $v )
+        // {
+        //     if ($k > 1)
+        //     {
+        //         echo '<td style="width: 75px;">';
+        //        // echo '<b style="color:#444444">'.$truck_numbers[$k].'</b><br/>   ';
+               
+        //         echo '<input class="source_code_'.$k.'" type="text" style="width: 75px;" value='.$allTechnicianPostalCode[$default_techs[$k]["tech1_id"]].'>';
+        //         echo '</td>';
+        //     }
+        // }
+        echo '</tr>';
+     ?>
     <!--Telemarketer assignment-->
 
     <?php if($en) { ?>
@@ -1407,6 +1965,21 @@ function displayOrder($order, $trucks, $common, $HtmlAssist, $rurl, $fdate, $sub
         echo '</tr>';
     }
     ?>
+    <?php 
+        echo '<tr style="height: 8px;"><td><b>End Point</b></td><td class="hide-checkbox" align="right">Truck<input type="checkbox" value="1" class="toggle_truck_number hide-checkbox" checked="checked" /></td>';
+        foreach( $trucks as $k => $v )
+        {
+            if ($k > 1)
+            {
+                echo '<td style="width: 75px;">';
+               // echo '<b style="color:#444444">'.$truck_numbers[$k].'</b><br/>   ';
+               
+                echo '<input class="destination_code_'.$k.'" type="text" style="width: 75px;" value='.$allTechnicianPostalCode[$default_techs[$k]["tech1_id"]].'>';
+                echo '</td>';
+            }
+        }
+        echo '</tr>';
+     ?>
     </table>
 <table width="100%"><tr><td>&nbsp;</td></tr></table>
     <?php
@@ -1447,6 +2020,166 @@ window.onresize = function(){
 
 repositionAll();
 </script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBM2MbUHkZK02xXCFhLQ5aRcV8ntsRNWiY&callback=initAutocomplete&libraries=places&v=weekly" defer></script>
+
 <br/><br/>
 <br/><br/>
 <? $DroppableString .= '</script>'; echo $DroppableString; ?>
+<script>
+$('.search_schedule').click(function(event){
+  event.preventDefault();
+  var trucks = $('select[name="trucks"]').val();
+  
+  var get_service = $('.map_services').val();
+  
+  var street = $('#street_number').val();
+  
+  var route = $('#route').val();
+  
+  var period = $('#sc_period').val();
+
+
+  
+  if (trucks=="" && get_service=="") {
+    alert('please choose either truck or service');
+    return false;
+  }
+  else {
+   var form_ser = $('#sc_form').serialize();
+   url = "<?=ROOT_URL;?>/index.php/technicians/calender/?"+form_ser+"&first_page=1";
+newwindow=window.open(url,'name','height=350,width=800,top=250, left=600');
+if (window.focus) {newwindow.focus();
+
+}
+  
+  }
+      });
+ const componentForm = {
+       street_number: "short_name",
+        route: "long_name",     
+        postal_code: "short_name",
+      };
+ function initAutocomplete() {
+        // Create the autocomplete object, restricting the search predictions to
+        // geographical location types.
+        autocomplete = new google.maps.places.Autocomplete(
+          document.getElementById("get_postal_code"),
+          { types: ["geocode"] }
+        );
+        // Avoid paying for data that you don't need by restricting the set of
+        // place fields that are returned to just the address components.
+        autocomplete.setFields(["address_component"]);
+        // When the user selects an address from the drop-down, populate the
+        // address fields in the form.
+        autocomplete.addListener("place_changed", fillInAddress);
+      }
+      
+      function fillInAddress() {
+        // Get the place details from the autocomplete object.
+        const place = autocomplete.getPlace();
+        
+        //console.log(place.address_components);
+        
+        let address = place.address_components;
+        
+        let city = address[2]['long_name'].toUpperCase();
+        
+        
+        
+        $('select[name="city"]').val(city);
+        
+        var get_cu_address = $('#postal_code').val();
+        
+        var cu_postal_code = address[0]['long_name'];
+        
+        $('#postal_code').val(cu_postal_code);
+        
+       // let city = address[2]['long_name'];
+
+        for (const component in componentForm) {
+          document.getElementById(component).value = "";
+          document.getElementById(component).disabled = false;
+        }
+        
+        // Get each component of the address from the place details,
+        // and then fill-in the corresponding field on the form.
+        for (const component of place.address_components) {
+          const addressType = component.types[0];
+        
+          if (componentForm[addressType]) {
+            const val = component[componentForm[addressType]];
+            document.getElementById(addressType).value = val.trim();
+          }
+             var street_number = $('#street_number').val();
+             var route = $('#route').val();
+             $('#sc_address').val(street_number+" "+route);
+             var pos_val = document.getElementById('postal_code').value;
+             var re_po = pos_val.replace(/\s+/g, '');
+             document.getElementById('postal_code').value=re_po;
+             
+        }
+      }
+      function geolocate() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((position) => {
+            const geolocation = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+            const circle = new google.maps.Circle({
+              center: geolocation,
+              radius: position.coords.accuracy,
+            });
+            autocomplete.setBounds(circle.getBounds());
+          });
+        }
+      }
+      
+      $('.map_services').live('change',function(){
+       var service_time = "<?= $service_time ?>";
+       var service_km = "<?= $service_km ?>";
+       var airduct_time = "<?= $airduct_time ?>";
+       var airduct_km = "<?= $airduct_km ?>";
+       var repair_time = "<?= $repair_time ?>";
+       var repair_km = "<?= $repair_km ?>";
+       var installation_time = "<?= $installation_time ?>";
+       var installation_km = "<?= $installation_km ?>";
+       if ($(this).val()==1) {
+        $('#choose_time').val(service_time);
+        $('#choose_km').val(service_km);
+       }
+       if ($(this).val()==2) {
+        $('#choose_time').val(airduct_time);
+        $('#choose_km').val(airduct_km);
+       }
+       if ($(this).val()==3) {
+        $('#choose_time').val(repair_time);
+        $('#choose_km').val(repair_km);
+       }
+       if ($(this).val()==4) {
+        $('#choose_time').val(installation_time);
+        $('#choose_km').val(installation_km);
+       }
+       
+       if ($(this).val()=='estimate') {
+        var href = $('.get_new_estimate').val();
+        window.location.href=href;
+       }
+       
+       });
+       
+     
+      function re_to_date(date) {
+        var dailyStatus = $('#daily_status').val();
+        window.location.href="scheduleView/?ffromdate="+date+"&daily="+dailyStatus;
+       
+      // newwindow=window.open('','name','height=350,width=800,top=250, left=600');
+      // newwindow.focus();
+      
+      }
+      
+      function removespace() {
+        alert('ok');
+      }
+      
+</script>

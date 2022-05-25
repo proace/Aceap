@@ -1,68 +1,68 @@
-html, body {
-	margin:0;
-	padding:0;	
-	font-family:Arial, Helvetica, sans-serif;
-	font-size:12px;
-	min-width:100%;
-}
-
-.options_container {
-	padding:10px 0 12px 10px;
-}
-
-#date_picker {
-	width:75px;
-}
-
-.schedule_table {	
-	border-collapse:collapse;
-	
-}
-
-.schedule_table th {
-	border:1px solid #999999;
-}
-
-.schedule_table td {
-	height:20px;
-	width:20px;
-	border:1px solid #999999;
-}
-
-.schedule_table .hour_label {
-	text-align:center;
-	width:100px;
-	padding-right:5px;
-	font-weight:bold;
-}
-
-.schedule_table .heading {
-	height:20px;
-	font-weight:bold;
-	text-align:center;
-}
-
-.set_span {
-	border:1px solid #999;
-	padding:8px;
-	margin-right:7px;
-}
-
-.blocked_slot {
-	background-color:#333;	
-}
-
-.open_slot {
-	background-color:#CFC;
-}
-
-.separator_slot {
-	background-color:#999;
-	width:0;
-	border:none;
-}
-
-.slot_button {
-	width:25px;
-	height:25px	
-}
+html, body {
+	margin:0;
+	padding:0;	
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:12px;
+	min-width:100%;
+}
+
+.options_container {
+	padding:10px 0 12px 10px;
+}
+
+#date_picker {
+	width:75px;
+}
+
+.schedule_table {	
+	border-collapse:collapse;
+	
+}
+
+.schedule_table th {
+	border:1px solid #999999;
+}
+
+.schedule_table td {
+	height:20px;
+	width:20px;
+	border:1px solid #999999;
+}
+
+.schedule_table .hour_label {
+	text-align:center;
+	width:100px;
+	padding-right:5px;
+	font-weight:bold;
+}
+
+.schedule_table .heading {
+	height:20px;
+	font-weight:bold;
+	text-align:center;
+}
+
+.set_span {
+	border:1px solid #999;
+	padding:8px;
+	margin-right:7px;
+}
+
+.blocked_slot {
+	background-color:#333;	
+}
+
+.open_slot {
+	background-color:#CFC;
+}
+
+.separator_slot {
+	background-color:#999;
+	width:0;
+	border:none;
+}
+
+.slot_button {
+	width:25px;
+	height:25px	
+}

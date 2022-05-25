@@ -1,3 +1,7 @@
+<?php 
+//echo "<pre>";
+//print_r($items[231451]);
+?>
 <link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />	
 <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
 
@@ -93,6 +97,45 @@ function numberAlert() {
 }
 
 $(document).ready(function(){
+	var i=10;
+	
+for (i = 0; i < 10; i++) {
+	var sum = 0;
+  $('.sup_'+i).each(function(){
+	var value = parseInt($(this).text());
+	
+	if(isNaN(value)){
+
+	}
+	else {
+      console.log((value));
+	  sum += value;
+	}
+	});
+	if(sum==0){
+$('.td_'+i).text('');
+	}
+	else{
+$('.td_'+i).text(sum);
+	}
+	
+}
+for (i = 0; i < 10; i++) {
+	var sum1 = 0;
+  $('.sum_td').each(function(){
+	var value = parseInt($(this).text());
+	
+	if(isNaN(value)){
+
+	}
+	else {
+      console.log((value));
+	  sum1 += value;
+	}
+	});
+	$('.booked_total').text(sum1);
+	
+}
 	var temp = 0;
 	var tempSub = 0;
 	<?php foreach($groups as $group) { ?>
@@ -203,6 +246,7 @@ $(document).ready(function(){
 	endforeach; ?>
         <!--<th width="50">Prev.</th>-->
  		<!--<th width="50">Cancel</th>-->
+		<th width="50" style="background-color:#065AB0;">Booked</th>
         <th width="50" style="background-color:#008c00;">Done</th>
         <th width="50" style="color:#000000;background-color:#fffd9f;">To Go</th>
         <th width="50" style="background-color:#ffcc00;">Quota</th>
@@ -214,6 +258,7 @@ $(document).ready(function(){
     </tr>
 <?php
 	$total = array();
+	$total_booked=0;
 	foreach ($items as $obj):
 		$class = 'cell0';
 		$togo = $obj['goal']-$obj['done'];
@@ -259,7 +304,7 @@ $(document).ready(function(){
 		$total_bg = "background-color:#008c00;color:#ffffff;";		
 		if ($obj['done']>=20) $total_bg="background-color:#fa5201;color:#ffffff;";
 ?>
-		<td class="regular" align="center" style="border:2px outset #c7fcad;<?=$bg?>;padding:0px;margin:0px;">
+		<td class="regular" align="center" style="border:2px outset #DCDCDC;<?=$bg?>;padding:0px;margin:0px;">
 			<table cellpadding=0 cellspacing=0 width=100% style="background: transparent;">
 				<tr>
 					<td colspan=4 style="color:#999999;font-size:medium;text-align:center;background: transparent;border:none;">
@@ -270,7 +315,7 @@ $(document).ready(function(){
                         <?=($obj[$cur]['booked']-$obj[$cur]['recording_unconfirmed']-$obj[$cur]['valid_booking']<=0)?'&nbsp;':$obj[$cur]['booked']-$obj[$cur]['recording_unconfirmed']-$obj[$cur]['valid_booking']?>
                         <?=($obj[$cur]['booked']-$obj[$cur]['recording_unconfirmed']-$obj[$cur]['valid_booking']<=0)?'&nbsp;':$obj[$cur]['booked']-$obj[$cur]['recording_unconfirmed']-$obj[$cur]['valid_booking']?>
                         </sup>-->
-                        <sup style="color:#000000;font-weight:bold"><?=($obj[$cur]['recording_unconfirmed']<=0)?'&nbsp;':$obj[$cur]['recording_unconfirmed']?></sup>
+                        <sup class="11 sup_<?=$total_booked?>" style="color:#000000;font-weight:bold"><?=($obj[$cur]['recording_unconfirmed']<=0)?'':$obj[$cur]['recording_unconfirmed']?></sup>
 					</td>
 				</tr>
 				<tr>
@@ -290,7 +335,8 @@ $(document).ready(function(){
 <?php endforeach; ?>
 		<!--<td align="center" style=""><?=($obj['previous']['booked']==0)?'&nbsp;':$obj['previous']['booked']?></td>-->
 		<!--<td align="center" style="font-weight:bold;font-size:larger;color:#800000;border:2px outset #d0d0ce;"><?=($obj['cancelled']==0)?'&nbsp;':$obj['cancelled']?></td>        -->
-		<td align="center" style="<?=$total_bg?>border:2px outset #008c00;font-weight:bold;font-size:larger;">
+		<td class="sum_td td_<?=$total_booked?>" align="center" style="background-color:#065AB0;color:white;font-weight:bold;font-size:larger;border:2px outset #DCDCDC;"><?=$obj['pending']?></td>
+		<td align="center" style="<?=$total_bg?>border:2px outset #DCDCDC;font-weight:bold;font-size:larger;">
 		<?php //echo ($obj['done']==0)?'&nbsp;':$obj['done']?><span class="donetotal<?php echo $obj['id'] ?>"></span></td>        
 		<td align="center" style="background-color:#fffd9f;color:black;font-weight:bold;font-size:larger;border:3px outset #ffff15;"><?=($togo<=0)?'&nbsp;':$togo?></td>
 		<td align="center" style="background-color:#ffcc00;border:2px outset #205a03;font-weight:bold;color:white;font-size:larger;">
@@ -316,7 +362,9 @@ $(document).ready(function(){
 	    <td align="center" style=""><?=(round($obj['hours_total']/($obj['booked_today']),1)==0)?'&nbsp;':round($obj['hours_total']/($obj['booked_today']),1)?></td>
         -->
     </tr>
-<?php endforeach; ?>
+<?php
+$total_booked++;
+endforeach; ?>
     <tr class="total" style="height:35px;">
     	<?php if($disp == 0) { ?>
     	<td></td>       
@@ -325,21 +373,23 @@ $(document).ready(function(){
         <td align="left" style="border:2px outset #d0d0ce;font-size: small; font-weight:bold; font-style: italic;"><b>Total</b></td>
 <?php foreach ($dates as $cur => $v): ?>
 <?php $total_bg = "background-color:#008c00;color:#ffffff;"; ?>
-		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">
+		<td class="regular" align="center" style="border:2px outset #DCDCDC;padding:0px;margin:0px;">
 			<table cellpadding=0 cellspacing=0 width=100% style="background: transparent;">
 				<tr>
-					<td colspan=3 style="color:#999999;font-size:medium;text-align:center;background: transparent;border:none;">
-						<?=($total[$cur]-$total_unconfirmed[$cur]==0)?'&nbsp;':$total[$cur]-$total_unconfirmed[$cur]?><sup style="color:#000000;font-weight:bold;"><?=($total_unconfirmed[$cur]==0)?'&nbsp;':$total_unconfirmed[$cur]?></sup>
+					<td class="" colspan=3 style="color:#999999;font-size:medium;text-align:center;background: transparent;border:none;">
+						<?=($total[$cur]-$total_unconfirmed[$cur]==0)?'&nbsp;':$total[$cur]-$total_unconfirmed[$cur]?><sup class="22" style="color:#000000;font-weight:bold;"><?=($total_unconfirmed[$cur]==0)?'&nbsp;':$total_unconfirmed[$cur]?></sup>
 					</td>
 				</tr>
 			</table>
 		</td>
-<?php endforeach; ?>
+<?php
+
+endforeach; ?>
 		
-		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
-		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
-		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
-		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
+		<td class="regular booked_total" align="center" style="border:2px outset #DCDCDC;padding:0px;margin:0px;font-size: larger;">&nbsp;</td>
+		<td class="regular" align="center" style="border:2px outset #DCDCDC;padding:0px;margin:0px;">&nbsp;</td>
+		<td class="regular" align="center" style="border:2px outset #DCDCDC;padding:0px;margin:0px;">&nbsp;</td>
+		<td class="regular" align="center" style="border:2px outset #DCDCDC;padding:0px;margin:0px;">&nbsp;</td>
         <!--
 		<td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>
         <td class="regular" align="center" style="border:2px outset #c7fcad;padding:0px;margin:0px;">&nbsp;</td>

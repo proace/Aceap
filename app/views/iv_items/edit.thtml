@@ -1,177 +1,489 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Edit Item</title>
-<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
-<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
-<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/iv_items_edit.js"></script>
-<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/inventory.css" />
-<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
-<script type="text/javascript">
-    
-$("#IvItemIvBrandId").live("change", function(){
-    var brand = $(this).find("option:selected").text();
-    $("#brand-name").val(brand);
-});
-$("#IvItemIvSupplierId").live("change", function(){
-    var supllier = $(this).find("option:selected").text();
-    $("#supplier-name").val(supllier);
-});
-$("#IvItemIvCategoryId").live("change", function(){
-    var category = $(this).find("option:selected").text();
-    var catId = $(this).find("option:selected").val();
-    $("#category-name").val(category);
-     $.ajax({
-        url: G_URL+'iv_items/getSubCategories',
-        dataType: 'html',
-        type: 'POST',
-        cache: false,
-        data:{categoryId: catId},
-        success: function(data) {
-                $("#IvItemIvSubCategoryId").html(data);
-            }
-        }); 
-});
-$("#IvItemIvSubCategoryId").live("change", function(){
-    var subSategory = $(this).find("option:selected").text();
-    $("#sub-category-name").val(subSategory);
-});
+<?php
+$path_info = $_SERVER['PATH_INFO'];
+$path_info1 =explode('/',$_SERVER['PATH_INFO']);
+$current_id = $path_info1[3];
+?>
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
 
-</script>
-</head>
-<body id="page_edit">
-<h1><?php echo isset($_GET['seed'])?'Add':'Edit' ?> Item</h1>
-<form action="<?php echo BASE_URL ?>/iv_items/save" method="post">
-	<?php echo $html->hidden('IvItem/id'); ?>
-    <table>
-		<tr>
-        	<td><label>SKU</label></td>
-            <td><?php echo $html->input('IvItem/sku')?></td>
-        </tr>
-    	<tr>
-        	<td><label>Name</label></td>
-            <td><?php echo $html->input('IvItem/name')?></td>
-        </tr>        
-        <tr>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Edit Item</title>
+        <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+        <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+        <script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/iv_items_edit.js"></script>
+        <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/inventory.css" />
+        <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+        <link rel="stylesheet" type="text/css" media="all" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+        <script type="text/javascript">
+            $(document).ready(function() {
+                totalCalculaton();
+            });
+            $("#IvItemIvBrandId").live("change", function() {
+                var brand = $(this).find("option:selected").text();
+                $("#brand-name").val(brand);
+            });
+            $("#IvItemIvSupplierId").live("change", function() {
+                var supllier = $(this).find("option:selected").text();
+                $("#supplier-name").val(supllier);
+            });
+            $("#IvItemIvCategoryId").live("change", function() {
+                var category = $(this).find("option:selected").text();
+                var catId = $(this).find("option:selected").val();
+                $("#category-name").val(category);
+                $.ajax({
+                    url: G_URL + 'iv_items/getSubCategories',
+                    dataType: 'html',
+                    type: 'POST',
+                    cache: false,
+                    data: {
+                        categoryId: catId
+                    },
+                    success: function(data) {
+                        $("#IvItemIvSubCategoryId").html(data);
+                    }
+                });
+            });
+            $("#IvItemIvSubCategoryId").live("change", function() {
+                var subSategory = $(this).find("option:selected").text();
+                $("#sub-category-name").val(subSategory);
+            });
+
+
+            function totalCalculaton() {
+                var markupPercentage = $("#IvItemMarkupPercent").val();
+                var techPercentage = $("#IvItemTechPercent").val();
+                var purchasePrice = $("#IvItemSupplierPrice").val();
+                var catId = $("#catId").val();
+
+                if (catId == 8 || catId == 36) {
+                    if (purchasePrice > 0 && purchasePrice != '') {
+                        if (markupPercentage > 0 && markupPercentage != '') {
+
+                            var markupSelling = (parseFloat(markupPercentage) * parseFloat(purchasePrice)) / 100;
+                        } else {
+                            var markupSelling = 0;
+                        }
+
+                        if (techPercentage > 0 && techPercentage != '') {
+
+                            var techSelling = (parseFloat(techPercentage) * parseFloat(purchasePrice)) / 100;
+                        } else {
+                            var techSelling = 0;
+                        }
+                        var totalSelling = (parseFloat(purchasePrice) + parseFloat(markupSelling) + parseFloat(techSelling)).toFixed(2);
+
+                        $("#IvItemSellingPrice").val(totalSelling);
+                    } else {
+                        $("#IvItemSellingPrice").val(0);
+                    }
+                }
+
+            }
+        </script>
+        <style type="text/css">
+            .markupPercentage {
+                width: 25px;
+            }
+            
+            .preview_image:hover {
+                transform: scale(1.5);
+            }
+        </style>
+    </head>
+
+    <body id="page_edit">
+
+        <div class="container">
+            <h1>
+                <?php echo isset($_GET['seed'])?'Add':'Edit' ?> Item</h1>
+            <form action="<?php echo BASE_URL ?>/iv_items/save?id=<?php echo $current_id ?>" method="post" enctype="multipart/form-data">
+
+                <span>
+  <?php
+ 
+ $year = substr($images1, 0, 4);
+        $mon = substr($images1, 4, 2);
+        $day = substr($images1, 6, 2);
+        $name = $year.'/'.$mon.'/'.$day.'/'.$images1;
+        if(empty($images1)){
+  $src="";
+  $img="";
+ }
+ else {
+    if($isImport == 0)
+    {
+        $src=ROOT_URL.'/upload_photos/'.$name;
+        $src1='/upload_photos/'.$name;
+    } else {
+        $src =  $images1;
+    }
+ 
+  
+  $img="<img class='preview_image' style='height: 100px;
+    width: 100px;
+' src='$src'>";
+  
+ }
+ ?>
+<?= $img ?>
+ </span>
+                <div class="row" style="padding-top:2em">
+                    <div class="col-sm-4" style="width:40%">
+                        <input type="file" name="upload_image" id="upload_image" value="upload Image">
+                    </div>
+                    <div class="col-sm-4" style="width:14%">
+                        <button type="submit">Save</button>
+                    </div>
+                    <input type="hidden" name="fromInventory" id="fromInventory" value="<?=$fromInventory?>">
+                    <input type="hidden" name="catId" id="catId" value="<?=$category_id?>">
+
+
+                    <?php
+if($img!==""){ ?>
+                        <div class="col-sm-4" style="width:30%">
+                            <button class="delete_image" data-path="<?= $src1 ?>" data-name="<?= $images1 ?>" data-id="<?= $current_id ?>">delete</button>
+                        </div>
+                        <?php }
+?>
+                        <div style="padding-top: 2em;">
+                            <?php echo $html->hidden('IvItem/id'); ?>
+
+                            <table>
+                                <tr>
+
+                                    <td><label>SKU</label></td>
+                                    <td>
+                                        <?php echo $html->input('IvItem/sku')?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Quantity</label></td>
+                                    <td>
+                                        <?php echo $html->input('IvItem/default_quantity')?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Name</label></td>
+                                    <td>
+                                        <?php echo $html->input('IvItem/name')?>
+                                    </td>
+                                </tr>
+                                <?php if($category_id == 8 || $category_id == 36 ) {?>
+                                <tr>
+                                    <td><label>Percentage</label></td>
+                                    <td><span><b>Markup %</b></span>
+                                        <input name="data[IvItem][markup_percent]" style="width:30px;" value="<?=($this->data['IvItem']['markup_percent'] > 0) ? $this->data['IvItem']['markup_percent'] : 52 ?>" type="text" id="IvItemMarkupPercent" onkeyup="totalCalculaton();">
+                                        <span><b>Tech %</b></span>
+                                        <input name="data[IvItem][tech_percent]" style="width: 30px;" value="<?= ($this->data['IvItem']['tech_percent'] > 0) ? $this->data['IvItem']['tech_percent'] : 30 ?>" type="text" id="IvItemTechPercent" onkeyup="totalCalculaton();">
+                                    </td>
+                                </tr>
+                                <?php } else {?>
+                                <input name="data[IvItem][markup_percent]" style="width:30px;" value="0" type="hidden" id="IvItemMarkupPercent">
+                                <input name="data[IvItem][tech_percent]" style="width:30px;" value="0" type="hidden" id="IvItemTechPercent">
+                                <?php } ?>
+                                <!--  <tr>
         	<td><label>Regular Price</label></td>
             <td><?php echo $html->input('IvItem/regular_price')?></td>
+        </tr> -->
+                                <tr>
+                                    <td><label>Purchase Price</label></td>
+                                    <td><input name="data[IvItem][supplier_price]" value="<?= $this->data['IvItem']['supplier_price'] ?>" type="text" id="IvItemSupplierPrice" onkeyup="totalCalculaton();"></td>
+                                    <!-- <td><?php echo $html->input('IvItem/supplier_price')?></td> -->
+                                </tr>
+                                <tr>
+                                    <?php 
+        if($warranty=="NULL"){
+          $warranty='';
+        }
+        ?>
+                                    <td><label>Warranty</label></td>
+                                    <td><input name="data[IvItem][warranty]" value="<?= $warranty ?>" type="text" id="warranty"></td>
+
+                                </tr>
+                                <tr>
+                                    <?php 
+        if($link=="NULL"){
+          $link='';
+        }
+        ?>
+                                    <td><label>Link</label></td>
+                                    <td><input name="data[IvItem][link]" value="<?= $link ?>" type="text" id="link"></td>
+
+                                </tr>
+                                <tr>
+                                    <td><label>Selling Price</label></td>
+                                    <td>
+                                        <?php echo $html->input('IvItem/selling_price')?>
+                                    </td>
+                                </tr>
+                                <!--<tr>
+         <td>
+          Member Discount
+          </td>
+         <td>
+          $:<input style="width:40px" type="text" name="discount" onkeyup="calculatePerc();"> %:<input style="width:40px" type="text" name="percentage" onkeyup="calculatePrice();">
+         </td>
         </tr>
         <tr>
-        	<td><label>Selling Price</label></td>
-            <td><?php echo $html->input('IvItem/selling_price')?></td>
-        </tr>
-        <tr>
-        	<td><label>Purchase Price</label></td>
-            <td><?php echo $html->input('IvItem/supplier_price')?></td>
-        </tr>
-        <tr>
-        	<td><label>Description1</label></td>
+        	<td><label>Member Price</label></td>
             <td>
-            <?php if(isset($_GET['seed'])) { ?>			
-            <?php echo $html->input('IvItem/description1', array('value'=>$description1))?>
-            <?php } else { ?>
-            <?php echo $html->input('IvItem/description1')?>
-            <?php } ?>
+            <input type="text" name="member_price" id="member_price" value="<?= $member_price; ?>">
+            
             </td>
-        </tr>
-        <tr>
-        	<td><label>Description2</label></td>
-            <td>
-            <?php if(isset($_GET['seed'])) { ?>			
-            <?php echo $html->input('IvItem/description2', array('value'=>$description2))?>
-            <?php } else { ?>
-            <?php echo $html->input('IvItem/description2')?>
-            <?php } ?>
-            </td>
-        </tr>
-        <tr>
-        	<td><label>Efficiency</label></td>
-            <td>
-            <?php if(isset($_GET['seed'])) { ?>			
-            <?php echo $html->input('IvItem/efficiency', array('value'=>$efficiency))?>
-            <?php } else { ?>
-            <?php echo $html->input('IvItem/efficiency')?>
-            <?php } ?>
-            </td>
-        </tr>
-        <tr>
-        	<td><label>Model</label></td>
-            <td><?php echo $html->input('IvItem/model')?></td>
-        </tr>
-        <tr>
-        	<td><label>Category</label></td>            
-            <td>
-            <span id="selection_category">
+        </tr>-->
+
+                                <tr>
+                                    <td><label>Dimension</label></td>
+                                    <td>
+                                        <?php if(isset($_GET['seed'])) { ?>
+                                        <?php echo $html->input('IvItem/description1', array('value'=>$description1))?>
+                                        <?php } else { ?>
+                                        <?php echo $html->input('IvItem/description1')?>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Description2</label></td>
+                                    <td>
+                                        <?php if(isset($_GET['seed'])) { ?>
+                                        <?php echo $html->input('IvItem/description2', array('value'=>$description2))?>
+                                        <?php } else { ?>
+                                        <?php echo $html->input('IvItem/description2')?>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Efficiency</label></td>
+                                    <td>
+                                        <?php if(isset($_GET['seed'])) { ?>
+                                        <?php echo $html->input('IvItem/efficiency', array('value'=>$efficiency))?>
+                                        <?php } else { ?>
+                                        <?php echo $html->input('IvItem/efficiency')?>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Dba</label></td>
+                                    <td>
+                                        <?php if(isset($_GET['seed'])) { ?>
+                                        <?php echo $html->input('IvItem/dba', array('value'=>$dba))?>
+                                        <?php } else { ?>
+                                        <?php echo $html->input('IvItem/dba')?>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Tonnage</label></td>
+                                    <td>
+                                        <?php if(isset($_GET['seed'])) { ?>
+                                        <?php echo $html->input('IvItem/tonnage', array('value'=>$tonnage))?>
+                                        <?php } else { ?>
+                                        <?php echo $html->input('IvItem/tonnage')?>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Seer</label></td>
+                                    <td>
+                                        <?php if(isset($_GET['seed'])) { ?>
+                                        <?php echo $html->input('IvItem/seer', array('value'=>$seer))?>
+                                        <?php } else { ?>
+                                        <?php echo $html->input('IvItem/seer')?>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Position</label></td>
+                                    <td>
+                                        <?php if(isset($_GET['seed'])) { ?>
+                                        <?php echo $html->input('IvItem/position', array('value'=>$position))?>
+                                        <?php } else { ?>
+                                        <?php echo $html->input('IvItem/position')?>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Voltage</label></td>
+                                    <td>
+                                        <?php if(isset($_GET['seed'])) { ?>
+                                        <?php echo $html->input('IvItem/voltage', array('value'=>$voltage))?>
+                                        <?php } else { ?>
+                                        <?php echo $html->input('IvItem/voltage')?>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Mocp</label></td>
+                                    <td>
+                                        <?php if(isset($_GET['seed'])) { ?>
+                                        <?php echo $html->input('IvItem/mocp', array('value'=>$mocp))?>
+                                        <?php } else { ?>
+                                        <?php echo $html->input('IvItem/mocp')?>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Mca</label></td>
+                                    <td>
+                                        <?php if(isset($_GET['seed'])) { ?>
+                                        <?php echo $html->input('IvItem/amprage', array('value'=>$amprage))?>
+                                        <?php } else { ?>
+                                        <?php echo $html->input('IvItem/amprage')?>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td><label>BTU</label></td>
+                                    <td>
+                                        <?php if(isset($_GET['seed'])) { ?>
+                                        <?php echo $html->input('IvItem/btu', array('value'=>$btu))?>
+                                        <?php } else { ?>
+                                        <?php echo $html->input('IvItem/btu')?>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Model</label></td>
+                                    <td>
+                                        <?php echo $html->input('IvItem/model')?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Category</label></td>
+                                    <td>
+                                        <span id="selection_category">
             <?php if(isset($_GET['seed'])) { ?>
 			<?php echo $html->selectTag('IvItem/iv_category_id', $categories, $category_id)?>
             <?php } else { ?>            
             <?php echo $html->selectTag('IvItem/iv_category_id', $categories)?>
             <?php } ?>
             </span>
-            <a href="#" title="New Category">Add new Category</a>
-            </td>
-        </tr>
-         <tr>
-            <td><label>Sub Category</label></td>            
-            <td>
-                <span id="selection_sub_category">        
-                    <?php echo $html->selectTag('IvItem/iv_sub_category_id', $subCategories)?>
+                                        <a href="#" title="New Category">Add new Category</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Sub Category</label></td>
+                                    <td>
+                                        <span id="selection_sub_category">        
+                    <?php echo $html->selectTag('IvItem/iv_sub_category_id', $subCategories, $sub_category_id)?>
                 </span>
-            </td>
-        </tr>
-        <tr>
-        	<td><label>Brand</label></td>            
-            <td>
-            <span id="selection_brand">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Brand</label></td>
+                                    <td>
+                                        <span id="selection_brand">
             <?php if(isset($_GET['seed'])) { ?>
 			<?php echo $html->selectTag('IvItem/iv_brand_id', $brands, $brand_id)?>
             <?php } else { ?>            
             <?php echo $html->selectTag('IvItem/iv_brand_id', $brands)?>
             <?php } ?>
             </span>
-            <a href="#" title="New Brand">Add new Brand</a>
-            </td>
-        </tr>
-        <tr>
-        	<td><label>Supplier</label></td>            
-            <td>
-            <span id="selection_supplier">
+                                        <a href="#" title="New Brand">Add new Brand</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Supplier</label></td>
+                                    <td>
+                                        <span id="selection_supplier">
             <?php if(isset($_GET['seed'])) { ?>
 			<?php echo $html->selectTag('IvItem/iv_supplier_id', $suppliers, $supplier_id)?>
             <?php } else { ?>            
             <?php echo $html->selectTag('IvItem/iv_supplier_id', $suppliers)?>
             <?php } ?>
             </span>
-            <a href="#" title="New Supplier">Add new Supplier</a>
-            </td>
-        </tr>
-        <?php if(!isset($_GET['seed'])) { ?>
-        <tr>
-        	<td><label>Active</label></td>           
-            <td>
-            <?php echo $html->selectTag('IvItem/active', $yesOrNo);?>
-            </td>
-        </tr>
-        <?php } else { ?>
-        	<?php echo $html->input('IvItem/active', array('type'=>'hidden','value'=>1))?>
-        <?php }?>
-        <?php if(!isset($_GET['seed'])) { ?>
-        <tr>
-        	<td><label>Notify the admin</label></td>           
-            <td>
-            <?php echo $html->selectTag('IvItem/notify_admin', $yesOrNo);?>
-            </td>
-        </tr>
-        <?php } else { ?>
-        	<?php echo $html->input('IvItem/notify_admin', array('type'=>'hidden','value'=>1))?>
-        <?php }?>
-    </table>    
-    <?php echo $html->submit('Save') ?>
-    <input type="hidden" name="brandName" id="brand-name" value="<?=$this->data['IvBrand']['name']?>">
-    <input type="hidden" name="supplierName" id="supplier-name" value="<?=$this->data['IvSupplier']['name']?>">
-    <input type="hidden" name="categoryName" id="category-name" value="<?=$this->data['IvCategory']['name']?>">
-    <input type="hidden" name="subCategoryName" id="sub-category-name" value="<?=$this->data['IvItem']['sub_category_name']?>">
-</form>
-</body>
-</html>
+                                        <a href="#" title="New Supplier">Add new Supplier</a>
+                                    </td>
+                                </tr>
+                                <?php if(!isset($_GET['seed'])) { ?>
+                                <tr>
+                                    <td><label>Active</label></td>
+                                    <td>
+                                        <?php echo $html->selectTag('IvItem/active', $yesOrNo);?>
+                                    </td>
+                                </tr>
+                                <?php } else { ?>
+                                <?php echo $html->input('IvItem/active', array('type'=>'hidden','value'=>1))?>
+                                <?php }?>
+                                <?php if(!isset($_GET['seed'])) { ?>
+                                <tr>
+                                    <td><label>Notify the admin</label></td>
+                                    <td>
+                                        <?php echo $html->selectTag('IvItem/notify_admin', $yesOrNo);?>
+                                    </td>
+                                </tr>
+                                <?php } else { ?>
+                                <?php echo $html->input('IvItem/notify_admin', array('type'=>'hidden','value'=>1))?>
+                                <?php }?>
+                                <tr>
+                                    <td><label>Tech Default</label></td>
+                                    <td>
+                                        <?php if(isset($_GET['seed'])) { ?>
+                                        <?php echo $html->selectTag('IvItem/tech_default', $yesOrNo, array('value' => 0))?>
+                                        <?php } else { ?>
+                                        <?php echo $html->selectTag('IvItem/tech_default', $yesOrNo)?>
+                                        <?php } ?>
+
+                                    </td>
+                                </tr>
+                            </table>
+                            <?php //echo $html->submit('Save') ?>
+                            <input type="hidden" name="brandName" id="brand-name" value="<?=$this->data['IvBrand']['name']?>">
+                            <input type="hidden" name="supplierName" id="supplier-name" value="<?=$this->data['IvSupplier']['name']?>">
+                            <input type="hidden" name="categoryName" id="category-name" value="<?=$this->data['IvCategory']['name']?>">
+                            <input type="hidden" name="subCategoryName" id="sub-category-name" value="<?=$this->data['IvItem']['sub_category_name']?>">
+                            <input type="hidden" name="fromInventory" id="fromInventory" value="<?=$this->data['IvItem']['fromInventory']?>">
+            </form>
+            </div>
+            <script>
+                function calculatePrice() {
+                    var percentage = $('input[name=\'percentage\']').val(),
+                        price = $('#IvItemSellingPrice').val(),
+                        calcPrice = price - ((price / 100) * percentage),
+                        discountPrice = calcPrice;
+                    $('input[name=\'member_price\']').val(discountPrice);
+                }
+
+                function calculatePerc() {
+                    var discountPrice = $('input[name=\'discount\']').val(),
+                        price = $('#IvItemSellingPrice').val(),
+                        calcPerc = (price - discountPrice),
+                        discountPerc = calcPerc;
+                    $('input[name=\'member_price\']').val(discountPerc);
+                }
+
+                $('.delete_image').live('click', function(e) {
+                    e.preventDefault();
+
+                    var path = $(this).attr('data-path');
+                    var name = $(this).attr('data-name');
+                    var id = $(this).attr('data-id');
+                    if (confirm('Are you sure?')) {
+
+                        $.ajax({
+                            url: G_URL + 'iv_items/deleteImage',
+                            dataType: 'html',
+                            type: 'POST',
+                            cache: false,
+                            data: {
+                                path: path,
+                                name: name,
+                                id: id
+                            },
+                            success: function(data) {
+                                console.log(data);
+                                $('.preview_image').hide();
+                                window.opener.document.getElementById('<?= $current_id ?>').innerHTML = '';
+                                $('.delete_image').hide();
+                            }
+                        });
+                    }
+
+
+                });
+            </script>
+    </body>
+
+    </html>

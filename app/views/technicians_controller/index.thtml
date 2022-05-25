@@ -1,0 +1,1064 @@
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.4.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_constants.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="<?=ROOT_URL;?>/app/webroot/js/bria_api_js_sample.js"></script>
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+<link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
+<style>
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact !important;
+      }
+
+      .table-invoice .bg-grey {
+        background-color: #CCC;
+        /*background-image:url(http://acecare.ca/responsive2/dist/img/bg-grey.png);*/
+      }
+    }
+    tfoot td{
+      text-align:right;
+    }
+     tfoot td
+    {
+       border-top: 1px solid black !important;
+    }
+
+
+    <?php $border=1;
+
+    ?>.table-invoice {
+      border-top: <?php echo $border ?>px solid black;
+      border-right: <?php echo $border ?>px solid black;
+      border-bottom: <?php echo $border ?>px solid black;
+    }
+
+    .table-invoice th {
+      border-left: <?php echo $border ?>px solid black !important;
+      border-bottom: <?php echo $border ?>px solid black !important;
+    }
+
+    .table-invoice td {
+      border-bottom: none !important;
+      border-left: <?php echo $border ?>px solid black;
+    }
+
+    
+
+    .table-invoice td.top-border {
+      border-top: solid black !important;
+      border-width: <?php echo $border ?>px !important;
+    }
+
+    .table-invoice td.bottom-border {
+      border-bottom: solid black !important;
+      border-width: <?php echo $border ?>px !important;
+    }
+
+    .table-invoice td.left-border {
+      border-left: solid black !important;
+      border-width: <?php echo $border ?>px !important;
+    }
+
+    .table-invoice td.right-border {
+      border-right: solid black !important;
+      border-width: <?php echo $border ?>px !important;
+    }
+
+    .table-invoice .bg-grey img {
+      width: 100%;
+      height: 30px;
+    }
+
+    .table-invoice .bg-grey .text-alignment {
+      position: absolute;
+      padding: 5px;
+      padding-left: 34%;
+    }
+  </style>
+<style type="text/css">
+	th{
+		cursor: pointer;
+	}
+	
+	 .reminder_data_table{
+		width:100%;
+		border: 1px solid black;
+  		border-collapse: collapse;
+	}
+	.reminder_data_table td {
+		text-align: left;
+		border: 1px solid black;
+  		border-collapse: collapse;
+  		background: #FFFF99;	 
+	}
+	.reminder_data_table th{
+		text-align: left;
+		border: 1px solid black;
+  		border-collapse: collapse;
+		background: #666666;
+		color:#ffffff;
+	}
+	.reminder-modal {
+    display: none; /* Hidden by default */
+    position: absolute; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 30%;
+}
+/* Modal Content */
+.reminder-modal-content {
+    background-color: #fefefe;
+    /*margin: auto;*/
+    margin: 100px 200px 100px 200px;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 55%;
+    /*height: 30%;*/
+}
+</style>
+<script>
+$(document).ready(function(){
+
+	// $("#myTable").makeSortable();
+	// $('th').click(function(){
+ //    	var table = $(this).parents('table').eq(0)
+	//     var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
+	//     this.asc = !this.asc
+	//     if (!this.asc){rows = rows.reverse()}
+	//     for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+	// });
+	// $('th').click(function(){
+ //    	var table = $(this).parents('table').eq(0)
+	   
+	// });
+
+
+	$('#save-reminder-email').live("click", function(){
+		var orderId = $("#orderId").val();
+		var reminderDate = $("#reminder-date").val();
+		var remiderNote = $("#reminder-message").val();
+		
+		$.ajax({
+		url: '<?=BASE_URL?>/reports/setReminderCallback',
+		dataType: 'html',
+		type: 'POST',
+		cache: false,
+		data: {reminderDate:reminderDate,  remiderNote:remiderNote, orderId:orderId},
+		success: function(data) {
+				res = JSON.parse(data);
+				if(res.res == "OK")
+				{
+					hideInvoiceReview();
+					document.forms['estimateForm'].submit();
+				}
+			}			
+		});
+	});
+
+	$('#edit-reminder-email').live("click", function(){
+		var callbackId = $("#callback_Id").val();
+		//var reminderDate = $("#reminder-date").val();
+		var remiderNote = $("#edit-reminder-message").val();
+		
+		$.ajax({
+		url: '<?=BASE_URL?>/reports/editReminderCallback',
+		dataType: 'html',
+		type: 'POST',
+		cache: false,
+		data: {remiderNote:remiderNote, callbackId:callbackId},
+		success: function(data) {
+				res = JSON.parse(data);
+				if(res.res == "OK")
+				{
+					// $('#viewReminder').trigger('click');
+						$('#editReminder').dialog('close');
+						var orderId = $("#orderId").val();	
+						var url = "<?=BASE_URL?>/reports/viewEstimateReminder";
+						$.ajax({
+				          url: url,
+				          dataType: 'html',
+				          type: "POST",
+				          data: {orderId : orderId},
+				          success: function(data){
+				          		$(".reminder_data_table tbody").html('');
+				             	$(".reminder_data_table tbody").append(data);
+				             	$('.reminder_data_box').dialog('open');
+				          	}
+				        });
+					}
+				}			
+		});
+	});
+	$(function () {
+	    $(".reminder_data_box").dialog({
+	        modal: true,
+	        autoOpen: false,
+	        title: "History",
+	        autoOpen: false,
+	        width: 700,
+	        height: 500,
+	        close: function(event, ui) {
+          		location.reload();
+    		 }
+	    });
+	    $("#viewReminder").live("click",function () {
+			var orderId = 	$(this).attr('orderId');
+			$("#orderId").val(orderId);
+			var url = "<?=BASE_URL?>/reports/viewEstimateReminder";
+			$.ajax({
+	          url: url,
+	          dataType: 'html',
+	          type: "POST",
+	          data: {orderId : orderId},
+	          success: function(data){
+	          		$(".reminder_data_table tbody").html('');
+	             	$(".reminder_data_table tbody").append(data);
+	             	$('.reminder_data_box').dialog('open');
+	          	}
+	        });
+	    });
+    });
+
+
+	$(function () {
+	    $("#editReminder").dialog({
+	        modal: true,
+	        autoOpen: false,
+	        title: "History",
+	        autoOpen: false,
+	        width: 700,
+	        height: 500,
+	    });
+	    $("#editCallback").live("click",function () {
+			var Id = 	$(this).attr('callbackId');
+			var url = "<?=BASE_URL?>/reports/getEstimateReminder";
+			$.ajax({
+	          url: url,
+	          dataType: 'html',
+	          type: "POST",
+	          data: {Id : Id},
+	          success: function(data){
+	          		res = JSON.parse(data);
+	          		$("#edit-reminder-message").val(res.notes);
+	          		//$("#edit-reminder-date").val(res.callback_date);
+	          		$("#callback_Id").val(Id);
+	          		$('#editReminder').dialog('open');
+	          	}
+	        });
+	    });
+    });
+	$("#deleteCallback").live("click",function () {
+			var Id = $(this).attr('callbackId');
+			var url = "<?=BASE_URL?>/reports/deleteCallback";
+			$.ajax({
+	          url: url,
+	          dataType: 'html',
+	          type: "POST",
+	          data: {callbackId : Id},
+	          success: function(data){
+	          		res = JSON.parse(data);
+	          		if(res.res == "OK")
+					{
+						var orderId = $("#orderId").val();	
+						var url = "<?=BASE_URL?>/reports/viewEstimateReminder";
+						$.ajax({
+				          url: url,
+				          dataType: 'html',
+				          type: "POST",
+				          data: {orderId : orderId},
+				          success: function(data){
+				          		$(".reminder_data_table tbody").html('');
+				             	$(".reminder_data_table tbody").append(data);
+				             	$('.reminder_data_box').dialog('open');
+				          	}
+				        });
+					}
+	          	}
+	        });
+	    });
+
+	// $(".estimator_header").live("click",function(){
+	// 	var sortOrder = $(this).attr('order-by');
+	// 	var sortField = $(this).attr('sort-by');
+	// 	$("#sort_order").val(sortOrder);
+	// 	 $("#sort_field").val(sortField);
+	// 	document.forms['estimateForm'].submit();	
+	// });
+});
+
+function sortTable(n) {
+  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById("estimateTab");
+  switching = true;
+  //Set the sorting direction to ascending:
+  dir = "asc"; 
+  /*Make a loop that will continue until
+  no switching has been done:*/
+  while (switching) {
+    //start by saying: no switching is done:
+    switching = false;
+    rows = table.rows;
+    /*Loop through all table rows (except the
+    first, which contains table headers):*/
+    for (i = 1; i < (rows.length - 1); i++) {
+      //start by saying there should be no switching:
+      shouldSwitch = false;
+      /*Get the two elements you want to compare,
+      one from current row and one from the next:*/
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      /*check if the two rows should switch place,
+      based on the direction, asc or desc:*/
+      if (dir == "asc") {
+        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+          //if so, mark as a switch and break the loop:
+          shouldSwitch= true;
+          break;
+        }
+      } else if (dir == "desc") {
+        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+          //if so, mark as a switch and break the loop:
+          shouldSwitch = true;
+          break;
+        }
+      }
+    }
+    if (shouldSwitch) {
+      /*If a switch has been marked, make the switch
+      and mark that a switch has been done:*/
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      //Each time a switch is done, increase this count by 1:
+      switchcount ++;      
+    } else {
+      /*If no switching has been done AND the direction is "asc",
+      set the direction to "desc" and run the while loop again.*/
+      if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+}
+
+// function sortTable() {
+//   var table, rows, switching, i, x, y, shouldSwitch;
+//   table = document.getElementById("estimateTab");
+//   switching = true;
+//   /*Make a loop that will continue until
+//   no switching has been done:*/
+//   while (switching) {
+//     //start by saying: no switching is done:
+//     switching = false;
+//     rows = table.rows;
+//     /*Loop through all table rows (except the
+//     first, which contains table headers):*/
+//     for (i = 1; i < (rows.length - 1); i++) {
+//       //start by saying there should be no switching:
+//       shouldSwitch = false;
+//       Get the two elements you want to compare,
+//       one from current row and one from the next:
+//       x = rows[i].getElementsByTagName("TD")[8];
+//       console.log(x);
+//       y = rows[i + 1].getElementsByTagName("TD")[8];
+//       //check if the two rows should switch place:
+//       if (Number(x.innerHTML) > Number(y.innerHTML)) {
+//         //if so, mark as a switch and break the loop:
+//         shouldSwitch = true;
+//         break;
+//       }
+//     }
+//     if (shouldSwitch) {
+//       /*If a switch has been marked, make the switch
+//       and mark that a switch has been done:*/
+//       rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+//       switching = true;
+//     }
+//   }
+// }
+function comparer(index) {
+    return function(a, b) {
+        var valA = getCellValue(a, index), valB = getCellValue(b, index)
+        return isNaN(valA) && isNaN(valB) ? valA - valB : valA.toString().localeCompare(valB)
+        // return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+    }
+}
+function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
+function call_cell_phone(phone_number)
+{
+	bringToFront();
+	placeCall(phone_number);
+}
+
+function hideEditEstimate()
+{
+	$('#editReminder').dialog('close');
+}
+function ChangeActive(id,elem_chk){
+  if (elem_chk.checked){
+		$.get("<?=BASE_URL;?>/orders/changeActive",
+			{item_id:id,is_active:1},
+			function(data){
+				//document.forms['viewform'].submit();
+			});
+	}
+	else{
+		$.get("<?=BASE_URL;?>/orders/changeActive",
+			{item_id:id,is_active:0},
+			function(data){
+				//document.forms['viewform'].submit();
+			});
+	}
+	elem_chk.closest('tr').remove();
+}
+
+function showEstimateReminder(oId){
+	document.getElementById("orderId").value = oId;
+	document.getElementById("reminderEmail").style.display = "block";
+}
+function hideInvoiceReview(){
+	document.getElementById("reminderEmail").style.display = "none";
+}
+</script> 
+
+<form method="GET" name="estimateForm"  action="<?php echo $_SERVER['PHP_SELF']; ?>" name="viewform1">
+
+
+
+<table border="0" cellspacing="10" cellpadding="0">
+	<tr>
+		<td class="sectionTitle" colspan="8">Summary</td>
+	</tr>
+	<?php if($common->getLoggedUserRoleID() == 1) {?>
+		<tr>
+			<td colspan="7"><input type="button" class="buttons" name="Back" value="Back" onclick="window.location ='<?php echo BASE_URL;?>/orders/invoiceTablet';"></td>
+		</tr>
+	<?php } ?>
+	<tr>	
+	<!-- <td align="right">Search:</td>	 -->
+		<!-- <td>
+			<select name="dateFilter">
+			<option value="1" <?php echo ( 1 == $dateFilter ? ' selected' : '');?> >Pay Periods</option>
+			 <option value="2" <?php echo ( 2 == $dateFilter ? ' selected' : '');?>>Callback</option> 
+		</select>
+		</td>  -->
+		<!-- <td align="right">Date from:</td> -->
+		<td colspan="4">
+			Date from:<input type="text" name="fromdate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$original_fromdate?>">
+			Date to:<input type="text" name="todate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$original_todate?>">
+	       Ref from: &nbsp;<input type="text" name="reffrom" class="emboss" value="<?php echo $reffrom; ?>" style="width: 85px; cursor: hand; cursor: pointer;" >
+			Ref to: &nbsp;<input type="text" name="refto" class="emboss" value="<?php echo $refto; ?>" style="width: 85px; cursor: hand; cursor: pointer;" >
+	
+		</td>
+		<td align="right">Payment :</td>	
+		<!-- <td>
+			<input type="text" name="ftodate" class="emboss" style="width: 85px; cursor: hand; cursor: pointer;" readonly="1" onclick="scwShow(this,event);" onkeydown="return false;" value="<?=$tdate?>">
+		</td> -->
+		
+		<td >
+          <select id="PaymentPaymentMethodId" name="paymenttype" style="width:80px">
+                <option value="0">--</option>
+                   <?php foreach($payment_types as $method) {?> 
+                <option value="<?=$method['id']?>" <?php if($paymenttype == $method['id']) { echo "selected";} ?>><? echo $method['name']?></option>
+                   <?php }?> 
+                </select>
+          </td>
+        <td style="display:none" align="right">Print :</td>
+        <td style="display:none" colspan="3">
+            <select name="printtype" >
+                <option value="1" >Individual Invoice</option>
+                <option selected value="2" >Summary</option>
+            </select>
+		</td>
+								
+		<td colspan="2"><input type="submit" name="submit2" value="Update" class="buttons" style="float:right"></td>
+		<td colspan="2"><input type="button" id="print" name="submit2" value="Print" class="buttons" style="float:right"></td>
+		
+		<td>
+									Summery
+									<input type="checkbox" class="summ_or_ind">
+									
+									</td>
+									<td>
+									
+									Single
+									<input type="checkbox" class="summ_or_ind2">
+        
+								</td>
+		       
+																	
+    </tr>
+   
+			
+			
+    
+</table>
+</form>
+<div class="wrapper">
+ <!-- Main content -->
+ <?php 
+ $orrder = 1;
+ $orrderpayment = 1;
+ if(!empty($orders)){
+ foreach($orders as $obj) { ?>
+<?php if($printtype == 1){ ?>
+<section class="invoice">
+ <!-- title row -->
+ <div class="row">
+   <div class="col-xs-12">
+	 <!--http://acesys.ace1.ca/app/webroot/img/print_ace2.png-->
+	 <!--style="width:700px;padding-left:5px;margin-left: -50px;"-->
+	 <img class="center-block" src="http://www.acecare.ca/wp-content/uploads/2017/10/newacelogo.png" />
+	 <br /><br>
+   </div>
+ </div><!-- /.row -->
+ <div class="row">
+   <div class="col-xs-4">
+	 <address>
+	   101-3993 Henning Dr.<br />
+	   Burnaby, BC V5C6P7<br />
+	   Tel: 604-293-3770 &nbsp;&nbsp;Fax: 604-293-3773
+	 </address>
+   </div><!-- /.col -->
+   <div class="col-xs-4">
+	 <h3><?php //echo $obj['Type']['name'];?></h3>
+   </div><!-- /.col -->
+   <div class="col-xs-4 pull-right">
+	 <b>Date:</b> <?php echo date("M, d Y", strtotime($obj['Order']['job_date']));?><br />
+	 <b>GST:</b> 896625589<br />
+	 <b>REF:</b> <?php echo $obj['Order']['order_number'];?><br />
+	 <b>Time:</b> <?php echo date('ga', strtotime($obj['Order']['job_time_beg']));?> -
+	 <?php echo date('ga', strtotime($obj['Order']['job_time_end']));?><br />
+	 <!--<b>HK:</b> <?php echo $history_keys[$obj['Order']['customer_id']] ?>-->
+   </div><!-- /.col -->
+ </div><!-- /.row -->
+
+ <!-- info row -->
+ <div class="row invoice-info">
+   <div class="col-sm-4 invoice-col">
+	 <address>
+	   <strong>Bill to:</strong><br>
+	   <?php echo $obj['Customer'][0]['first_name'];?> <?php echo $obj['Customer'][0]['last_name'];?><br>
+	   <?php echo $obj['Customer'][0]['address_unit']?> <?php echo $obj['Customer'][0]['address_street_number']?>
+	   <?php echo $obj['Customer'][0]['address_street']?><br>
+	   <?php echo $obj['Customer'][0]['city'];?> <?php echo $obj['Customer'][0]['postal_code'];?>
+
+	 </address>
+   </div><!-- /.col -->
+   <div class="col-sm-4 invoice-col">
+
+   </div><!-- /.col -->
+   <div class="col-sm-4 invoice-col">
+
+   </div><!-- /.col -->
+ </div><!-- /.row -->
+
+ <?php if($obj['Type']['id'] ==58) {?>
+ <div class="row invoice-info">
+   <div class="col-sm-12">
+	 <small>
+	   <p>
+
+		 Pro Ace Heating and Mechanical is eager for the opportunity to offer our services to you. We have been in
+		 business for seventeen years, with over seventy five thousand residential, commercial and industrial
+		 clients served, and a proven track record of success and distinction in the heating and cooling industry.
+		 Our licensed technicians have years of experience and training that sets them apart, to offer you, our
+		 valued client, the highest quality of service.
+	   </p>
+	   <p>
+		 Our promise is to deliver an exceptional installation with quality and care, and to ensure that your
+		 heating and cooling system meets every need required. Heating and cooling is what we do for a living.
+	   </p>
+	 </small>
+   </div><!-- /.col -->
+ </div><!-- /.row -->
+ <?php } ?>
+
+ <!-- Table row -->
+ <div class="row">
+   <div class="col-xs-12 table-responsive">
+	 <table class="table table-invoice">
+	   <thead>
+		 <tr>
+		   <th class="text-center bg-grey" colspan="2">
+			 <div class="">Item</div>
+		   </th>
+		   <th class="text-center bg-grey">
+			 <div class="">Quantity</div>
+		   </th>
+		   <th class="text-center bg-grey">
+			 <div class="">Rate</div>
+		   </th>
+		   <th class="text-center bg-grey">
+			 <div class="">Amount</div>
+		   </th>
+		 </tr>
+	   </thead>
+	   <tbody>
+		 <?php
+		   //Mixing booking items and coupons
+		   $arr = array();
+		   $index=0;
+		   foreach ($obj['BookingItem'] as $item)
+		   {
+			   $arr[$index]=array();
+			   $arr[$index]['name']=$item['name'];
+			   $arr[$index]['quantity']=$item['quantity'];
+			   $arr[$index]['price']=($item['price']*$item['quantity']-1*$item['discount']+1*$item['addition'])/$item['quantity'];
+			   $arr[$index]['print_it']=$item['print_it'];
+			   $index++;
+		   }
+		   foreach ($obj['BookingCoupon'] as $item)
+		   {
+			   $arr[$index]=array();
+			   $arr[$index]['name']=$item['name'];
+			   $arr[$index]['quantity']=1;
+			   $arr[$index]['price']=-$item['price'];
+			   $index++;
+		   }
+
+		   //No more then 5 items
+		   $subtotal = 0;
+			   $flag = 1;
+		   $cnt=count($arr);
+		   for ($i=0;$i<$cnt;$i++)
+		   {
+			   $item = $arr[$i];
+	$price = $item['price']-$item['discount'];
+					   
+		   ?>
+		 <tr>
+		   <td colspan="2" class="left-border">
+			 <div contenteditable><?php echo $item['name'];?></div>
+		   </td>
+		   <td class="text-center left-border" style="text-align:center;">
+			 <div contenteditable><?php echo $item['quantity'];?></div>
+		   </td>
+		   <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+			 <div contenteditable><?php if($price > 0) echo number_format($price, 2, '.', '');?>
+			 </div>
+		   </td>
+		   <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+			 <div contenteditable>
+			   <?php
+						   if($_GET['total'] != "no") {
+							   $total_prc=$item['price']*$item['quantity'];
+							   if ($total_prc!=0) echo number_format(round($total_prc,2), 2, '.', '');
+						   }
+					   ?>
+			 </div>
+		   </td>
+		 </tr>
+		 <?php
+				   $subtotal += $total_prc;
+			   
+		   }
+		   ?>
+		 <?php for($i = $cnt; $i < 10; $i++) { ?>
+		 <tr>
+		   <td colspan="2" class="left-border">
+			 <div contenteditable>&nbsp;</div>
+		   </td>
+		   <td class="text-center left-border" style="text-align:center;">
+			 <div contenteditable>&nbsp;</div>
+		   </td>
+		   <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+			 <div contenteditable>&nbsp;</div>
+		   </td>
+		   <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+			 <div contenteditable>&nbsp;</div>
+		   </td>
+		 </tr>
+		 <?php } ?>
+		 <tr>
+		   <td rowspan="5" class="top-border">
+			 <!-- <b>Notes</b>
+			   <p class="text-muted well well-sm no-shadow" style="margin-top: 10px;">
+			   <?php foreach($notes as $note) { ?>
+			   <div><?php echo $note;?></div>
+			   <?php } ?>
+
+
+			   </p> -->
+			 <b>Tech 1:</b>
+			 <?php echo $obj['technician'][0]['first_name'];?>&nbsp;<?php echo $obj['technician'][0]['last_name'];?>
+			 <!--  <b>Tech 2:</b> <?php echo $obj['Technician2']['first_name'];?>&nbsp;<?php echo $obj['Technician2']['last_name'];?>  -->
+		   </td>
+		   <?php 
+			   $payment =  $obj['Order']['paid_amount'];
+			   $gst =  $payment *.0476190476;
+			   $subtotal = $payment - $gst;?>
+		   <td class="text-right right-border top-border">Subtotal</td>
+		   <td class="top-border right-border bg-grey"></td>
+		   <td class="top-border right-border bg-grey"></td>
+		   <td class="text-right top-border bg-grey">
+			 <div contenteditable><?php if($_GET['total'] != "no") echo number_format($subtotal, 2, '.', ''); ?>
+			 </div>
+		   </td>
+		 </tr>
+		 <tr>
+		   <td class="text-right right-border">GST 5%</td>
+		   <td class="top-border right-border bg-grey"></td>
+		   <td class="top-border right-border bg-grey"></td>
+		   <td class="text-right top-border bg-grey">
+			 <div contenteditable><?php if($_GET['total'] != "no") echo number_format($gst, 2, '.', ''); ?></div>
+		   </td>
+		 </tr>
+		 <tr>
+		   <td class="text-right right-border"><b>Total</b></td>
+		   <td class="top-border right-border bg-grey"></td>
+		   <td class="top-border right-border bg-grey"></td>
+		   <td class="text-right top-border bg-grey">
+			 <div contenteditable><?php if($_GET['total'] != "no") echo number_format($payment, 2, '.', ''); ?>
+			 </div>
+		   </td>
+		 </tr>
+		 <tr>
+		   <td class="text-right right-border">Deposit</td>
+		   <td class="top-border right-border bg-grey"></td>
+		   <td class="top-border right-border bg-grey"></td>
+		   <td class="text-right top-border bg-grey">
+			 <div contenteditable>&nbsp;</div>
+		   </td>
+		 </tr>
+		 <tr>
+		   <td class="text-right right-border">Remaining</td>
+		   <td class="top-border bottom-border right-border bg-grey"></td>
+		   <td class="top-border bottom-border right-border bg-grey"></td>
+		   <td class="text-right top-border bottom-border bg-grey">
+			 <div contenteditable>&nbsp;</div>
+		   </td>
+		 </tr>
+
+	   </tbody>
+	 </table>
+   </div><!-- /.col -->
+ </div><!-- /.row -->
+ <div class="row invoice-info">
+   <div class="col-sm-12 text-left">
+	 If you have any questions or concerns regarding this invoice, please contact 604-293-3770 or email us at
+	 info@acecare.ca
+   </div><!-- /.col -->
+ </div>
+ <!--/.row-->
+ <div class="row invoice-info">
+   <div class="col-sm-12 text-center">
+	 <strong>THANK YOU FOR YOUR BUSINESS!</strong>
+   </div><!-- /.col -->
+   
+ </div>
+ <!--/.row-->
+</section><!-- /.content -->
+<?php }?>
+
+<?php }?>
+
+
+<?php 
+   if($printtype == 2){
+   ?>
+
+<div class="col-xs-12 table-responsive">
+ <table class="table table-invoice summery-invoice" style="width:100%">
+   <thead>
+	 <tr>
+	   <th class="text-center bg-grey" colspan="2">
+		 <div class=""><input type="checkbox" id='selectall'> Date</div>
+	   </th>
+	   <th class="text-center bg-grey">
+		 <div class="">Ref
+
+		   <?php if($ordertype == 1){ ?>
+		   <a
+			 href="<?php echo $_SERVER['PHP_SELF']; ?>?paymenttype=<?php echo $paymenttype ;?>&todate=<?php echo $todate ;?>&fromdate=<?php echo $fromdate ;?>&printtype=<?php echo $printtype ;?>&ordertype=<?php if($ordertype != '') { echo $ordertype;}else{ echo $orrder; }?>&refto=<?php echo $refto;?>&reffrom=<?php echo $reffrom;?>  ">
+			 <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-up-circle-fill"
+			   fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+			   <path fill-rule="evenodd"
+				 d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z" />
+			 </svg>
+		   </a>
+		   <?php } else { ?>
+		   <a
+			 href="<?php echo $_SERVER['PHP_SELF']; ?>?paymenttype=<?php echo $paymenttype ;?>&todate=<?php echo $todate ;?>&fromdate=<?php echo $fromdate ;?>&printtype=<?php echo $printtype ;?>&ordertype=<?php if($ordertype != '') { echo $ordertype;}else{ echo $orrder; }?>&refto=<?php echo $refto;?>&reffrom=<?php echo $reffrom;?>  ">
+			 <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-down-circle-fill"
+			   fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+			   <path fill-rule="evenodd"
+				 d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5z" />
+			 </svg></a>
+		   <?php } ?>
+		 </div>
+	   </th>
+	   <th class="text-center bg-grey">
+		 <div class="">Sub Total</div>
+	   </th>
+	   <th class="text-center bg-grey">
+		 <div class="">Gst</div>
+	   </th>
+	   <th class="text-center bg-grey">
+		<div class="">Paid By</div>
+	  </th>
+	  <th class="text-center bg-grey">
+		<div class="">Paying By</div>
+	  </th>
+	   <th class="text-center bg-grey">
+		 <div class="">Payment
+		   <?php if($payment_order == 1){ ?>
+		   <a
+			 href="<?php echo $_SERVER['PHP_SELF']; ?>?paymenttype=<?php echo $paymenttype ;?>&todate=<?php echo $todate ;?>&fromdate=<?php echo $fromdate ;?>&printtype=<?php echo $printtype ;?>&payment_order=<?php if($payment_order != '') { echo $payment_order;}else{ echo $orrderpayment; }?>&refto=<?php echo $refto;?>&reffrom=<?php echo $reffrom;?>  ">
+			 <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-up-circle-fill"
+			   fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+			   <path fill-rule="evenodd"
+				 d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z" />
+			 </svg>
+		   </a>
+		   <?php } else{ ?>
+		   <a
+			 href="<?php echo $_SERVER['PHP_SELF']; ?>?paymenttype=<?php echo $paymenttype ;?>&todate=<?php echo $todate ;?>&fromdate=<?php echo $fromdate ;?>&printtype=<?php echo $printtype ;?>&payment_order=<?php if($payment_order != '') { echo $payment_order;}else{ echo $orrderpayment; }?>&refto=<?php echo $refto;?>&reffrom=<?php echo $reffrom;?>  ">
+			 <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-down-circle-fill"
+			   fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+			   <path fill-rule="evenodd"
+				 d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5z" />
+			 </svg>
+		   </a>
+		   <?php }?>
+		   
+		 </div>
+	   </th>
+	   <th class="text-center bg-grey">
+		 <div class="">Technician</div>
+	   </th>
+				<th>
+					update
+					
+				</th>
+	 </tr>
+   </thead>
+	
+   <form method="get" id="filterform" target="_blank" action="<?=BASE_URL;?>/technicians/invoiceprint">
+	   <input type="hidden" name="filer_ordertype" value="<?php echo $ordertype; ?>" />
+	   <input type="hidden" name="filter_payment_order" value="<?php echo $payment_order; ?>" />
+				<input type="hidden" name="printtype" class="filterform23" value="1">
+   <tbody>
+	 <?php
+	 $gst_sum=0;
+	 $total_sum=0;
+	 $sub_total_sum=0;
+	 foreach($orders as $obj) { ?>
+	 
+	   <?php
+	   //Mixing booking items and coupons
+	   $arr = array();
+	   $index=0;
+	   foreach ($obj['BookingItem'] as $item)
+	   {
+		   $arr[$index]=array();
+		   $arr[$index]['name']=$item['name'];
+		   $arr[$index]['quantity']=$item['quantity'];
+		   $arr[$index]['price']=($item['price']*$item['quantity']-1*$item['discount']+1*$item['addition'])/$item['quantity'];
+		   $arr[$index]['print_it']=$item['print_it'];
+		   $index++;
+	   }
+	   foreach ($obj['BookingCoupon'] as $item)
+	   {
+		   $arr[$index]=array();
+		   $arr[$index]['name']=$item['name'];
+		   $arr[$index]['quantity']=1;
+		   $arr[$index]['price']=-$item['price'];
+		   $index++;
+	   }
+		  //No more then 5 items
+		   $subtotal = 0;
+		   $flag = 1;
+		   $cnt=count($arr);
+		   $payment =  $obj['Order']['paid_amount'];
+		   $mul = 0.0476190476;
+		   $gst =  $payment * $mul;
+		   $subtotal = $payment - $gst;
+	   ?>
+
+	   <tr>
+		 <td colspan="2" class="left-border">
+		   <input type="checkbox" class="friendslist" name="orderinput[]"
+			   value="<?php echo $obj['Order']['id'];?>"><?php echo date("M, d Y", strtotime($obj['Order']['job_date']));?>
+		 
+		 </td>
+		 <td class="text-center left-border" style="text-align:center;"><a
+			 href="<?=BASE_URL;?>/orders/editBooking?order_id=<?php echo $obj['Order']['id'];?>&paymenttype=<?php echo $paymenttype ;?>&toodate=<?php echo $todate ;?>&frommdate=<?php echo $fromdate ;?>&printtype=<?php echo $printtype ;?>&payment_order=<?php if($payment_order != '') { echo $payment_order;}else{ echo $orrderpayment; }?>&refto=<?php echo $refto;?>&reffrom=<?php echo $reffrom;?>&ordertype=<?php echo $ordertype;?> ">
+			 <div contenteditable><?php echo $obj['Order']['order_number'];?></div>
+		   </a></td>
+		 <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+		   <div contenteditable><?php if($subtotal > 0) echo number_format($subtotal, 2, '.', '');?> </div>
+		 </td>
+		 <?php
+		 $gst_sum+=$gst;
+		 $total_sum+=$payment;
+		 $sub_total_sum+=$subtotal;
+		 ?>
+		 <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+		   <div contenteditable><?php if($gst != "no") echo number_format($gst, 2, '.', ''); ?></div>
+		 </td>
+		 <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+			<select class="payment_method">
+                <option value="0">--</option>
+                   <?php foreach($payment_types as $method) {?> 
+                <option value="<?=$method['id']?>" <?php if($obj['Order']['paid_by_id']== $method['id']) { echo "selected";} ?>><? echo $method['name']?></option>
+                   <?php }?> 
+                </select>
+		  </td>
+		  <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+			 <select class="paying_by">
+                <option value="0">--</option>
+                   <?php foreach($payment_types as $method) {?> 
+                <option value="<?=$method['id']?>" <?php if($obj['Order']['payment_method_type']== $method['id']) { echo "selected";} ?>><? echo $method['name']?></option>
+                   <?php }?> 
+                </select>
+		  </td>
+		 <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+		   <div contenteditable><?php if($payment > 0) echo number_format($payment, 2, '.', '');?></div>
+		 </td>
+		 <td class="text-right left-border" style="padding-right:10px;text-align:right;">
+		   <div contenteditable>
+			 <?php echo $obj['technician'][0]['first_name'];?>
+		   </div>
+		 </td>
+			<td>
+				<button class="update_orders" data-value="<?= $obj['Order']['id'] ?>" data-paying-by="<?= $obj['Order']['payment_method_type']; ?>" data-method="<?= $obj['Order']['paid_by_id'] ?>">
+					update
+					
+				</button>
+				
+			</td>
+	   </tr>
+	   <?php
+	   ?>
+	 
+	 <?php } ?>
+	 </tbody>
+   <tfoot>
+<tr>
+ <td style="text-align:left;" colspan="2"><b>Total Invoice</b></td>
+ <td></td>
+ <td><?=  number_format($sub_total_sum, 2, '.', '');  ?></td>
+ <td><?=  number_format($gst_sum, 2, '.', ''); ?></td>
+ <td></td>
+ <td></td>
+	<td><?=  number_format($total_sum, 2, '.', '')  ?></td>
+	<td></td>
+	<td></td>
+</tr>
+</tfoot>
+	 <input type="submit" value="submit" style="display: none;">
+   </form>
+   
+ </table>
+</div><!-- /.col -->
+<?php }?>
+<?php if(empty($orders)){ ?>
+<h2 style="text-align:center">
+ </p>No data found</h2>
+<?php   }} ?>
+</div><!-- /.row -->
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    $('#selectall').click(function(event) {   
+    if(this.checked) {
+        // Iterate each checkbox
+        $('.friendslist').each(function() {
+            this.checked = true;                        
+        });
+    } else {
+        $('.friendslist').each(function() {
+            this.checked = false;                       
+        });
+    }
+});
+$('#print').click(function(){
+	
+	if (!$(".summ_or_ind2").is(":checked") && !$(".summ_or_ind").is(":checked") ) {
+        alert('please select summery or single');
+								return false;
+    }
+	
+		if ($('.friendslist:checked').length ==0) {
+                alert('please select at least one item');
+            }
+												else {
+												$( "#filterform" ).submit();	
+												}
+
+	
+});
+
+$('.paying_by').on('change',function(){
+	console.log('this is here');
+	var val = $(this).val();
+			var parent = $(this).parent().parent();
+			parent.find('.update_orders').attr('data-paying-by',val);
+			
+			
+			});
+		
+		$('.payment_method').on('change',function(){
+			var val = $(this).val();
+			var parent = $(this).parent().parent();
+			parent.find('.update_orders').attr('data-method',val);
+			
+			
+			});
+		
+		
+		
+			$('.summ_or_ind2').on('click',function(){
+		
+			$('.filterform23').val('1');
+			
+			$('.summ_or_ind').prop('checked', false);
+			
+			});
+		
+		$('.summ_or_ind').on('click',function(){
+		
+			var ger_val = $('.filterform23').val('2');
+			$('.summ_or_ind2').prop('checked', false);
+			
+			});
+		
+		$('.update_orders').on('click',function(e){
+			e.preventDefault();
+			var val = $(this).attr('data-value');
+			var val1 = $(this).attr('data-paying-by');
+			var val2 = $(this).attr('data-method');
+			 $.ajax({
+      type: 'POST',
+      url: "<?=BASE_URL;?>/technicians/updateorder",
+      data: {val:val,val1:val1,val2:val2},
+      dataType: "text",
+      success: function(data) {
+							
+						
+						}
+});
+			
+			});
+
+  </script>
+
+
+

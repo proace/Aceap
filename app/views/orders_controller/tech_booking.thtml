@@ -12,15 +12,25 @@ document.title += " :: Edit Booking";
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/store_tree.css" />
 <link rel="stylesheet" type="text/css" media="all" href="<?=ROOT_URL;?>/app/webroot/css/ui-smooth/jquery-ui-1.8.13.custom.css" />
 <link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/font-awesome.css" rel="stylesheet" type="text/css">
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/layout.css" rel="stylesheet" type="text/css">
+<link href="<?=ROOT_URL;?>/app/webroot/new-dialler-css/media-queries.css" rel="stylesheet" type="text/css">
+<link type="text/css" href="<?=ROOT_URL;?>/app/webroot/css/overcast/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
 
 <style type="text/css">
+.order-images{
+    cursor:pointer;
+    height: 100px;
+    width: 70px;
+}
 #ajax_item_results_0 {
+    display: none;
     border-collapse: collapse;
     background: #FFFF99;
     color: #000000;
     width: 55%;
 }
 #ajax_item_results_1 {
+    display: none;
     border-collapse: collapse;
     background: #FFFF99;
     color: #000000;
@@ -101,6 +111,10 @@ document.title += " :: Edit Booking";
                 alert("Just create estimate !! ");              
             }
         }
+      $("#image_upload").live("click",function(){
+        var answer = window.open("<?=BASE_URL?>/orders/orderUploadImage?id=<?=$this->data["Order"]["id"]?>&customer_id=<?php echo $this->data["Customer"]["id"];?>",'',
+  "width=450, height=300, left=300,top=200");
+  });
     $(function () {
         $("#img-enlarge").dialog({
             modal: true,
@@ -128,6 +142,30 @@ document.title += " :: Edit Booking";
             $('.invoice-img-enlarge img').attr('src', imgPath);
             $('.invoice-img-enlarge a').attr('href', imgPath);
             $('.invoice-img-enlarge').dialog('open');
+        });
+    }); 
+
+    $(function () {
+        $(".invoice-pdf-enlarge").dialog({
+            modal: true,
+            autoOpen: false,
+            title: "Photo",
+            autoOpen: false,
+            width: 900,
+            height: 764,
+        });
+        $(".show-pdf-image").live("click",function (e) {
+            e.preventDefault();
+            var imgPath = $(this).attr('data-doc_lnk');
+           if(imgPath !== undefined){
+                var docFrame = '<iframe width="100%" height="100%" src="'+imgPath+'" frameborder="0" scrolling="no" id="myFrame" ></iframe>';
+                $('#doc-modal').html('');
+                $('#doc-modal').append(docFrame);
+                $('#doc-modal').load(docFrame);
+                }else{
+                    $('#doc-modal').html('Sorry some error found');
+                }
+                $('.invoice-pdf-enlarge').dialog('open');
         });
     }); 
 var PrevState = <?=$this->data['Order']['order_status_id']?>;
@@ -178,6 +216,12 @@ function ShowAN(el){
 }
 function JobTypeChange(){
   jt=$('#OrderOrderTypeId').val();
+  
+  $.get("<?=BASE_URL;?>/jobs/getPackage", {job_type:jt},
+      function(data){
+          $("#installation_item_val").val(parseInt(data));
+      });
+
   if ((jt==9)||(jt==10))
     $("#PreviousSection").show();
   else
@@ -224,6 +268,7 @@ function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, p
 			else  tbl = document.getElementById("CurrentItemsTableTech");
 					var lastRow = tbl.rows.length-1;
 					var row = tbl.insertRow(lastRow);
+
 					if (new_type==0) row.setAttribute("class", "booked");
 					else row.setAttribute("class", "extra");
 					row.setAttribute("id", "order_"+index);
@@ -250,6 +295,19 @@ function addItem(item_id, item_name, item_prc, new_type, new_category, new_pp, p
 							async:false}).responseText;
 			$("#order_"+index).html(bodyContent);
 			index++;
+	/*Loki: if choose labour item set commision as installer fixed.
+	live catid = 37, local=38
+	*/
+    if(new_category == 37)
+    {
+        $("#OrderT1Method").val(2);
+        $("#OrderT2Method").val(2);
+    }
+    if(new_category == 1)
+    {
+        $("#OrderT1Method").val(1);
+        $("#OrderT2Method").val(1);
+    }
 			document.getElementById("NumberOfItems").value=index;
 			TotalCalculation();
 }
@@ -449,6 +507,7 @@ function conflictCheck()
 function TotalCalculation()
 {
     subtotal = 0;
+    amount = 0;
     CheckPrcCount = 0;
 		$('#CurrentItemsTable').children('tbody').children('tr').each(function(i, el) {
 			qty = $(el).children('.quantity').children('input').val();
@@ -456,18 +515,53 @@ function TotalCalculation()
 				prc = $(el).children('.price').children('input').val();
 				disc = $(el).children('.discount').children('input').val();
 				add = $(el).children('.addition').children('input').val();
-                var purch = $(el).children('.purchase').children('input').val();
+        var purch = $(el).children('.purchase').children('input').val();
+        var catId = $(el).children('td').children('.item_cat_id').val();
 				if (prc=="") prc=0;
 				if (disc=="") disc=0;
 				if (add=="") add=0;
-                if(purch=="") purch=0;
-                var purchase = (purch * qty);
-                var orgPrc = (prc * qty);
-				amount = parseFloat(prc) * qty - (1*disc) + (1*add);
-				subtotal += amount;
-				$(el).children('.amount').html('$'+amount);
-                $(el).children('.price').find("span").text(orgPrc);
-                $(el).children('.purchase').find("span").text(purchase);
+        if(purch=="") purch=0;
+        var purchase = (purch * qty);
+        var orgPrc = (prc * qty);
+        if(catId != 8)
+				{
+					amount = parseFloat(prc) * qty - (1*disc) + (1*add);
+					subtotal += amount;
+				}
+				// amount = parseFloat(prc) * qty - (1*disc) + (1*add);
+				// subtotal += amount;
+        $(el).children('.amount').html('$'+amount);
+        $(el).children('.price').find("span").text(orgPrc);
+        $(el).children('.purchase').find("span").text(purchase);
+      	if(catId == 8)
+        {
+       		  var percentVal = $("#tech_percentage").val();
+            var percentType = $("#tech_percentage_type").val();
+            var markupPercentVal = $("#markup_percentage").val();
+            var markupPercentType = $("#markup_percentage_type").val();
+           	var newMarkupAmount = 0;
+           	var newPrchAmount = 0;
+            if(percentType == 1)
+            {
+                var newPrchAmount = (parseFloat(purch) * parseInt(percentVal))/ 100;
+            } else if(percentType == 2) {
+                var newPrchAmount = parseFloat(percentVal);
+            }
+            if(markupPercentType == 1)
+            {
+            	 newMarkupAmount = newPrchAmount + (parseFloat(purch) * parseInt(markupPercentVal))/ 100;
+            } else if(markupPercentType == 2)
+            {
+            	 newMarkupAmount = newPrchAmount + parseFloat(markupPercentVal);
+            }
+            var totalMarkupAmount = (parseFloat(purch) + parseFloat(newMarkupAmount)).toFixed(2);
+            amount = parseFloat(totalMarkupAmount) * qty - (1*disc) + (1*add);
+  					subtotal += amount;
+  					$(el).children('.amount').html('$'+amount);
+            // $(el).children('.tech_purchase').children('input').val('');
+            $(el).children('.tech_purchase').children('input').val(parseFloat(newPrchAmount.toFixed(2)) * qty);
+            $(el).children('.price').children('input').val(totalMarkupAmount);
+       }
 			}
     });
 <?php
@@ -476,22 +570,58 @@ if (($common->getLoggedUserID()==$this->data['Order']['job_technician1_id'])
 ?>
 		$('#CurrentItemsTableTech').children('tbody').children('tr').each(function(i, el) {
 			qty = $(el).children('.quantity').children('input').val();
-			if (qty!=null){
-                var purch = $(el).children('.purchase').children('input').val();
+			if (qty!=null)
+      {
+        var purch = $(el).children('.purchase').children('input').val();
 				prc = $(el).children('.price').children('input').val();
 				disc = $(el).children('.discount').children('input').val();
 				add = $(el).children('.addition').children('input').val();
+				var catId = $(el).children('td').children('.item_cat_id').val();
+
 				if (prc=="") prc=0;
 				if (disc=="") disc=0;
 				if (add=="") add=0;
-                if(purch=="") purch=0;
-                var purchase = (purch * qty);
-                var orgPrc = (prc * qty);
-				amount = parseFloat(prc) * qty - (1*disc) + (1*add);
-				subtotal += amount;
+        if(purch=="") purch=0;
+        var purchase = (purch * qty);
+        var orgPrc = (prc * qty);
+				if(catId != 8)
+				{
+					amount = parseFloat(prc) * qty - (1*disc) + (1*add);
+					subtotal += amount;
+				}
 				$(el).children('.amount').html('$'+amount);
-                $(el).children('.price').find("span").text(orgPrc);
-                $(el).children('.purchase').find("span").text(purchase);
+        $(el).children('.price').find("span").text(orgPrc);
+        $(el).children('.purchase').find("span").text(purchase);
+        if(catId == 8)
+        {
+       		  var percentVal = $("#tech_percentage").val();
+            var percentType = $("#tech_percentage_type").val();
+            var markupPercentVal = $("#markup_percentage").val();
+            var markupPercentType = $("#markup_percentage_type").val();
+           	var newMarkupAmount = 0;
+           	var newPrchAmount = 0;
+           
+            if(percentType == 1)
+            {
+                 newPrchAmount = (parseFloat(purch) * parseInt(percentVal))/ 100;
+            } else if(percentType == 2) {
+                 newPrchAmount = parseFloat(percentVal);
+            }
+            if(markupPercentType == 1)
+            {
+            	 newMarkupAmount = newPrchAmount + (parseFloat(purch) * parseInt(markupPercentVal))/ 100;
+            } else if(markupPercentType == 2)
+            {
+            	 newMarkupAmount = newPrchAmount + parseFloat(markupPercentVal);
+            }
+            var totalMarkupAmount = (parseFloat(purch) + parseFloat(newMarkupAmount)).toFixed(2);
+            amount = parseFloat(totalMarkupAmount) * qty - (1*disc) + (1*add);
+		        subtotal += amount;
+		        $(el).children('.amount').html('$'+amount);
+            // $(el).children('.tech_purchase').children('input').val('');
+            $(el).children('.tech_purchase').children('input').val(parseFloat(newPrchAmount.toFixed(2)) * qty);
+            $(el).children('.price').children('input').val(totalMarkupAmount);
+        }
 			}
     });
 <? } ?>
@@ -676,18 +806,20 @@ function checkText() {
 	});
 }
 function ajax(event) {
+  $('.delete_items').attr('checked', false);
     var val = $(event).val().trim();
     var data_class = $(event).attr("data-class");
+
     // Return all items if:
     // 1) allItems is not passed as an argument.
     // 2) allItems is not false
     // Return only active items.
      if(val != '' && val != null ){
          $.ajax({
-              url: "<?=BASE_URL;?>/inventories/ajaxItems",
+              url: "<?=BASE_URL;?>/inventories/searchItems",
               type: "GET",
               dataType: 'json',
-              data: {query:val,active:true},
+              data: {query:val,classId:data_class},
               success: function(data){
                 ajax_finished(data,data_class)
               }
@@ -697,6 +829,23 @@ function ajax(event) {
      }
 }
 
+function ajax_failed(why, data_class) {
+    template = $('#ajax_item_result_template_'+data_class);
+    table = $('#ajax_item_results_'+data_class+' tbody');
+    table.empty();
+    $('#ajax_item_results_'+data_class+' thead').hide();
+    result = template.clone();
+    if (why=="no supplier") {
+        result.children(".name_"+data_class).html("Please choose a supplier."); }
+    if (why=="no results") {
+        $("#add_item_"+data_class).show();
+    }
+    //     result.children(".name_"+data_class).html("<a href='javascript:add_unknown_item("+data_class+");'>Add it?</a>"); }
+    // result.show();
+    // result.appendTo(table);
+    // table.show(); 
+}
+
 function ajax_finished(data, data_class) {
     accessData = data;
     if (data.length===0) {
@@ -704,24 +853,14 @@ function ajax_finished(data, data_class) {
         return false;
     }
     template = $('#ajax_item_result_template_'+data_class);
-    table = $('#ajax_item_results_'+data_class);
+    table = $('#ajax_item_results_'+data_class+' tbody');
     table.empty();
-    for(i in data) {
-        result = template.clone();
-        result.children(".item_id_"+data_class).html(data[i]["id"]);
-        result.children(".name_"+data_class).html(data[i]["name"]);
-        result.children(".sku_"+data_class).html(data[i]["sku"]);
-        // result.children(".price").html(data[i]["price"]);
-        result.children(".price_"+data_class).html(data[i]["price"]);
-        result.children(".purchase_price_"+data_class).html(data[i]["purchase_price"]);
-        result.children(".category_id_"+data_class).html(data[i]["category_id"]);
-        result.children(".model_"+data_class).html(data[i]["model"]);
-        result.children(".brand_"+data_class).html(data[i]["brand"]);
-        result.show();
-        result.bind("click",function(){result_clicked(this, data_class);});
-        result.appendTo(table);
-    }
-    table.show();
+   
+    $('#ajax_item_results_'+data_class+' thead').show();
+    table.append(data);
+    table.append('<tr><td colspan="7"></td><td><input type="button" class="clearSearch" name="clearSearch" value="Clear"></td></tr>');
+    // table.show();
+    table.parent().show();
     $("#add_item_"+data_class).hide();
 }
 function result_clicked(clicked_item, data_class){
@@ -750,9 +889,17 @@ function upload_photo(cur,i) {
     // $('#uploading_' + i).show();
 }
 
+ $(".clearSearch").live("click", function(){
+        $("#ajax_item_results_0").hide();
+        $("#ajax_item_results_1").hide();
+        $("#addBookedItems").attr("disabled", false);
+        $("#addTechnicianSales").attr("disabled", false);
+    });
 // Loki: search item via name
- $(".ajax_item_name").live("keyup",function(){
-        ajax(this);
+ $(".ajax_item_name").live("keyup",function(event){
+        if (event.which != "17"){
+          ajax(this);
+      }
     });
  $(".disply_preview").live("change",function(e){
         var img_ct = $(this).attr("data-ct").trim();
@@ -795,6 +942,30 @@ function upload_photo(cur,i) {
 			$("#OrderOfficeComment").hide();	
 		}
 	});
+
+  $(".add_selected_items").live("click", function(){
+        var Id = '';
+        var itemClass = $(this).attr("item-class");
+        table = $('#ajax_item_results_'+itemClass);
+        table.hide();
+        $('#ajax_item_name').val('');
+
+        $(".delete_items:checkbox:checked").each(function(){
+             var cur = $(this).parent().parent();
+             var itemId = $('.item_id_'+itemClass,cur).text();
+             var name = $('.name_'+itemClass,cur).text();
+             var price = $('.price_'+itemClass,cur).text();
+             var sku = $('.sku_'+itemClass,cur).text();
+             var purchasePrice = $('.purchase_price_'+itemClass,cur).text();
+             var catId = $('.category_id_'+itemClass,cur).text();
+             var modelId = $('.model_'+itemClass,cur).text();
+             var brandId = $('.brand_'+itemClass,cur).text();
+             var subCatId = $('.sub_category_id_'+itemClass,cur).text();
+             // addItem(dat.children(".item_id_"+data_class).text(), dat.children(".name_"+data_class).text(), dat.children(".price_"+data_class).text(),data_class, dat.children(".category_id_"+data_class).text(), dat.children(".purchase_price_"+data_class).text(),"" ,"1",dat.children(".model_"+data_class).text(), dat.children(".brand_"+data_class).text(), dat.children(".sku_"+data_class).text(),'','','','',dat.children(".sub_category_id_"+data_class).text());
+
+                 addItem(itemId, name, price, itemClass,catId, purchasePrice, "","1", modelId,brandId,sku, "", "","", "", subCatId );
+             });
+    });
 	
 	//
 	var test_server = "http://69.31.184.162:81/acesys/acetest/acesys-2.0/index.php/";
@@ -1071,6 +1242,13 @@ input[type=text] {
 <input type="hidden" name="sendMailOnEstimate" id="sendMailOnEstimate" value="1"/>
 <input type="hidden" name="emailinput" id="emailinput" value="<?=$this->data['Customer']['email']?>"/>
 
+ <input type="hidden" name="data[Order][tech_percentage]" id="tech_percentage" value="<?=$this->data['Order']['tech_percentage']?>">
+<input type="hidden" name="data[Order][tech_percentage_type]" id="tech_percentage_type" value="<?=$this->data['Order']['tech_percentage_type']?>">
+ <input type="hidden" name="data[Order][markup_percentage]" id="markup_percentage" value="
+<?=$this->data['Order']['markup_percentage']?>">
+<input type="hidden" name="data[Order][markup_percentage_type]" id="markup_percentage_type" value="<?=$this->data['Order']['markup_percentage_type']?>">
+<input type="hidden" id = "installation_item_val" name="data[Order][installation_item_val]" value="<?= $this->data['Order']['installation_item_val']?>">
+<input type="hidden" name="is_order_id" id="is_order_id" value="<?= $is_order_id; ?>" />
 <table id="MainTable" width=90% heigth=90%>
 <tr style="border-left: 2px solid #F5F5F5;border-right: 2px solid #A7A6AA;border-bottom: 2px solid #A7A6AA;background: #EBE9ED;">
 <td width=260px style="text-align:left;vertical-align:top">
@@ -1170,6 +1348,9 @@ input[type=text] {
 					<td class="special_section" onclick="location.href='./techBooking?customer_id=<?=$this->data['Customer']['id']?>&order_id=0';">
 						<u style="color:blue">New booking</u>
 					</td>
+					<td class="special_section" onclick="location.href='./editBooking?customer_id=<?=$this->data['Customer']['id']?>&order_id=0&estimate=1';">
+						<u style="color:blue">New Estimate</u>
+					</td>
                 
 					<td class="special_section" onclick="CheckWithSchedule()">
 						<u style="color:blue;cursor:pointer">Show Schedule</u>
@@ -1190,6 +1371,9 @@ input[type=text] {
                     <td class="special_section" onclick="window.open('<?=BASE_URL?>/orders/printView?id=<?=$this->data["Order"]["id"]?>');return false;">
                     	<u style="color:blue;cursor:pointer">Print</u>
                     </td>
+                     <td class="special_section" id="image_upload" onclick="">
+                      <u style="color:blue;cursor:pointer">Upload Images</u>
+                    </td>
                     <!--<td class="special_section" onclick="window.open('<?=BASE_URL?>/orders/sendInvoiceToPrinter?order_id=<?=$this->data["Order"]["id"]?>');return false;">
                     	<u style="color:blue;cursor:pointer">Print to Truck</u>
                     </td>-->
@@ -1207,15 +1391,23 @@ input[type=text] {
 			</table>
 
                 <table class="special_section" id="showImages" style="width:100%;display:none;" cellspacing=0 cellpadding=0>
-                    <tr>
+                  <tr>
                      <?php foreach ($allImages as $key => $value) {?>
                         <td>
-                            <div style="position: relative; padding:0; width: 30px;"> 
-                                    <img id="" class="invoice-openImg" src="<?php echo ROOT_URL.'/upload_photos/'.$value;?>" style="max-height:28px;height:auto;cursor:pointer;">
+                            <div style="position: relative; padding:0;"> 
+                               <?php if($value['extension'] == 'pdf') {?>
+                                      <img class="show-pdf-image" src="<?=ROOT_URL?>/app/webroot/img/doc_pdf.png" data-doc_lnk="<?php echo '/acesys/upload_photos/'.$value['image_name'];?>" style="height: 70px;width: 70px;"  >
+                                <?php } else {?>
+                                
+                                    <img id="" class="invoice-openImg order-images" src="<?php echo ROOT_URL.'/upload_photos/'.$value['image_name'];?>">
+                                <?php } ?>
                             </div>
                         </td>
+                        
                     <?php } ?>
-                    </tr>
+
+
+                  </tr>
                 </table>
 
 			<table id="JobHistory" class="special_section" style="display:none;" cellspacing=0 cellpadding=0>
@@ -1355,7 +1547,17 @@ input[type=text] {
                     <td>
                     <?php echo $html->selectTag('Order/booking_source2_id', $booking_sources, $this->data['Order']['booking_source2_id']); ?>
                     </td>
-                    <td align="right">Tech 2:</td>
+                    <?php if ($_SESSION['user']['role_id'] == 6 || $_SESSION['user']['role_id'] == 1) {?>
+					<td align="right">Comm. type:</td>
+					<td>
+						<?php echo $html->selectTag('Order/t1_method', $comm_roles,$this->data['Order']['t1_method']);  ?>
+					</td>
+					<?php }?>
+                    
+                </tr>
+                <tr>
+                	<td colspan="2"></td>
+                	<td align="right">Tech 2:</td>
                     <td>
 						<?php
 						if ($common->getLoggedUserID() == $this->data['Order']['job_technician1_id']) {
@@ -1369,7 +1571,17 @@ input[type=text] {
                 <tr>
                     <td align="right">Verified by:</td>
                     <td><?php echo '<b>'.$admins[$this->data['Order']['verified_by_id']].'</b>';?></td>
-                    <td align="right">Time in:</td>
+                    </td>
+					<?php if ($_SESSION['user']['role_id'] == 6 || $_SESSION['user']['role_id'] == 1) {?>
+					<td align="right">Comm. type:</td>
+					<td>
+						<?php echo $html->selectTag('Order/t2_method', $comm_roles, $this->data['Order']['t2_method']); ?>
+					</td>
+					<?php }?>
+                    
+                </tr>
+                <tr>
+                	<td align="right">Time in:</td>
                     <td>
                     <?php echo $html->hourOptionTag('Order/fact_job_beg', null, 1); ?>
 					:
@@ -1501,15 +1713,36 @@ input[type=text] {
                 <tr>
                     <td colspan=3 id="CurrentItems" style="vertical-align:top">
                     	<!--<input type="button" value="Add booked Items" onclick="showAddItems(0)" />-->
-                        <input type="button" value="Add booked Items" id="addBookedItems" />
-                        <div class="loading_indicator" id="book_loading"></div>
-                        <input type="button" value="Close Section" id="closeBookedItems" /> 
-                        <a id="addBookedItemsList" title="View Items in a List"></a>
-                        <a id="addBookedItemsTree" title="View Items in a Tree"></a>
-                        <input type="button" value="From Supplier" onclick="addItem(1227, '', '0', 0, 1, '', '')" />
-                        <input autocomplete="off" class='ajax_item_name' data-class="0" />
-                               <a id="add_item_0" class="add_item_button" style ="display: none;" href='javascript:add_unknown_item(0);'>Add to Inventory</a>
+                  
+                          <input type="button" value="Add booked Items" id="addBookedItems" />
+                          <div class="loading_indicator" id="book_loading"></div>
+                          <input type="button" value="Close Section" id="closeBookedItems" /> 
+                          <a id="addBookedItemsList" title="View Items in a List"></a>
+                          <a id="addBookedItemsTree" title="View Items in a Tree"></a>
+                          <!-- <input type="button" value="From Supplier" onclick="addItem(1227, '', '0', 0, 1, '', '')" /> -->
+                          <input autocomplete="off" class='ajax_item_name' data-class="0" />
+                                 <a id="add_item_0" class="add_item_button" style ="display: none;" href='javascript:add_unknown_item(0);'>Add to Inventory</a>
                         <table id='ajax_item_results_0'>
+                           <thead>
+                                <tr>
+                                    <input type="button" name="add_item" value="Add" class="add_selected_items" item-class="0">
+                                    <input type="button" name="delete_item" value="Remove" class="delete_selected_items" style="margin-left: 5px;">                                                
+                                </tr>
+                              <tr>
+                                    <th><b>Name</b></th>
+                                    <th><b>Model</b></th>
+                                    <th><b>Sku</b></th>
+                                    <th><b>Price</b></th>
+                                    <th style="display:none;"><b>Item Id</b></th>
+                                    <th><b>Purchase Price</b></th>
+                                    <th style="display:none;"><b>Category Id</b></th>
+                                    <?php foreach ($inventoryTechnician as $tech => $value): ?>
+                                    <th><b><?php echo $value['short_name'] ?></b></th>
+                                    <?php endforeach ?>                                   
+                                    <th><b>Add/Remove</b></th>
+                                </tr>
+                            </thead>
+                          <tbody></tbody>
                         </table>
                         <div class="clear_this"></div>
 						<div id="item_selector0" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
@@ -1522,36 +1755,42 @@ input[type=text] {
                                     <tr>
 										<th align=left>Items<!--<input type="button" value="Add booked items"/>--></th>
 										<th style="width:30px">Part No.</th>
-                                        <th style="width:30px">Qty</th>
+                    <th style="width:30px">Qty</th>
 										<th style="width:50px">Price</th>
 										<th style="width:55px;color:red;">Disc</th>
 										<th style="width:55px">Add</th>
 										<th style="width:55px">Prch</th>
+										<th style="width:50px">Tech</th>
+                    <th style="width:50px">Adjt</th>
 										<th style="width:55px">Sum</th>
 										<!-- <th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
 										<th style="width:50px;background:#55bb55;color:white;">Tech add</th>
 										<th style="width:25px">Print</th> -->
-										<th class="order_warehouse_quantity" style="width:20px">Quantity</th>
-                                        <th class="order_item_status" style="width:20px;">Order</th>
-                                        <th style="width:25px">Remove</th>
+										<!-- <th class="order_warehouse_quantity" style="width:20px">Quantity</th> -->
+                    <th class="order_item_status" style="width:20px;">Order</th>
+                    <th style="width:25px"></th>
+                    <th class="order_warehouse_quantity" style="width:20px">W</th>
+
 									</tr>
-														<?php } else { ?>
+										<?php } else { ?>
 									<tr>
 										<th align=left>Booked items</th>
-                                        <th style="width:30px">Part No.</th>
+                    <th style="width:30px">Part No.</th>
 										<th style="width:30px">Qty</th>
 										<th style="width:50px">Price</th>
 										<th style="width:55px;color:red;">Disc</th>
 										<th style="width:55px">Add</th>
 										<th style="width:55px">Prch</th>
+										<th style="width:50px">Tech</th>
+                    <th style="width:50px">Adjt</th>
 										<th style="width:55px">Sum</th>
-                                        <th class="order_warehouse_quantity" style="width:20px">Quantity</th>
-                                        <th class="order_item_status" style="width:20px;">Order</th>
-                                        <th style="width:25px;background:#DDFFDD">Remove</th>
+                    <th class="order_item_status" style="width:20px;">Order</th>
+                    <th style="width:25px;background:#DDFFDD"></th>
+                    <th class="order_warehouse_quantity" style="width:20px">W</th>
 										<!-- <th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
 										<th style="width:50px;background:#55bb55;color:white;">Tech add</th>
 									</tr> -->
-														<?php }?>
+										<?php }?>
 									<?php echo $booked_items; ?>												
 									<tr>
 										<td id="NewItems" class="newitem" colspan=7 style="display:none"></td>
@@ -1563,10 +1802,15 @@ input[type=text] {
                                 <td class='model_0'></td>
                                 <td class='sku_0'></td>
                                 <td class='price_0' ></td>
-                                <td class='item_id_0' ></td>
+                                <td style="display:none;" class='item_id_0' ></td>
                                 <td class='purchase_price_0'></td>
-                                <td class='category_id_0'></td>
+                                <td style="display:none;" class='category_id_0'></td>
+                                <?php foreach ($inventoryTechnician as $tech => $value): ?>
+                                  <td class='warehouse_<?=$value['id']?>_0'></td>
+                                   <?php endforeach ?>
+                                <td class='remove_item_0'></td>
                                 <td class='brand_0' style='display:none'></td>
+                                <td class='sub_category_id_0' style='display:none'></td>
                             </tr>
 							<tr height=10px><td></td></tr>
 							<?php
@@ -1584,45 +1828,75 @@ input[type=text] {
                                 <input autocomplete="off" class='ajax_item_name' data-class="1"/>
                                  <a id="add_item_1" class="add_item_button" style= "display: none;" href='javascript:add_unknown_item(1);'>Add to Inventory</a>
                                 <table id='ajax_item_results_1'>
+                                  <thead>
+                                            <tr>
+                                                <input type="button" name="add_item" value="Add" class="add_selected_items" item-class="1">
+                                                <input type="button" name="delete_item" value="Remove" class="delete_selected_items" style="margin-left: 5px;">                                                
+                                            </tr>
+                                          <tr>
+                                                <th><b>Name</b></th>
+                                                <th><b>Model</b></th>
+                                                <th><b>Sku</b></th>
+                                                <th><b>Price</b></th>
+                                                <th style="display:none;"><b>Item Id</b></th>
+                                                <th><b>Purchase Price</b></th>
+                                                <th style="display:none;"><b>Category Id</b></th>
+                                                <?php foreach ($inventoryTechnician as $tech => $value): ?>
+                                                <th><b><?php echo $value['short_name'] ?></b></th>
+                                                <?php endforeach ?>
+                                                <th><b>Add/Remove</b></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
                                 </table>
                                 <div class="clear_this"></div>
-								<div id="item_selector1" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
-								<table id="CurrentItemsTableTech" cellspacing=0 colspacing=0 class="inResultsBooking">
-									<!--<tr onclick="showAddItems(1)" style="cursor:hand;background:#ffdddd">-->
-                                    <tr>
-										<th style="background:#ffdddd" align=left>Items</th>
-										<th style="width:30px;background:#ffdddd">Qty</th>
-										<th style="width:50px;background:#ffdddd">Price</th>
-										<th style="width:55px;background:#ffdddd;color:red;">Disc</th>
-										<th style="width:55px;background:#ffdddd">Add</th>
-										<th style="width:55px;background:#ffdddd">Prch</th>
-										<th style="width:55px;background:#ffdddd">Sum</th>
-										<!-- <th style="width:50px;background:#55bb55;color:#ffdfdf;">Tech ded</th>
-										<th style="width:50px;background:#55bb55;color:white;">Tech add</th>
-										<th style="width:25px;background:#ffdddd">Print</th> -->
-										<th style="width:25px;background:#ffdddd">&nbsp;</th>
-									</tr>
-									<?php echo $tech_items; ?>												
-									<tr>
-										<td id="NewItemsTech" class="newitem" colspan=7 style="display:none"></td>
-									</tr>
-                                    <tr id='ajax_item_result_template_1' style='display:none'>
+        								<div id="item_selector1" style="background:#f8f8f8;border:1px solid #333333;display:none;"></div>
+        								<table id="CurrentItemsTableTech" cellspacing=0 colspacing=0 class="inResultsBooking">
+        									<!--<tr onclick="showAddItems(1)" style="cursor:hand;background:#ffdddd">-->
+                          <tr>
+        										<th style="background:#ffdddd" align=left>Items</th>
+                            <th style="width:30px;background:#ffdddd">Part No.</th>
+        										<th style="width:30px;background:#ffdddd">Qty</th>
+        										<th style="width:50px;background:#ffdddd">Price</th>
+        										<th style="width:55px;background:#ffdddd;color:red;">Disc</th>
+        										<th style="width:55px;background:#ffdddd">Add</th>
+        										<th style="width:55px;background:#ffdddd">Prch</th>
+        										<th style="width:50px">Tech</th>
+                            <th style="width:50px">Adjt</th>
+        										<th style="width:55px;background:#ffdddd">Sum</th>
+                            <th class="order_item_status" style="width:20px;background:#ffdddd">Order</th>
+                            <th style="width:25px;background:#ffdddd"></th>
+                            <th class="order_warehouse_quantity" style="width:20px;background:#ffdddd">W</th>
+        										<!-- <th style="width:25px;background:#ffdddd">&nbsp;</th> -->
+        									</tr>
+                                <tr id='ajax_item_result_template_1' style='display:none'>
                                     <td class='name_1'>Result</td>
                                      <td class='model_1'></td>
                                     <td class='sku_1'></td>
                                     <td class='price_1' ></td>
-                                    <td class='item_id_1' ></td>
+                                    <td style="display:none;" class='item_id_1' ></td>
                                     <td class='purchase_price_1'></td>
-                                    <td class='category_id_1'></td>
-                                   
+                                    <td style="display:none;" class='category_id_1'></td>
+                                    <?php foreach ($inventoryTechnician as $tech => $value): ?>
+                                      <td class='warehouse_<?=$value['id']?>_1'></td>
+                                   <?php endforeach ?>                                    
+                                   <td class='remove_item_1'></td>
+                                    <td class='brand_1' style='display:none'></td>
+                                    <td class='sub_category_id_1' style='display:none'></td>
                                     <td class='brand_1' style='display:none'></td>
                                 </tr>
-								</table>
+          									<?php echo $tech_items; ?>												
+          									<tr>
+          										<td id="NewItemsTech" class="newitem" colspan=7 style="display:none"></td>
+          									</tr>
+								          </table>
+                        </td>
+                      </tr>
+  							<?php
+  							   }
+  							?>
+                
 
-							</td></tr>
-							<?php
-							}
-							?>
                             <tr>
                             	<td>
                                 <div>
@@ -1669,8 +1943,8 @@ input[type=text] {
 									<?php echo $html->textarea('Order/job_notes_technician', array('style' => "width:450px; height: 80px;")); ?>
 								</td>
 							</tr>-->
-						</table>
-                    </td>
+						<!-- </table> -->
+                  <!-- </td> -->
                    <!--  <tr> -->
                        
                     <!-- </tr> -->
@@ -1755,7 +2029,7 @@ input[type=text] {
 					?>
                      <input type="button" id="mailbut" value="Send Estimate" onclick="sendEmail(<?php echo $this->data['Order']['id'] ?>)" class="buttons">                	
                 	<input type="button" value="Done" onclick="javascript:document.getElementById('havetoprint').value=1;ValidateFields(5);" class="buttons">
-                	<input type="button" value="Cancelled" onclick="javascript:document.getElementById('havetoprint').value=1;ValidateFields(3);" class="buttons">
+                	<!-- <input type="button" value="Cancelled" onclick="javascript:document.getElementById('havetoprint').value=1;ValidateFields(3);" class="buttons"> -->
                 <?php } else {  
 					echo $html->submit("Save", array("class" => "buttons","onclick" => "ValidateFields(); return false;" ));	
 				} ?>
@@ -1783,5 +2057,7 @@ input[type=text] {
     <?php echo $this->element('image_rotate'); ?>
     <button class="w3-btn"> <a href="#" onclick="this.href =" download>Download</a> </button>
 </div>
-
+<div class="invoice-pdf-enlarge" title="Photo" style="display: none">
+    <div id="doc-modal" style="width: 100%, height:100%"></div>
+</div>
 </form>

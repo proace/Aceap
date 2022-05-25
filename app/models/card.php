@@ -1,9 +1,9 @@
-<?php
-
-class Card extends AppModel
-{
-	var $name = 'Card';
-	var $useTable = 'cards';
-}
-
-?>
+<?php
+
+class Card extends AppModel
+{
+	var $name = 'Card';
+	var $useTable = 'cards';
+}
+
+?>
